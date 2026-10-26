@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+SPDX-FileCopyrightText: 2026 Rime community
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_share"
+        android:icon="@drawable/ic_baseline_share_24"
+        android:title="@string/stats_share"
+        app:iconTint="?attr/colorOnSurface"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_clear_all"
+        android:title="@string/stats_clear_all"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_clear_fastest"
+        android:title="@string/stats_clear_fastest"
+        app:showAsAction="never" />
+</menu>

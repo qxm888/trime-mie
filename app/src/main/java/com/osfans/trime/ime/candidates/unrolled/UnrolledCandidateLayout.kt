@@ -1,0 +1,64 @@
+// SPDX-FileCopyrightText: 2015 - 2024 Rime community
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+package com.osfans.trime.ime.candidates.unrolled
+
+import android.annotation.SuppressLint
+import android.content.Context
+import androidx.constraintlayout.widget.ConstraintLayout
+import com.osfans.trime.R
+import com.osfans.trime.data.theme.Theme
+import com.osfans.trime.data.theme.ThemeScope
+import splitties.dimensions.dp
+import splitties.views.dsl.constraintlayout.centerInParent
+import splitties.views.dsl.constraintlayout.lParams
+import splitties.views.dsl.core.add
+import splitties.views.dsl.recyclerview.recyclerView
+
+@SuppressLint("ViewConstructor")
+class UnrolledCandidateLayout(
+    context: Context,
+    private val scope: ThemeScope,
+) : ConstraintLayout(context) {
+    private val theme: Theme
+        get() = scope.theme
+
+    val recyclerView =
+        recyclerView {
+            isVerticalScrollBarEnabled = false
+        }
+
+    init {
+        id = R.id.unrolled_candidate_view
+        background =
+            scope.decorDrawable(
+                "candidate_background",
+                "candidate_border_color",
+                dp(theme.style.candidateBorder),
+                dp(theme.style.candidateBorderRound),
+            )
+
+        add(
+            recyclerView,
+            lParams {
+                centerInParent()
+            },
+        )
+    }
+
+    fun resetPosition() {
+        recyclerView.scrollToPosition(0)
+    }
+
+    /** Restyles the container background after a scheme switch. */
+    fun refreshColors() {
+        background =
+            scope.decorDrawable(
+                "candidate_background",
+                "candidate_border_color",
+                dp(theme.style.candidateBorder),
+                dp(theme.style.candidateBorderRound),
+            )
+    }
+}

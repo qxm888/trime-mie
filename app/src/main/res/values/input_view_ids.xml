@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+SPDX-FileCopyrightText: 2024 Rime community
+
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
+<resources>
+    <item name="candidate_view" type="id" />
+    <item name="unrolled_candidate_view" type="id" />
+    <item name="input_window" type="id" />
+    <item name="keyboard_view" type="id" />
+    <item name="suggestion_view" type="id" />
+</resources>

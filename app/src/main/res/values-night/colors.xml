@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+SPDX-FileCopyrightText: 2015 - 2024 Rime community
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
+<resources>
+    <color name="colorAccent">#F4A8C5</color>
+    <color name="colorAccentDark">#B76B8B</color>
+
+    <color name="toolbarForegroundColor">#F0E5EB</color>
+
+    <!-- Material 3 静态配色（夜间） -->
+    <color name="m3_primary">#F4A8C5</color>
+    <color name="m3_on_primary">#591D39</color>
+    <color name="m3_primary_container">#74344F</color>
+    <color name="m3_on_primary_container">#FFDAE6</color>
+    <color name="m3_secondary_container">#4B3943</color>
+    <color name="m3_on_secondary_container">#F1DFE7</color>
+    <color name="m3_tertiary">#D6BDEB</color>
+    <color name="m3_on_tertiary">#322C4C</color>
+    <color name="m3_tertiary_container">#50405F</color>
+    <color name="m3_on_tertiary_container">#EEDDFA</color>
+
+    <color name="stats_hero_start">#74344F</color>
+    <color name="stats_hero_end">#944563</color>
+
+    <!-- 框架颜色属性的纯色钉子（夜间版），见 values/colors.xml 注释 -->
+    <color name="framework_control_normal">#DAC1CE</color>
+    <color name="framework_control_highlight">#1FF4A8C5</color>
+    <color name="framework_text_primary">#F0E5EB</color>
+    <color name="framework_text_secondary">#C5B5BF</color>
+    <color name="framework_foreground">#F0E5EB</color>
+    <color name="framework_background">#191519</color>
+    <color name="settings_surface">#261F25</color>
+    <color name="settings_surface_variant">#332A32</color>
+    <color name="settings_outline">#65515E</color>
+</resources>

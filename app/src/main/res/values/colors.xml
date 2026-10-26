@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+SPDX-FileCopyrightText: 2015 - 2024 Rime community
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
+<resources>
+    <color name="red_A700">#D50000</color>
+    <color name="red_400">#EF5350</color>
+    <color name="yellow_500">#FFEB3B</color>
+    <color name="yellow_800">#F9A825</color>
+    <color name="blue_500">#2196F3</color>
+    <color name="grey_400">#BDBDBD</color>
+    <color name="grey_700">#616161</color>
+
+    <!-- 本色彩方案取自 Rime 官网（https://rime.im） -->
+    <color name="colorPrimary">#37393C</color> <!-- 浅主题色 -->
+    <color name="colorPrimaryDark">#2D2F30</color> <!-- 深主题色 -->
+    <color name="colorAccent">#A3486A</color>  <!-- 浅强调色 -->
+    <color name="colorAccentDark">#78324E</color> <!-- 深强调色 -->
+
+    <color name="toolbarForegroundColor">#30252C</color>  <!-- 工具栏前景色 -->
+
+    <!-- Material 3 静态配色（种子色 #009BD1，取自 Rime 官网），
+         应用设置使用统一的玫瑰配色 -->
+    <color name="m3_primary">#944563</color>
+    <color name="m3_on_primary">#FFFFFF</color>
+    <color name="m3_primary_container">#FFDAE6</color>
+    <color name="m3_on_primary_container">#3D0B24</color>
+    <color name="m3_secondary_container">#F1DFE7</color>
+    <color name="m3_on_secondary_container">#372C34</color>
+    <color name="m3_tertiary">#695780</color>
+    <color name="m3_on_tertiary">#FFFFFF</color>
+    <color name="m3_tertiary_container">#EEDDFA</color>
+    <color name="m3_on_tertiary_container">#281638</color>
+
+    <!-- 输入统计页头部卡片的渐变色 -->
+    <color name="stats_hero_start">#944563</color>
+    <color name="stats_hero_end">#CC7295</color>
+
+    <!-- 框架颜色属性的纯色钉子：Material3 主题把这些 android.R.attr 指向了
+         非纯色资源（选择器/引用链），splitties styledColor 解析会抛异常崩溃。
+         在主题里显式钉成纯色后，所有 styledColor(android.R.attr.*) 调用都安全。 -->
+    <color name="framework_control_normal">#76616C</color>
+    <color name="framework_control_highlight">#1F944563</color>
+    <color name="framework_text_primary">#30252C</color>
+    <color name="framework_text_secondary">#75656F</color>
+    <color name="framework_foreground">#30252C</color>
+    <color name="framework_background">#F8F3F5</color>
+    <color name="settings_surface">#FFFBFD</color>
+    <color name="settings_surface_variant">#F1E8ED</color>
+    <color name="settings_outline">#D5C3CD</color>
+</resources>

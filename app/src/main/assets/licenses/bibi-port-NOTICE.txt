@@ -1,0 +1,14 @@
+Trime built-in speech recognition (built-in ASR module)
+
+Portions of this module are derived from BiBi Keyboard (说点啥) by BryceWG,
+licensed under the Apache License, Version 2.0.
+Source: https://github.com/BryceWG/BiBi-Keyboard
+Revision: cloned 2026-10-27 (main branch).
+Ported with adaptations: VolcStreamAsrEngine, OpenAiCompatibleAsrEngine
+(multipart mode), SenseVoice engine (reflection support + recognizer
+manager + model specs), ResumableHttpDownloader, model download URLs and
+SHA-256 integrity specs. The sherpa-onnx runtime AAR (com.k2fsa.sherpa.onnx)
+is bundled under the Apache License, Version 2.0 by the sherpa-onnx project
+(https://github.com/k2-fsa/sherpa-onnx).
+
+See Apache-2.0.txt for the Apache License 2.0 text.

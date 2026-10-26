@@ -1,0 +1,118 @@
+/*
+ * SPDX-FileCopyrightText: 2015 - 2025 Rime community
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+package com.osfans.trime.ime.bar.ui
+
+import android.content.Context
+import android.text.TextUtils
+import com.osfans.trime.R
+import com.osfans.trime.data.theme.ThemeScope
+import com.osfans.trime.ime.keyboard.GestureFrame
+import com.osfans.trime.util.rippleDrawable
+import splitties.dimensions.dp
+import splitties.resources.drawable
+import splitties.views.dsl.constraintlayout.after
+import splitties.views.dsl.constraintlayout.before
+import splitties.views.dsl.constraintlayout.centerVertically
+import splitties.views.dsl.constraintlayout.constraintLayout
+import splitties.views.dsl.constraintlayout.endOfParent
+import splitties.views.dsl.constraintlayout.lParams
+import splitties.views.dsl.constraintlayout.matchConstraints
+import splitties.views.dsl.constraintlayout.startOfParent
+import splitties.views.dsl.core.Ui
+import splitties.views.dsl.core.add
+import splitties.views.dsl.core.imageView
+import splitties.views.dsl.core.lParams
+import splitties.views.dsl.core.matchParent
+import splitties.views.dsl.core.textView
+import splitties.views.dsl.core.verticalMargin
+import splitties.views.dsl.core.wrapContent
+import splitties.views.imageDrawable
+
+class ClipboardSuggestionUi(
+    override val ctx: Context,
+    private val scope: ThemeScope,
+) : Ui {
+    private val icon =
+        imageView {
+            imageDrawable =
+                drawable(R.drawable.ic_clipboard_24)!!.apply {
+                    setTint(scope.colors.candidateTextColor)
+                }
+        }
+
+    val text =
+        textView {
+            isSingleLine = true
+            maxWidth = dp(220)
+            ellipsize = TextUtils.TruncateAt.END
+            setTextColor(scope.colors.candidateTextColor)
+        }
+
+    val dismiss =
+        imageView {
+            isFocusable = false
+            imageDrawable = drawable(R.drawable.ic_outline_cancel_24)!!.apply {
+                setTint(scope.colors.candidateTextColor)
+            }
+        }
+
+    private val layout =
+        constraintLayout {
+            val spacing = dp(4)
+            add(
+                icon,
+                lParams(dp(20), dp(20)) {
+                    startOfParent(spacing)
+                    before(text)
+                    centerVertically()
+                },
+            )
+            add(
+                text,
+                lParams(wrapContent, wrapContent) {
+                    after(icon, spacing)
+                    before(dismiss)
+                    centerVertically()
+                    constrainedWidth = true
+                },
+            )
+            add(
+                dismiss,
+                lParams(dp(20), dp(20)) {
+                    after(text, spacing)
+                    endOfParent(spacing)
+                    centerVertically()
+                },
+            )
+        }
+
+    val suggestionView = GestureFrame(ctx).apply {
+        add(layout, lParams(matchParent, matchParent))
+        background = rippleDrawable(scope.colors.hilitedCandidateBackColor)
+    }
+
+    override val root =
+        constraintLayout {
+            add(
+                suggestionView,
+                lParams(wrapContent, matchConstraints) {
+                    startOfParent()
+                    endOfParent()
+                    centerVertically()
+                    verticalMargin = dp(4)
+                    constrainedWidth = true
+                },
+            )
+        }
+
+    /** Re-applies the colors that were set once at construction. */
+    fun refreshColors() {
+        icon.imageDrawable?.setTint(scope.colors.candidateTextColor)
+        text.setTextColor(scope.colors.candidateTextColor)
+        dismiss.imageDrawable?.setTint(scope.colors.candidateTextColor)
+        suggestionView.background =
+            rippleDrawable(scope.colors.hilitedCandidateBackColor)
+    }
+}

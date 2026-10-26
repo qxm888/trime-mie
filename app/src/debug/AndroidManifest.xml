@@ -1,0 +1,15 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <instrumentation android:name="com.osfans.trime.benchmark.PerformanceRunner" android:targetPackage="${applicationId}" />
+    <instrumentation android:name="dev.codex.trime.smoke.Runner" android:targetPackage="${applicationId}" />
+    <instrumentation android:name="dev.codex.trime.smoke.ModeRunner" android:targetPackage="${applicationId}" />
+    <instrumentation android:name="dev.codex.trime.smoke.ClipboardRunner" android:targetPackage="${applicationId}" />
+    <instrumentation android:name="dev.codex.trime.smoke.BdsRunner" android:targetPackage="${applicationId}" />
+    <instrumentation android:name="dev.codex.trime.smoke.OptimizationRunner" android:targetPackage="${applicationId}" />
+    <instrumentation android:name="com.osfans.trime.benchmark.InteractionRunner" android:targetPackage="${applicationId}" />
+    <application>
+        <activity android:name="com.osfans.trime.benchmark.CandidateViewportActivity" android:exported="false" android:configChanges="orientation|screenSize|keyboardHidden" />
+    </application>
+    <instrumentation android:name="com.osfans.trime.benchmark.CandidateViewportRunner" android:targetPackage="${applicationId}" />
+    <instrumentation android:name="com.osfans.trime.benchmark.Mie14Runner" android:targetPackage="${applicationId}" />
+    <instrumentation android:name="com.osfans.trime.benchmark.ModelInstallRunner" android:targetPackage="${applicationId}" />
+</manifest>

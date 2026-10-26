@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+SPDX-FileCopyrightText: 2026 Rime community
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_kb_toolbar"
+        android:title="@string/toolbar_edit"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_kb_background"
+        android:title="@string/custom_kb_bg"
+        app:showAsAction="never" />
+</menu>

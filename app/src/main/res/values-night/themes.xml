@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+SPDX-FileCopyrightText: 2024 Rime community
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
+<resources>
+    <style name="Theme.TrimeAppTheme" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorSurfaceVariant">@color/settings_surface_variant</item>
+        <item name="colorSurfaceContainerLow">@color/settings_surface</item>
+        <item name="colorSurfaceContainer">@color/settings_surface</item>
+        <item name="colorSurfaceContainerHigh">@color/settings_surface_variant</item>
+        <item name="colorOutline">@color/settings_outline</item>
+        <item name="colorOutlineVariant">@color/settings_surface_variant</item>
+        <item name="colorSecondary">@color/m3_primary</item>
+        <item name="colorOnSecondary">@color/m3_on_primary</item>
+        <item name="toolbarStyle">@style/Widget.Trime.Toolbar</item>
+        <item name="colorSurface">@color/settings_surface</item>
+        <item name="colorOnSurface">@color/framework_text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/framework_text_secondary</item>
+        <item name="android:windowBackground">@color/framework_background</item>
+        <item name="colorPrimary">@color/m3_primary</item>
+        <item name="colorOnPrimary">@color/m3_on_primary</item>
+        <item name="colorPrimaryContainer">@color/m3_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/m3_on_primary_container</item>
+        <item name="colorSecondaryContainer">@color/m3_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/m3_on_secondary_container</item>
+        <item name="colorTertiary">@color/m3_tertiary</item>
+        <item name="colorOnTertiary">@color/m3_on_tertiary</item>
+        <item name="colorTertiaryContainer">@color/m3_tertiary_container</item>
+        <item name="colorOnTertiaryContainer">@color/m3_on_tertiary_container</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/m3_primary</item>
+        <item name="android:colorAccent">@color/m3_primary</item>
+        <!-- 把框架颜色属性钉成纯色：Material3 下它们指向非纯色资源，
+             splitties styledColor(android.R.attr.*) 解析会崩溃 -->
+        <item name="android:colorControlNormal">@color/framework_control_normal</item>
+        <item name="android:colorControlHighlight">@color/framework_control_highlight</item>
+        <item name="android:textColorPrimary">@color/framework_text_primary</item>
+        <item name="android:textColorSecondary">@color/framework_text_secondary</item>
+        <item name="android:colorForeground">@color/framework_foreground</item>
+        <item name="android:colorForegroundInverse">@color/m3_on_primary_container</item>
+        <item name="android:colorBackground">@color/framework_background</item>
+    </style>
+
+    <style name="Theme.DialogTheme" parent="Theme.Material3.DayNight.Dialog" />
+</resources>

@@ -1,0 +1,13 @@
+{
+    "sha256": "a2475b2c7d00382e46c2893ca668aa1a6eca36d6d691e706b99efc5afa4a6d7d",
+    "files": {
+        "licenses": "",
+        "licenses/Apache-2.0.txt": "6c11db5f4f0d8521559233b532c635692b6525bde771139723dc1ee489fac393",
+        "licenses/bibi-builtin-NOTICE.txt": "46620f7c52446eadc8fd88b30e15f490c1e834de1debad65fa9cc7f250a017b9",
+        "licenses/bibi-port-NOTICE.txt": "31b6a6ce3deb63c515419bd9dc93892189a17dd9105c0cff14b34ecba03aff32",
+        "licenses/bibi-upstream-NOTICE.txt": "ca09523229a50ef9ad7c1b4ff90703a94ce9f7b05fa783d8667dba9df24bda2f",
+        "shared": "",
+        "shared/tongwenfeng.trime.yaml": "01e33c34ab057f47d54c41a578182e3562e07f607421a2a57d012405b252d196",
+        "shared/trime.yaml": "44d29a6ace16ca9f59b3d6bc32b457a8ce41f8b080d94fdbe67e8d89900983f6"
+    }
+}

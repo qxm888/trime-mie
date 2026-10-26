@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+SPDX-FileCopyrightText: 2026 Rime community
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#33FFFFFF" />
+    <corners android:radius="10dp" />
+</shape>

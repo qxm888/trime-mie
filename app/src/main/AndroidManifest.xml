@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+SPDX-FileCopyrightText: 2015 - 2024 Rime community
+
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
+<manifest xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <application
+        android:name="com.osfans.trime.TrimeApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_app_icon"
+        android:label="@string/trime_app_name"
+        android:roundIcon="@mipmap/ic_app_icon_round"
+        android:theme="@style/Theme.TrimeAppTheme"
+        android:hasFragileUserData="true"
+        android:requestLegacyExternalStorage="true"
+        tools:targetApi="29">
+
+        <activity android:name=".ui.main.ExternalDataActivity" android:exported="false" />
+        <service
+            android:name=".ime.core.TrimeInputMethodService"
+            android:directBootAware="true"
+            android:exported="true"
+            android:label="@string/trime_app_name"
+            android:permission="android.permission.BIND_INPUT_METHOD">
+            <intent-filter>
+                <action android:name="android.view.InputMethod" />
+            </intent-filter>
+            <meta-data
+                android:name="android.view.im"
+                android:resource="@xml/method" />
+        </service>
+
+        <provider
+            android:name=".provider.RimeDataProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:permission="android.permission.MANAGE_DOCUMENTS">
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
+
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:directBootAware="true"
+            android:exported="false"
+            tools:node="merge">
+            <!-- remove WorkManager default initializer -->
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+
+        <activity android:name=".ui.main.FontSettingsActivity" android:exported="false" />
+        <activity android:name=".ui.main.VoiceSettingsActivity" android:exported="false" />
+        <!-- Settings activity -->
+        <activity
+            android:name=".ui.main.MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".ui.setup.SetupActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.main.LogActivity"
+            android:directBootAware="true"
+            android:exported="false"
+            android:launchMode="singleTask"
+            android:parentActivityName=".ui.main.MainActivity" />
+
+        <activity
+            android:name=".ui.main.settings.theme.ThemeDiagnosticsActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.main.MainActivity" />
+
+        <activity
+            android:name=".ui.main.CategoryManagerActivity"
+            android:exported="false"
+            android:label="@string/category_manage"
+            android:theme="@style/Theme.TrimeAppTheme"
+            android:windowSoftInputMode="stateAlwaysVisible|adjustResize" />
+
+        <activity
+            android:name=".ui.main.DataTransferActivity"
+            android:exported="false"
+            android:label="@string/data_transfer"
+            android:theme="@style/Theme.TrimeAppTheme" />
+
+        <activity
+            android:name=".ui.main.InputStatsActivity"
+            android:exported="false"
+            android:label="@string/input_stats"
+            android:theme="@style/Theme.TrimeAppTheme" />
+
+        <activity
+            android:name=".ui.main.KeyEditActivity"
+            android:exported="false"
+            android:label="@string/key_editor"
+            android:theme="@style/Theme.TrimeAppTheme" />
+
+        <activity
+            android:name=".ui.main.CustomKeyboardActivity"
+            android:exported="false"
+            android:label="@string/custom_kb_title"
+            android:theme="@style/Theme.TrimeAppTheme" />
+
+        <activity
+            android:name=".ui.main.ToolbarEditActivity"
+            android:exported="false"
+            android:label="@string/toolbar_edit"
+            android:theme="@style/Theme.TrimeAppTheme" />
+
+        <activity
+            android:name=".ui.main.CustomKeyboardEditActivity"
+            android:exported="false"
+            android:label="@string/custom_kb_title"
+            android:theme="@style/Theme.TrimeAppTheme" />
+
+        <activity
+            android:name=".ui.main.ClipEditActivity"
+            android:autoRemoveFromRecents="true"
+            android:directBootAware="true"
+            android:excludeFromRecents="true"
+            android:label="@string/edit"
+            android:launchMode="singleInstance"
+            android:taskAffinity=".ui.main.LiquidKeyboardEditActivity"
+            android:theme="@style/Theme.DialogTheme"
+            android:windowSoftInputMode="stateAlwaysVisible|adjustPan" />
+
+        <!-- Using an activity alias to disable/enable the app icon in the launcher -->
+        <activity-alias
+            android:name="com.osfans.trime.MainLauncherAlias"
+            android:exported="true"
+            android:label="@string/trime_app_name"
+            android:targetActivity=".ui.main.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- All activities must be declared above <activity-alias> tag -->
+    </application>
+</manifest>

@@ -1,0 +1,116 @@
+/*
+ * SPDX-FileCopyrightText: 2015 - 2025 Rime community
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+package com.osfans.trime.ime.core
+
+import android.content.Context
+import android.graphics.Typeface
+import android.view.Gravity
+import android.widget.LinearLayout
+import androidx.viewpager2.widget.ViewPager2
+import com.osfans.trime.data.theme.ColorManager
+import com.osfans.trime.ime.keyboard.GestureFrame
+import com.osfans.trime.util.alpha
+import splitties.dimensions.dp
+import splitties.views.dsl.core.Ui
+import splitties.views.dsl.core.add
+import splitties.views.dsl.core.lParams
+import splitties.views.dsl.core.textView
+import splitties.views.dsl.core.view
+import splitties.views.gravityCenter
+
+class InputTabLayout(context: Context) : LinearLayout(context) {
+    inner class TabUi : Ui {
+        override val ctx: Context = this@InputTabLayout.context
+
+        var position: Int = -1
+
+        val label = textView()
+
+        override val root = view(::GestureFrame) {
+            add(
+                label,
+                lParams {
+                    gravity = gravityCenter
+                },
+            )
+        }
+
+        fun setLabel(str: String) {
+            label.text = str
+        }
+
+        fun setActive(active: Boolean) {
+            val color = label.currentTextColor
+                .alpha(if (active) 1f else 0.5f)
+            label.setTextColor(color)
+        }
+    }
+
+    private var tabs: Array<TabUi> = arrayOf()
+    private var selected = -1
+
+    private var onPageChangeCallback: ViewPager2.OnPageChangeCallback? = null
+
+    /** Invoked when a tab is long-pressed; return decides whether it's consumed. */
+    var onTabLongClick: ((Int) -> Unit)? = null
+
+    fun onConfigureTab(pager: ViewPager2, setup: (TabUi, Int) -> Unit) {
+        onPageChangeCallback?.let { pager.unregisterOnPageChangeCallback(it) }
+        tabs.forEach { removeView(it.root) }
+        selected = -1
+        val adapter = pager.adapter
+        if (adapter == null) return
+        val adapterCount = adapter.itemCount
+        if (adapterCount <= 0) return
+        tabs = Array(adapterCount) {
+            TabUi().apply {
+                position = it
+                setup(this, it)
+                setActive(false)
+            }
+        }
+        tabs.forEachIndexed { i, tabUi ->
+            add(
+                tabUi.root,
+                lParams {
+                    gravity = Gravity.CENTER_VERTICAL
+                    setMargins(dp(2), 0, dp(2), 0)
+                },
+            )
+            tabUi.root.setOnClickListener {
+                pager.setCurrentItem(i, false)
+            }
+            tabUi.root.setOnLongClickListener {
+                onTabLongClick?.invoke(tabUi.position)
+                true
+            }
+        }
+        val callback = object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                activateTab(position)
+            }
+        }
+        onPageChangeCallback = callback
+        pager.registerOnPageChangeCallback(callback)
+    }
+
+    /** Re-runs [setup] on the existing tabs, e.g. to re-apply scheme colors. */
+    fun reconfigureTabs(setup: (TabUi, Int) -> Unit) {
+        tabs.forEach { tabUi -> setup(tabUi, tabUi.position) }
+    }
+
+    /** Publicly re-highlights [index] when no page event will fire (e.g. same page). */
+    fun activateTabAt(index: Int) = activateTab(index)
+
+    private fun activateTab(index: Int) {
+        if (index == selected) return
+        if (selected >= 0) {
+            tabs[selected].setActive(false)
+        }
+        tabs[index].setActive(true)
+        selected = index
+    }
+}

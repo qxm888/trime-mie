@@ -1,10 +1,20 @@
 # 同文输入法咩版
 
+[![同文输入法咩版：悬浮与单手、可视化布局、内置语音](docs/images/mie15-cover.png)](https://github.com/qxm888/trime-mie/releases/latest)
+
 基于 [同文 Trime](https://github.com/osfans/trime) 与 Rime 的 Android 输入法增强版。在保留方案、词库和 YAML 主题生态的基础上，加入悬浮键盘、完整单手模式、可视化布局、百度皮肤导入、输入统计与内置语音。
 
-[**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
+[**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前正式版：**3.3.13-mie.15**。本仓库用于发布安装包和使用说明，当前不包含项目源码。
+> 当前正式版：**3.3.13-mie.15**。本仓库现已公开应用源码、构建说明及安装包；固定版本源码见 Release 的 `source.zip` 附件。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
+
+## 功能一览
+
+[![同文输入法咩版功能海报](docs/images/mie15-feature-poster.png)](docs/images/mie15-feature-poster.png)
+
+[下载功能海报](https://github.com/qxm888/trime-mie/releases/download/v3.3.13-mie.15/mie15-feature-poster.png) · [可编辑 SVG](docs/images/mie15-feature-poster.svg) · [源码构建说明](BUILD.md)
+
+*海报使用原创矢量排版和合成键盘示意，不是设备截图；实际外观由所用主题决定。*
 
 ## 相比原版同文，增加了什么？
 
@@ -73,6 +83,12 @@ Release 同时提供 `SHA256SUMS.txt`，可用于核对安装包完整性。
 - 本地视频背景静音循环，键盘隐藏时暂停。播放格式支持和耗电情况取决于设备，建议使用较小的素材。
 - 本轮已完成真机悬浮/单手、候选窗旋转与模型安装检查；折叠屏硬件、各在线服务真实转写尚未全面实测。模型可用性、速度与识别效果取决于设备和服务。
 - 反馈时请提供版本、Android 版本、机型及复现步骤；请勿公开 API Key 或含私人内容的配置。
+
+## 获取源码与构建
+
+- [查看应用源码](app/src/main/) · [构建说明](BUILD.md) · [固定版本源码 ZIP](https://github.com/qxm888/trime-mie/releases/download/v3.3.13-mie.15/trime-mie-3.3.13-mie.15-source.zip)
+- 默认 Debug 构建使用独立包名，适合自己修改与安装。Release 需配置自己的签名；发布私钥不在源码中。
+- 原生预编译库的来源记录尚有缺口，详见 [NATIVE_BUILD.md](NATIVE_BUILD.md)，不将此次源码上传宣称为已完成全部二进制依赖来源核验。
 
 ## 致谢与许可证
 

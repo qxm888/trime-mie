@@ -1,0 +1,9 @@
+Built-in speech in Trime Mie includes code adapted from BiBi Keyboard (说点啥).
+Copyright 2025 BryceWG. Licensed under Apache-2.0.
+https://github.com/BryceWG/BiBi-Keyboard
+Adaptations: provider settings and request protocols, local model catalog and integrity
+metadata, sherpa reflection and configuration, download source configuration.
+Trime Mie changes: integrated IME lifecycle, isolated sessions and recorder handling,
+no external speech service binding. Model data is downloaded separately.
+The bundled sherpa-onnx library is provided by https://github.com/k2-fsa/sherpa-onnx
+under Apache-2.0. See bibi-upstream-NOTICE.txt for upstream notices.

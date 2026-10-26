@@ -1,0 +1,12 @@
+[
+  {
+    "path": "app/prebuilt/arm64-v8a/librime_jni.so",
+    "sha256": "b05302072dbb4ecf4a68bed0967d711ffa7efc5ea9bf5a8e906e8badc6982690",
+    "bytes": 5517896
+  },
+  {
+    "path": "app/libs/sherpa-onnx-1.13.4.aar",
+    "sha256": "03f9c4df965f21c71269365a7951a7f23b5696fddd093fa318c80d65550ab780",
+    "bytes": 48847529
+  }
+]

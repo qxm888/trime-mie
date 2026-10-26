@@ -1,0 +1,9 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="dev.codex.trime.smoke">
+  <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="37" />
+  <application android:label="Trime floating smoke test" android:debuggable="true" />
+  <instrumentation android:name="dev.codex.trime.smoke.Runner" android:targetPackage="com.osfans.trime.debug.v2" />
+  <instrumentation android:name="dev.codex.trime.smoke.ModeRunner" android:targetPackage="com.osfans.trime.debug.v2" />
+  <instrumentation android:name="dev.codex.trime.smoke.ClipboardRunner" android:targetPackage="com.osfans.trime.debug.v2" />
+  <instrumentation android:name="dev.codex.trime.smoke.BdsRunner" android:targetPackage="com.osfans.trime.debug.v2" />
+  <instrumentation android:name="dev.codex.trime.smoke.OptimizationRunner" android:targetPackage="com.osfans.trime.debug.v2" />
+</manifest>

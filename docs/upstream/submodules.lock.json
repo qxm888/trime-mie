@@ -1,0 +1,66 @@
+{
+  "baseline": "f5008260",
+  "note": "上游基线子模块锁定值；不代表已证明与现有预编译 SO 一一对应。",
+  "submodules": [
+    {
+      "name": "snappy",
+      "path": "app/src/main/jni/snappy",
+      "url": "https://github.com/google/snappy.git",
+      "commit": "32ded457c0b1fe78ceb8397632c416568d6714a0"
+    },
+    {
+      "name": "librime",
+      "path": "app/src/main/jni/librime",
+      "url": "https://github.com/rime/librime.git",
+      "commit": "7bc3fb0005a03aff1c086611e4d52bb7f6444fdd"
+    },
+    {
+      "name": "librime-lua",
+      "path": "app/src/main/jni/librime-lua",
+      "url": "https://github.com/hchunhui/librime-lua",
+      "commit": "68f9c364a2d25a04c7d4794981d7c796b05ab627"
+    },
+    {
+      "name": "librime-lua-deps",
+      "path": "app/src/main/jni/librime-lua-deps",
+      "url": "https://github.com/hchunhui/librime-lua",
+      "commit": "9c53b362229766a97b83683b9541c46679118a90"
+    },
+    {
+      "name": "librime-octagram",
+      "path": "app/src/main/jni/librime-octagram",
+      "url": "https://github.com/lotem/librime-octagram.git",
+      "commit": "bd12863f45fbbd5c7db06d5ec8be8987b10253bf"
+    },
+    {
+      "name": "librime-predict",
+      "path": "app/src/main/jni/librime-predict",
+      "url": "https://github.com/rime/librime-predict",
+      "commit": "67c2881914a0242fc14ec7d6877782771b75800c"
+    },
+    {
+      "name": "prelude",
+      "path": "app/data/rime/prelude",
+      "url": "https://github.com/rime/rime-prelude",
+      "commit": "3803f09458072e03b9ed396692ce7e1d35c88c95"
+    },
+    {
+      "name": "luna-pinyin",
+      "path": "app/data/rime/luna-pinyin",
+      "url": "https://github.com/rime/rime-luna-pinyin",
+      "commit": "46acf03142c12b5aeed7002675046bf7255eed35"
+    },
+    {
+      "name": "stroke",
+      "path": "app/data/rime/stroke",
+      "url": "https://github.com/rime/rime-stroke",
+      "commit": "7c9874c6b2e0b94947653e9a7de6f99623ff27e4"
+    },
+    {
+      "name": "essay",
+      "path": "app/data/rime/essay",
+      "url": "https://github.com/rime/rime-essay",
+      "commit": "0766c929ec3e578c2c80861e988decd3703a1c3d"
+    }
+  ]
+}

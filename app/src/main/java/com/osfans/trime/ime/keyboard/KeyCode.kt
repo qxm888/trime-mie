@@ -1,0 +1,123 @@
+/*
+ * SPDX-FileCopyrightText: 2015 - 2026 Rime community
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+package com.osfans.trime.ime.keyboard
+
+import android.view.KeyEvent
+import com.osfans.trime.core.RimeKeyMapping
+import com.osfans.trime.util.virtualKeyCharacterMap
+import timber.log.Timber
+
+object KeyCode {
+    // Last-resort Android key-name lookup. It is a platform call that throws
+    // when not mocked, so tests stub it out via the injected function.
+    internal var androidKeyNameToCode: (String) -> Int = { KeyEvent.keyCodeFromString("KEYCODE_$it") }
+
+    fun isStandardKey(code: Int): Boolean = code in 1 until RimeKeyMapping.SYMBOL_CODE_OFFSET
+
+    fun nameToKeyCode(name: String): Int {
+        Timber.d("nameToKeyCode: $name")
+        if (name.isEmpty()) return KeyEvent.KEYCODE_UNKNOWN
+
+        // X11 keysym aliases that themes still use but that are missing from the
+        // generated Rime mapping table (Mode_switch is the classic one: without
+        // this, the key is forwarded to rime as text and returns VoidSymbol).
+        when (name.lowercase()) {
+            "mode_switch" -> return KeyEvent.KEYCODE_SWITCH_CHARSET
+            "henkan" -> return KeyEvent.KEYCODE_HENKAN
+            "muhenkan" -> return KeyEvent.KEYCODE_MUHENKAN
+        }
+
+        RimeKeyMapping.upperNameToCode(name)?.let { return it }
+        RimeKeyMapping.symbolNameToCode(name)?.let { return it }
+        RimeKeyMapping.charToCode(name)?.let { return it }
+
+        val androidCode = androidKeyNameToCode(name)
+        if (androidCode > 0) return androidCode
+
+        val rimeCode = RimeKeyMapping.nameToKeyCode(name)
+        if (rimeCode != KeyEvent.KEYCODE_UNKNOWN) return rimeCode
+
+        return KeyEvent.KEYCODE_UNKNOWN
+    }
+
+    fun codeToKeyName(code: Int): String? {
+        RimeKeyMapping.upperCodeToName(code)?.let { return it }
+        RimeKeyMapping.symbolCodeToName(code)?.let { return it }
+
+        val rimeName = RimeKeyMapping.keyCodeToName(code)
+        if (rimeName != null) return rimeName
+
+        val androidName = KeyEvent.keyCodeToString(code)
+        if (androidName.isNotEmpty() && androidName != "KEYCODE_UNKNOWN") {
+            return androidName.removePrefix("KEYCODE_")
+        }
+
+        return null
+    }
+
+    fun getDisplayLabel(
+        code: Int,
+        mask: Int,
+    ): String = if (isStandardKey(code)) {
+        if (virtualKeyCharacterMap.isPrintingKey(code)) {
+            val charCode = virtualKeyCharacterMap.get(code, mask)
+            Timber.d("getDisplayLabel: keyCode=$code, mask=$mask, charCode=$charCode")
+            if (charCode > 0) {
+                charCode.toChar().toString()
+            } else {
+                virtualKeyCharacterMap.getDisplayLabel(code).lowercase()
+            }
+        } else {
+            val name = codeToKeyName(code) ?: ""
+            name.removePrefix("KP_")
+        }
+    } else {
+        RimeKeyMapping.symbolCodeToLabel(code) ?: codeToKeyName(code) ?: ""
+    }
+
+    fun parse(repr: String): Pair<Int, Int> {
+        if (repr.isEmpty()) return 0 to 0
+        var modifiers = 0
+        var start = 0
+        while (true) {
+            val found = repr.indexOf('+', start)
+            if (found == -1) break
+
+            val token = repr.substring(start, found)
+            val modifier =
+                when (token) {
+                    "Shift" -> KeyEvent.META_SHIFT_ON
+                    "Control" -> KeyEvent.META_CTRL_ON
+                    "Alt" -> KeyEvent.META_ALT_ON
+                    "Lock" -> KeyEvent.META_CAPS_LOCK_ON
+                    else -> null
+                }
+            if (modifier != null) {
+                modifiers = modifiers or modifier
+            } else {
+                Timber.e("Unrecognized modifier '$token'")
+                return 0 to 0
+            }
+            start = found + 1
+        }
+        val token = repr.substring(start)
+        // A single uppercase letter (e.g. 'A') is the letter key with Shift
+        // held, just like on a physical keyboard. Do not use the synthetic
+        // uppercase codes from RimeKeyMapping.upperNameToCode: they carry no
+        // shift modifier, so in ascii mode rime would reject the bare
+        // uppercase keysym and the fallback would commit the lowercase
+        // letter instead.
+        if (modifiers == 0 && token.length == 1 && token[0] in 'A'..'Z') {
+            return KeyEvent.KEYCODE_A + (token[0] - 'A') to KeyEvent.META_SHIFT_ON
+        }
+        val keycode = nameToKeyCode(token)
+        if (keycode == 0) {
+            Timber.e("Unrecognized key '$token'")
+            return 0 to 0
+        }
+        return keycode to modifiers
+    }
+}
