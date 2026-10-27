@@ -35,7 +35,7 @@ class PaginationUi(
         imageTintList = ColorStateList.valueOf(scope.colors.keyTextColor)
         imageDrawable = drawable(icon)
         scaleType = ImageView.ScaleType.CENTER_INSIDE
-        setPadding(dp(10), dp(10), dp(10), dp(10))
+        setPadding(dp(8), dp(4), dp(8), dp(4))
     }
 
     val prevIcon = createIcon(R.drawable.ic_baseline_arrow_left_24)
@@ -50,8 +50,8 @@ class PaginationUi(
     override val root =
         constraintLayout {
             minimumWidth = dp(144)
-            val w = dp(44)
-            val h = dp(44)
+            val w = dp(32)
+            val h = dp(24)
             add(
                 nextIcon,
                 lParams(w, h) {

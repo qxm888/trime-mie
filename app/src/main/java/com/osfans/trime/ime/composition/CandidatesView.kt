@@ -403,6 +403,10 @@ class CandidatesView(
         return RectF(region.left, region.top, region.right, region.bottom)
     }
 
+    // A theme's candidate insets must not leave a blank strip below the paging footer.
+    private fun footerBottomInset() = if (candidatesUi.paginationUi.root.visibility == VISIBLE)
+        minOf(paddingBottom, dp(1)) else paddingBottom
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val spacing = dp(2 * SPACING).roundToInt()
         val viewport = availableViewport()
@@ -413,14 +417,15 @@ class CandidatesView(
         val maxHeight = if (MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.UNSPECIFIED) cap
             else minOf(cap, MeasureSpec.getSize(heightMeasureSpec)).coerceAtLeast(1)
         val innerWidth = (maxWidth - paddingLeft - paddingRight).coerceAtLeast(1)
-        val innerHeight = (maxHeight - paddingTop - paddingBottom).coerceAtLeast(0)
+        val bottomInset = footerBottomInset()
+        val innerHeight = (maxHeight - paddingTop - bottomInset).coerceAtLeast(0)
         val list = candidatesUi.root
         candidatesUi.constrainWidth(innerWidth)
         val extra = if (ball.visibility == VISIBLE) { if (tools.visibility == VISIBLE) tools else ball } else null
         extra?.measure(MeasureSpec.makeMeasureSpec(innerWidth, MeasureSpec.AT_MOST), MeasureSpec.makeMeasureSpec(dp(44), MeasureSpec.EXACTLY))
         val extraHeight = (extra?.measuredHeight ?: 0).coerceAtMost(innerHeight)
         val pager = candidatesUi.paginationUi.root
-        val pagerHeight = if (pager.visibility == VISIBLE) dp(44).coerceAtMost(innerHeight - extraHeight) else 0
+        val pagerHeight = if (pager.visibility == VISIBLE) dp(24).coerceAtMost(innerHeight - extraHeight) else 0
         val contentHeight = (innerHeight - extraHeight - pagerHeight).coerceAtLeast(0)
         val hasItems = list.visibility == VISIBLE && (list.adapter?.itemCount ?: 0) > 0
         val preedit = preeditUi.root
@@ -441,7 +446,7 @@ class CandidatesView(
             MeasureSpec.makeMeasureSpec(listHeight, MeasureSpec.EXACTLY))
         pager.measure(MeasureSpec.makeMeasureSpec(desiredWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(pagerHeight, MeasureSpec.EXACTLY))
         setMeasuredDimension((desiredWidth + paddingLeft + paddingRight).coerceAtMost(maxWidth),
-            (extraHeight + preeditHeight + listHeight + pagerHeight + paddingTop + paddingBottom).coerceIn(1, maxHeight))
+            (extraHeight + preeditHeight + listHeight + pagerHeight + paddingTop + bottomInset).coerceIn(1, maxHeight))
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
@@ -459,7 +464,7 @@ class CandidatesView(
         }
         val pager = candidatesUi.paginationUi.root
         val pagerHeight = if (pager.visibility == VISIBLE) pager.measuredHeight else 0
-        val contentBottom = (height - paddingBottom - pagerHeight).coerceAtLeast(contentTop + preeditHeight)
+        val contentBottom = (height - footerBottomInset() - pagerHeight).coerceAtLeast(contentTop + preeditHeight)
         candidatesUi.root.layout(paddingLeft, contentTop + preeditHeight,
             (width - paddingRight).coerceAtLeast(paddingLeft), contentBottom)
         pager.layout(paddingLeft, contentBottom, width - paddingRight, contentBottom + pagerHeight)

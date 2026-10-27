@@ -109,7 +109,10 @@ class Mie18Runner : Instrumentation() {
                     val prev = member(pager, "prevIcon") as View
                     val next = member(pager, "nextIcon") as View
                     check(prev.left < next.left && prev.right < next.left) { "Page controls overlap" }
-                    check(prev.width >= (44 * prev.resources.displayMetrics.density).toInt())
+                    check(prev.width >= (32 * prev.resources.displayMetrics.density).toInt())
+                    check(prev.height <= (24 * prev.resources.displayMetrics.density).toInt())
+                    val footer = member(pager, "root") as View
+                    check(candidateView().height - footer.bottom <= (prev.resources.displayMetrics.density + 1).toInt()) { "Blank space below footer" }
                     check(!prev.isEnabled && next.isEnabled)
                     check(all(candidateView()).filterIsInstance<TextView>().none { it.text.toString().contains("候选窗") })
                     next.performClick()
@@ -120,7 +123,7 @@ class Mie18Runner : Instrumentation() {
                     check(!(member(pager, "nextIcon") as View).isEnabled)
                 }
                 shot("mie18-paging.png")
-                pass("title removed; opposite-edge 44dp paging controls change pages")
+                pass("title removed; opposite-edge compact paging controls change pages")
                 runBlocking { session.runOnReady { clearComposition() } }; pause()
                 val recorder = com.osfans.trime.ime.voice.builtin.AudioRecorder
                 check(recorder.pcmLevel(ByteArray(6400)) == 0f)
