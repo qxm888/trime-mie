@@ -272,6 +272,10 @@ class InputBarDelegate(override val di: DI) :
             ?.drawable(context, context.resources.displayMetrics.widthPixels)
     }
 
+    private fun barBackground(): android.graphics.drawable.Drawable? =
+        if (prefs.keyboard.unifiedBackground.getValue()) null else customBarBackground() ?: scope.decorDrawable(
+            "candidate_background", "candidate_border_color", context.dp(theme.style.candidateBorder), context.dp(theme.style.candidateBorderRound))
+
     val view by lazy {
         ViewAnimator(context).apply {
             visibility =
@@ -280,13 +284,7 @@ class InputBarDelegate(override val di: DI) :
                 } else {
                     View.VISIBLE
                 }
-            background =
-                customBarBackground() ?: scope.decorDrawable(
-                    "candidate_background",
-                    "candidate_border_color",
-                    dp(theme.style.candidateBorder),
-                    dp(theme.style.candidateBorderRound),
-                )
+            background = barBackground()
             add(alwaysUi.root, lParams(matchParent, matchParent))
             add(candidateUi.root, lParams(matchParent, matchParent))
             add(tabUi.root, lParams(matchParent, matchParent))
@@ -299,13 +297,7 @@ class InputBarDelegate(override val di: DI) :
 
     /** Restyles the bar after a scheme switch without rebuilding its views. */
     fun refreshColors() {
-        view.background =
-            customBarBackground() ?: scope.decorDrawable(
-                "candidate_background",
-                "candidate_border_color",
-                context.dp(theme.style.candidateBorder),
-                context.dp(theme.style.candidateBorderRound),
-            )
+        view.background = barBackground()
         alwaysUi.refreshColors()
         candidateUi.refreshColors()
         // the compact candidate rows live inside candidateUi and re-bind via the delegate

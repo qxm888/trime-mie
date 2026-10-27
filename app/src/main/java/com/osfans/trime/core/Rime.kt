@@ -11,6 +11,7 @@ import com.osfans.trime.core.data.UserDataManager
 import com.osfans.trime.data.opencc.OpenCCDictManager
 import com.osfans.trime.data.prefs.AppPrefs
 import com.osfans.trime.data.stats.InputStats
+import com.osfans.trime.core.data.CandidatePreferences
 import com.osfans.trime.ime.core.InlinePreeditMode
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -82,6 +83,51 @@ class Rime :
     private var isNullInputType = true
     private var lastAsciiTipsText = ""
     private var pagingMode = false
+    private data class OrderedCandidate(val candidate: CandidateProto, val source: Int)
+    private var candidateProjection: List<OrderedCandidate>? = null
+    private var projectionSourceSize = 0
+    private var projectionCode = ""
+    private var projectionSchema = ""
+    private var personalPage = 0
+    private var personalPageSize = 5
+    private var personalHighlight = 0
+    private var displayedCandidates: Candidates? = null
+    private var projectedCommit: CommitProto? = null
+
+    private fun updateCandidateProjection(schema: String, code: String) {
+        val changed = code != projectionCode || schema != projectionSchema
+        if (changed) { personalPage = 0; personalHighlight = 0 }
+        projectionCode = code; projectionSchema = schema
+        val rule = if (code.isEmpty()) null else CandidatePreferences.get(schema, code)
+        if (rule == null) { candidateProjection = null; projectionSourceSize = 0; return }
+        if (changed || candidateProjection == null) personalPageSize = (RimeConfig.openSchema(schema).use { it.getInt("menu/page_size") }
+            ?: RimeConfig.openConfig("default").use { it.getInt("menu/page_size") } ?: 5).coerceIn(1, 100)
+        val source = getRimeCandidates(0, rule.searchLimit.coerceIn(32, 20000))
+        projectionSourceSize = source.size
+        val existing = source.map { it.text }.toSet()
+        val entries = source.mapIndexed { index, candidate -> OrderedCandidate(candidate, index) }.filter { it.candidate.text !in rule.hidden }.toMutableList()
+        rule.aliases.filter { it !in existing && it !in rule.hidden }.forEach { entries.add(OrderedCandidate(CandidateProto(it, "自定义编码", ""), -1)) }
+        val ranks = rule.order.withIndex().associate { it.value to it.index }
+        candidateProjection = entries.sortedBy { ranks[it.candidate.text] ?: Int.MAX_VALUE }
+    }
+
+    private fun projectedCandidates(start: Int, limit: Int): List<OrderedCandidate> {
+        val projection = candidateProjection ?: return getRimeCandidates(start, limit).mapIndexed { i, c -> OrderedCandidate(c, start + i) }
+        val result = projection.drop(start).take(limit).toMutableList()
+        if (result.size < limit) {
+            val nativeStart = projectionSourceSize + (start - projection.size).coerceAtLeast(0)
+            getRimeCandidates(nativeStart, limit - result.size).forEachIndexed { i, c -> result.add(OrderedCandidate(c, nativeStart + i)) }
+        }
+        return result
+    }
+
+    private fun chooseProjected(index: Int): Boolean {
+        val entry = projectedCandidates(index, 1).firstOrNull() ?: return false
+        if (entry.source >= 0) return selectRimeCandidate(entry.source, true)
+        clearRimeComposition()
+        projectedCommit = CommitProto(entry.candidate.text)
+        return true
+    }
 
     init {
         if (lifecycle.currentState != RimeLifecycle.State.STOPPED) {
@@ -209,15 +255,70 @@ class Rime :
 
     override suspend fun selectCandidate(idx: Int, global: Boolean): Boolean = withRimeContext {
         val rawInputBefore = getRimeRawInput()
-        selectRimeCandidate(idx, global).also { emitResponse(rawInputBefore = rawInputBefore) }
+        (if (candidateProjection != null) chooseProjected(idx + if (global) 0 else personalPage) else selectRimeCandidate(idx, global)).also { emitResponse(rawInputBefore = rawInputBefore) }
     }
 
     override suspend fun deleteCandidate(idx: Int, global: Boolean): Boolean = withRimeContext {
-        deleteRimeCandidate(idx, global).also { emitResponse() }
+        val source = if (candidateProjection != null) projectedCandidates(idx + if (global) 0 else personalPage, 1).firstOrNull()?.source else idx
+        (source != null && source >= 0 && deleteRimeCandidate(source, global || candidateProjection != null)).also { emitResponse() }
+    }
+
+    override suspend fun customizeCandidate(idx: Int, text: String, global: Boolean, action: String, value: String): Boolean = withRimeContext {
+        val code = getRimeRawInput()
+        val schema = getRimeStatus().schemaId
+        if (code.isEmpty()) return@withRimeContext false
+        val index = idx + if (global || candidateProjection == null) 0 else personalPage
+        // Refuse a stale long-press menu after the composition changes.
+        val current = if (candidateProjection != null) projectedCandidates(index, 1).firstOrNull() else if (global)
+            getRimeCandidates(idx, 1).firstOrNull()?.let { OrderedCandidate(it, idx) }
+        else displayedCandidates?.candidates?.getOrNull(idx)?.let { candidate ->
+            val sourceIndex = getRimeCandidates(0, 20000).indexOfFirst { it.text == candidate.text && it.comment == candidate.comment }
+            if (sourceIndex < 0) null else OrderedCandidate(candidate, sourceIndex)
+        }
+        if (current?.candidate?.text != text) return@withRimeContext false
+        val rule = CandidatePreferences.get(schema, code) ?: CandidatePreferences.Rule()
+        if (action == "reset") {
+            CandidatePreferences.save(schema, code, null)
+        } else {
+            val limit = maxOf(rule.searchLimit, (current.source + 64).coerceAtLeast(512)).coerceAtMost(20000)
+            val source = getRimeCandidates(0, limit)
+            val ranks = rule.order.withIndex().associate { it.value to it.index }
+            val order = (source.map { it.text } + rule.aliases).distinct().filter { it !in rule.hidden }.sortedBy { ranks[it] ?: Int.MAX_VALUE }.toMutableList()
+            val oldIndex = order.indexOf(text)
+            if (oldIndex < 0) return@withRimeContext false
+            when (action) {
+                "delete", "code" -> {
+                    if (action == "code") {
+                        require(value.isNotBlank() && value.length <= 128 && value.none { it.isWhitespace() }) { "请输入有效编码（不含空白）" }
+                        require(value != code) { "新编码与当前编码相同" }
+                        val alphabet = schemaCached.alphabet.ifEmpty { "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" } + "'"
+                        require(value.all { it in alphabet }) { "新编码包含当前方案不支持的字符" }
+                    }
+                    CandidatePreferences.save(schema, code, rule.copy(hidden = rule.hidden + text, aliases = rule.aliases - text, searchLimit = limit),
+                        newCode = value.takeIf { action == "code" }, word = text.takeIf { action == "code" })
+                }
+                else -> {
+                    val target = when (action) {
+                        "pin1" -> 0; "pin2" -> 1; "pin3" -> 2
+                        "up" -> oldIndex - 1; "down" -> oldIndex + 1
+                        else -> return@withRimeContext false
+                    }.coerceIn(0, order.lastIndex)
+                    order.removeAt(oldIndex); order.add(target, text)
+                    CandidatePreferences.save(schema, code, rule.copy(order = order, searchLimit = limit))
+                }
+            }
+        }
+        personalPage = 0; personalHighlight = 0
+        emitResponse()
+        true
     }
 
     override suspend fun changeCandidatePage(backward: Boolean): Boolean = withRimeContext {
-        changeRimeCandidatePage(backward).also { emitResponse() }
+        if (candidateProjection != null && pagingMode) {
+            val next = (personalPage + if (backward) -personalPageSize else personalPageSize).coerceAtLeast(0)
+            if (next == personalPage || projectedCandidates(next, 1).isEmpty()) return@withRimeContext false
+            personalPage = next; personalHighlight = 0; emitResponse(); true
+        } else changeRimeCandidatePage(backward).also { emitResponse() }
     }
 
     override suspend fun moveCursorPos(position: Int) = withRimeContext {
@@ -276,7 +377,7 @@ class Rime :
         startIndex: Int,
         limit: Int,
     ): Array<CandidateProto> = withRimeContext {
-        getRimeCandidates(startIndex, limit)
+        if (candidateProjection != null) projectedCandidates(startIndex, limit).map { it.candidate }.toTypedArray() else getRimeCandidates(startIndex, limit)
     }
 
     override suspend fun setCandidatePagingMode(enabled: Boolean) = withRimeContext {
@@ -311,6 +412,25 @@ class Rime :
         lastAsciiTipsText = asciiTipsText(status)
         val rawInputBefore = getRimeRawInput()
         InputStats.onKeyDown(status.schemaId)
+        if (candidateProjection != null && modifiers == 0 && rawInputBefore == projectionCode) {
+            val offset = if (pagingMode) personalPage else 0
+            val digit = if (value in '1'.code..'9'.code && !schemaCached.alphabet.contains(value.toChar())) value - '1'.code else -1
+            if (value == 32 || digit >= 0) {
+                val selected = chooseProjected(offset + if (digit >= 0) digit else personalHighlight)
+                if (selected) { emitResponse(rawInputBefore = rawInputBefore); return true }
+                return true
+            }
+            if (pagingMode && (value == 0xff55 || value == 0xff56)) {
+                val next = (personalPage + if (value == 0xff55) -personalPageSize else personalPageSize).coerceAtLeast(0)
+                if (projectedCandidates(next, 1).isNotEmpty()) { personalPage = next; personalHighlight = 0 }
+                emitResponse(); return true
+            }
+            if (value == 0xff52 || value == 0xff54) {
+                val count = projectedCandidates(offset, if (pagingMode) personalPageSize else 16).size
+                personalHighlight = (personalHighlight + if (value == 0xff52) -1 else 1).coerceIn(0, (count - 1).coerceAtLeast(0))
+                emitResponse(); return true
+            }
+        }
         val handled = processRimeKey(value, modifiers)
         val committed = emitResponse(rawInputBefore = rawInputBefore)
         if (!handled) {
@@ -334,14 +454,28 @@ class Rime :
 
     private fun emitResponse(commit: CommitProto? = null, rawInputBefore: String? = null): Boolean {
         val response = getRimeResponse(pagingMode)
-        val commitProto = commit ?: response.commit
+        updateCandidateProjection(response.status.schemaId, getRimeRawInput())
+        val commitProto = commit ?: projectedCommit ?: response.commit
+        projectedCommit = null
         val commitText = commitProto.text
         handleRimeMessage(4, arrayOf(commitProto))
         handlePreedit(response.composition)
         if (response.composition.length <= 0 && lastAsciiTipsText != asciiTipsText(response.status)) {
             showAsciiSwitchTips(response.status)
         }
-        when (val candidates = response.candidates) {
+        val rendered = if (candidateProjection == null) response.candidates else when (val native = response.candidates) {
+            is Candidates.Bulk -> Candidates.Bulk(
+                if (native.total < 0) -1 else native.total + candidateProjection!!.size - projectionSourceSize,
+                personalHighlight, projectedCandidates(0, 16).map { it.candidate.copy(label = "") }.toTypedArray())
+            is Candidates.Paged -> {
+                val items = projectedCandidates(personalPage, personalPageSize)
+                Candidates.Paged(hasPrevPage = personalPage > 0, hasNextPage = projectedCandidates(personalPage + personalPageSize, 1).isNotEmpty(),
+                    isHorizontalLayout = native.isHorizontalLayout, highlighted = personalHighlight.coerceAtMost((items.size - 1).coerceAtLeast(0)),
+                    candidates = items.mapIndexed { i, it -> it.candidate.copy(label = (i + 1).toString()) }.toTypedArray())
+            }
+        }
+        displayedCandidates = rendered
+        when (val candidates = rendered) {
             is Candidates.Paged -> handleRimeMessage(7, arrayOf(candidates))
             is Candidates.Bulk -> handleRimeMessage(9, arrayOf(candidates))
         }

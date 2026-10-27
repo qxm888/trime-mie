@@ -72,12 +72,15 @@ class KeyEditActivity : AppCompatActivity() {
         }
         toolbar.setNavigationOnClickListener { finish() }
         toolbar.inflateMenu(R.menu.key_edit)
+        toolbar.menu.add(0, 2180, 0, "整体按键背景")
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
+                2180 -> AppearancePicker.showKeyboard(this) { rebuildPreview() }
                 R.id.action_export_bindings -> exportBindings()
                 R.id.action_import_bindings -> importLauncher.launch(arrayOf("application/json", "text/plain", "*/*"))
                 R.id.action_theme_video -> MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.keyboard_video_background)
+                    .setView(SkinPicker.unifiedBackgroundToggle(this))
                     .setItems(arrayOf("选择本地视频", "恢复主题原背景")) { _, which ->
                         if (which == 0) themeVideoPicker.launch("video/*") else {
                             com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.videoBackground.setValue("")
@@ -275,7 +278,7 @@ class KeyEditActivity : AppCompatActivity() {
                 includeFontPadding = false
                 setPadding(dp(2), 0, dp(2), 0)
                 setTypeface(typeface, if (customized) Typeface.BOLD else Typeface.NORMAL)
-                background = ContextCompat.getDrawable(
+                background = AppearancePicker.preview(com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.keyBackground.getValue()) ?: ContextCompat.getDrawable(
                     this@KeyEditActivity,
                     if (customized) R.drawable.bg_key_preview_custom else R.drawable.bg_key_preview,
                 )

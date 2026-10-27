@@ -171,6 +171,7 @@ object ColorManager {
         scope: ThemeScope,
         key: String,
     ): Drawable? {
+        if (key.startsWith("/")) return AssetBitmapDrawable(key)
         val tableEntry = ColorKey.from(key)?.let { scope.colorTable?.get(it) }
         if (tableEntry != null) {
             return when (tableEntry) {

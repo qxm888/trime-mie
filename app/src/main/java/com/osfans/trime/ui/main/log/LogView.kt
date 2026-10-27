@@ -80,7 +80,7 @@ constructor(
         val color =
             ContextCompat.getColor(
                 context,
-                when (str.codePointAt(19).toChar()) {
+                when (str.getOrNull(19)) {
                     'V' -> R.color.grey_700
                     'D' -> R.color.grey_700
                     'I' -> R.color.blue_500
@@ -98,7 +98,7 @@ constructor(
     }
 
     val currentLog: String
-        get() = logAdapter.fullLogString()
+        get() = logAdapter.fullLogString() + "\n--------- Mie lifecycle diagnostics (no audio or recognized text)\n" + com.osfans.trime.util.DiagnosticLog.snapshot()
 
     fun clear() {
         logAdapter.clear()

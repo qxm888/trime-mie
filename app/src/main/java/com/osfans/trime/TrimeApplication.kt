@@ -174,6 +174,7 @@ class TrimeApplication : Application() {
                 )
             }
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(ctx)
+            com.osfans.trime.util.DiagnosticLog.event("app", "start", "version=${BuildConfig.VERSION_NAME} api=${Build.VERSION.SDK_INT} abi=${Build.SUPPORTED_ABIS.firstOrNull()}")
 
             Timber.d("isDirectBootMode=$isDirectBootMode")
 
@@ -213,8 +214,10 @@ class TrimeApplication : Application() {
             }
             registerBroadcastReceiver()
             startWorkManager()
+            com.osfans.trime.util.DiagnosticLog.event("app", "ready")
         } catch (e: Exception) {
-            e.fillInStackTrace()
+            Timber.e(e, "Application initialization failed")
+            com.osfans.trime.util.DiagnosticLog.event("app", "init_failed", "type=${e.javaClass.simpleName} at=${e.stackTrace.firstOrNull()}")
             return
         }
     }

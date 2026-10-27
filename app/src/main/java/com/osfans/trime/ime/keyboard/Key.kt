@@ -324,7 +324,11 @@ class Key(
     /** Per-key background image of custom keyboards; wins over theme colors. */
     var customBgDrawable: Drawable? = null
 
-    fun getBackgroundDrawable(): Drawable? = customBgDrawable ?: when (appearanceType) {
+    private val wholeKeyBackground by schemeColor {
+        val raw = com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.keyBackground.getValue()
+        if (raw.isBlank()) null else ColorManager.getDrawable(raw)
+    }
+    fun getBackgroundDrawable(): Drawable? = wholeKeyBackground ?: customBgDrawable ?: when (appearanceType) {
         // Locked modifiers use the YAML on-state skin; normal per-key colours must not mask it.
         // Fully custom/imported skins still win through customBgDrawable above.
         2 -> if (isPressed) hlOnKeyBackground else onKeyBackground

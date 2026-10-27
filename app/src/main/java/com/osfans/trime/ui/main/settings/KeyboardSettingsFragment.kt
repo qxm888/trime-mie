@@ -29,6 +29,7 @@ class KeyboardSettingsFragment : PreferenceDelegateFragment(AppPrefs.defaultInst
             setOnPreferenceClickListener {
                 com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
                     .setTitle("主题键盘视频背景")
+                    .setView(com.osfans.trime.ui.main.SkinPicker.unifiedBackgroundToggle(requireContext()))
                     .setItems(arrayOf("选择本地视频", "恢复主题原背景")) { _, which ->
                         if (which == 0) videoPicker.launch("video/*") else {
                             AppPrefs.defaultInstance().keyboard.videoBackground.setValue("")
@@ -38,6 +39,10 @@ class KeyboardSettingsFragment : PreferenceDelegateFragment(AppPrefs.defaultInst
                 true
             }
         }
+        screen.addPreference(Preference(requireContext()).apply {
+            title = "整体按键背景"; summary = "为主题和自定义键盘统一设置纯色、透明或图片"
+            setOnPreferenceClickListener { com.osfans.trime.ui.main.AppearancePicker.showKeyboard(requireActivity()); true }
+        })
         screen.findPreference<Preference>("custom_sound_effect_name")?.apply {
             setOnPreferenceClickListener {
                 lifecycleScope.launch {

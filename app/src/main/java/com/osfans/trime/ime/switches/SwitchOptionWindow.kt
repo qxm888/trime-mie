@@ -74,6 +74,8 @@ class SwitchOptionWindow(di: DI) :
             ),
             SwitchOptionEntry.Static(context.getString(R.string.floating_keyboard),
                 R.drawable.ic_mode_floating_24, SwitchOptionEntry.Static.Type.FloatingKeyboard),
+            SwitchOptionEntry.Static("悬浮候选栏", R.drawable.ic_baseline_list_alt_24, SwitchOptionEntry.Static.Type.CandidatesWindow),
+            SwitchOptionEntry.Static("隐藏状态栏", R.drawable.ic_baseline_keyboard_24, SwitchOptionEntry.Static.Type.HideInputBar),
             SwitchOptionEntry.Static(context.getString(R.string.one_hand_mode),
                 R.drawable.ic_mode_one_hand_24, SwitchOptionEntry.Static.Type.OneHandMode),
         )
@@ -134,6 +136,8 @@ class SwitchOptionWindow(di: DI) :
                         SwitchOptionEntry.Static.Type.InputStats -> InputStatsActivity.start(context)
                         SwitchOptionEntry.Static.Type.FloatingKeyboard -> service.toggleFloatingKeyboard()
                         SwitchOptionEntry.Static.Type.OneHandMode -> service.toggleOneHandMode()
+                        SwitchOptionEntry.Static.Type.CandidatesWindow -> service.toggleCandidatesWindow()
+                        SwitchOptionEntry.Static.Type.HideInputBar -> service.toggleInputBar()
 
                         SwitchOptionEntry.Static.Type.ThemeList -> showDialog { r ->
                             ThemePickerDialog.build(service.lifecycleScope, context) {
@@ -219,13 +223,21 @@ class SwitchOptionWindow(di: DI) :
 
     private val settingsButton by lazy {
         ToolButton(context, R.drawable.ic_baseline_settings_24, scope).apply {
+            id = View.generateViewId()
             setOnClickListener { AppUtils.launchMainActivity(context) }
         }
     }
 
+    private val candidatesToggle by lazy {
+        ToolButton(context, R.drawable.ic_baseline_list_alt_24, scope).apply {
+            contentDescription = "开关悬浮候选栏"
+            setOnClickListener { service.toggleCandidatesWindow() }
+        }
+    }
     private val barExternalView by lazy {
         context.constraintLayout {
             val size = dp(theme.style.run { candidateViewHeight + commentHeight })
+            add(candidatesToggle, lParams(size, size) { endToStart = settingsButton.id })
             add(
                 settingsButton,
                 lParams(size, size) {

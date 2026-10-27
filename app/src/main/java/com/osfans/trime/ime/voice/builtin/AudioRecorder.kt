@@ -62,6 +62,7 @@ class AudioRecorder(
             try {
                 coroutineContext.ensureActive()
                 audio.startRecording()
+                com.osfans.trime.util.DiagnosticLog.event("voice", "recorder_started", "source=$source rate=$SAMPLE_RATE")
                 val buf = ByteArray(chunkBytes)
                 var zeroFrames = 0
                 while (isActive) {
@@ -71,6 +72,7 @@ class AudioRecorder(
                     if (source == MediaRecorder.AudioSource.VOICE_RECOGNITION) {
                         zeroFrames = if ((0 until n).all { buf[it].toInt() == 0 }) zeroFrames + 1 else 0
                         if (zeroFrames >= 2) {
+                            com.osfans.trime.util.DiagnosticLog.event("voice", "silent_source_fallback")
                             val fallback = createRecord(MediaRecorder.AudioSource.MIC, chunkBytes)
                             if (fallback != null) {
                                 runCatching { audio.stop() }
@@ -86,6 +88,7 @@ class AudioRecorder(
                     if (isActive) onChunk(buf.copyOf(n))
                 }
             } catch (t: Throwable) {
+                com.osfans.trime.util.DiagnosticLog.event("voice", "recorder_failed", "type=${t.javaClass.simpleName}")
                 if (isActive) onError("录音失败：${t.message.orEmpty()}")
             } finally {
                 runCatching { audio.stop() }

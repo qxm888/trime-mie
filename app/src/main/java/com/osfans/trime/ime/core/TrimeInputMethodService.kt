@@ -118,6 +118,8 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         prefs.keyboard.hideKeySymbol,
         prefs.keyboard.hideKeyHint,
         prefs.keyboard.hideInputBar,
+        prefs.keyboard.unifiedBackground,
+        prefs.keyboard.keyBackground,
         prefs.advanced.ignoreSystemGestureInsets,
     )
 
@@ -300,7 +302,8 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
                                     )
                                     if (it.modifiers.ctrl && keyCode == KeyEvent.KEYCODE_C) clearTextSelection()
                                 } else {
-                                    if (it.value.value > 0) {
+                                    if (Character.isValidCodePoint(it.value.value) && it.value.value > 0 &&
+                                        it.value.value !in 0xD800..0xDFFF && !Character.isISOControl(it.value.value)) {
                                         runCatching {
                                             commitText(Character.toString(it.value.value))
                                         }.getOrElse { t -> Timber.w(t, "Unhandled Virtual KeyEvent: $it") }
@@ -345,6 +348,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
     }
 
     private fun replaceInputView(scope: ThemeScope): InputView {
+        val began = android.os.SystemClock.elapsedRealtime()
         val previous = com.osfans.trime.ime.keyboard.KeyboardWindow.instance?.let {
             runCatching { com.osfans.trime.ime.keyboard.KeyboardWindow.currentKeyboard }.getOrNull()
         }
@@ -354,8 +358,20 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         inputView = newInputView
         previous?.let(newInputView::restoreInputState)
         requestInputInsetsUpdate()
+        com.osfans.trime.util.DiagnosticLog.event("keyboard", "rebuilt", "ms=${android.os.SystemClock.elapsedRealtime() - began}")
         return newInputView
     }
+
+    fun toggleCandidatesWindow() {
+        prefs.candidates.mode.run { setValue(if (getValue() == com.osfans.trime.ime.candidates.popup.PopupCandidatesMode.DISABLED)
+            com.osfans.trime.ime.candidates.popup.PopupCandidatesMode.ALWAYS_SHOW else com.osfans.trime.ime.candidates.popup.PopupCandidatesMode.DISABLED) }
+    }
+    fun toggleInputBar() { prefs.keyboard.hideInputBar.run { setValue(!getValue()) } }
+    fun openKeyboardMenu() {
+        showWindow(true)
+        inputView?.post { inputView?.showKeyboardMenu() }
+    }
+    fun performFloatingToolbarAction(action: String) { inputView?.performToolbarAction(action) }
 
     private fun replaceCandidateView(scope: ThemeScope): CandidatesView {
         val newCandidatesView = CandidatesView(this, rime, scope)
@@ -741,7 +757,10 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         restarting: Boolean,
     ) {
         Timber.d("onStartInputView: restarting=$restarting")
+        val began = android.os.SystemClock.elapsedRealtime()
+        inputView?.post { com.osfans.trime.util.DiagnosticLog.event("keyboard", "shown", "ms=${android.os.SystemClock.elapsedRealtime() - began} restarting=$restarting") }
         com.osfans.trime.ime.keyboard.KeyboardWindow.instance?.setVideoActive(true)
+        inputView?.setUnifiedVideoActive(true)
         InputFeedbackManager.startInput()
         postRimeJob {
             updateRimeOption(this)
@@ -766,6 +785,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
 
     override fun onFinishInputView(finishingInput: Boolean) {
         com.osfans.trime.ime.keyboard.KeyboardWindow.instance?.setVideoActive(false)
+        inputView?.setUnifiedVideoActive(false)
         com.osfans.trime.ime.clipboard.ClipboardSearchBridge.reset()
         hideBottomOverlay()
         voiceInput.cancel()

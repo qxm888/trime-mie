@@ -176,18 +176,28 @@ class KeyboardWindow(di: DI) :
 
     /** Overall skin of custom keyboards: color or image under all keys. */
     private var videoBackground: VideoKeyboardBackground? = null
+    private var videoBackgroundPath: String? = null
+    var currentBackground: com.osfans.trime.data.keymap.CustomBackground? = null
+        private set
+    var onBackgroundChanged: (() -> Unit)? = null
     fun setVideoActive(active: Boolean) { videoBackground?.setActive(active) }
 
     private fun applyKeyboardSkin(target: String, width: Int) {
         val custom = if (theme.isCustom) CustomKeyboards.get(CustomKeyboards.resolveId(target)) else null
-        videoBackground?.also { it.release(); keyboardView.removeView(it) }
-        videoBackground = null
         val background = if (theme.isCustom) custom?.backgroundFor(context) else
             com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.videoBackground.getValue().takeIf { it.isNotBlank() }
                 ?.let { com.osfans.trime.data.keymap.CustomBackground(com.osfans.trime.data.keymap.CustomBackground.Type.VIDEO, image = it) }
-        keyboardView.background = background?.drawable(context, width.coerceAtLeast(1))
-        if (background?.type == com.osfans.trime.data.keymap.CustomBackground.Type.VIDEO) {
-            videoBackground = VideoKeyboardBackground(context, background.image).also {
+        currentBackground = background
+        onBackgroundChanged?.invoke()
+        val unified = com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.unifiedBackground.getValue()
+        keyboardView.background = if (unified) null else background?.drawable(context, width.coerceAtLeast(1))
+        val videoPath = background?.takeIf { !unified && it.type == com.osfans.trime.data.keymap.CustomBackground.Type.VIDEO }?.image
+        if (videoPath == videoBackgroundPath && videoBackground != null) return
+        videoBackground?.also { it.release(); keyboardView.removeView(it) }
+        videoBackground = null
+        videoBackgroundPath = videoPath
+        if (videoPath != null) {
+            videoBackground = VideoKeyboardBackground(context, videoPath).also {
                 keyboardView.addView(it, 0, android.widget.FrameLayout.LayoutParams(-1, -1))
             }
         }

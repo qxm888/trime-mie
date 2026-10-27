@@ -18,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.ensureActive
 import timber.log.Timber
 
 internal class XAsrReflectiveRecognizer(private val instance: Any, private val cls: Class<*>) {
@@ -64,8 +65,10 @@ class XAsrStreamEngine(
     private val scope: CoroutineScope,
     private val listener: AsrListener,
     private val onModelLoadStart: () -> Unit = {},
+    private val onModelLoadDone: () -> Unit = {},
 ) : AsrEngine {
     companion object {
+        private val activeSession = java.util.concurrent.Semaphore(1)
         private const val LIVE_DECODE_MAX_LOOPS = 8
         private const val FINALIZE_DECODE_MAX_LOOPS = 512
         private const val MODEL_CHUNK_MS = 480
@@ -74,7 +77,7 @@ class XAsrStreamEngine(
     }
 
     private val running = AtomicBoolean(false)
-    private val events = Channel<Event>(Channel.UNLIMITED)
+    private val events = Channel<Event>(640)
     private var loopJob: Job? = null
 
     private sealed class Event {
@@ -93,17 +96,9 @@ class XAsrStreamEngine(
             listener.onError("尚未安装 X-ASR 模型，请在设置 → 语音输入下载或导入")
             return
         }
-        val onnxAvailable = try {
-            Class.forName("com.k2fsa.sherpa.onnx.OnlineRecognizer"); true
-        } catch (t: Throwable) {
-            false
-        }
-        if (!onnxAvailable) {
-            listener.onError("本地流式识别库不可用")
-            return
-        }
         running.set(true)
         loopJob = scope.launch(Dispatchers.IO) {
+            if (!activeSession.tryAcquire()) { running.set(false); listener.onError("上一次本地流式识别仍在处理中，请稍后重试"); return@launch }
             try {
                 runSession(ctx, variant)
             } catch (t: CancellationException) {
@@ -111,13 +106,13 @@ class XAsrStreamEngine(
             } catch (t: Throwable) {
                 Timber.e(t, "x-asr session failed")
                 listener.onError("本地流式识别失败：${t.message ?: t.javaClass.simpleName}")
-            }
+            } finally { running.set(false); activeSession.release() }
         }
     }
 
     override fun feed(pcm: ByteArray) {
         if (!running.get()) return
-        events.trySend(Event.Pcm(pcm))
+        if (events.trySend(Event.Pcm(pcm)).isFailure && running.get()) { listener.onError("本地模型处理过慢，请选择较小模型"); cancel() }
     }
 
     override fun stop() {
@@ -127,7 +122,8 @@ class XAsrStreamEngine(
 
     override fun cancel() {
         running.set(false)
-        events.trySend(Event.Cancel)
+        loopJob?.cancel()
+        events.close()
     }
 
     private suspend fun runSession(context: android.content.Context, variant: String) {
@@ -140,7 +136,10 @@ class XAsrStreamEngine(
             listener.onError("X-ASR 模型加载失败")
             return
         }
+        try {
+        kotlinx.coroutines.currentCoroutineContext().ensureActive()
         val stream = recognizer.createStream()
+        try {
         var lastPartialAt = 0L
         var lastPartialText = ""
 
@@ -182,26 +181,24 @@ class XAsrStreamEngine(
                     decodeWhileReady(FINALIZE_DECODE_MAX_LOOPS)
                     val text = formatCjkSpacing(recognizer.getResultText(stream).orEmpty().trim())
                     running.set(false)
-                    recognizer.releaseStream(stream)
-                    recognizer.release()
                     listener.onFinal(text)
                     return
                 }
 
                 is Event.Cancel -> {
                     running.set(false)
-                    recognizer.releaseStream(stream)
-                    recognizer.release()
                     return
                 }
             }
         }
-        recognizer.releaseStream(stream)
-        recognizer.release()
+        } finally { recognizer.releaseStream(stream) }
+        } finally { running.set(false); recognizer.release(); events.close() }
     }
 
     private fun prepareRecognizer(paths: Map<String, String>): XAsrReflectiveRecognizer? = runCatching {
         onModelLoadStart()
+        val began = android.os.SystemClock.elapsedRealtime()
+        com.osfans.trime.util.DiagnosticLog.event("voice", "stream_model_load_start", "family=x_asr bytes=${paths.values.sumOf { java.io.File(it).length() }}")
         val transducer = Class.forName("com.k2fsa.sherpa.onnx.OnlineTransducerModelConfig")
             .getDeclaredConstructor().newInstance()
         // 1.13.3 起 data class 增加 qnnConfig 且无 @JvmOverloads：优先无参构造 + 反射写字段
@@ -236,8 +233,11 @@ class XAsrStreamEngine(
         val ctor = clsRecognizer.getDeclaredConstructor(
             android.content.res.AssetManager::class.java, clsConfig,
         )
-        XAsrReflectiveRecognizer(ctor.newInstance(null, recConfig), clsRecognizer)
-    }.onFailure { Timber.e(it, "x-asr recognizer init failed") }.getOrNull()
+        XAsrReflectiveRecognizer(ctor.newInstance(null, recConfig), clsRecognizer).also {
+            onModelLoadDone()
+            com.osfans.trime.util.DiagnosticLog.event("voice", "stream_model_load_done", "ms=${android.os.SystemClock.elapsedRealtime() - began}")
+        }
+    }.onFailure { Timber.e(it, "x-asr recognizer init failed"); com.osfans.trime.util.DiagnosticLog.event("voice", "stream_model_load_failed", "type=${(it.cause ?: it).javaClass.simpleName}") }.getOrNull()
 
     /** CJK 相邻字符间的空白折叠（移植 formatXAsrText 的 normalize 部分）。 */
     private fun formatCjkSpacing(text: String): String {

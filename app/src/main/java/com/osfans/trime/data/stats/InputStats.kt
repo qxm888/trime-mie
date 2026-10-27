@@ -112,6 +112,7 @@ object InputStats {
     @Serializable
     private data class Store(
         var version: Long = 2,
+        var heatVersion: Int = 0,
         /** The scheme the user typed in last; the UI defaults to it. */
         var activeId: String = "",
         var activeName: String = "",
@@ -258,6 +259,15 @@ object InputStats {
                 }
             }.onFailure { Timber.w(it, "$TAG: failed to load stats, starting fresh") }
             store.schemas.values.forEach { normalizePeriods(it) }
+            if (store.heatVersion < 1) {
+                store.schemas.values.forEach { stats ->
+                    arrayOf(stats.weekly, stats.monthly, stats.yearly).forEach { period ->
+                        if (period.keyCounts.isEmpty()) period.keyCounts.putAll(stats.daily.keyCounts)
+                    }
+                }
+                store.heatVersion = 1
+                dirty = true; revision++; scheduleSaveLocked()
+            }
         }
     }
 
@@ -424,13 +434,16 @@ object InputStats {
             if (appContext == null) return
             val stats = bucket(store.activeId)
             normalizePeriods(stats)
-            val counts = stats.daily.keyCounts
-            counts[keyLabel] = (counts[keyLabel] ?: 0) + 1
-            if (counts.size > HEAT_KEYS_LIMIT) {
-                counts.entries.sortedBy { it.value }.take(counts.size - HEAT_KEYS_LIMIT)
-                    .forEach { counts.remove(it.key) }
+            for (period in arrayOf(stats.daily, stats.weekly, stats.monthly, stats.yearly)) {
+                val counts = period.keyCounts
+                counts[keyLabel] = (counts[keyLabel] ?: 0) + 1
+                if (counts.size > HEAT_KEYS_LIMIT) {
+                    counts.entries.sortedBy { it.value }.take(counts.size - HEAT_KEYS_LIMIT)
+                        .forEach { counts.remove(it.key) }
+                }
             }
             dirty = true; revision++
+            scheduleSaveLocked()
         }
     }
 

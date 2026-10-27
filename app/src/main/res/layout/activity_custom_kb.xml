@@ -10,14 +10,14 @@ SPDX-License-Identifier: GPL-3.0-or-later
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:attr/colorBackground"
+    android:background="@color/framework_background"
     android:orientation="vertical">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/custom_kb_app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorSurface"
+        android:background="@color/framework_background"
         app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar

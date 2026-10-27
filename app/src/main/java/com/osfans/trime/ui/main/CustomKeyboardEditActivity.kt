@@ -66,8 +66,10 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         toolbar.setNavigationOnClickListener { finish() }
         toolbar.title = kb.name
         toolbar.inflateMenu(R.menu.custom_kb_edit)
+        toolbar.menu.add(0, 2180, 0, "整体按键背景")
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
+                2180 -> AppearancePicker.showKeyboard(this) { render() }
                 R.id.action_kb_background -> pickKeyboardBackground()
                 R.id.action_kb_toolbar -> ToolbarEditActivity.start(this, kbId)
                 R.id.action_kb_key_appearance -> {
@@ -190,7 +192,7 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         preview.removeAllViews()
         preview.background = kb.backgroundFor(this).drawable(this, resources.displayMetrics.widthPixels)
         val importedPreview = kb.importedSkin?.layout(this)?.preview?.takeIf { it.isNotEmpty() }
-        if (importedPreview != null) {
+        if (importedPreview != null && com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.keyBackground.getValue().isEmpty()) {
             val image = android.widget.ImageView(this).apply {
                 scaleType = android.widget.ImageView.ScaleType.FIT_XY
                 setImageDrawable(com.osfans.trime.data.theme.AssetBitmapDrawable(importedPreview))
@@ -225,7 +227,7 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
                         isSingleLine = true
                         includeFontPadding = false
                         setPadding(dp(1), 0, dp(1), 0)
-                        background = outlinedPreview(ck.resolvedBackground().drawable(this@CustomKeyboardEditActivity, dp(80)))
+                        background = outlinedPreview(AppearancePicker.preview(com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.keyBackground.getValue()) ?: ck.resolvedBackground().drawable(this@CustomKeyboardEditActivity, dp(80)))
                         setTextColor(android.graphics.Color.parseColor(ck.resolvedBackground().textColor(kb.resolvedBackground())))
                     }
                 rowView.addView(
@@ -257,7 +259,10 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         val card = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(10), dp(8), dp(10), dp(10))
-            background = ContextCompat.getDrawable(this@CustomKeyboardEditActivity, R.drawable.bg_key_preview)
+            background = android.graphics.drawable.GradientDrawable().apply {
+                cornerRadius = dp(24).toFloat()
+                setColor(ContextCompat.getColor(this@CustomKeyboardEditActivity, R.color.settings_surface))
+            }
         }
 
         // header: 第N行 · 权重/100 + 上移 下移 删除
@@ -338,7 +343,7 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
                     includeFontPadding = false
                     setPadding(dp(2), 0, dp(2), 0)
                     setTypeface(typeface, if (ck.bindings.isNotEmpty()) Typeface.BOLD else Typeface.NORMAL)
-                    background = outlinedPreview(ck.resolvedBackground().drawable(this@CustomKeyboardEditActivity, w))
+                    background = outlinedPreview(AppearancePicker.preview(com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.keyBackground.getValue()) ?: ck.resolvedBackground().drawable(this@CustomKeyboardEditActivity, w))
                     setTextColor(android.graphics.Color.parseColor(ck.resolvedBackground().textColor(kb.resolvedBackground())))
                 }
             chip.setOnClickListener { showKeyEditor(rowIdx, keyIdx) }

@@ -31,8 +31,8 @@ android {
         applicationId = if (variantTag.isEmpty()) "com.osfans.trime.mie" else "com.osfans.trime"
         minSdk = 21
         targetSdk = 37
-        versionCode = 20261117
-        versionName = "3.3.13-mie.16"
+        versionCode = 20261119
+        versionName = "V2.0.17"
 
         multiDexEnabled = true
         buildConfigField("String", "BUILDER", "\"${project.builder}\"")
@@ -138,6 +138,17 @@ aboutLibraries {
 
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
+}
+
+androidComponents {
+    onVariants { variant ->
+        variant.outputs.forEach { output ->
+            val abi = output.filters.firstOrNull { it.filterType == com.android.build.api.variant.FilterConfiguration.FilterType.ABI }?.identifier
+            val extraAbi = if (abi != null && abi != "arm64-v8a") "-$abi" else ""
+            val development = if (variant.buildType == "debug") "-debug${variantTag.takeIf { it.isNotEmpty() }?.let { "-$it" }.orEmpty()}" else ""
+            output.outputFileName.set("trime-mie-${android.defaultConfig.versionName!!.lowercase()}$extraAbi$development.apk")
+        }
+    }
 }
 
 dependencies {

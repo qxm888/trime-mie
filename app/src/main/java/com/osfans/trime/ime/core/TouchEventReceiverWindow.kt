@@ -30,6 +30,7 @@ class TouchEventReceiverWindow(
     private var isWindowShowing = false
 
     private val cachedLocation = intArrayOf(0, 0)
+    private var lastBounds: android.graphics.Rect? = null
 
     fun showAt(
         x: Int,
@@ -37,6 +38,9 @@ class TouchEventReceiverWindow(
         w: Int,
         h: Int,
     ) {
+        val bounds = android.graphics.Rect(x, y, x + w, y + h)
+        if (window.isShowing && bounds == lastBounds) return
+        lastBounds = bounds
         isWindowShowing = true
         if (window.isShowing) {
             window.update(x, y, w, h)
@@ -55,6 +59,7 @@ class TouchEventReceiverWindow(
     }
 
     fun dismiss() {
+        lastBounds = null
         if (isWindowShowing) {
             isWindowShowing = false
             window.dismiss()

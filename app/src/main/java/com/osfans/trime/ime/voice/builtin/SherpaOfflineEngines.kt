@@ -18,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -103,7 +104,8 @@ internal class SherpaOfflineManager {
         fun isOnnxAvailable(): Boolean = try {
             Class.forName("com.k2fsa.sherpa.onnx.OfflineRecognizer"); true
         } catch (t: Throwable) {
-            Timber.d(t, "sherpa-onnx not available")
+            com.osfans.trime.util.DiagnosticLog.event("voice", "library_unavailable", "type=${(t.cause ?: t).javaClass.simpleName}")
+            Timber.e(t, "sherpa-onnx not available")
             false
         }
     }
@@ -150,26 +152,37 @@ internal class SherpaOfflineManager {
         alwaysKeep: Boolean,
         onLoadStart: (() -> Unit)? = null,
         onLoadDone: (() -> Unit)? = null,
-    ): String? = mutex.withLock {
-        try {
+    ): String? {
+        check(mutex.tryLock()) { "上一次本地识别仍在处理中，请稍后重试；持续无响应时请重启输入法" }
+        val began = android.os.SystemClock.elapsedRealtime()
+        return try {
             val cached = cachedRecognizer
             val recognizer = if (cached != null && cachedConfig == config) {
+                com.osfans.trime.util.DiagnosticLog.event("voice", "model_cache_hit")
                 cached
             } else {
+                unloadJob?.cancel()
+                val previous = cachedRecognizer
+                cachedRecognizer = null; cachedConfig = null
+                previous?.release()
                 onLoadStart?.invoke()
+                com.osfans.trime.util.DiagnosticLog.event("voice", "model_load_start", "freeHeap=${Runtime.getRuntime().freeMemory()} maxHeap=${Runtime.getRuntime().maxMemory()}")
                 val nativeRecognizer = createRecognizer(config)
                 val raw = ReflectiveRecognizer(nativeRecognizer, nativeRecognizer.javaClass)
                 val old = cachedRecognizer
                 cachedRecognizer = raw
                 cachedConfig = config
                 onLoadDone?.invoke()
+                com.osfans.trime.util.DiagnosticLog.event("voice", "model_load_done", "ms=${android.os.SystemClock.elapsedRealtime() - began}")
                 old?.takeIf { it !== raw }?.release()
                 raw
             }
             val stream = recognizer.createStream()
             try {
                 stream.acceptWaveform(samples, sampleRate)
+                com.osfans.trime.util.DiagnosticLog.event("voice", "decode_start", "samples=${samples.size} rate=$sampleRate")
                 val text = recognizer.decode(stream)
+                com.osfans.trime.util.DiagnosticLog.event("voice", "decode_done", "ms=${android.os.SystemClock.elapsedRealtime() - began} chars=${text?.length ?: 0}")
                 unloadJob?.cancel()
                 if (!alwaysKeep) {
                     if (keepAliveMs <= 0L) {
@@ -189,7 +202,10 @@ internal class SherpaOfflineManager {
             throw t
         } catch (t: Throwable) {
             Timber.e(t, "sherpa offline decode failed")
-            null
+            com.osfans.trime.util.DiagnosticLog.event("voice", "native_failed", "type=${(t.cause ?: t).javaClass.simpleName} ms=${android.os.SystemClock.elapsedRealtime() - began}")
+            throw t
+        } finally {
+            mutex.unlock()
         }
     }
 }
@@ -203,9 +219,11 @@ class OfflineSherpaAsrEngine(
     private val listener: AsrListener,
     private val familyKey: String,
     private val onModelLoadStart: () -> Unit = {},
+    private val onModelLoadDone: () -> Unit = {},
 ) : AsrEngine {
     private val running = AtomicBoolean(false)
     private val buffer = java.io.ByteArrayOutputStream()
+    private var decodeJob: Job? = null
 
     override val isRunning: Boolean get() = running.get()
 
@@ -215,10 +233,6 @@ class OfflineSherpaAsrEngine(
         val variant = ctx?.let { LocalAsrModels.installedVariant(it, familyKey) }
         if (ctx == null || variant == null) {
             listener.onError("尚未安装本地模型，请在设置 → 语音输入下载或导入")
-            return
-        }
-        if (!SherpaOfflineManager.isOnnxAvailable()) {
-            listener.onError("本地识别库不可用")
             return
         }
         running.set(true)
@@ -235,17 +249,20 @@ class OfflineSherpaAsrEngine(
         running.set(false)
         val pcm = buffer.toByteArray()
         buffer.reset()
-        scope.launch(Dispatchers.IO) {
+        decodeJob = scope.launch(Dispatchers.IO) {
             if (pcm.size < 3200) {
                 listener.onFinal("")
                 return@launch
             }
             try {
+                check(SherpaOfflineManager.isOnnxAvailable()) { "本地识别库不可用" }
                 val ctx = AsrContextHolder.get()!!
                 val variant = LocalAsrModels.installedVariant(ctx, familyKey)
                     ?: return@launch listener.onError("本地模型不存在，请重新下载")
                 val paths = LocalAsrModels.modelPaths(ctx, familyKey, variant)
                     ?: return@launch listener.onError("本地模型文件缺失，请重新下载")
+                paths.forEach { (name, path) -> check(File(path).isFile && File(path).length() > 0) { "模型文件缺失：$name" } }
+                com.osfans.trime.util.DiagnosticLog.event("voice", "model_config", "family=$familyKey variant=$variant bytes=${paths.values.sumOf { File(it).length() }} threads=${AsrSettings.localThreads(familyKey)}")
                 val config = buildRecognizerConfig(paths)
                 val text = SherpaOfflineManager.getInstance().decodeOffline(
                     config = config,
@@ -257,7 +274,9 @@ class OfflineSherpaAsrEngine(
                     },
                     alwaysKeep = AsrSettings.localKeepAliveMinutes(familyKey) < 0,
                     onLoadStart = onModelLoadStart,
+                    onLoadDone = onModelLoadDone,
                 )
+                kotlinx.coroutines.currentCoroutineContext().ensureActive()
                 val cleaned = text?.trim()?.let(::sanitizeResult).orEmpty()
                 if (cleaned.isBlank()) listener.onFinal("") else listener.onFinal(cleaned)
             } catch (t: CancellationException) {
@@ -270,6 +289,7 @@ class OfflineSherpaAsrEngine(
     }
 
     override fun cancel() {
+        decodeJob?.cancel(); decodeJob = null
         running.set(false)
         buffer.reset()
     }

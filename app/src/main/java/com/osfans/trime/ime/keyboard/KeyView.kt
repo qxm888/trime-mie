@@ -211,10 +211,15 @@ class KeyView(
         }
     }
 
+    private var paintedBackground: android.graphics.drawable.Drawable? = null
+    private val backgroundClip = android.graphics.Path()
+    private val backgroundClipBounds = android.graphics.RectF()
     override fun verifyDrawable(who: android.graphics.drawable.Drawable): Boolean =
-        who === key.customBgDrawable || super.verifyDrawable(who)
+        who === paintedBackground || who === key.customBgDrawable || super.verifyDrawable(who)
 
     override fun onDetachedFromWindow() {
+        paintedBackground?.takeIf { it.callback === this }?.callback = null
+        paintedBackground = null
         key.customBgDrawable?.takeIf { it.callback === this }?.callback = null
         if (voiceHeld) { voiceHeld = false; service.voiceInput.cancel() }
         super.onDetachedFromWindow()
@@ -333,27 +338,33 @@ class KeyView(
 
         drawBackground(canvas, key)
 
+        val drawText = key.importedStyle == null || com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.keyBackground.getValue().isNotEmpty()
         val label = key.getLabel().let {
             if (it == "enter_labels") keyboardView.labelEnter else it
         }
 
-        if (label.isNotEmpty() && key.importedStyle == null) {
+        if (label.isNotEmpty() && drawText) {
             drawLabel(canvas, label)
         }
 
         val symbol = key.symbolLabel
-        if (symbol.isNotEmpty() && key.importedStyle == null) {
+        if (symbol.isNotEmpty() && drawText) {
             drawSymbol(canvas, symbol)
         }
 
         val hint = key.hint
-        if (hint.isNotEmpty() && key.importedStyle == null) {
+        if (hint.isNotEmpty() && drawText) {
             drawSymbol(canvas, hint, isTop = false)
         }
     }
 
     private fun drawBackground(canvas: Canvas, k: Key) {
         val bg = k.getBackgroundDrawable() ?: return
+        if (paintedBackground !== bg) {
+            paintedBackground?.takeIf { it.callback === this }?.callback = null
+            paintedBackground = bg
+            bg.callback = this
+        }
         if (bg.callback !== this) bg.callback = this
 
         if (bg is GradientDrawable) {
@@ -367,14 +378,20 @@ class KeyView(
             width - paddingRight,
             height - paddingBottom,
         )
+        val saved = canvas.save()
+        backgroundClipBounds.set(paddingLeft.toFloat(), paddingTop.toFloat(), (width - paddingRight).toFloat(), (height - paddingBottom).toFloat())
+        backgroundClip.reset()
+        backgroundClip.addRoundRect(backgroundClipBounds, dp(k.roundCorner.coerceAtLeast(0f)), dp(k.roundCorner.coerceAtLeast(0f)), android.graphics.Path.Direction.CW)
+        canvas.clipPath(backgroundClip)
         bg.draw(canvas)
         if (bg is com.osfans.trime.data.baiduskin.BdsKeyDrawable && bg.animating) postInvalidateOnAnimation()
 
 
         // image skins have no pressed state of their own — overlay one
-        if (k.customBgDrawable != null && k.importedStyle == null && k.isPressed) {
+        if ((k.customBgDrawable != null && k.importedStyle == null || com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.keyBackground.getValue().isNotEmpty()) && k.isPressed) {
             canvas.drawColor(0x44FFFFFF)
         }
+        canvas.restoreToCount(saved)
     }
 
     private fun drawLabel(canvas: Canvas, label: String) {

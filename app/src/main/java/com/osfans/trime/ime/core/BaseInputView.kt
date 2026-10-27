@@ -81,16 +81,59 @@ abstract class BaseInputView(
         }
         service.lifecycleScope.launch {
             InputFeedbackManager.keyPressVibrate(view, longPress = true)
+            val contextCode = rime.runOnReady { getRawInput() }
+            val contextSchema = rime.runOnReady { selectedSchemaId() }
+            fun adjust(action: String, value: String = "") {
+                service.lifecycleScope.launch {
+                    runCatching { rime.runOnReady {
+                        if (getRawInput() != contextCode || selectedSchemaId() != contextSchema) false
+                        else customizeCandidate(idx, text, global, action, value)
+                    } }.onSuccess { changed ->
+                        android.widget.Toast.makeText(context, if (changed) "已保存候选设置" else "候选已变化，请重新长按", android.widget.Toast.LENGTH_SHORT).show()
+                    }.onFailure { android.widget.Toast.makeText(context, it.message ?: "保存失败", android.widget.Toast.LENGTH_LONG).show() }
+                }
+            }
             candidateActionMenu =
                 PopupMenu(themedContext, view).apply {
                     menu.add(title).apply {
                         isEnabled = false
                     }
                     onFullDisplay?.let { full -> menu.add("完整显示").setOnMenuItemClickListener { full(); true } }
-                    menu.add(R.string.forget_this_word).setOnMenuItemClickListener {
-                        rime.runIfReady { deleteCandidate(idx, global) }
+                    listOf("固定到第1位" to "pin1", "固定到第2位" to "pin2", "固定到第3位" to "pin3", "上移一位" to "up", "下移一位" to "down").forEach { (label, action) ->
+                        menu.add(label).setOnMenuItemClickListener { adjust(action); true }
+                    }
+                    menu.add("修改编码…").setOnMenuItemClickListener {
+                        val body = android.widget.LinearLayout(themedContext).apply { orientation = android.widget.LinearLayout.VERTICAL; setPadding(dp(12), dp(8), dp(12), dp(8)) }
+                        val editor = android.widget.EditText(themedContext).apply {
+                            setSingleLine(true); showSoftInputOnFocus = false; setText(contextCode); selectAll()
+                        }
+                        body.addView(editor)
+                        body.addView(android.widget.TextView(themedContext).apply { this.text = "原编码下隐藏此词，改用新编码输入。点击下方字符编辑。" })
+                        val grid = android.widget.GridLayout(themedContext).apply { columnCount = 6 }
+                        val alphabet = rime.run { schemaCached.alphabet }.ifEmpty { "abcdefghijklmnopqrstuvwxyz" }.toList().distinct().map { it.toString() }
+                        (alphabet + listOf("'", "⌫", "清空")).distinct().forEach { character ->
+                            grid.addView(android.widget.TextView(themedContext).apply {
+                                this.text = character; gravity = android.view.Gravity.CENTER; textSize = 18f; setPadding(dp(10), dp(10), dp(10), dp(10)); isClickable = true
+                                minHeight = dp(40); minWidth = dp(40)
+                                setOnClickListener {
+                                    val start = editor.selectionStart.coerceAtLeast(0); val end = editor.selectionEnd.coerceAtLeast(start)
+                                    when (character) {
+                                        "清空" -> editor.setText("")
+                                        "⌫" -> if (end > start) editor.text.delete(start, end) else if (start > 0) editor.text.delete(Character.offsetByCodePoints(editor.text, start, -1), start)
+                                        else -> editor.text.replace(start, end, character)
+                                    }
+                                }
+                            })
+                        }
+                        body.addView(grid)
+                        val dialog = android.app.AlertDialog.Builder(themedContext).setTitle("修改“$text”的编码")
+                            .setView(android.widget.ScrollView(themedContext).apply { addView(body) })
+                            .setNegativeButton(android.R.string.cancel, null).setPositiveButton(android.R.string.ok) { _, _ -> adjust("code", editor.text.toString().trim()) }.create()
+                        service.showDialog(dialog)
                         true
                     }
+                    menu.add("删除这个候选").setOnMenuItemClickListener { adjust("delete"); true }
+                    menu.add("恢复此编码默认候选").setOnMenuItemClickListener { adjust("reset"); true }
                     setOnDismissListener {
                         candidateActionMenu = null
                     }

@@ -10,6 +10,11 @@ import android.view.View
 
 /** One muted decoder per visible keyboard; no audio focus or background playback. */
 class VideoKeyboardBackground(context: Context, private val path: String) : TextureView(context), TextureView.SurfaceTextureListener {
+    companion object {
+        private val positions = object : LinkedHashMap<String, Int>(32, .75f, true) {
+            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Int>?) = size > 32
+        }
+    }
     private var player: MediaPlayer? = null
     private var surface: Surface? = null
     private var prepared = false
@@ -32,7 +37,16 @@ class VideoKeyboardBackground(context: Context, private val path: String) : Text
             p.setVolume(0f, 0f)
             p.isLooping = true
             p.setSurface(surface)
-            p.setOnPreparedListener { if (player === it) { prepared = true; fitVideo(); syncPlayback() } }
+            p.setOnPreparedListener { if (player === it) {
+                prepared = true; fitVideo()
+                val position = synchronized(positions) { positions[path] ?: 0 }
+                if (position > 0 && position < it.duration) {
+                    it.setOnSeekCompleteListener { ready -> if (player === ready) syncPlayback() }
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                        it.seekTo(position.toLong(), MediaPlayer.SEEK_CLOSEST)
+                    } else it.seekTo(position)
+                } else syncPlayback()
+            } }
             p.setOnErrorListener { _, _, _ -> release(); true }
             require(java.io.File(path).isFile)
             p.setDataSource(path)
@@ -55,6 +69,7 @@ class VideoKeyboardBackground(context: Context, private val path: String) : Text
     override fun onSurfaceTextureDestroyed(texture: SurfaceTexture): Boolean { release(); return true }
     override fun onDetachedFromWindow() { release(); super.onDetachedFromWindow() }
     fun release() {
+        if (prepared) player?.let { p -> runCatching { p.currentPosition }.getOrNull()?.let { position -> synchronized(positions) { positions[path] = position } } }
         prepared = false
         player?.let { p -> player = null; p.setOnPreparedListener(null); p.setOnErrorListener(null); runCatching { p.release() } }
         surface?.release(); surface = null

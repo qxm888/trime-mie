@@ -11,6 +11,11 @@ import kotlinx.coroutines.*
 
 /** One held gesture owns its recorder, engine and editor. Old callbacks cannot affect a new one. */
 class BuiltInVoiceController(private val service: TrimeInputMethodService) : VoiceInput {
+    init {
+        com.osfans.trime.ime.voice.VoiceSettings.init(service.applicationContext)
+        AsrSettings.init(service.applicationContext)
+        AsrContextHolder.init(service.applicationContext)
+    }
     private val main = Handler(Looper.getMainLooper())
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private class Session(val input: InputConnection, val packageName: String) {
@@ -19,6 +24,8 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
         var held = true
         var finished = false
         var watchdog: Job? = null
+        val id = android.os.SystemClock.elapsedRealtime()
+        var bytes = 0L
     }
     private var current: Session? = null
     var lastStatus = "idle"
@@ -28,6 +35,7 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
 
     override fun start(mock: Boolean) {
         cancel()
+        com.osfans.trime.util.DiagnosticLog.event("voice", "request", "enabled=${enabled()} vendor=${AsrSettings.selectedVendor} micPermission=${AudioRecorder.hasPermission(service)}")
         if (!enabled()) { notice("请在设置 → 语音输入开启语音输入"); return }
         if (!mock && AsrSettings.selectedVendor == "none") { notice("请在设置 → 语音输入选择识别引擎"); return }
         if (!mock && !AudioRecorder.hasPermission(service)) { notice("请在设置 → 语音输入授予麦克风权限"); return }
@@ -42,11 +50,13 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
         val session = Session(input, service.currentInputEditorInfo?.packageName.orEmpty())
         current = session
         lastStatus = "connecting"
+        com.osfans.trime.util.DiagnosticLog.event("voice", "start", "id=${session.id} vendor=${if (mock) "mock" else AsrSettings.selectedVendor}")
         if (!mock) service.postRimeJob { commitComposition() }
         val listener = object : AsrListener {
             override fun onFinal(text: String) { main.post {
                 if (current !== session || session.finished) return@post
                 session.finished = true
+                com.osfans.trime.util.DiagnosticLog.event("voice", "final", "id=${session.id} chars=${text.length} ms=${android.os.SystemClock.elapsedRealtime() - session.id}")
                 if (service.currentInputConnection === session.input &&
                     service.currentInputEditorInfo?.packageName == session.packageName) {
                     if (text.isNotBlank()) service.commitText(text) else notice("未识别到内容")
@@ -56,17 +66,21 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
             override fun onError(message: String) { main.post {
                 if (current !== session || session.finished) return@post
                 session.finished = true
+                com.osfans.trime.util.DiagnosticLog.event("voice", "error", "id=${session.id} stage=$lastStatus")
                 notice(message)
                 finish(session, "error")
             } }
         }
-        val engine = if (mock) MockEngine(scope, listener) else AsrEngineFactory.create(scope, listener) { notice("正在加载本地模型…") }
+        val engine = if (mock) MockEngine(scope, listener) else AsrEngineFactory.create(scope, listener,
+            onModelLoadStart = { main.post { if (current === session && !session.finished) { lastStatus = "loading_model"; notice("正在加载本地模型，首次加载可能较慢…") } } },
+            onModelLoadDone = { main.post { if (current === session && !session.finished) lastStatus = "recognizing" } },
+        )
         if (engine == null) { finish(session, "error"); notice("识别引擎不可用，请重新选择"); return }
         session.engine = engine
         try {
             engine.start()
             if (!mock) {
-                session.recorder = AudioRecorder(service, scope, { listener.onError(it) }) { pcm -> engine.feed(pcm) }
+                session.recorder = AudioRecorder(service, scope, { listener.onError(it) }) { pcm -> session.bytes += pcm.size; engine.feed(pcm) }
                 if (session.recorder?.start() != true) { listener.onError("无法开始录音，请检查麦克风权限"); return }
             }
             lastStatus = "recording"
@@ -78,6 +92,9 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
         if (!session.held || session.finished) return
         session.held = false
         lastStatus = "processing"
+        com.osfans.trime.util.DiagnosticLog.event("voice", "release", "id=${session.id} bytes=${session.bytes}")
+        session.watchdog?.cancel()
+        session.watchdog = scope.launch { delay(90_000); listenerTimeout(session) }
         scope.launch {
             session.recorder?.stopAndJoin()
             withContext(Dispatchers.Main) {
@@ -85,7 +102,15 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
             }
         }
     }
+    private fun listenerTimeout(session: Session) { main.post {
+        if (current !== session || session.finished) return@post
+        com.osfans.trime.util.DiagnosticLog.event("voice", "timeout", "id=${session.id} stage=$lastStatus bytes=${session.bytes}")
+        session.finished = true
+        notice("识别超时。请检查模型与可用内存，或更换较小模型；持续无响应时重启输入法。可导出日志反馈。")
+        finish(session, "error")
+    } }
     private fun finish(session: Session, status: String) {
+        com.osfans.trime.util.DiagnosticLog.event("voice", "finish", "id=${session.id} status=$status")
         session.held = false
         session.watchdog?.cancel()
         session.recorder?.stop()

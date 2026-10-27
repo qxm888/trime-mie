@@ -12,6 +12,7 @@ object AsrEngineFactory {
         scope: CoroutineScope,
         listener: AsrListener,
         onModelLoadStart: () -> Unit = {},
+        onModelLoadDone: () -> Unit = {},
     ): AsrEngine? {
         val vendor = AsrSettings.selectedVendor
         if (vendor == "none") return null
@@ -80,10 +81,10 @@ object AsrEngineFactory {
                 languageProvider = { AsrSettings.language("stepaudio").ifBlank { "zh" } },
             )
 
-            "x_asr" -> XAsrStreamEngine(scope, listener, onModelLoadStart)
+            "x_asr" -> XAsrStreamEngine(scope, listener, onModelLoadStart, onModelLoadDone)
 
             else -> if (AsrVendors.byId(vendor)?.local == true) {
-                OfflineSherpaAsrEngine(scope, listener, vendor, onModelLoadStart)
+                OfflineSherpaAsrEngine(scope, listener, vendor, onModelLoadStart, onModelLoadDone)
             } else {
                 null
             }

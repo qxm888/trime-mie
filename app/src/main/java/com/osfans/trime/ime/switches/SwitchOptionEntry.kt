@@ -23,6 +23,8 @@ sealed class SwitchOptionEntry(
             InputStats,
             FloatingKeyboard,
             OneHandMode,
+            CandidatesWindow,
+            HideInputBar,
         }
     }
 

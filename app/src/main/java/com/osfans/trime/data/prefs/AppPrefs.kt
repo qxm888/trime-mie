@@ -299,6 +299,8 @@ class AppPrefs(
         val useSoftCursor = switch(R.string.use_soft_cursor, USE_SOFT_CURSOR, true)
 
         val videoBackground = string(R.string.keyboard_video_background, "keyboard_video_background", "")
+        val unifiedBackground = switch(R.string.keyboard_unified_background, "keyboard_unified_background", false)
+        val keyBackground = string("all_keys_background", "")
         val hideInputBar = switch(R.string.hide_input_bar, HIDE_INPUT_BAR, false)
         val hideKeySymbol = switch(R.string.hide_key_symbol, HIDE_KEY_SYMBOL, false)
         val hideKeyHint = switch(R.string.hide_key_hint, HIDE_KEY_HINT, false)
@@ -475,6 +477,8 @@ class AppPrefs(
         }
 
         val mode = enum(R.string.show_candidates_window, MODE, PopupCandidatesMode.DISABLED)
+        val floatingBall = switch(R.string.candidate_floating_ball, "candidate_floating_ball", false)
+        val ballOpacity = int(R.string.candidate_ball_opacity, "candidate_ball_opacity", 65, 20, 100, "%", 5) { floatingBall.getValue() }
         val limitLines = switch(R.string.candidate_limit_lines, "candidate_limit_lines", true)
         val autoShrink = switch(R.string.candidate_auto_shrink, "candidate_auto_shrink", true, enableUiOn = { limitLines.getValue() && maxLines.getValue() == 1 })
         val fullDisplay = switch(R.string.candidate_full_display, "candidate_full_display", true)

@@ -27,6 +27,12 @@ import com.osfans.trime.util.copyBoundedTo
 
 /** Explicit, exclusive color/transparent/image selection for fully custom keyboards. */
 object SkinPicker {
+    fun unifiedBackgroundToggle(context: Context) = android.widget.CheckBox(context).apply {
+        text = "状态栏与键盘共用一整块背景"
+        isChecked = com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.unifiedBackground.getValue()
+        setPadding(24, 8, 24, 8)
+        setOnCheckedChangeListener { _, checked -> com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.unifiedBackground.setValue(checked) }
+    }
     private val palette = listOf(
         "#F44336", "#E91E63", "#9C27B0", "#673AB7", "#3F51B5",
         "#2196F3", "#00BCD4", "#4CAF50", "#8BC34A", "#FFEB3B",
@@ -49,7 +55,7 @@ object SkinPicker {
         )
         if (onPickVideo != null) labels.add("视频（静音循环）")
         if (current.type.ordinal in labels.indices) labels[current.type.ordinal] += " ✓"
-        MaterialAlertDialogBuilder(activity).setTitle(title).setItems(labels.toTypedArray()) { _, which ->
+        MaterialAlertDialogBuilder(activity).apply { if (onPickVideo != null) setView(unifiedBackgroundToggle(activity)) }.setTitle(title).setItems(labels.toTypedArray()) { _, which ->
             when (which) {
                 0 -> showColors(activity, title, current, onPicked)
                 1 -> onPicked(CustomBackground(CustomBackground.Type.TRANSPARENT))

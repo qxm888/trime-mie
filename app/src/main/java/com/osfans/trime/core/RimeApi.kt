@@ -50,6 +50,8 @@ interface RimeApi {
 
     suspend fun deleteCandidate(idx: Int, global: Boolean): Boolean
 
+    suspend fun customizeCandidate(idx: Int, text: String, global: Boolean, action: String, value: String = ""): Boolean
+
     suspend fun changeCandidatePage(backward: Boolean): Boolean
 
     suspend fun moveCursorPos(position: Int)

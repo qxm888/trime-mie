@@ -122,6 +122,38 @@ class CandidatesView(
             onNextPage = { rime.launchOnReady { it.changeCandidatePage(false) } },
         )
 
+    private var collapsed = false
+    private var showingTools = false
+    private val closeTools = Runnable { showingTools = false; updateUi() }
+    private val header = android.widget.TextView(ctx).apply {
+        text = "候选窗    收起 ⌄"; textSize = 13f; gravity = android.view.Gravity.CENTER_VERTICAL
+        setPaddingDp(10, 0, 10, 0); minHeight = dp(40); setTextColor(scope.colors.candidateTextColor)
+        contentDescription = "收起候选栏为悬浮球"
+        setOnClickListener { collapsed = true; showingTools = false; updateUi() }
+    }
+    private val ball = android.widget.TextView(ctx).apply {
+        text = "●"; textSize = 28f; gravity = android.view.Gravity.CENTER; minWidth = dp(44); minHeight = dp(44)
+        setTextColor(scope.colors.candidateTextColor)
+        contentDescription = "候选悬浮球；点击显示工具栏，长按展开键盘菜单"
+        background = android.graphics.drawable.GradientDrawable().apply { shape = android.graphics.drawable.GradientDrawable.OVAL; setColor(scope.colors.textBackColor) }
+        setOnClickListener {
+            if (evaluateVisibility()) collapsed = false else showingTools = !showingTools
+            removeCallbacks(closeTools)
+            if (showingTools) postDelayed(closeTools, 6000)
+            updateUi()
+        }
+        setOnLongClickListener { showingTools = false; service.openKeyboardMenu(); updateUi(); true }
+    }
+    private val tools = android.widget.HorizontalScrollView(ctx).apply {
+        isHorizontalScrollBarEnabled = false
+        val row = android.widget.LinearLayout(ctx)
+        com.osfans.trime.data.keymap.ToolbarOverrides.forKeyboard(theme).buttons.forEach { config ->
+            row.addView(com.osfans.trime.ime.bar.ui.ToolButton(ctx, config, scope).apply {
+                setOnClickListener { service.performFloatingToolbarAction(config.action); showingTools = false; updateUi() }
+            }, android.widget.LinearLayout.LayoutParams(dp(44), dp(44)))
+        }
+        addView(row)
+    }
     private val touchEventReceiverWindow = TouchEventReceiverWindow(this)
 
     private var bottomInsets = 0
@@ -129,6 +161,7 @@ class CandidatesView(
     override fun handleRimeMessage(it: RimeMessage<*>) {
         when (it) {
             is RimeMessage.CompositionMessage -> {
+                if (composition.length == 0 && it.data.length > 0) { collapsed = false; showingTools = false }
                 composition = it.data
                 updateUi()
             }
@@ -147,10 +180,18 @@ class CandidatesView(
 
     private fun updateUi() {
         preeditUi.update(composition)
-        preeditUi.root.visibility = if (preeditUi.visible) VISIBLE else GONE
+        val expanded = evaluateVisibility() && !collapsed
+        val idle = !expanded && AppPrefs.defaultInstance().candidates.floatingBall.getValue()
+        preeditUi.root.visibility = if (expanded && preeditUi.visible) VISIBLE else GONE
+        candidatesUi.root.visibility = if (expanded) VISIBLE else GONE
+        header.visibility = if (expanded) VISIBLE else GONE
+        ball.visibility = if (idle) VISIBLE else GONE
+        tools.visibility = if (idle && showingTools) VISIBLE else GONE
+        alpha = if (idle && !showingTools) AppPrefs.defaultInstance().candidates.ballOpacity.getValue() / 100f else theme.window.alpha
+        background = if (idle && !showingTools) null else scope.decorDrawable("text_back_color", "candidate_border_color", dp(theme.window.border), dp(theme.window.cornerRadius))
         // the candidate layout is queried natively with the page itself
         candidatesUi.update(candidates, layout)
-        visibility = if (evaluateVisibility()) {
+        visibility = if (expanded || idle) {
             VISIBLE
         } else {
             // RecyclerView won't update its items when ancestor view is GONE
@@ -329,6 +370,8 @@ class CandidatesView(
             },
         )
 
+        addView(header); addView(ball); addView(tools)
+        updateUi()
         isFocusable = false
         layoutParams = ViewGroup.LayoutParams(wrapContent, wrapContent)
     }
@@ -377,36 +420,45 @@ class CandidatesView(
         val innerHeight = (maxHeight - paddingTop - paddingBottom).coerceAtLeast(0)
         val list = candidatesUi.root
         candidatesUi.constrainWidth(innerWidth)
-        val hasItems = (list.adapter?.itemCount ?: 0) > 0
+        val extra = when { ball.visibility == VISIBLE -> if (tools.visibility == VISIBLE) tools else ball; else -> header }
+        extra.measure(MeasureSpec.makeMeasureSpec(innerWidth, MeasureSpec.AT_MOST), MeasureSpec.makeMeasureSpec(dp(44), MeasureSpec.EXACTLY))
+        val extraHeight = extra.measuredHeight.coerceAtMost(innerHeight)
+        val contentHeight = (innerHeight - extraHeight).coerceAtLeast(0)
+        val hasItems = list.visibility == VISIBLE && (list.adapter?.itemCount ?: 0) > 0
         val preedit = preeditUi.root
         val preeditHeight = if (preedit.visibility != GONE) {
-            val preeditLimit = if (hasItems) innerHeight / 3 else innerHeight
+            val preeditLimit = if (hasItems) contentHeight / 3 else contentHeight
             preedit.measure(MeasureSpec.makeMeasureSpec(innerWidth, MeasureSpec.AT_MOST),
                 MeasureSpec.makeMeasureSpec(preeditLimit, MeasureSpec.AT_MOST))
             preedit.measuredHeight.coerceAtMost(preeditLimit)
         } else 0
-        val listLimit = (innerHeight - preeditHeight).coerceAtLeast(0)
+        val listLimit = (contentHeight - preeditHeight).coerceAtLeast(0)
         list.measure(MeasureSpec.makeMeasureSpec(innerWidth, MeasureSpec.AT_MOST),
             MeasureSpec.makeMeasureSpec(listLimit, MeasureSpec.AT_MOST))
         val desiredWidth = maxOf(if (preedit.visibility == GONE) 0 else preedit.measuredWidth,
-            list.measuredWidth, dp(theme.window.minWidth) - paddingLeft - paddingRight).coerceIn(1, innerWidth)
+            if (hasItems) list.measuredWidth else 0, extra.measuredWidth, if (ball.visibility == VISIBLE && tools.visibility != VISIBLE) dp(44) else dp(theme.window.minWidth) - paddingLeft - paddingRight).coerceIn(1, innerWidth)
         val listHeight = if (hasItems) list.measuredHeight.coerceAtMost(listLimit) else 0
         // The RecyclerView's own viewport must match the visible space, not its unbounded content.
         list.measure(MeasureSpec.makeMeasureSpec(desiredWidth, MeasureSpec.EXACTLY),
             MeasureSpec.makeMeasureSpec(listHeight, MeasureSpec.EXACTLY))
         setMeasuredDimension((desiredWidth + paddingLeft + paddingRight).coerceAtMost(maxWidth),
-            (preeditHeight + listHeight + paddingTop + paddingBottom).coerceIn(1, maxHeight))
+            (extraHeight + preeditHeight + listHeight + paddingTop + paddingBottom).coerceIn(1, maxHeight))
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        val extra = when { ball.visibility == VISIBLE -> if (tools.visibility == VISIBLE) tools else ball; else -> header }
+        val extraHeight = extra.measuredHeight
+        extra.layout(paddingLeft, paddingTop, paddingLeft + extra.measuredWidth, paddingTop + extraHeight)
+        if (tools.visibility == VISIBLE) ball.layout(0, 0, 0, 0)
+        val contentTop = paddingTop + extraHeight
         val preedit = preeditUi.root
         val hasPreedit = preedit.visibility != GONE
         val preeditHeight = if (hasPreedit) preedit.measuredHeight.coerceAtMost((height - paddingTop - paddingBottom).coerceAtLeast(0)) else 0
         if (hasPreedit) {
             val x = if (layoutDirection == LAYOUT_DIRECTION_RTL) width - paddingRight - preedit.measuredWidth else paddingLeft
-            preedit.layout(x, paddingTop, x + preedit.measuredWidth, paddingTop + preeditHeight)
+            preedit.layout(x, contentTop, x + preedit.measuredWidth, contentTop + preeditHeight)
         }
-        candidatesUi.root.layout(paddingLeft, paddingTop + preeditHeight,
+        candidatesUi.root.layout(paddingLeft, contentTop + preeditHeight,
             (width - paddingRight).coerceAtLeast(paddingLeft), (height - paddingBottom).coerceAtLeast(paddingTop + preeditHeight))
     }
 
@@ -434,6 +486,7 @@ class CandidatesView(
     override fun onDetachedFromWindow() {
         viewTreeObserver.removeOnPreDrawListener(preDrawListener)
         viewTreeObserver.removeOnGlobalLayoutListener(layoutListener)
+        removeCallbacks(closeTools)
         touchEventReceiverWindow.dismiss()
         super.onDetachedFromWindow()
     }

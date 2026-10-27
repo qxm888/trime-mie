@@ -9,14 +9,14 @@ SPDX-License-Identifier: GPL-3.0-or-later
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:attr/colorBackground"
+    android:background="@color/framework_background"
     android:orientation="vertical">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/cbe_app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorSurface"
+        android:background="@color/framework_background"
         app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
@@ -62,12 +62,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
                 android:layout_height="wrap_content"
                 android:text="@string/custom_kb_row_spacing" />
 
-            <LinearLayout
-                android:id="@+id/cbe_rows"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical" />
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -93,6 +87,15 @@ SPDX-License-Identifier: GPL-3.0-or-later
                     android:orientation="vertical"
                     android:padding="8dp" />
             </com.google.android.material.card.MaterialCardView>
+
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="键盘结构 · 点击按键编辑" android:textSize="14sp" android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface" android:paddingTop="20dp" android:paddingBottom="12dp" />
+            <LinearLayout
+                android:id="@+id/cbe_rows"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/cbe_add_row"

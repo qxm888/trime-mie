@@ -221,6 +221,31 @@ class InputView(
         }
 
     private var bottomOverlay: View? = null
+    private var unifiedVideo: com.osfans.trime.ime.keyboard.VideoKeyboardBackground? = null
+    private var unifiedVideoPath: String? = null
+
+    fun setUnifiedVideoActive(active: Boolean) { unifiedVideo?.setActive(active) }
+
+    private fun updateUnifiedBackground() {
+        val enabled = AppPrefs.defaultInstance().keyboard.unifiedBackground.getValue()
+        val background = keyboardWindow.currentBackground.takeIf { enabled }
+        keyboardBackground.imageDrawable = background?.drawable(context, resources.displayMetrics.widthPixels) ?: scope.drawable("keyboard_background")
+        val path = background?.takeIf { it.type == com.osfans.trime.data.keymap.CustomBackground.Type.VIDEO }?.image
+        if (path == unifiedVideoPath && unifiedVideo != null) return
+        unifiedVideo?.let { it.release(); (it.parent as? android.view.ViewGroup)?.removeView(it) }
+        unifiedVideo = null
+        unifiedVideoPath = path
+        if (path != null) {
+            val video = com.osfans.trime.ime.keyboard.VideoKeyboardBackground(context, path)
+            video.id = View.generateViewId()
+            val params = LayoutParams(0, 0).apply {
+                startToStart = LayoutParams.PARENT_ID; endToEnd = LayoutParams.PARENT_ID
+                topToTop = LayoutParams.PARENT_ID; bottomToBottom = LayoutParams.PARENT_ID
+            }
+            (keyboardView as android.view.ViewGroup).addView(video, 1, params)
+            unifiedVideo = video
+        }
+    }
 
     fun showBottomOverlay(view: View, heightPx: Int) {
         hideBottomOverlay()
@@ -805,7 +830,7 @@ class InputView(
     }
 
     fun refreshColors() {
-        keyboardBackground.imageDrawable = scope.drawable("keyboard_background")
+        updateUnifiedBackground()
         configureFloatingSurface(isFloatingKeyboardEnabled)
         popup.refreshColors()
         keyboardWindow.refreshColors()
@@ -882,6 +907,8 @@ class InputView(
                 )
             }
 
+        keyboardWindow.onBackgroundChanged = { updateUnifiedBackground() }
+        updateUnifiedBackground()
         configureFloatingSurface(isFloatingKeyboardEnabled)
 
         updateWindowViewHeightJob =
@@ -1031,6 +1058,13 @@ class InputView(
         return insets
     }
 
+    fun showKeyboardMenu() { windowManager.attachWindow(com.osfans.trime.ime.switches.SwitchOptionWindow(di)) }
+    fun performToolbarAction(action: String) {
+        if (action.isEmpty()) { showKeyboardMenu(); return }
+        if (action == com.osfans.trime.data.keymap.ToolbarOverrides.BUILTIN_FLOATING) { service.toggleFloatingKeyboard(); return }
+        val listener: CommonKeyboardActionListener by instance()
+        listener.listener.onAction(theme.resolveAction(action))
+    }
     fun startInput(
         info: EditorInfo,
         restarting: Boolean = false,
@@ -1099,7 +1133,12 @@ class InputView(
     @RequiresApi(Build.VERSION_CODES.R)
     fun handleInlineSuggestions(response: InlineSuggestionsResponse): Boolean = inputBar.handleInlineSuggestions(response)
 
-    fun releaseKeyboard() = keyboardWindow.release()
+    fun releaseKeyboard() {
+        unifiedVideo?.release()
+        unifiedVideo = null
+        keyboardWindow.onBackgroundChanged = null
+        keyboardWindow.release()
+    }
 
     override fun onDetachedFromWindow() {
         preedit.dispose()

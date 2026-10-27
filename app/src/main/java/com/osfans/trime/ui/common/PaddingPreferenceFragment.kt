@@ -48,15 +48,24 @@ abstract class PaddingPreferenceFragment : PreferenceFragmentCompat() {
                         view.tag == "trime_preference_category"
                 }
                 override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
-                    outRect.bottom = dp(if (isCategory(parent, view)) 4 else 8)
+                    val position = parent.getChildAdapterPosition(view)
+                    val adapter = parent.adapter as? androidx.preference.PreferenceGroupAdapter
+                    val nextCategory = adapter?.getItem(position + 1) is PreferenceCategory || position == (adapter?.itemCount ?: 0) - 1
+                    outRect.bottom = dp(if (isCategory(parent, view)) 6 else if (nextCategory) 16 else 1)
                 }
                 override fun onDraw(canvas: Canvas, parent: RecyclerView, state: RecyclerView.State) {
                     for (index in 0 until parent.childCount) {
                         val child = parent.getChildAt(index)
                         if (!isCategory(parent, child)) {
-                            canvas.drawRoundRect(child.left.toFloat(), child.top + child.translationY,
-                                child.right.toFloat(), child.bottom + child.translationY,
-                                dp(20).toFloat(), dp(20).toFloat(), paint)
+                            val position = parent.getChildAdapterPosition(child)
+                            val adapter = parent.adapter as? androidx.preference.PreferenceGroupAdapter
+                            val first = position == 0 || adapter?.getItem(position - 1) is PreferenceCategory
+                            val last = position == (adapter?.itemCount ?: 0) - 1 || adapter?.getItem(position + 1) is PreferenceCategory
+                            val top = if (first) dp(24).toFloat() else 0f
+                            val bottom = if (last) dp(24).toFloat() else 0f
+                            val bounds = android.graphics.RectF(child.left.toFloat(), child.top + child.translationY, child.right.toFloat(), child.bottom + child.translationY + if (last) 0 else dp(1))
+                            val path = android.graphics.Path().apply { addRoundRect(bounds, floatArrayOf(top,top,top,top,bottom,bottom,bottom,bottom), android.graphics.Path.Direction.CW) }
+                            canvas.drawPath(path, paint)
                         }
                     }
                 }
