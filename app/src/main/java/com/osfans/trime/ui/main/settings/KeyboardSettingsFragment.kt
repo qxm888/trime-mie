@@ -40,7 +40,7 @@ class KeyboardSettingsFragment : PreferenceDelegateFragment(AppPrefs.defaultInst
             }
         }
         screen.addPreference(Preference(requireContext()).apply {
-            title = "整体按键背景"; summary = "为主题和自定义键盘统一设置纯色、透明或图片"
+            title = "按键与状态栏外观"; summary = "背景、边框、圆角、统一样式与动态模糊"
             setOnPreferenceClickListener { com.osfans.trime.ui.main.AppearancePicker.showKeyboard(requireActivity()); true }
         })
         screen.findPreference<Preference>("custom_sound_effect_name")?.apply {

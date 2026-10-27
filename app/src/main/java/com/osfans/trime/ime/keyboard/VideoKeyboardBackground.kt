@@ -15,6 +15,20 @@ class VideoKeyboardBackground(context: Context, private val path: String) : Text
             override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Int>?) = size > 32
         }
     }
+    private var blurFrame: android.graphics.Bitmap? = null
+    private val blurPaint = android.graphics.Paint(android.graphics.Paint.FILTER_BITMAP_FLAG)
+    private val blurBounds = android.graphics.Rect()
+    fun drawBlurFrame(canvas: android.graphics.Canvas) {
+        if (!isAvailable || width <= 0 || height <= 0) return
+        val w = (width / 8).coerceIn(1, 256)
+        val h = (height.toFloat() * w / width).toInt().coerceIn(1, 256)
+        val frame = blurFrame?.takeIf { it.width == w && it.height == h }
+            ?: android.graphics.Bitmap.createBitmap(w, h, android.graphics.Bitmap.Config.ARGB_8888).also { blurFrame = it }
+        if (getBitmap(frame) != null) {
+            blurBounds.set(0, 0, width, height)
+            canvas.drawBitmap(frame, null, blurBounds, blurPaint)
+        }
+    }
     private var player: MediaPlayer? = null
     private var surface: Surface? = null
     private var prepared = false
@@ -69,6 +83,7 @@ class VideoKeyboardBackground(context: Context, private val path: String) : Text
     override fun onSurfaceTextureDestroyed(texture: SurfaceTexture): Boolean { release(); return true }
     override fun onDetachedFromWindow() { release(); super.onDetachedFromWindow() }
     fun release() {
+        blurFrame = null
         if (prepared) player?.let { p -> runCatching { p.currentPosition }.getOrNull()?.let { position -> synchronized(positions) { positions[path] = position } } }
         prepared = false
         player?.let { p -> player = null; p.setOnPreparedListener(null); p.setOnErrorListener(null); runCatching { p.release() } }

@@ -72,7 +72,7 @@ class KeyEditActivity : AppCompatActivity() {
         }
         toolbar.setNavigationOnClickListener { finish() }
         toolbar.inflateMenu(R.menu.key_edit)
-        toolbar.menu.add(0, 2180, 0, "整体按键背景")
+        toolbar.menu.add(0, 2180, 0, "按键与状态栏外观")
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 2180 -> AppearancePicker.showKeyboard(this) { rebuildPreview() }

@@ -77,6 +77,7 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
         applyIconTint()
         image.padding = dp(4)
         setIcon(icon)
+        applySurfaceBackground()
     }
 
     constructor(
@@ -144,13 +145,33 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
                 backgroundStateDrawable(bg, highlight = false),
             )
         }
+        applySurfaceBackground()
     }
+
+    private fun applySurfaceBackground() {
+        val appearance = com.osfans.trime.ime.appearance.SurfaceAppearance.current()
+        var style = appearance.effectiveToolbar
+        if (appearance.linkToolbar) style = style.copy(
+            borderWidth = style.borderWidth ?: themeKeyBorder(),
+            borderColor = style.borderColor.ifBlank { String.format("#%08X", scope.colors.keyBorderColor) },
+            radius = style.radius ?: scope.theme.style.roundCorner,
+        )
+        if (style.customized || appearance.linkToolbar) {
+            val fallback = if (appearance.linkToolbar) scope.drawable("key_back_color") else background
+            background = com.osfans.trime.ime.appearance.SurfaceDrawable(this, fallback, style,
+                defaultBorderColor = scope.colors.keyBorderColor)
+        }
+    }
+
+    private fun themeKeyBorder() = scope.theme.style.keyBorder.toFloat()
 
     /** Restyles this button after a scheme switch. */
     fun refreshColors() {
         val cfg = config
         if (cfg == null) {
+            background = null
             applyIconTint()
+            applySurfaceBackground()
         } else {
             applyConfigColors(cfg)
         }

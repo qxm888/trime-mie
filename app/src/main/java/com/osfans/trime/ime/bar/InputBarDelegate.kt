@@ -285,9 +285,16 @@ class InputBarDelegate(override val di: DI) :
             ?.drawable(context, context.resources.displayMetrics.widthPixels)
     }
 
-    private fun barBackground(): android.graphics.drawable.Drawable? =
-        if (prefs.keyboard.unifiedBackground.getValue()) null else customBarBackground() ?: scope.decorDrawable(
+    private fun barBackground(host: View): android.graphics.drawable.Drawable? {
+        val fallback = if (prefs.keyboard.unifiedBackground.getValue()) null else customBarBackground() ?: scope.decorDrawable(
             "candidate_background", "candidate_border_color", context.dp(theme.style.candidateBorder), context.dp(theme.style.candidateBorderRound))
+        val appearance = com.osfans.trime.ime.appearance.SurfaceAppearance.current()
+        return if (appearance.barBlur || appearance.barBackground.isNotEmpty())
+            com.osfans.trime.ime.appearance.SurfaceDrawable(host, fallback,
+                com.osfans.trime.ime.appearance.SurfaceStyle(background = appearance.barBackground, blur = appearance.barBlur),
+                defaultRadius = theme.style.candidateBorderRound.toFloat(), inset = 0f)
+        else fallback
+    }
 
     val view by lazy {
         ViewAnimator(context).apply {
@@ -297,7 +304,7 @@ class InputBarDelegate(override val di: DI) :
                 } else {
                     View.VISIBLE
                 }
-            background = barBackground()
+            background = barBackground(this)
             add(alwaysUi.root, lParams(matchParent, matchParent))
             add(candidateUi.root, lParams(matchParent, matchParent))
             add(tabUi.root, lParams(matchParent, matchParent))
@@ -329,7 +336,7 @@ class InputBarDelegate(override val di: DI) :
 
     /** Restyles the bar after a scheme switch without rebuilding its views. */
     fun refreshColors() {
-        view.background = barBackground()
+        view.background = barBackground(view)
         alwaysUi.refreshColors()
         candidateUi.refreshColors()
         // the compact candidate rows live inside candidateUi and re-bind via the delegate

@@ -301,6 +301,7 @@ class AppPrefs(
         val videoBackground = string(R.string.keyboard_video_background, "keyboard_video_background", "")
         val unifiedBackground = switch(R.string.keyboard_unified_background, "keyboard_unified_background", false)
         val keyBackground = string("all_keys_background", "")
+        val surfaceAppearance = string("keyboard_surface_appearance", "")
         val hideInputBar = switch(R.string.hide_input_bar, HIDE_INPUT_BAR, false)
         val hideKeySymbol = switch(R.string.hide_key_symbol, HIDE_KEY_SYMBOL, false)
         val hideKeyHint = switch(R.string.hide_key_hint, HIDE_KEY_HINT, false)

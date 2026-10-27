@@ -180,6 +180,14 @@ class KeyboardWindow(di: DI) :
     var currentBackground: com.osfans.trime.data.keymap.CustomBackground? = null
         private set
     var onBackgroundChanged: (() -> Unit)? = null
+    fun drawBlurBackdrop(root: android.view.ViewGroup, canvas: android.graphics.Canvas) {
+        com.osfans.trime.ime.appearance.BackdropBlur.drawLayer(root, keyboardView, canvas) { c ->
+            keyboardView.background?.draw(c)
+        }
+        videoBackground?.let { video ->
+            com.osfans.trime.ime.appearance.BackdropBlur.drawLayer(root, video, canvas) { c -> video.drawBlurFrame(c) }
+        }
+    }
     fun setVideoActive(active: Boolean) { videoBackground?.setActive(active) }
 
     private fun applyKeyboardSkin(target: String, width: Int) {

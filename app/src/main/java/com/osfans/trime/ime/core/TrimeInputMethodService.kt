@@ -120,6 +120,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         prefs.keyboard.hideInputBar,
         prefs.keyboard.unifiedBackground,
         prefs.keyboard.keyBackground,
+        prefs.keyboard.surfaceAppearance,
         prefs.advanced.ignoreSystemGestureInsets,
     )
 

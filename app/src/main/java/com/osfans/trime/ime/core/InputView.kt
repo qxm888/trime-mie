@@ -909,6 +909,16 @@ class InputView(
 
         keyboardWindow.onBackgroundChanged = { updateUnifiedBackground() }
         updateUnifiedBackground()
+        if (com.osfans.trime.ime.appearance.SurfaceAppearance.current().needsBlur) {
+            val root = keyboardView as android.view.ViewGroup
+            com.osfans.trime.ime.appearance.BackdropBlur(root) { canvas ->
+                com.osfans.trime.ime.appearance.BackdropBlur.drawLayer(root, keyboardBackground, canvas) { keyboardBackground.draw(it) }
+                unifiedVideo?.let { video ->
+                    com.osfans.trime.ime.appearance.BackdropBlur.drawLayer(root, video, canvas) { video.drawBlurFrame(it) }
+                }
+                keyboardWindow.drawBlurBackdrop(root, canvas)
+            }
+        }
         configureFloatingSurface(isFloatingKeyboardEnabled)
 
         updateWindowViewHeightJob =

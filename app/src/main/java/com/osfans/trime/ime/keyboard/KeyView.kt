@@ -338,7 +338,7 @@ class KeyView(
 
         drawBackground(canvas, key)
 
-        val drawText = key.importedStyle == null || com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.keyBackground.getValue().isNotEmpty()
+        val drawText = com.osfans.trime.ime.appearance.SurfaceAppearance.current().keys.blur || key.importedStyle == null || com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.keyBackground.getValue().isNotEmpty()
         val label = key.getLabel().let {
             if (it == "enter_labels") keyboardView.labelEnter else it
         }
@@ -358,7 +358,13 @@ class KeyView(
         }
     }
 
+    private val surfaceBorderPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+    private val surfaceBorderBounds = android.graphics.RectF()
+
     private fun drawBackground(canvas: Canvas, k: Key) {
+        val surface = com.osfans.trime.ime.appearance.SurfaceAppearance.current().keys
+        val corner = surface.radius ?: k.roundCorner
+
         val bg = k.getBackgroundDrawable() ?: return
         if (paintedBackground !== bg) {
             paintedBackground?.takeIf { it.callback === this }?.callback = null
@@ -368,8 +374,8 @@ class KeyView(
         if (bg.callback !== this) bg.callback = this
 
         if (bg is GradientDrawable) {
-            k.roundCorner.takeIf { it > 0f }?.let { bg.cornerRadius = dp(it) }
-            k.keyBorder.takeIf { it > 0 }?.let { bg.setStroke(dp(it), k.getBorderColor()) }
+            bg.cornerRadius = dp(corner.coerceAtLeast(0f))
+            if (surface.overridesBorder) bg.setStroke(0, 0) else k.keyBorder.takeIf { it > 0 }?.let { bg.setStroke(dp(it), k.getBorderColor()) }
         }
 
         bg.setBounds(
@@ -381,9 +387,13 @@ class KeyView(
         val saved = canvas.save()
         backgroundClipBounds.set(paddingLeft.toFloat(), paddingTop.toFloat(), (width - paddingRight).toFloat(), (height - paddingBottom).toFloat())
         backgroundClip.reset()
-        backgroundClip.addRoundRect(backgroundClipBounds, dp(k.roundCorner.coerceAtLeast(0f)), dp(k.roundCorner.coerceAtLeast(0f)), android.graphics.Path.Direction.CW)
+        backgroundClip.addRoundRect(backgroundClipBounds, dp(corner.coerceAtLeast(0f)), dp(corner.coerceAtLeast(0f)), android.graphics.Path.Direction.CW)
         canvas.clipPath(backgroundClip)
+        val blurred = surface.blur && com.osfans.trime.ime.appearance.BackdropBlur.draw(this, canvas, backgroundClipBounds)
+        val layer = if (blurred) canvas.saveLayerAlpha(backgroundClipBounds, com.osfans.trime.ime.appearance.SurfaceAppearance.current().glassOpacity * 255 / 100) else -1
         bg.draw(canvas)
+        if (layer >= 0) canvas.restoreToCount(layer)
+        if (surface.blur) canvas.drawColor(if (k.isPressed) 0x33FFFFFF else 0x18FFFFFF)
         if (bg is com.osfans.trime.data.baiduskin.BdsKeyDrawable && bg.animating) postInvalidateOnAnimation()
 
 
@@ -392,6 +402,16 @@ class KeyView(
             canvas.drawColor(0x44FFFFFF)
         }
         canvas.restoreToCount(saved)
+        if (surface.overridesBorder) {
+            val stroke = dp(surface.borderWidth ?: k.keyBorder.toFloat())
+            if (stroke > 0f) {
+                surfaceBorderBounds.set(backgroundClipBounds); surfaceBorderBounds.inset(stroke / 2, stroke / 2)
+                surfaceBorderPaint.style = android.graphics.Paint.Style.STROKE
+                surfaceBorderPaint.strokeWidth = stroke
+                surfaceBorderPaint.color = surface.color(k.getBorderColor())
+                canvas.drawRoundRect(surfaceBorderBounds, (dp(corner) - stroke / 2).coerceAtLeast(0f), (dp(corner) - stroke / 2).coerceAtLeast(0f), surfaceBorderPaint)
+            }
+        }
     }
 
     private fun drawLabel(canvas: Canvas, label: String) {
