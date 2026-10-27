@@ -122,22 +122,15 @@ class CandidatesView(
             onNextPage = { rime.launchOnReady { it.changeCandidatePage(false) } },
         )
 
-    private var collapsed = false
     private var showingTools = false
     private val closeTools = Runnable { showingTools = false; updateUi() }
-    private val header = android.widget.TextView(ctx).apply {
-        text = "候选窗    收起 ⌄"; textSize = 13f; gravity = android.view.Gravity.CENTER_VERTICAL
-        setPaddingDp(10, 0, 10, 0); minHeight = dp(40); setTextColor(scope.colors.candidateTextColor)
-        contentDescription = "收起候选栏为悬浮球"
-        setOnClickListener { collapsed = true; showingTools = false; updateUi() }
-    }
     private val ball = android.widget.TextView(ctx).apply {
         text = "●"; textSize = 28f; gravity = android.view.Gravity.CENTER; minWidth = dp(44); minHeight = dp(44)
         setTextColor(scope.colors.candidateTextColor)
         contentDescription = "候选悬浮球；点击显示工具栏，长按展开键盘菜单"
         background = android.graphics.drawable.GradientDrawable().apply { shape = android.graphics.drawable.GradientDrawable.OVAL; setColor(scope.colors.textBackColor) }
         setOnClickListener {
-            if (evaluateVisibility()) collapsed = false else showingTools = !showingTools
+            showingTools = !showingTools
             removeCallbacks(closeTools)
             if (showingTools) postDelayed(closeTools, 6000)
             updateUi()
@@ -161,7 +154,7 @@ class CandidatesView(
     override fun handleRimeMessage(it: RimeMessage<*>) {
         when (it) {
             is RimeMessage.CompositionMessage -> {
-                if (composition.length == 0 && it.data.length > 0) { collapsed = false; showingTools = false }
+                if (composition.length == 0 && it.data.length > 0) { showingTools = false }
                 composition = it.data
                 updateUi()
             }
@@ -178,19 +171,22 @@ class CandidatesView(
     private fun evaluateVisibility(): Boolean = !composition.preedit.isNullOrEmpty() ||
         candidates.candidates.isNotEmpty()
 
+    fun refreshVisibility() = updateUi()
+
     private fun updateUi() {
         preeditUi.update(composition)
-        val expanded = evaluateVisibility() && !collapsed
-        val idle = !expanded && AppPrefs.defaultInstance().candidates.floatingBall.getValue()
+        val expanded = evaluateVisibility()
+        val idle = !expanded && AppPrefs.defaultInstance().keyboard.hideInputBar.getValue() && AppPrefs.defaultInstance().candidates.floatingBall.getValue()
+        if (!idle) showingTools = false
         preeditUi.root.visibility = if (expanded && preeditUi.visible) VISIBLE else GONE
         candidatesUi.root.visibility = if (expanded) VISIBLE else GONE
-        header.visibility = if (expanded) VISIBLE else GONE
         ball.visibility = if (idle) VISIBLE else GONE
         tools.visibility = if (idle && showingTools) VISIBLE else GONE
         alpha = if (idle && !showingTools) AppPrefs.defaultInstance().candidates.ballOpacity.getValue() / 100f else theme.window.alpha
         background = if (idle && !showingTools) null else scope.decorDrawable("text_back_color", "candidate_border_color", dp(theme.window.border), dp(theme.window.cornerRadius))
         // the candidate layout is queried natively with the page itself
         candidatesUi.update(candidates, layout)
+        candidatesUi.paginationUi.root.visibility = if (expanded && (candidates.hasPrevPage || candidates.hasNextPage)) VISIBLE else GONE
         visibility = if (expanded || idle) {
             VISIBLE
         } else {
@@ -370,7 +366,7 @@ class CandidatesView(
             },
         )
 
-        addView(header); addView(ball); addView(tools)
+        addView(ball); addView(tools); addView(candidatesUi.paginationUi.root)
         updateUi()
         isFocusable = false
         layoutParams = ViewGroup.LayoutParams(wrapContent, wrapContent)
@@ -420,10 +416,12 @@ class CandidatesView(
         val innerHeight = (maxHeight - paddingTop - paddingBottom).coerceAtLeast(0)
         val list = candidatesUi.root
         candidatesUi.constrainWidth(innerWidth)
-        val extra = when { ball.visibility == VISIBLE -> if (tools.visibility == VISIBLE) tools else ball; else -> header }
-        extra.measure(MeasureSpec.makeMeasureSpec(innerWidth, MeasureSpec.AT_MOST), MeasureSpec.makeMeasureSpec(dp(44), MeasureSpec.EXACTLY))
-        val extraHeight = extra.measuredHeight.coerceAtMost(innerHeight)
-        val contentHeight = (innerHeight - extraHeight).coerceAtLeast(0)
+        val extra = if (ball.visibility == VISIBLE) { if (tools.visibility == VISIBLE) tools else ball } else null
+        extra?.measure(MeasureSpec.makeMeasureSpec(innerWidth, MeasureSpec.AT_MOST), MeasureSpec.makeMeasureSpec(dp(44), MeasureSpec.EXACTLY))
+        val extraHeight = (extra?.measuredHeight ?: 0).coerceAtMost(innerHeight)
+        val pager = candidatesUi.paginationUi.root
+        val pagerHeight = if (pager.visibility == VISIBLE) dp(44).coerceAtMost(innerHeight - extraHeight) else 0
+        val contentHeight = (innerHeight - extraHeight - pagerHeight).coerceAtLeast(0)
         val hasItems = list.visibility == VISIBLE && (list.adapter?.itemCount ?: 0) > 0
         val preedit = preeditUi.root
         val preeditHeight = if (preedit.visibility != GONE) {
@@ -436,19 +434,20 @@ class CandidatesView(
         list.measure(MeasureSpec.makeMeasureSpec(innerWidth, MeasureSpec.AT_MOST),
             MeasureSpec.makeMeasureSpec(listLimit, MeasureSpec.AT_MOST))
         val desiredWidth = maxOf(if (preedit.visibility == GONE) 0 else preedit.measuredWidth,
-            if (hasItems) list.measuredWidth else 0, extra.measuredWidth, if (ball.visibility == VISIBLE && tools.visibility != VISIBLE) dp(44) else dp(theme.window.minWidth) - paddingLeft - paddingRight).coerceIn(1, innerWidth)
+            if (hasItems) list.measuredWidth else 0, extra?.measuredWidth ?: 0, if (pagerHeight > 0) dp(144) else 0, if (ball.visibility == VISIBLE && tools.visibility != VISIBLE) dp(44) else dp(theme.window.minWidth) - paddingLeft - paddingRight).coerceIn(1, innerWidth)
         val listHeight = if (hasItems) list.measuredHeight.coerceAtMost(listLimit) else 0
         // The RecyclerView's own viewport must match the visible space, not its unbounded content.
         list.measure(MeasureSpec.makeMeasureSpec(desiredWidth, MeasureSpec.EXACTLY),
             MeasureSpec.makeMeasureSpec(listHeight, MeasureSpec.EXACTLY))
+        pager.measure(MeasureSpec.makeMeasureSpec(desiredWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(pagerHeight, MeasureSpec.EXACTLY))
         setMeasuredDimension((desiredWidth + paddingLeft + paddingRight).coerceAtMost(maxWidth),
-            (extraHeight + preeditHeight + listHeight + paddingTop + paddingBottom).coerceIn(1, maxHeight))
+            (extraHeight + preeditHeight + listHeight + pagerHeight + paddingTop + paddingBottom).coerceIn(1, maxHeight))
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        val extra = when { ball.visibility == VISIBLE -> if (tools.visibility == VISIBLE) tools else ball; else -> header }
-        val extraHeight = extra.measuredHeight
-        extra.layout(paddingLeft, paddingTop, paddingLeft + extra.measuredWidth, paddingTop + extraHeight)
+        val extra = if (ball.visibility == VISIBLE) { if (tools.visibility == VISIBLE) tools else ball } else null
+        val extraHeight = extra?.measuredHeight ?: 0
+        extra?.layout(paddingLeft, paddingTop, paddingLeft + extra.measuredWidth, paddingTop + extraHeight)
         if (tools.visibility == VISIBLE) ball.layout(0, 0, 0, 0)
         val contentTop = paddingTop + extraHeight
         val preedit = preeditUi.root
@@ -458,8 +457,12 @@ class CandidatesView(
             val x = if (layoutDirection == LAYOUT_DIRECTION_RTL) width - paddingRight - preedit.measuredWidth else paddingLeft
             preedit.layout(x, contentTop, x + preedit.measuredWidth, contentTop + preeditHeight)
         }
+        val pager = candidatesUi.paginationUi.root
+        val pagerHeight = if (pager.visibility == VISIBLE) pager.measuredHeight else 0
+        val contentBottom = (height - paddingBottom - pagerHeight).coerceAtLeast(contentTop + preeditHeight)
         candidatesUi.root.layout(paddingLeft, contentTop + preeditHeight,
-            (width - paddingRight).coerceAtLeast(paddingLeft), (height - paddingBottom).coerceAtLeast(paddingTop + preeditHeight))
+            (width - paddingRight).coerceAtLeast(paddingLeft), contentBottom)
+        pager.layout(paddingLeft, contentBottom, width - paddingRight, contentBottom + pagerHeight)
     }
 
     override fun onApplyWindowInsets(insets: WindowInsets): WindowInsets {

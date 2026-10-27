@@ -80,7 +80,14 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
         try {
             engine.start()
             if (!mock) {
-                session.recorder = AudioRecorder(service, scope, { listener.onError(it) }) { pcm -> session.bytes += pcm.size; engine.feed(pcm) }
+                session.recorder = AudioRecorder(service, scope, { listener.onError(it) },
+                    onStarted = { main.post {
+                        if (current === session && session.held && !session.finished) service.updateVoiceRecording(true)
+                    } },
+                    onLevel = { level -> main.post {
+                        if (current === session && session.held && !session.finished) service.updateVoiceRecording(true, level)
+                    } },
+                ) { pcm -> session.bytes += pcm.size; engine.feed(pcm) }
                 if (session.recorder?.start() != true) { listener.onError("无法开始录音，请检查麦克风权限"); return }
             }
             lastStatus = "recording"
@@ -91,6 +98,7 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
         val session = current ?: return
         if (!session.held || session.finished) return
         session.held = false
+        service.updateVoiceRecording(false)
         lastStatus = "processing"
         com.osfans.trime.util.DiagnosticLog.event("voice", "release", "id=${session.id} bytes=${session.bytes}")
         session.watchdog?.cancel()
@@ -115,11 +123,12 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
         session.watchdog?.cancel()
         session.recorder?.stop()
         session.engine?.cancel()
-        if (current === session) { current = null; lastStatus = status }
+        if (current === session) { current = null; lastStatus = status; service.updateVoiceRecording(false) }
     }
     override fun cancel(): Job? {
         current?.let { finish(it, "idle") }
         lastStatus = "idle"
+        service.updateVoiceRecording(false)
         return null
     }
     override fun dispose() { cancel(); scope.cancel() }

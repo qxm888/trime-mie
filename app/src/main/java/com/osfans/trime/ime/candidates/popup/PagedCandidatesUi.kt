@@ -33,6 +33,10 @@ class PagedCandidatesUi(
     private val onNextPage: () -> Unit,
 ) : Ui {
     private var candidates = Candidates.Paged()
+    val paginationUi = PaginationUi(ctx, scope).apply {
+        prevIcon.setOnClickListener { onPrevPage() }
+        nextIcon.setOnClickListener { onNextPage() }
+    }
 
     private var isHorizontal = true
     private var viewportWidth = 0
@@ -50,9 +54,6 @@ class PagedCandidatesUi(
             override val ui: LabeledCandidateItemUi,
         ) : UiHolder(ui)
 
-        class Pagination(
-            override val ui: PaginationUi,
-        ) : UiHolder(ui)
     }
 
     private val candidatesAdapter =
@@ -65,29 +66,13 @@ class PagedCandidatesUi(
 
             override fun getItemId(position: Int): Long = items.getOrNull(position).hashCode().toLong()
 
-            override fun getItemCount(items: List<CandidateProto>) = items.size + (if (candidates.hasPrevPage || candidates.hasNextPage) 1 else 0)
-
-            override fun getItemViewType(
-                position: Int,
-                list: List<CandidateProto>,
-            ) = if (position < list.size) 0 else 1
+            override fun getItemCount(items: List<CandidateProto>) = items.size
 
             override fun onCreateViewHolder(
                 context: Context,
                 parent: ViewGroup,
                 viewType: Int,
-            ): UiHolder = when (viewType) {
-                0 -> UiHolder.Candidate(LabeledCandidateItemUi(ctx, scope))
-
-                else -> UiHolder.Pagination(PaginationUi(ctx, scope)).apply {
-                    ui.prevIcon.setOnClickListener {
-                        onPrevPage.invoke()
-                    }
-                    ui.nextIcon.setOnClickListener {
-                        onNextPage.invoke()
-                    }
-                }
-            }.apply {
+            ): UiHolder = UiHolder.Candidate(LabeledCandidateItemUi(ctx, scope)).apply {
                 // assign default LayoutParams, otherwise updateLayoutParams won't work
                 ui.root.layoutParams = FlexboxLayoutManager.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
             }
@@ -118,15 +103,6 @@ class PagedCandidatesUi(
                         }
                     }
 
-                    is UiHolder.Pagination -> {
-                        holder.ui.update(candidates)
-                        holder.ui.root.updateLayoutParams<FlexboxLayoutManager.LayoutParams> {
-                            flexGrow = 1f
-                            width = if (isHorizontal) WRAP_CONTENT else MATCH_PARENT
-                            flexShrink = 0f
-                            alignSelf = if (isHorizontal) AlignItems.CENTER else AlignItems.STRETCH
-                        }
-                    }
                 }
             }
         }
@@ -152,6 +128,7 @@ class PagedCandidatesUi(
         layout: PopupCandidatesLayout,
     ) {
         this.candidates = candidates
+        paginationUi.update(candidates)
         this.isHorizontal = when (layout) {
             PopupCandidatesLayout.AUTOMATIC -> candidates.isHorizontalLayout
             else -> layout == PopupCandidatesLayout.HORIZONTAL
@@ -175,5 +152,6 @@ class PagedCandidatesUi(
     /** Re-binds visible rows so they re-render with the current scheme's colors. */
     fun refreshColors() {
         candidatesAdapter.notifyDataSetChanged()
+        paginationUi.update(candidates)
     }
 }

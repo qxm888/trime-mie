@@ -1,6 +1,6 @@
 # 构建同文输入法咩版
 
-本说明对应 **V2.0.17 / versionCode 20261119**。正式 APK 由本仓库的稳定发布源码构建，使用原发布证书。
+本说明对应 **V2.0.18 / versionCode 20261120**。正式 APK 由本仓库的稳定发布源码构建，使用原发布证书。
 
 ## 1. 获取源码
 
@@ -9,9 +9,9 @@ git clone https://github.com/qxm888/trime-mie.git
 cd trime-mie
 ```
 
-需要固定到已发布版本时，从 [Release](https://github.com/qxm888/trime-mie/releases/tag/v2.0.17) 下载明确命名的 `trime-mie-v2.0.17-source.zip`，解压后进入 `trime-mie-source`。
+此版本先以本地交接包提供：解压 `trime-mie-v2.0.18-source.zip`，进入 `trime-mie-source`。接手者完成 GitHub 发布后，可使用 `v2.0.18` 标签或对应 Release 附件；本说明不代表远端标签已经建立。
 
-明确命名的 source.zip 附件以及 `v2.0.17` 标签都包含本次应用源码。旧 mie.15 的初始标签仅包含文档，旧版完整源码需使用其附件或补充源码标签。
+旧 mie.15 的初始标签仅包含文档，旧版完整源码需使用其附件或补充源码标签。
 
 ## 2. 环境
 
@@ -114,6 +114,6 @@ adb install -r /路径/到/你构建的.apk
 
 本次发布保留传统 `rime` 目录，不包含嵌套目录迁移及万象开发渠道。新增按键外观与布局选项、主题视频入口，以及复制提示和菜单布局修复。详见 [键盘定制](docs/键盘定制.md)。
 
-## V2.0.17 发布范围
+## V2.0.18 发布范围
 
-应用版本统一为 V2.0.17，正式 arm64 产物为 `app/build/outputs/apk/release/trime-mie-v2.0.17.apk`。候选悬浮球默认关闭。继续沿用预编译 Rime 引擎，不包含新目录迁移及万象开发渠道；详细更新见 [版本说明](docs/V2.0.17更新说明.md)。
+应用版本统一为 V2.0.18，正式 arm64 产物为 `app/build/outputs/apk/release/trime-mie-v2.0.18.apk`。候选悬浮球默认关闭。继续沿用预编译 Rime 引擎，不包含新目录迁移及万象开发渠道；详细更新见 [版本说明](docs/V2.0.18更新说明.md)。

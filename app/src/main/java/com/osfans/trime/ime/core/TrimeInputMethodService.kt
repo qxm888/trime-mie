@@ -143,6 +143,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
             }
             syncFloatingRatio(key)
             themeScope?.let { replaceInputView(it) }
+            if (key == prefs.keyboard.hideInputBar.key) candidatesView?.refreshVisibility()
             inputDeviceManager.refreshPolicy()
         }
 
@@ -392,6 +393,16 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         replaceInputView(scope)
         replaceCandidateView(scope)
         inputView?.updateEnterKeyLabel(currentInputEditorInfo)
+    }
+
+    private val mutableVoiceRecordingState = kotlinx.coroutines.flow.MutableStateFlow(com.osfans.trime.ime.voice.VoiceRecordingState())
+    val voiceRecordingState: kotlinx.coroutines.flow.StateFlow<com.osfans.trime.ime.voice.VoiceRecordingState>
+        get() = mutableVoiceRecordingState
+
+    fun updateVoiceRecording(recording: Boolean, level: Float = 0f) {
+        mutableVoiceRecordingState.value = com.osfans.trime.ime.voice.VoiceRecordingState(
+            recording, if (recording && level.isFinite()) level.coerceIn(0f, 1f) else 0f,
+        )
     }
 
     val builtInVoice by lazy { com.osfans.trime.ime.voice.builtin.BuiltInVoiceController(this) }

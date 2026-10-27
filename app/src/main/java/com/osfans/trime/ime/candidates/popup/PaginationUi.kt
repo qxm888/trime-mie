@@ -15,7 +15,7 @@ import com.osfans.trime.data.theme.ThemeScope
 import com.osfans.trime.util.styledFloat
 import splitties.dimensions.dp
 import splitties.resources.drawable
-import splitties.views.dsl.constraintlayout.before
+import splitties.views.dsl.constraintlayout.startOfParent
 import splitties.views.dsl.constraintlayout.centerVertically
 import splitties.views.dsl.constraintlayout.constraintLayout
 import splitties.views.dsl.constraintlayout.endOfParent
@@ -34,18 +34,24 @@ class PaginationUi(
     ) = imageView {
         imageTintList = ColorStateList.valueOf(scope.colors.keyTextColor)
         imageDrawable = drawable(icon)
-        scaleType = ImageView.ScaleType.CENTER_CROP
+        scaleType = ImageView.ScaleType.CENTER_INSIDE
+        setPadding(dp(10), dp(10), dp(10), dp(10))
     }
 
     val prevIcon = createIcon(R.drawable.ic_baseline_arrow_left_24)
     val nextIcon = createIcon(R.drawable.ic_baseline_arrow_right_24)
 
+    init {
+        prevIcon.contentDescription = "上一页"
+        nextIcon.contentDescription = "下一页"
+    }
     private val disabledAlpha = ctx.styledFloat(android.R.attr.disabledAlpha)
 
     override val root =
         constraintLayout {
-            val w = dp(10)
-            val h = dp(20)
+            minimumWidth = dp(144)
+            val w = dp(44)
+            val h = dp(44)
             add(
                 nextIcon,
                 lParams(w, h) {
@@ -57,7 +63,7 @@ class PaginationUi(
                 prevIcon,
                 lParams(w, h) {
                     centerVertically()
-                    before(nextIcon)
+                    startOfParent()
                 },
             )
         }
@@ -68,6 +74,8 @@ class PaginationUi(
         val tint = ColorStateList.valueOf(scope.colors.keyTextColor)
         prevIcon.imageTintList = tint
         nextIcon.imageTintList = tint
+        prevIcon.isEnabled = paged.hasPrevPage
+        nextIcon.isEnabled = paged.hasNextPage
         prevIcon.alpha = if (paged.hasPrevPage) 1f else disabledAlpha
         nextIcon.alpha = if (paged.hasNextPage) 1f else disabledAlpha
     }

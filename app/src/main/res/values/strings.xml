@@ -507,4 +507,5 @@
     <string name="one_hand_keyboard_width">单手模式键盘宽度</string>
     <string name="candidate_floating_ball">空闲时显示候选悬浮球</string>
     <string name="candidate_ball_opacity">候选悬浮球不透明度 %</string>
+    <string name="candidate_floating_ball_summary">仅隐藏状态栏时生效；点击显示工具栏，长按打开键盘菜单</string>
 </resources>

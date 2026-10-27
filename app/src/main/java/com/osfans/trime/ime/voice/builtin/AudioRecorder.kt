@@ -26,11 +26,26 @@ class AudioRecorder(
     private val context: Context,
     private val scope: CoroutineScope,
     private val onError: (String) -> Unit,
+    private val onStarted: () -> Unit = {},
+    private val onLevel: (Float) -> Unit = {},
     private val onChunk: (ByteArray) -> Unit,
 ) {
     companion object {
         const val SAMPLE_RATE = 16000
         private const val CHUNK_MILLIS = 200
+
+        /** RMS of signed PCM16 little-endian samples, mapped from -60 dBFS to 0 dBFS. */
+        fun pcmLevel(pcm: ByteArray, size: Int = pcm.size): Float {
+            val count = minOf(size, pcm.size) / 2
+            if (count == 0) return 0f
+            var energy = 0.0
+            for (i in 0 until count) {
+                val sample = ((pcm[i * 2].toInt() and 255) or (pcm[i * 2 + 1].toInt() shl 8)).toShort().toDouble() / 32768.0
+                energy += sample * sample
+            }
+            val rms = kotlin.math.sqrt(energy / count)
+            return if (rms <= 0.001) 0f else ((20 * kotlin.math.log10(rms) + 60) / 60).toFloat().coerceIn(0f, 1f)
+        }
 
         fun hasPermission(context: Context): Boolean = ContextCompat.checkSelfPermission(
             context, Manifest.permission.RECORD_AUDIO,
@@ -62,6 +77,8 @@ class AudioRecorder(
             try {
                 coroutineContext.ensureActive()
                 audio.startRecording()
+                check(audio.recordingState == AudioRecord.RECORDSTATE_RECORDING) { "麦克风未进入录音状态" }
+                onStarted()
                 com.osfans.trime.util.DiagnosticLog.event("voice", "recorder_started", "source=$source rate=$SAMPLE_RATE")
                 val buf = ByteArray(chunkBytes)
                 var zeroFrames = 0
@@ -81,11 +98,15 @@ class AudioRecorder(
                                 record = audio
                                 source = MediaRecorder.AudioSource.MIC
                                 audio.startRecording()
+                                check(audio.recordingState == AudioRecord.RECORDSTATE_RECORDING) { "备用麦克风未进入录音状态" }
                                 continue
                             }
                         }
                     }
-                    if (isActive) onChunk(buf.copyOf(n))
+                    if (isActive) {
+                        onLevel(pcmLevel(buf, n))
+                        onChunk(buf.copyOf(n))
+                    }
                 }
             } catch (t: Throwable) {
                 com.osfans.trime.util.DiagnosticLog.event("voice", "recorder_failed", "type=${t.javaClass.simpleName}")

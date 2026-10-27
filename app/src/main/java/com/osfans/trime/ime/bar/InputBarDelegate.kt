@@ -252,7 +252,20 @@ class InputBarDelegate(override val di: DI) :
         )
     }
 
+    private var normalBarState = QuickBarStateMachine.State.Always
+    private var isVoiceRecording = false
+    private var voiceStateJob: Job? = null
+    private val voiceRecordingView by lazy {
+        com.osfans.trime.ime.bar.ui.VoiceRecordingView(context, scope.colors.candidateTextColor)
+    }
+
     private fun switchUiByState(state: QuickBarStateMachine.State) {
+        normalBarState = state
+        if (isVoiceRecording) {
+            view.visibility = View.VISIBLE
+            view.displayedChild = 3
+            return
+        }
         val index = state.ordinal
         view.visibility = if (!hideQuickBar || state == QuickBarStateMachine.State.Tab) View.VISIBLE else View.GONE
         if (view.displayedChild == index) return
@@ -288,6 +301,25 @@ class InputBarDelegate(override val di: DI) :
             add(alwaysUi.root, lParams(matchParent, matchParent))
             add(candidateUi.root, lParams(matchParent, matchParent))
             add(tabUi.root, lParams(matchParent, matchParent))
+            add(voiceRecordingView, lParams(matchParent, matchParent))
+            addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+                override fun onViewAttachedToWindow(v: View) {
+                    voiceStateJob?.cancel()
+                    voiceStateJob = service.lifecycleScope.launch {
+                        service.voiceRecordingState.collect { state ->
+                            isVoiceRecording = state.recording
+                            voiceRecordingView.update(state)
+                            switchUiByState(normalBarState)
+                        }
+                    }
+                }
+                override fun onViewDetachedFromWindow(v: View) {
+                    voiceStateJob?.cancel()
+                    voiceStateJob = null
+                    isVoiceRecording = false
+                    voiceRecordingView.update(com.osfans.trime.ime.voice.VoiceRecordingState())
+                }
+            })
 
             evalAlwaysUiState()
             ClipboardHelper.addOnUpdateListener(onClipboardUpdateListener)
@@ -303,6 +335,7 @@ class InputBarDelegate(override val di: DI) :
         // the compact candidate rows live inside candidateUi and re-bind via the delegate
         candidate.refreshColors()
         tabUi.refreshColors()
+        voiceRecordingView.setForegroundColor(scope.colors.candidateTextColor)
     }
 
     override fun onStartInput(info: EditorInfo) {

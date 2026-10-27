@@ -74,10 +74,10 @@ class SwitchOptionWindow(di: DI) :
             ),
             SwitchOptionEntry.Static(context.getString(R.string.floating_keyboard),
                 R.drawable.ic_mode_floating_24, SwitchOptionEntry.Static.Type.FloatingKeyboard),
-            SwitchOptionEntry.Static("悬浮候选栏", R.drawable.ic_baseline_list_alt_24, SwitchOptionEntry.Static.Type.CandidatesWindow),
-            SwitchOptionEntry.Static("隐藏状态栏", R.drawable.ic_baseline_keyboard_24, SwitchOptionEntry.Static.Type.HideInputBar),
             SwitchOptionEntry.Static(context.getString(R.string.one_hand_mode),
                 R.drawable.ic_mode_one_hand_24, SwitchOptionEntry.Static.Type.OneHandMode),
+            SwitchOptionEntry.Static("悬浮候选栏", R.drawable.ic_baseline_list_alt_24, SwitchOptionEntry.Static.Type.CandidatesWindow),
+            SwitchOptionEntry.Static("隐藏状态栏", R.drawable.ic_baseline_keyboard_24, SwitchOptionEntry.Static.Type.HideInputBar),
         )
     }
 
