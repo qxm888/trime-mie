@@ -1,0 +1,33 @@
+name: Publish versioned source archive
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing stable release tag (for example v2.0.17)
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Archive the exact tag and upload its source asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid release tag'; exit 1; }
+          gh release view "$RELEASE_TAG" --json tagName --jq .tagName
+          gh repo clone "$GH_REPO" source -- --depth=1 --branch "$RELEASE_TAG"
+          asset="trime-mie-${RELEASE_TAG}-source.zip"
+          git -C source archive --format=zip --prefix=trime-mie-source/ -o "$RUNNER_TEMP/$asset" HEAD
+          sha256sum "$RUNNER_TEMP/$asset"
+          gh release upload "$RELEASE_TAG" "$RUNNER_TEMP/$asset" --clobber
