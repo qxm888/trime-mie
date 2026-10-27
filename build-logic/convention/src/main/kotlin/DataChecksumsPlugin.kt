@@ -91,7 +91,9 @@ class DataChecksumsPlugin : Plugin<Project> {
             val map =
                 file
                     .exists()
-                    .takeIf { it }
+                    // A clean build reports only current files as added. Old
+                    // output entries would otherwise survive without a removal event.
+                    .takeIf { it && inputChanges.isIncremental }
                     ?.runCatching {
                         deserialize()
                             // remove all old dirs

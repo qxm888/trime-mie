@@ -1,6 +1,6 @@
 # 构建同文输入法咩版
 
-本说明对应 **3.3.13-mie.16 / versionCode 20261117**。应用源码来自发布此 APK 时的工作区快照；没有修改应用代码来制作此次源码发布。
+本说明对应 **3.3.13-mie.16 / versionCode 20261117**。正式 APK 由本仓库的稳定发布源码构建，使用原发布证书。
 
 ## 1. 获取源码
 
@@ -11,7 +11,7 @@ cd trime-mie
 
 需要固定到已发布版本时，从 [Release](https://github.com/qxm888/trime-mie/releases/tag/v3.3.13-mie.16) 下载明确命名的 `trime-mie-3.3.13-mie.16-source.zip`，解压后进入 `trime-mie-source`。
 
-**请使用这个 source.zip 附件。** 该 Release 最初发布时的标签只包含文档，所以 GitHub 自动生成的旧标签“Source code (zip/tar.gz)”不包含此次补充的应用源码。当前 main 已包含代码，并另外提供源码标签 `v3.3.13-mie.16-source`。
+明确命名的 source.zip 附件以及 `v3.3.13-mie.16` 标签都包含本次应用源码。旧 mie.15 的初始标签仅包含文档，旧版完整源码需使用其附件或补充源码标签。
 
 ## 2. 环境
 
