@@ -207,9 +207,15 @@ class AlwaysUi(
 
     /** 收起且处于工具栏态时：藏起工具按钮与主按钮，中间留白供拖动移动键盘。 */
     private fun applyCollapseState() {
-        val hideButtons = floating && toolbarCollapsed && currentState == State.Toolbar
-        buttonsUi.viewport.visibility = if (hideButtons) android.view.View.GONE else android.view.View.VISIBLE
+        // Clipboard suggestions replace the complete toolbar row.
+        val clipboard = currentState == State.Clipboard
+        val hideButtons = clipboard || (floating && toolbarCollapsed && currentState == State.Toolbar)
+        collapseButton.visibility = if (floating && !clipboard) android.view.View.VISIBLE else android.view.View.GONE
+        // ViewAnimator owns the active child; do not make the toolbar visible
+        // again while it is displaying clipboard or inline suggestions.
+        buttonsUi.viewport.visibility = if (hideButtons || currentState != State.Toolbar) android.view.View.GONE else android.view.View.VISIBLE
         leftMostButton.visibility = if (hideButtons) android.view.View.GONE else android.view.View.VISIBLE
+        rightMostButton.visibility = if (clipboard) android.view.View.GONE else android.view.View.VISIBLE
         if (hideButtons) rightMostButton.displayedChild = 0 else updateRightMostButton(currentState)
     }
 

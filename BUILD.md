@@ -1,6 +1,6 @@
 # 构建同文输入法咩版
 
-本说明对应 **3.3.13-mie.15 / versionCode 20261116**。应用源码来自发布此 APK 时的工作区快照；没有修改应用代码来制作此次源码发布。
+本说明对应 **3.3.13-mie.16 / versionCode 20261117**。应用源码来自发布此 APK 时的工作区快照；没有修改应用代码来制作此次源码发布。
 
 ## 1. 获取源码
 
@@ -9,9 +9,9 @@ git clone https://github.com/qxm888/trime-mie.git
 cd trime-mie
 ```
 
-需要固定到已发布版本时，从 [Release](https://github.com/qxm888/trime-mie/releases/tag/v3.3.13-mie.15) 下载明确命名的 `trime-mie-3.3.13-mie.15-source.zip`，解压后进入 `trime-mie-source`。
+需要固定到已发布版本时，从 [Release](https://github.com/qxm888/trime-mie/releases/tag/v3.3.13-mie.16) 下载明确命名的 `trime-mie-3.3.13-mie.16-source.zip`，解压后进入 `trime-mie-source`。
 
-**请使用这个 source.zip 附件。** 该 Release 最初发布时的标签只包含文档，所以 GitHub 自动生成的旧标签“Source code (zip/tar.gz)”不包含此次补充的应用源码。当前 main 已包含代码，并另外提供源码标签 `v3.3.13-mie.15-source`。
+**请使用这个 source.zip 附件。** 该 Release 最初发布时的标签只包含文档，所以 GitHub 自动生成的旧标签“Source code (zip/tar.gz)”不包含此次补充的应用源码。当前 main 已包含代码，并另外提供源码标签 `v3.3.13-mie.16-source`。
 
 ## 2. 环境
 
@@ -109,3 +109,7 @@ adb install -r /路径/到/你构建的.apk
 - 官方 APK 的 SHA-256 为 `5d9d69dd960230efa623e95d430a6357e1816bbaeadebe2c327b633410c6b97d`。签名、构建时间、环境等会使自行构建 APK 的哈希不同，不承诺逐字节复现。
 - `.15` 的既有验证记录：404 项单元测试通过；Debug/Release 构建成功；Lint 无错误。该结果来自发布前工作区，不代表本次在干净环境重新构建通过。
 - 预编译 Rime 库的完整来源仍需补全，详见原生说明。不能把本次源码上传当作所有二进制依赖对应源码已经核验完毕。
+
+## mie.16 发布范围
+
+本次发布保留传统 `rime` 目录，不包含嵌套目录迁移及万象开发渠道。新增按键外观与布局选项、主题视频入口，以及复制提示和菜单布局修复。详见 [键盘定制](docs/键盘定制.md)。

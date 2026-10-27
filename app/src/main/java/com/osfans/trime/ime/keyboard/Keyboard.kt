@@ -313,7 +313,8 @@ class Keyboard(
                     customKeys?.getOrNull(keyIndex)?.first?.let { ck ->
                         key.importedStyle = ck.skin
                         key.customBgDrawable = ck.skin?.let { com.osfans.trime.data.baiduskin.BdsKeyDrawable(it) }
-                            ?: ck.resolvedBackground().drawable(context, widthPx.coerceAtLeast(1))
+                            ?: ck.resolvedBackground().takeIf { it.type == com.osfans.trime.data.keymap.CustomBackground.Type.IMAGE }
+                                ?.drawable(context, widthPx.coerceAtLeast(1))
                     }
                 }
 
@@ -387,7 +388,7 @@ class Keyboard(
         val rows = layout.keys.map { it.box.y }.distinct().sorted()
         layout.keys.forEach { placed ->
             val edited = edits[placed.id] ?: CustomKeyboards.CustomKey(placed.label, bindings = placed.bindings.toMutableMap(), skinId = placed.id, skin = placed.style)
-            val text = CustomKeyboards.run { edited.toTextKey(data.backgroundFor(context)) }
+            val text = CustomKeyboards.run { edited.toTextKey(data.backgroundFor(context), data.keyAppearance) }
             val key = Key(this, theme, text)
             key.x = (placed.box.x / layout.width * allowedWidth).toInt()
             key.y = (placed.box.y / layout.height * keyboardHeight).toInt()
@@ -399,7 +400,7 @@ class Keyboard(
             // A replacement background in the editor intentionally removes the imported layers.
             key.importedStyle = if (edited.skin == null) null else placed.style
             key.customBgDrawable = key.importedStyle?.let { com.osfans.trime.data.baiduskin.BdsKeyDrawable(it) }
-                ?: edited.resolvedBackground().drawable(context, key.width)
+                ?: edited.resolvedBackground().takeIf { it.type == com.osfans.trime.data.keymap.CustomBackground.Type.IMAGE }?.drawable(context, key.width)
             mKeys.add(key)
         }
         minWidth = allowedWidth

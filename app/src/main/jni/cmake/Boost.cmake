@@ -3,13 +3,15 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 set(BOOST_VERSION 1.92.0)
+set(BOOST_ARCHIVE "${TRIME_ROOT}/.gradle/native-dependencies/boost-${BOOST_VERSION}.tar.xz")
+file(MAKE_DIRECTORY "${TRIME_ROOT}/.gradle/native-dependencies")
 
-if(NOT EXISTS "boost-${BOOST_VERSION}.tar.xz")
+if(NOT EXISTS "${BOOST_ARCHIVE}")
   message(STATUS "Downloading Boost ${BOOST_VERSION} ......")
   file(
     DOWNLOAD
     "https://github.com/boostorg/boost/releases/download/boost-${BOOST_VERSION}/boost-${BOOST_VERSION}-cmake.tar.xz"
-    boost-${BOOST_VERSION}.tar.xz
+    "${BOOST_ARCHIVE}"
     EXPECTED_HASH
       SHA256=9bed76128d4e46755dbe818487788c6fceb6f72b378f4daa49b7e1e600d9088d
     SHOW_PROGRESS)
@@ -20,7 +22,7 @@ endif()
 
 if(NOT EXISTS "${CMAKE_SOURCE_DIR}/boost")
   message(STATUS "Extracting Boost ${BOOST_VERSION} ......")
-  file(ARCHIVE_EXTRACT INPUT boost-${BOOST_VERSION}.tar.xz DESTINATION
+  file(ARCHIVE_EXTRACT INPUT "${BOOST_ARCHIVE}" DESTINATION
        ${CMAKE_SOURCE_DIR})
   file(RENAME "boost-${BOOST_VERSION}" boost)
 endif()

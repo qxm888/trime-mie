@@ -44,6 +44,14 @@ import kotlinx.coroutines.withContext
  * a keyboard is (re)built — the theme files themselves are never touched.
  */
 class KeyEditActivity : AppCompatActivity() {
+    private val themeVideoPicker = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.GetContent()) { uri ->
+        SkinPicker.handleVideoResult(this, uri) { path ->
+            if (path != null) {
+                com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.videoBackground.setValue(path)
+                ThemeManager.requestCustomizationRefresh()
+            }
+        }
+    }
     private lateinit var rowsContainer: LinearLayout
     private lateinit var keyboardInput: MaterialAutoCompleteTextView
 
@@ -68,6 +76,14 @@ class KeyEditActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.action_export_bindings -> exportBindings()
                 R.id.action_import_bindings -> importLauncher.launch(arrayOf("application/json", "text/plain", "*/*"))
+                R.id.action_theme_video -> MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.keyboard_video_background)
+                    .setItems(arrayOf("选择本地视频", "恢复主题原背景")) { _, which ->
+                        if (which == 0) themeVideoPicker.launch("video/*") else {
+                            com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.videoBackground.setValue("")
+                            ThemeManager.requestCustomizationRefresh()
+                        }
+                    }.show()
                 R.id.action_reset_all_bindings -> {
                     MaterialAlertDialogBuilder(this)
                         .setTitle(R.string.key_editor_reset_all)

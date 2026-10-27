@@ -31,8 +31,8 @@ android {
         applicationId = if (variantTag.isEmpty()) "com.osfans.trime.mie" else "com.osfans.trime"
         minSdk = 21
         targetSdk = 37
-        versionCode = 20261116
-        versionName = "3.3.13-mie.15"
+        versionCode = 20261117
+        versionName = "3.3.13-mie.16"
 
         multiDexEnabled = true
         buildConfigField("String", "BUILDER", "\"${project.builder}\"")

@@ -6,6 +6,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
 -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/action_kb_key_appearance" android:title="按键默认外观" app:showAsAction="never" />
+    <item android:id="@+id/action_kb_layout_options" android:title="布局与切换行为" app:showAsAction="never" />
     <item
         android:id="@+id/action_kb_toolbar"
         android:title="@string/toolbar_edit"

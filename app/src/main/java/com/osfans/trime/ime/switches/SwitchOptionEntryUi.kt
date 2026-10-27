@@ -74,6 +74,8 @@ class SwitchOptionEntryUi(
         textView {
             textSize = 12f
             gravity = gravityCenter
+            maxLines = 2
+            ellipsize = android.text.TextUtils.TruncateAt.END
             setTextColor(scope.colors.keyTextColor)
         }
 
@@ -103,7 +105,7 @@ class SwitchOptionEntryUi(
                     )
                     add(
                         label,
-                        lParams(wrapContent, wrapContent) {
+                        lParams(0, wrapContent) {
                             below(bkg, dp(6))
                             centerHorizontally()
                         },

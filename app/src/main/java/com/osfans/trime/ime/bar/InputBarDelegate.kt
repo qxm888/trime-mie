@@ -87,6 +87,7 @@ class InputBarDelegate(override val di: DI) :
 
     private var isClipboardFresh: Boolean = false
     private var isInlineSuggestionPresent: Boolean = false
+    @Volatile private var latestToolbarTarget: String? = null
 
     @Keep
     private val onClipboardUpdateListener = ClipboardHelper.OnClipboardUpdateListener {
@@ -153,7 +154,11 @@ class InputBarDelegate(override val di: DI) :
             }
             // 切换键盘时应用对应工具栏：自定义键盘用它自己的，其它键盘用全局覆盖/主题
             KeyboardWindow.onKeyboardSwitched = { target ->
+                // Drop queued callbacks for earlier switches so the toolbar
+                // cannot end up showing icons from the previous schema.
+                latestToolbarTarget = target
                 ContextCompat.getMainExecutor(context).execute {
+                    if (latestToolbarTarget != target) return@execute
                     runCatching {
                         alwaysUi.applyToolbar(ToolbarOverrides.forKeyboard(theme, target))
                         refreshColors()

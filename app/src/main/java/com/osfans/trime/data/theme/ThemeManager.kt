@@ -155,7 +155,9 @@ object ThemeManager {
         configId: String,
         theme: Theme,
         findings: List<ThemeDiagnostics.Finding>?,
-    ): ResolvedTheme = ResolvedTheme(configId, theme.copy(presetKeys = theme.presetKeys + mapOf("VoiceInput" to com.osfans.trime.data.theme.model.PresetKey(label = "内置语音", send = "VOICE_ASSIST"), "BibiVoice" to com.osfans.trime.data.theme.model.PresetKey(label = "内置语音", send = "VOICE_ASSIST")), customizationVersion = KeyBindingOverrides.version + ToolbarOverrides.version + FontOverrides.version + com.osfans.trime.ime.voice.VoiceSettings.version), findings)
+    ): ResolvedTheme = ResolvedTheme(configId, theme.copy(presetKeys = theme.presetKeys + mapOf("VoiceInput" to com.osfans.trime.data.theme.model.PresetKey(label = "内置语音", send = "VOICE_ASSIST"), "BibiVoice" to com.osfans.trime.data.theme.model.PresetKey(label = "内置语音", send = "VOICE_ASSIST")),
+        // A video change must rebuild the keyboard even when its YAML is unchanged.
+        customizationVersion = KeyBindingOverrides.version + ToolbarOverrides.version + FontOverrides.version + com.osfans.trime.ime.voice.VoiceSettings.version + AppPrefs.defaultInstance().keyboard.videoBackground.getValue().hashCode().toLong()), findings)
 
     private fun applyTheme(resolvedTheme: ResolvedTheme) {
         val theme = resolvedTheme.theme

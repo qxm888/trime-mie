@@ -70,6 +70,15 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.action_kb_background -> pickKeyboardBackground()
                 R.id.action_kb_toolbar -> ToolbarEditActivity.start(this, kbId)
+                R.id.action_kb_key_appearance -> {
+                    val current = CustomKeyboards.get(kbId) ?: return@setOnMenuItemClickListener true
+                    KeyAppearanceEditor.show(this, "按键默认外观", current.keyAppearance) { style -> mutate { it.keyAppearance = style } }
+                }
+                R.id.action_kb_layout_options -> {
+                    val current = CustomKeyboards.get(kbId) ?: return@setOnMenuItemClickListener true
+                    if (current.importedSkin != null) findViewById<View>(R.id.cbe_imported_layout).performClick()
+                    else KeyboardOptionsEditor.show(this, current.options) { options -> mutate { it.options = options } }
+                }
             }
             true
         }
@@ -134,7 +143,7 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         CustomKeyboards.mutate(kbId) { after ->
             block(after)
             val geometryChanged = before.rows.map { row -> row.height to row.keys.map { it.skinId to it.width } } !=
-                after.rows.map { row -> row.height to row.keys.map { it.skinId to it.width } } || before.rowSpacing != after.rowSpacing
+                after.rows.map { row -> row.height to row.keys.map { it.skinId to it.width } } || before.rowSpacing != after.rowSpacing || before.options != after.options
             if (geometryChanged || before.background != after.background) after.importedSkin = null
         }
         render()
@@ -485,6 +494,8 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
             }
 
         var keyBackground = key.resolvedBackground()
+        var keyAppearance = key.appearance
+        var replaceImportedStyle = false
 
         val root =
             LinearLayout(this).apply {
@@ -571,6 +582,10 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
             }
         widthLayout.addView(widthInput, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         root.addView(widthLayout)
+        root.addView(com.google.android.material.button.MaterialButton(this).apply {
+            text = if (key.skin == null) "文字、符号、提示与按下外观" else "替换为文字按键并设置外观"
+            setOnClickListener { KeyAppearanceEditor.show(this@CustomKeyboardEditActivity, text.toString(), keyAppearance) { keyAppearance = it; replaceImportedStyle = true } }
+        })
 
         val gestureViews = mutableMapOf<String, TextView>()
         KeyBindingOverrides.EDITABLE_BEHAVIORS.forEach { (behavior, meta) ->
@@ -630,7 +645,7 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
                 .setPositiveButton(R.string.ok) { _, _ ->
                     val label = labelInput.text?.toString()?.trim().orEmpty()
                     val width = widthInput.text?.toString()?.toFloatOrNull()?.coerceIn(1f, 100f) ?: 10f
-                    val newKey = key.copy(label = label, width = width, bgColor = "", bgImage = "", background = keyBackground, skin = key.skin.takeIf { keyBackground == key.resolvedBackground() })
+                    val newKey = key.copy(label = label, width = width, bgColor = "", bgImage = "", background = keyBackground, appearance = keyAppearance, skin = key.skin.takeIf { keyBackground == key.resolvedBackground() && !replaceImportedStyle })
                     mutate { k ->
                         val row = k.rows[rowIdx]
                         if (isNew) {

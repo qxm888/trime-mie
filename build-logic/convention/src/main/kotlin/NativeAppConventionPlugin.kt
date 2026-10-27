@@ -11,7 +11,7 @@ import org.gradle.kotlin.dsl.configure
 class NativeAppConventionPlugin : NativeBaseConventionPlugin() {
     /** Prebuilt builds skip the submodules entirely, so git describe cannot run. */
     private val Project.hasPrebuilt: Boolean
-        get() = file("prebuilt").exists()
+        get() = file("prebuilt").exists() && providers.gradleProperty("usePrebuiltNative").orNull != "false"
 
     private val Project.librimeVersion: String
         get() =

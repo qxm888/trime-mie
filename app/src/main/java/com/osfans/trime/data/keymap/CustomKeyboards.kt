@@ -53,6 +53,8 @@ object CustomKeyboards {
         val background: CustomBackground? = null,
         val skinId: String = "",
         val skin: com.osfans.trime.data.baiduskin.ImportedKeyStyle? = null,
+        /** Native key appearance; gestures continue to come from bindings. */
+        val appearance: KeyAppearance.Style = KeyAppearance.Style(),
     ) {
         fun resolvedBackground(): CustomBackground = (background ?: CustomBackground.fromLegacy(bgColor, bgImage, CustomBackground.KEY_COLOR)).normalized()
     }
@@ -75,6 +77,8 @@ object CustomKeyboards {
         var background: CustomBackground? = null,
         var toolbarBackground: CustomBackground? = null,
         var rowSpacing: Int = 4,
+        var keyAppearance: KeyAppearance.Style = KeyAppearance.Style(),
+        var options: KeyboardOptions = KeyboardOptions(),
         var importedSkin: com.osfans.trime.data.baiduskin.ImportedSkin? = null,
         /** BDS coordinates define key positions, not the physical keyboard height. */
         var importedHeightPercent: Int = 100,
@@ -245,6 +249,7 @@ object CustomKeyboards {
     private fun effectiveActiveId(): String = store.activeId.takeIf { it in store.keyboards } ?: store.keyboards.keys.firstOrNull().orEmpty()
 
     private fun normalizedCopy(kb: CustomKeyboard): CustomKeyboard = kb.copy(
+        options = kb.options.validated(),
         bgColor = "", bgImage = "", background = kb.resolvedBackground(),
         toolbar = kb.toolbar.toMutableList(),
         toolbarBackground = kb.toolbarBackground?.normalized(CustomBackground.KEYBOARD_COLOR),
@@ -391,15 +396,15 @@ object CustomKeyboards {
     private fun token(value: String?): KeyActionToken? =
         value?.let { KeyActionToken.Plain(it) }
 
-    fun CustomKey.toTextKey(keyboardBackground: CustomBackground): TextKeyboard.TextKey =
-        TextKeyboard.TextKey(
+    fun CustomKey.toTextKey(keyboardBackground: CustomBackground, defaults: KeyAppearance.Style = KeyAppearance.Style()): TextKeyboard.TextKey =
+        KeyAppearance.merge(defaults, appearance).toTextKey().let { style -> style.copy(
             label = label,
             allowDefaultVoice = !bindings.containsKey("longClick"),
             width = if (width > 0f) width else 10f,
-            keyBackColor = if (resolvedBackground().type == CustomBackground.Type.COLOR) resolvedBackground().color else "#00000000",
-            hilitedKeyBackColor = if (resolvedBackground().type == CustomBackground.Type.COLOR) resolvedBackground().color else "#00000000",
-            keyTextColor = resolvedBackground().textColor(keyboardBackground),
-            hilitedKeyTextColor = resolvedBackground().textColor(keyboardBackground),
+            keyBackColor = style.keyBackColor.ifEmpty { if (resolvedBackground().type == CustomBackground.Type.COLOR) resolvedBackground().color else "#00000000" },
+            hilitedKeyBackColor = style.hilitedKeyBackColor.ifEmpty { KeyAppearance.pressedColor(style.keyBackColor.ifEmpty { resolvedBackground().color }) },
+            keyTextColor = style.keyTextColor.ifEmpty { resolvedBackground().textColor(keyboardBackground) },
+            hilitedKeyTextColor = style.hilitedKeyTextColor.ifEmpty { resolvedBackground().textColor(keyboardBackground) },
             click = bindings["click"]?.let { token(it) },
             longClick = bindings["longClick"]?.let { token(it) },
             swipeUp = bindings["swipeUp"]?.let { token(it) },
@@ -413,7 +418,7 @@ object CustomKeyboards {
             paging = bindings["paging"]?.let { token(it) },
             combo = bindings["combo"]?.let { token(it) },
             ascii = bindings["ascii"]?.let { token(it) },
-        )
+        ) }
 
     internal fun CustomKeyboard.generatedKeys(): List<Pair<CustomKey?, TextKeyboard.TextKey>> = buildList {
         rows.forEach { row ->
@@ -421,7 +426,7 @@ object CustomKeyboards {
             val scale = if (total > 100f) 100f / total else 1f
             row.keys.forEachIndexed { index, key ->
                 val width = (key.width.takeIf { it.isFinite() && it > 0 } ?: 10f) * scale
-                add(key to key.toTextKey(resolvedBackground()).copy(width = width, height = row.height.coerceIn(24, 160).toFloat(), newRow = index == 0))
+                add(key to key.toTextKey(resolvedBackground(), keyAppearance).copy(width = width, height = row.height.coerceIn(24, 160).toFloat(), newRow = index == 0))
             }
             val rest = 100f - total * scale
             if (rest > 0.01f || row.keys.isEmpty()) {
@@ -433,9 +438,15 @@ object CustomKeyboards {
     fun CustomKeyboard.toTextKeyboard(): TextKeyboard = TextKeyboard(
         name = name, width = 10f, height = 60f, columns = -1,
         verticalGap = rowSpacing.coerceIn(0, maxRowSpacing()),
-        keyboardHeight = rows.sumOf { it.height.coerceIn(24, 160) }.coerceAtLeast(24),
-        keyboardHeightLand = rows.sumOf { it.height.coerceIn(24, 160) }.coerceAtLeast(24),
-        asciiMode = if (importedSkin?.page == "en_26" || importedSkin?.page == "num_9") 1 else 0, resetAsciiMode = importedSkin != null, keys = generatedKeys().map { it.second },
+        horizontalGap = options.horizontalGap,
+        keyboardHeight = rows.sumOf { it.height.coerceIn(24, 160) }.coerceAtLeast(24) * options.heightPercent / 100,
+        keyboardHeightLand = rows.sumOf { it.height.coerceIn(24, 160) }.coerceAtLeast(24) * options.landscapeHeightPercent / 100,
+        asciiMode = if (importedSkin != null) { if (importedSkin?.page == "en_26" || importedSkin?.page == "num_9") 1 else 0 } else options.asciiMode,
+        resetAsciiMode = importedSkin != null || options.resetAsciiMode,
+        lock = options.lock, asciiKeyboard = options.asciiKeyboard, landscapeKeyboard = options.landscapeKeyboard,
+        landscapeSplitPercent = options.landscapeSplitPercent,
+        labelTransform = if (options.uppercaseLabels) TextKeyboard.LabelTransform.UPPERCASE else TextKeyboard.LabelTransform.NONE,
+        keys = generatedKeys().map { it.second },
     )
 
     /** Test helper: clears all keyboards (keeps the mode). */

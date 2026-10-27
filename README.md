@@ -6,7 +6,15 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前正式版：**3.3.13-mie.15**。本仓库现已公开应用源码、构建说明及安装包；固定版本源码见 Release 的 `source.zip` 附件。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
+> 当前正式版：**3.3.13-mie.16**。本仓库现已公开应用源码、构建说明及安装包；固定版本源码见 Release 的 `source.zip` 附件。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
+
+## mie.16 更新
+
+- 复制提示显示时隐藏整排工具栏图标，关闭或超时后恢复。
+- 主题键盘增加视频背景入口，选择后立即刷新。
+- 修复方案切换后的状态栏菜单网格排列。
+- 自定义键盘增加默认/单键外观与 10 项布局设置，支持 YAML 备份还原。详见[键盘定制](docs/键盘定制.md)。
+- 本次使用传统 `rime` 目录，暂不发布新目录迁移功能与万象开发渠道。
 
 ## 功能一览
 
@@ -60,7 +68,7 @@
 
 ## 下载与安装
 
-1. 打开 [Releases](https://github.com/qxm888/trime-mie/releases/latest)，下载 `trime-mie-3.3.13-mie.15-arm64-v8a.apk`。
+1. 打开 [Releases](https://github.com/qxm888/trime-mie/releases/latest)，下载 `trime-mie-3.3.13-mie.16-arm64-v8a.apk`。
 2. 允许浏览器或文件管理器安装该 APK，安装后在系统设置启用“同文输入法咩版”并选为当前输入法。
 3. 配置 Rime 方案与词库并部署。需要沿用旧目录时，按[使用指南](docs/使用指南.md)切换外部目录。
 

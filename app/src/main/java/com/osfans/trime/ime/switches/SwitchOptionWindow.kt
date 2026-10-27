@@ -36,7 +36,6 @@ import splitties.views.dsl.constraintlayout.endOfParent
 import splitties.views.dsl.constraintlayout.lParams
 import splitties.views.dsl.core.add
 import splitties.views.dsl.recyclerview.recyclerView
-import splitties.views.recyclerview.gridLayoutManager
 
 class SwitchOptionWindow(di: DI) :
     BoardWindow.BarBoardWindow(di),
@@ -177,7 +176,12 @@ class SwitchOptionWindow(di: DI) :
 
     val view by lazy {
         context.recyclerView {
-            layoutManager = gridLayoutManager(4)
+            // Schema switches replace a different number of cells. Predictive
+            // layout can retain measurements from the previous keyboard width.
+            layoutManager = object : androidx.recyclerview.widget.GridLayoutManager(context, 4) {
+                override fun supportsPredictiveItemAnimations() = false
+            }
+            itemAnimator = null
             adapter = this@SwitchOptionWindow.adapter
         }
     }

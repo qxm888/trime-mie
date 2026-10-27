@@ -21,12 +21,13 @@ open class NativeBaseConventionPlugin : Plugin<Project> {
                     }
                 }
             }
-            // Use prebuilt JNI library if the "app/prebuilt" exists
+            // Use the existing release engine unless a source build is requested.
             //
             // Steps to generate the prebuilt directory:
             // $ ./gradlew app:assembleRelease
             // $ cp --recursive app/build/intermediates/stripped_native_libs/universalRelease/out/lib app/prebuilt
-            if (target.file("prebuilt").exists()) {
+            if (target.file("prebuilt").exists() && target.providers.gradleProperty("usePrebuiltNative").orNull != "false") {
+                check(target.file("prebuilt").exists()) { "app/prebuilt is missing" }
                 sourceSets.getByName("main").jniLibs.srcDirs(setOf("prebuilt"))
             } else {
                 externalNativeBuild.apply {

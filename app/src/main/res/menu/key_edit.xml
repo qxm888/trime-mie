@@ -6,6 +6,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/action_theme_video" android:title="@string/keyboard_video_background" app:showAsAction="never" />
     <item
         android:id="@+id/action_export_bindings"
         android:title="@string/key_editor_export"
