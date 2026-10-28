@@ -16,6 +16,7 @@ import kotlinx.serialization.json.*
 /** Accordion sections keep uncommon controls out of the initial dialog. */
 private class SettingsDrawers(private val root: LinearLayout) {
     private val sections = mutableListOf<Pair<android.widget.TextView, LinearLayout>>()
+    fun pruneEmpty() { sections.forEach { (header, content) -> if (content.childCount == 0) (header.parent as android.view.View).visibility = android.view.View.GONE } }
     fun section(title: String): LinearLayout {
         val context = root.context
         val header = android.widget.TextView(context).apply {
@@ -50,7 +51,7 @@ private class SettingsDrawers(private val root: LinearLayout) {
 
 /** One editor for keyboard defaults and individual key overrides. */
 object KeyAppearanceEditor {
-    fun show(context: Context, title: String, current: TextKey, save: (TextKey) -> Unit) {
+    fun show(context: Context, title: String, current: TextKey, fields: Set<String> = KeyAppearance.fields.keys, save: (TextKey) -> Unit) {
         val body = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL }
         val inputs = linkedMapOf<String, () -> String>()
         val values = KeyAppearance.values(current)
@@ -63,7 +64,7 @@ object KeyAppearanceEditor {
             "offset" to drawers.section("位置偏移"),
             "action" to drawers.section("弹出备选与手势绑定"),
         )
-        KeyAppearance.fields.forEach { (name, label) ->
+        KeyAppearance.fields.filterKeys { it in fields }.forEach { (name, label) ->
             val group = when {
                 name == "popup" || name == "sendBindings" -> "action"
                 name.contains("Offset") -> "offset"
@@ -106,6 +107,7 @@ object KeyAppearanceEditor {
                 inputs[name] = { input.text?.toString().orEmpty() }
             }
         }
+        drawers.pruneEmpty()
         val dialog = MaterialAlertDialogBuilder(context).setTitle(title)
             .setView(ScrollView(context).apply { addView(body) })
             .setNegativeButton(android.R.string.cancel, null)
@@ -113,7 +115,7 @@ object KeyAppearanceEditor {
             .setPositiveButton(android.R.string.ok, null).create()
         dialog.setOnShowListener {
             dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                runCatching { KeyAppearance.parse(inputs.mapValues { it.value() }) }.onSuccess {
+                runCatching { KeyAppearance.parse(KeyAppearance.textValues(current) + inputs.mapValues { it.value() }) }.onSuccess {
                     save(it)
                     dialog.dismiss()
                 }.onFailure { Toast.makeText(context, it.message, Toast.LENGTH_LONG).show() }

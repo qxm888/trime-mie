@@ -324,8 +324,10 @@ class Key(
     /** Per-key background image of custom keyboards; wins over theme colors. */
     var customBgDrawable: Drawable? = null
 
+    private val layoutKeyBackground = parent.allKeysBackground
+    val hasWholeKeyBackground: Boolean get() = layoutKeyBackground.isNotBlank() || com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom).keys.background.isNotBlank()
     private val wholeKeyBackground by schemeColor {
-        val raw = com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.keyBackground.getValue()
+        val raw = layoutKeyBackground.ifBlank { com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom).keys.background }
         if (raw.isBlank()) null else ColorManager.getDrawable(raw)
     }
     fun getBackgroundDrawable(): Drawable? = wholeKeyBackground ?: customBgDrawable ?: when (appearanceType) {

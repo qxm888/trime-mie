@@ -38,14 +38,10 @@ object ToolbarOverrides {
     const val BUILTIN_FLOATING = "__floating"
     const val BUILTIN_FLOATING_LABEL = "悬浮"
 
-    // 旧参数与新的 __mie_* 内部名都从工具栏过滤：主题/旧配置里出现这些按钮一律不显示、
-    // 不可添加（旧参数在按键执行端也已失效，见 CommonKeyboardActionListener）。
+    // Only obsolete aliases are filtered. Modern __mie_* actions are executable
+    // and can be assigned to toolbar buttons just like keyboard keys.
     private val MODE_ACTIONS = setOf(
         BUILTIN_FLOATING, "floating_keyboard", "switch_floating_keyboard", "one_hand_mode", "switch_one_hand_mode",
-        "__mie_floating_keyboard", "__mie_toggle_floating_keyboard",
-        "__mie_one_hand", "__mie_toggle_one_hand",
-        "__mie_hide_bar", "__mie_toggle_hide_bar",
-        "__mie_candidates_window", "__mie_toggle_candidates_window",
     )
 
     fun isModeAction(action: String): Boolean = action in MODE_ACTIONS
@@ -63,6 +59,11 @@ object ToolbarOverrides {
         val enabled: Boolean = true,
         /** 自定义图标/文字（emoji 或任意字符）；空 = 用主题自带的前景样式 */
         val icon: String = "",
+        val id: String = "",
+        val appearance: KeyAppearance.Style = KeyAppearance.Style(),
+        val bindings: Map<String, String> = emptyMap(),
+        val width: Int = 0,
+        val height: Int = 0,
     )
 
     @Serializable
@@ -123,7 +124,7 @@ object ToolbarOverrides {
         synchronized(lock) {
             store.configured = true
             store.buttons.clear()
-            store.buttons.addAll(entries.distinctBy { it.action })
+            store.buttons.addAll(entries)
             store.version++
             dirty = true
             scheduleSaveLocked()
@@ -167,15 +168,12 @@ object ToolbarOverrides {
         allowCustomActions: Boolean = false,
     ): ToolBar {
         val byAction = toolBar.buttons.associateBy { it.action }
-        val seen = mutableSetOf<String>()
         val result = mutableListOf<ToolBar.Button>()
         stored.forEach { entry ->
             if (isModeAction(entry.action)) return@forEach
-            if (!seen.add(entry.action)) return@forEach
             when {
                 // 内置功能按钮不在主题里，按位置直接插入
                 entry.action == BUILTIN_FLOATING -> {
-                    seen += entry.action
                     if (entry.enabled) result += builtinFloatingButton(entry.icon)
                 }
 
@@ -183,14 +181,21 @@ object ToolbarOverrides {
                     (byAction[entry.action] ?: if (allowCustomActions) ToolBar.Button(
                         action = entry.action, foreground = ToolBar.Button.Foreground(style = entry.icon),
                     ) else null)?.let { btn ->
-                        seen += entry.action
                         if (entry.enabled) {
-                            result +=
-                                if (entry.icon.isNotEmpty()) {
-                                    btn.copy(foreground = btn.foreground.copy(style = entry.icon))
-                                } else {
-                                    btn
-                                }
+                            val style = entry.appearance
+                            result += btn.copy(
+                                foreground = btn.foreground.copy(
+                                    style = entry.icon.ifEmpty { btn.foreground.style },
+                                    optionStyles = if (entry.icon.isEmpty()) btn.foreground.optionStyles else emptyList(),
+                                    normal = style.keyTextColor.ifBlank { btn.foreground.normal },
+                                    highlight = style.hilitedKeyTextColor.ifBlank { btn.foreground.highlight },
+                                    fontSize = style.keyTextSize.takeIf { it > 0 } ?: btn.foreground.fontSize,
+                                ),
+                                longPressAction = entry.bindings["longClick"] ?: btn.longPressAction,
+                                bindings = entry.bindings,
+                                appearance = style,
+                                size = if (entry.width > 0 || entry.height > 0) listOf(entry.width.takeIf { it > 0 } ?: 44, entry.height.takeIf { it > 0 } ?: 44) else btn.size,
+                            )
                         }
                     }
             }
@@ -205,7 +210,7 @@ object ToolbarOverrides {
             val bar = applyForCustomKeyboard(theme.toolBar, custom?.toolbar ?: StandaloneKeyboardTheme.defaultToolbar())
             val textColor = custom?.toolbarTextColor()
             if (textColor == null) bar else bar.copy(buttons = bar.buttons.map { button ->
-                button.copy(foreground = button.foreground.copy(normal = textColor, highlight = textColor))
+                button.copy(foreground = button.foreground.copy(normal = button.appearance.keyTextColor.ifBlank { textColor }, highlight = button.appearance.hilitedKeyTextColor.ifBlank { textColor }))
             })
         } else {
             apply(theme.toolBar)

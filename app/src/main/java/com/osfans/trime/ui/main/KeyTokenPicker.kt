@@ -38,6 +38,7 @@ object KeyTokenPicker {
         activity: FragmentActivity,
         title: String,
         hasOverride: Boolean,
+        standalone: Boolean = activity is CustomKeyboardEditActivity,
         onPicked: (String?) -> Unit,
     ) {
         val entries = mutableListOf<String>()
@@ -50,7 +51,7 @@ object KeyTokenPicker {
         ops.add(OP_UNBIND)
         entries.add(activity.getString(R.string.key_editor_custom))
         ops.add(OP_CUSTOM)
-        val categories = categories(activity)
+        val categories = categories(activity, standalone)
         categories.forEachIndexed { idx, (catTitle, _) ->
             entries.add(catTitle)
             ops.add(OP_CATEGORY + idx)
@@ -101,10 +102,10 @@ object KeyTokenPicker {
                                 onPicked(items[itemIdx].token)
                             }
                             .setNegativeButton(R.string.key_editor_back) { _, _ ->
-                                show(activity, title, hasOverride, onPicked)
+                                show(activity, title, hasOverride, standalone, onPicked)
                             }
                             .setOnCancelListener {
-                                show(activity, title, hasOverride, onPicked)
+                                show(activity, title, hasOverride, standalone, onPicked)
                             }
                             .show()
                     }
@@ -113,7 +114,7 @@ object KeyTokenPicker {
             .show()
     }
 
-    private fun categories(activity: FragmentActivity): List<Pair<String, List<Entry>>> {
+    private fun categories(activity: FragmentActivity, standalone: Boolean): List<Pair<String, List<Entry>>> {
         fun e(display: String, token: String = display) = Entry(display, token)
         fun fn(token: String, nameRes: Int) = Entry("$token · ${activity.getString(nameRes)}", token)
         return listOf(
@@ -154,7 +155,7 @@ object KeyTokenPicker {
                 ),
         ) + listOf(
             activity.getString(R.string.key_editor_cat_actions) to
-                (if (activity is CustomKeyboardEditActivity) CustomKeyboards.standaloneTheme() else ThemeManager.activeTheme)
+                (if (standalone) CustomKeyboards.standaloneTheme() else ThemeManager.activeTheme)
                     .presetKeys.map { (token, action) ->
                         Entry(action.label.ifEmpty { action.states.joinToString("/").ifEmpty { token } } + " · " + token, token)
                     },

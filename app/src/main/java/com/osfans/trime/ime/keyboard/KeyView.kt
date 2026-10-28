@@ -338,7 +338,7 @@ class KeyView(
 
         drawBackground(canvas, key)
 
-        val drawText = com.osfans.trime.ime.appearance.SurfaceAppearance.current().keys.blur || key.importedStyle == null || com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.keyBackground.getValue().isNotEmpty()
+        val drawText = com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom).keys.blur || key.importedStyle == null || key.hasWholeKeyBackground
         val label = key.getLabel().let {
             if (it == "enter_labels") keyboardView.labelEnter else it
         }
@@ -362,7 +362,7 @@ class KeyView(
     private val surfaceBorderBounds = android.graphics.RectF()
 
     private fun drawBackground(canvas: Canvas, k: Key) {
-        val surface = com.osfans.trime.ime.appearance.SurfaceAppearance.current().keys
+        val surface = com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom).keys
         val corner = surface.radius ?: k.roundCorner
 
         val bg = k.getBackgroundDrawable() ?: return
@@ -390,7 +390,7 @@ class KeyView(
         backgroundClip.addRoundRect(backgroundClipBounds, dp(corner.coerceAtLeast(0f)), dp(corner.coerceAtLeast(0f)), android.graphics.Path.Direction.CW)
         canvas.clipPath(backgroundClip)
         val blurred = surface.blur && com.osfans.trime.ime.appearance.BackdropBlur.draw(this, canvas, backgroundClipBounds)
-        val layer = if (blurred) canvas.saveLayerAlpha(backgroundClipBounds, com.osfans.trime.ime.appearance.SurfaceAppearance.current().glassOpacity * 255 / 100) else -1
+        val layer = if (blurred) canvas.saveLayerAlpha(backgroundClipBounds, com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom).glassOpacity * 255 / 100) else -1
         bg.draw(canvas)
         if (layer >= 0) canvas.restoreToCount(layer)
         if (surface.blur) canvas.drawColor(if (k.isPressed) 0x33FFFFFF else 0x18FFFFFF)
@@ -398,7 +398,7 @@ class KeyView(
 
 
         // image skins have no pressed state of their own — overlay one
-        if ((k.customBgDrawable != null && k.importedStyle == null || com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.keyBackground.getValue().isNotEmpty()) && k.isPressed) {
+        if ((k.customBgDrawable != null && k.importedStyle == null || key.hasWholeKeyBackground) && k.isPressed) {
             canvas.drawColor(0x44FFFFFF)
         }
         canvas.restoreToCount(saved)

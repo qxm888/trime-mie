@@ -23,16 +23,15 @@ SPDX-License-Identifier: GPL-3.0-or-later
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:paddingStart="14dp"
         android:paddingTop="10dp"
         android:paddingEnd="4dp"
         android:paddingBottom="10dp">
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:orientation="vertical">
 
             <TextView
@@ -40,7 +39,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
-                android:maxLines="1"
+                android:maxLines="2"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="15sp"
                 android:textStyle="bold"
@@ -58,6 +57,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
                 tools:text="IME_switch" />
         </LinearLayout>
 
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="end|center_vertical">
         <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/toolbar_entry_switch"
             android:layout_width="wrap_content"
@@ -66,8 +66,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
         <ImageButton
             android:id="@+id/toolbar_entry_up"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/custom_kb_move_up"
             android:src="@drawable/ic_baseline_expand_less_24"
@@ -75,8 +75,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
         <ImageButton
             android:id="@+id/toolbar_entry_down"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/custom_kb_move_down"
             android:src="@drawable/ic_baseline_expand_more_24"
@@ -84,11 +84,12 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
         <ImageButton
             android:id="@+id/toolbar_entry_delete"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/custom_kb_key_delete"
             android:src="@drawable/ic_baseline_delete_24"
             app:tint="?attr/colorOnSurfaceVariant" />
+        </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

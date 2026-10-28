@@ -74,10 +74,10 @@ class KeyEditActivity : AppCompatActivity() {
         }
         toolbar.setNavigationOnClickListener { finish() }
         toolbar.inflateMenu(R.menu.key_edit)
-        toolbar.menu.add(0, 2180, 0, "全局外观设置")
+        toolbar.menu.add(0, 2180, 0, "主题键盘全局外观")
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
-                2180 -> { returningFromAppearance = true; SettingsPageFragment.launch(this, "appearance") }
+                2180 -> SurfaceAppearanceEditor.show(this, false) { refreshAppearancePreview { rebuildPreview() } }
                 R.id.action_export_bindings -> exportBindings()
                 R.id.action_import_bindings -> importLauncher.launch(arrayOf("application/json", "text/plain", "*/*"))
                 R.id.action_theme_video -> { returningFromAppearance = true; SettingsPageFragment.launch(this, "background") }

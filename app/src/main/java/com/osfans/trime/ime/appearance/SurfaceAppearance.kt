@@ -38,10 +38,10 @@ object SurfaceAppearance {
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
     private var cacheKey: Pair<String, String>? = null
     private var cached = SurfaceAppearanceConfig()
-    fun current(): SurfaceAppearanceConfig {
+    fun current(customMode: Boolean = isCustomMode()): SurfaceAppearanceConfig {
         val prefs = AppPrefs.defaultInstance().keyboard
-        val raw = prefs.surfaceAppearance.getValue()
-        val background = prefs.keyBackground.getValue()
+        val raw = (if (customMode) prefs.customSurfaceAppearance else prefs.surfaceAppearance).getValue()
+        val background = (if (customMode) prefs.customKeyBackground else prefs.keyBackground).getValue()
         if (cacheKey?.first != raw || cacheKey?.second != background) {
             val parsed = runCatching { json.decodeFromString<SurfaceAppearanceConfig>(raw) }.getOrDefault(SurfaceAppearanceConfig())
             cached = parsed.copy(keys = parsed.keys.copy(background = background),
@@ -50,9 +50,15 @@ object SurfaceAppearance {
         }
         return cached
     }
-    fun save(config: SurfaceAppearanceConfig) {
+    fun isCustomMode() = com.osfans.trime.data.keymap.CustomKeyboards.mode == com.osfans.trime.data.keymap.CustomKeyboards.MODE_CUSTOM
+    fun unifiedBackground(customMode: Boolean = isCustomMode()): Boolean {
         val prefs = AppPrefs.defaultInstance().keyboard
-        if (prefs.keyBackground.getValue() != config.keys.background) prefs.keyBackground.setValue(config.keys.background)
-        prefs.surfaceAppearance.setValue(json.encodeToString(config))
+        return (if (customMode) prefs.customUnifiedBackground else prefs.unifiedBackground).getValue()
+    }
+    fun save(config: SurfaceAppearanceConfig, customMode: Boolean = isCustomMode()) {
+        val prefs = AppPrefs.defaultInstance().keyboard
+        val background = if (customMode) prefs.customKeyBackground else prefs.keyBackground
+        if (background.getValue() != config.keys.background) background.setValue(config.keys.background)
+        (if (customMode) prefs.customSurfaceAppearance else prefs.surfaceAppearance).setValue(json.encodeToString(config))
     }
 }

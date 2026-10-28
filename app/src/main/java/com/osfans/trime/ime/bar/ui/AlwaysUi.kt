@@ -55,14 +55,7 @@ class AlwaysUi(
         @DrawableRes icon: Int = 0,
     ): ToolButton = if (buttonConfig != null) {
         ToolButton(ctx, buttonConfig, scope).apply {
-            setOnClickListener { onButtonClick?.invoke(buttonConfig.action) }
-            val longPressAction = buttonConfig.longPressAction
-            if (longPressAction.isNotEmpty()) {
-                setOnLongClickListener {
-                    onButtonClick?.invoke(longPressAction)
-                    true
-                }
-            }
+            bindActions(onButtonClick)
         }
     } else {
         ToolButton(ctx, icon, scope).apply {

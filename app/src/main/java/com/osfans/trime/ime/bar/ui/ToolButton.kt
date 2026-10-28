@@ -99,6 +99,7 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
         }
         actionLabel = keyAction.getLabel(KeyboardWindow.currentKeyboard)
 
+        contentDescription = fg.style.ifBlank { actionLabel }
         val padding = dp(fg.padding)
         image.padding = padding
         label.padding = padding
@@ -148,18 +149,77 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
         applySurfaceBackground()
     }
 
+    /** Shared by primary, ordinary and pinned toolbar buttons. */
+    private var voiceHeld = false
+    private fun voiceInput(): com.osfans.trime.ime.voice.VoiceInput? {
+        var candidate: Context = context
+        while (true) {
+            if (candidate is com.osfans.trime.ime.core.TrimeInputMethodService) return candidate.voiceInput
+            val base = (candidate as? android.content.ContextWrapper)?.baseContext ?: return null
+            if (base === candidate) return null
+            candidate = base
+        }
+    }
+    override fun onDetachedFromWindow() {
+        if (voiceHeld) { voiceHeld = false; voiceInput()?.cancel() }
+        super.onDetachedFromWindow()
+    }
+    fun bindActions(dispatch: ((String) -> Unit)?) {
+        val cfg = config ?: return
+        val voiceClick = scope.theme.resolveAction(cfg.action).code == android.view.KeyEvent.KEYCODE_VOICE_ASSIST
+        setOnClickListener { if (!voiceClick) dispatch?.invoke(cfg.action) }
+        if (voiceClick) onPress = { voiceHeld = true; voiceInput()?.start() }
+        onRelease = { _, _ -> if (voiceHeld) { voiceHeld = false; voiceInput()?.release() } }
+        onCancel = { if (voiceHeld) { voiceHeld = false; voiceInput()?.cancel() } }
+        if (cfg.longPressAction.isNotEmpty()) setOnLongClickListener {
+            if (scope.theme.resolveAction(cfg.longPressAction).code == android.view.KeyEvent.KEYCODE_VOICE_ASSIST) {
+                voiceHeld = true; voiceInput()?.start()
+            } else dispatch?.invoke(cfg.longPressAction)
+            true
+        }
+        cfg.bindings["doubleClick"]?.takeIf { it.isNotEmpty() }?.let { token -> hasDouble = true; onDoubleClick = { dispatch?.invoke(token) } }
+        cfg.bindings["swipeUp"]?.takeIf { it.isNotEmpty() }?.let { token -> onSwipeUp = { dispatch?.invoke(token) } }
+        cfg.bindings["swipeDown"]?.takeIf { it.isNotEmpty() }?.let { token -> onSwipeDown = { dispatch?.invoke(token) } }
+        cfg.bindings["swipeLeft"]?.takeIf { it.isNotEmpty() }?.let { token -> onSwipeLeft = { dispatch?.invoke(token) } }
+        cfg.bindings["swipeRight"]?.takeIf { it.isNotEmpty() }?.let { token -> onSwipeRight = { dispatch?.invoke(token) } }
+    }
+
     private fun applySurfaceBackground() {
-        val appearance = com.osfans.trime.ime.appearance.SurfaceAppearance.current()
+        val appearance = com.osfans.trime.ime.appearance.SurfaceAppearance.current(scope.theme.isCustom)
         var style = appearance.effectiveToolbar
+        if (appearance.linkToolbar && scope.theme.isCustom) {
+            val keyboard = com.osfans.trime.data.keymap.CustomKeyboards.get(com.osfans.trime.data.keymap.CustomKeyboards.resolveId(KeyboardWindow.lastAttachedId))
+            if (keyboard != null) style = style.copy(
+                background = keyboard.allKeysBackground.ifBlank { style.background.ifBlank { keyboard.keyAppearance.keyBackColor } },
+                borderWidth = style.borderWidth ?: keyboard.keyAppearance.keyBorder.takeIf { it >= 0 }?.toFloat(),
+                borderColor = style.borderColor.ifBlank { keyboard.keyAppearance.keyBorderColor },
+                radius = style.radius ?: keyboard.keyAppearance.roundCorner.takeIf { it >= 0 },
+            )
+        }
         if (appearance.linkToolbar) style = style.copy(
             borderWidth = style.borderWidth ?: themeKeyBorder(),
             borderColor = style.borderColor.ifBlank { String.format("#%08X", scope.colors.keyBorderColor) },
             radius = style.radius ?: scope.theme.style.roundCorner,
         )
-        if (style.customized || appearance.linkToolbar) {
+        val own = config?.appearance
+        if (own != null) {
+            style = style.copy(
+                background = own.keyBackColor.ifBlank { style.background },
+                borderWidth = own.keyBorder.takeIf { it >= 0 }?.toFloat() ?: style.borderWidth,
+                borderColor = own.keyBorderColor.ifBlank { style.borderColor },
+                radius = own.roundCorner.takeIf { it >= 0 } ?: style.radius,
+            )
+        }
+        if (style.customized || appearance.linkToolbar || own?.hilitedKeyBackColor?.isNotEmpty() == true || own?.hilitedKeyBorderColor?.isNotEmpty() == true) {
             val fallback = if (appearance.linkToolbar) scope.drawable("key_back_color") else background
-            background = com.osfans.trime.ime.appearance.SurfaceDrawable(this, fallback, style,
-                defaultBorderColor = scope.colors.keyBorderColor)
+            val pressed = style.copy(
+                background = own?.hilitedKeyBackColor?.ifBlank { style.background } ?: style.background,
+                borderColor = own?.hilitedKeyBorderColor?.ifBlank { style.borderColor } ?: style.borderColor,
+            )
+            background = StateListDrawable().apply {
+                addState(intArrayOf(android.R.attr.state_pressed), com.osfans.trime.ime.appearance.SurfaceDrawable(this@ToolButton, fallback?.constantState?.newDrawable()?.mutate() ?: fallback, pressed, defaultBorderColor = scope.colors.keyBorderColor))
+                addState(intArrayOf(), com.osfans.trime.ime.appearance.SurfaceDrawable(this@ToolButton, fallback, style, defaultBorderColor = scope.colors.keyBorderColor))
+            }
         }
     }
 

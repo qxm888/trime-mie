@@ -121,6 +121,9 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         prefs.keyboard.unifiedBackground,
         prefs.keyboard.keyBackground,
         prefs.keyboard.surfaceAppearance,
+        prefs.keyboard.customKeyBackground,
+        prefs.keyboard.customSurfaceAppearance,
+        prefs.keyboard.customUnifiedBackground,
         prefs.advanced.ignoreSystemGestureInsets,
     )
 

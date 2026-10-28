@@ -116,9 +116,21 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
             preferenceScreen.addPreference("主题诊断", "检查当前主题与配置") { startActivity(Intent(requireContext(), ThemeDiagnosticsActivity::class.java)) }
             preferenceScreen.addPreference("应用日志", "查看运行日志与排查问题") { com.osfans.trime.util.AppUtils.launchLogActivity(requireContext()) }
         }
-        if (pageId == "surface") preferenceScreen.addPreference("全局样式", "对所有布局生效；当前布局和单键覆盖仍在各自编辑器中设置") { AppearancePicker.showKeyboard(requireActivity()) }
+        if (pageId == "surface") {
+            preferenceScreen.addPreference("主题键盘全局外观", "主题模式的按键与状态栏样式") { SurfaceAppearanceEditor.show(requireActivity(), false) }
+            preferenceScreen.addPreference("自定义键盘全局外观", "自定义模式独立保存，与主题键盘互不影响") { SurfaceAppearanceEditor.show(requireActivity(), true) }
+        }
         if (pageId == "voice") preferenceScreen.addPreference("识别服务与模型", "在线服务、离线模型、下载与导入") { startActivity(Intent(requireContext(), VoiceSettingsActivity::class.java)) }
-        if (pageId == "toolbar") preferenceScreen.addPreference("编辑工具栏", "当前全局工具栏的按钮与顺序") { ToolbarEditActivity.start(requireContext()) }
+        if (pageId == "toolbar") {
+            preferenceScreen.addPreference("主题键盘状态栏", "主题模式的按钮、功能绑定与独立外观") { ToolbarEditActivity.start(requireContext(), themeMode = true) }
+            preferenceScreen.addPreference("自定义键盘状态栏", "选择布局，编辑它自己的状态栏按钮") {
+                val layouts = com.osfans.trime.data.keymap.CustomKeyboards.list()
+                if (layouts.isEmpty()) CustomKeyboardActivity.start(requireContext()) else
+                    MaterialAlertDialogBuilder(requireContext()).setTitle("选择自定义键盘").setItems(layouts.map { it.name }.toTypedArray()) { _, index ->
+                        ToolbarEditActivity.start(requireContext(), layouts[index].id)
+                    }.setNegativeButton(android.R.string.cancel, null).show()
+            }
+        }
         fun group(title: String, delegates: List<PreferenceDelegateUi<*>>, collapsed: Boolean = false) {
             if (delegates.isEmpty()) return
             preferenceScreen.addCategory(title) {
@@ -144,6 +156,8 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
         SettingsCatalog.pages.filter { it.parent == pageId }.forEach { child ->
             preferenceScreen.addPreference(child.title, child.summary) { open(child.id) }
         }
+        findPreference<Preference>("keyboard_unified_background")?.title = "主题键盘：状态栏与键盘共用背景"
+        findPreference<Preference>("custom_keyboard_unified_background")?.title = "自定义键盘：状态栏与键盘共用背景"
         findPreference<Preference>("keyboard_video_background")?.apply {
             summary = "全局主题背景 · 静音循环，键盘隐藏时暂停；自定义布局背景在布局编辑器中设置"
             setOnPreferenceClickListener {

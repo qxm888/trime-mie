@@ -30,6 +30,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     </com.google.android.material.appbar.AppBarLayout>
 
     <TextView
+        android:id="@+id/toolbar_edit_hint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"

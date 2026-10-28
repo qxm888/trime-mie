@@ -38,6 +38,8 @@ class Keyboard(
 
     /** [CustomKeyboards.version] at build time, for cache staleness checks. */
     val builtWithCustomVersion: Long = CustomKeyboards.version
+    internal val allKeysBackground = if (theme.isCustom) CustomKeyboards.get(CustomKeyboards.resolveId(keyboardId))?.allKeysBackground.orEmpty() else ""
+
 
     /** 按鍵默認水平間距  */
     internal val horizontalGap: Int =

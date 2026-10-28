@@ -17,8 +17,8 @@ import com.osfans.trime.ime.appearance.SurfaceStyle
 
 /** Staged appearance settings. Sections stay folded until requested; Apply commits all changes. */
 object SurfaceAppearanceEditor {
-    fun show(context: Context, changed: () -> Unit = {}): androidx.appcompat.app.AlertDialog {
-        var draft = SurfaceAppearance.current()
+    fun show(context: Context, customMode: Boolean = SurfaceAppearance.isCustomMode(), changed: () -> Unit = {}): androidx.appcompat.app.AlertDialog {
+        var draft = SurfaceAppearance.current(customMode)
         fun dp(n: Int) = (context.resources.displayMetrics.density * n).toInt()
         fun column() = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL }
         val body = column().apply { setPadding(dp(12), dp(4), dp(12), dp(12)) }
@@ -87,7 +87,7 @@ object SurfaceAppearanceEditor {
             overrideRadius.setOnCheckedChangeListener { _, checked -> radius.isEnabled = checked; update(style.copy(radius = if (checked) radius.value else null)) }
             toggle(parent, "动态模糊背景", style.blur) { update(style.copy(blur = it)) }
         }
-        note(body, "分别设置按键和状态栏图标，或让它们共用外观。动态模糊只处理背景，文字与图标保持清晰。")
+        note(body, (if (customMode) "只影响自定义键盘，与主题键盘独立。" else "只影响主题键盘，与自定义键盘独立。") + "可分别设置按键和状态栏，或让它们共用外观。动态模糊只处理背景。")
         styleControls(drawer("按键 · 背景、边框与模糊"), draft.keys) { draft = draft.copy(keys = it) }
         val toolbar = drawer("状态栏图标 · 独立或跟随按键")
         val toolbarControls = column()
@@ -104,13 +104,13 @@ object SurfaceAppearanceEditor {
         slider(glass, "模糊强度", draft.blurRadius.toFloat(), 2f, 32f, 1f, " dp") { draft = draft.copy(blurRadius = it.toInt()) }
         slider(glass, "背景叠加强度", draft.glassOpacity.toFloat(), 0f, 100f, 1f, "%") { draft = draft.copy(glassOpacity = it.toInt()) }
         note(glass, "较低叠加强度更通透，较高时更接近原背景。设置对按键、状态栏图标和整条状态栏的模糊同时生效。")
-        return MaterialAlertDialogBuilder(context).setTitle("按键与状态栏外观")
+        return MaterialAlertDialogBuilder(context).setTitle(if (customMode) "自定义键盘全局外观" else "主题键盘全局外观")
             .setView(ScrollView(context).apply { addView(body) })
             .setNegativeButton(android.R.string.cancel, null)
             .setNeutralButton("恢复默认") { _, _ ->
                 MaterialAlertDialogBuilder(context).setTitle("恢复默认外观？").setMessage("清除整体按键与状态栏外观设置，恢复跟随主题。")
-                    .setNegativeButton(android.R.string.cancel, null).setPositiveButton("恢复") { _, _ -> SurfaceAppearance.save(SurfaceAppearanceConfig()); changed() }.show()
+                    .setNegativeButton(android.R.string.cancel, null).setPositiveButton("恢复") { _, _ -> SurfaceAppearance.save(SurfaceAppearanceConfig(), customMode); changed() }.show()
             }
-            .setPositiveButton("应用") { _, _ -> SurfaceAppearance.save(draft); changed() }.show()
+            .setPositiveButton("应用") { _, _ -> SurfaceAppearance.save(draft, customMode); changed() }.show()
     }
 }

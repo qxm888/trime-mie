@@ -65,6 +65,6 @@ object AppearancePicker {
     fun preview(raw: String): android.graphics.drawable.Drawable? = if (raw.isBlank()) null else if (raw.startsWith("/")) com.osfans.trime.data.theme.AssetBitmapDrawable(raw)
         else GradientDrawable().apply { cornerRadius = 16f; setColor(runCatching { Color.parseColor(raw) }.getOrDefault(Color.TRANSPARENT)) }
     fun showKeyboard(context: Context, changed: () -> Unit = {}) {
-        SurfaceAppearanceEditor.show(context, changed)
+        SurfaceAppearanceEditor.show(context, changed = changed)
     }
 }

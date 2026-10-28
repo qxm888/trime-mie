@@ -76,6 +76,8 @@ object CustomKeyboards {
         val rows: MutableList<CustomRow> = mutableListOf(),
         var background: CustomBackground? = null,
         var toolbarBackground: CustomBackground? = null,
+        /** Overlay for every key in this layout; empty restores individual backgrounds. */
+        var allKeysBackground: String = "",
         var rowSpacing: Int = 4,
         var keyAppearance: KeyAppearance.Style = KeyAppearance.Style(),
         var options: KeyboardOptions = KeyboardOptions(),

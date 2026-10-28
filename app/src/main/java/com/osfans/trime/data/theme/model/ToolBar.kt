@@ -24,6 +24,8 @@ data class ToolBar(
         val longPressAction: String = "",
         @Serializable(with = LenientIntListSerializer::class)
         val size: List<Int> = emptyList(),
+        val appearance: com.osfans.trime.data.keymap.KeyAppearance.Style = com.osfans.trime.data.keymap.KeyAppearance.Style(),
+        val bindings: Map<String, String> = emptyMap(),
     ) {
 
         @Serializable

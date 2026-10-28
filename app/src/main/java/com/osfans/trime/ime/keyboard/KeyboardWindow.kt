@@ -197,7 +197,7 @@ class KeyboardWindow(di: DI) :
                 ?.let { com.osfans.trime.data.keymap.CustomBackground(com.osfans.trime.data.keymap.CustomBackground.Type.VIDEO, image = it) }
         currentBackground = background
         onBackgroundChanged?.invoke()
-        val unified = com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.unifiedBackground.getValue()
+        val unified = com.osfans.trime.ime.appearance.SurfaceAppearance.unifiedBackground(theme.isCustom)
         keyboardView.background = if (unified) null else background?.drawable(context, width.coerceAtLeast(1))
         val videoPath = background?.takeIf { !unified && it.type == com.osfans.trime.data.keymap.CustomBackground.Type.VIDEO }?.image
         if (videoPath == videoBackgroundPath && videoBackground != null) return

@@ -25,6 +25,7 @@ object CustomKeyboardYaml {
     @Serializable private data class KeyboardInfo(
         val toolbar: List<ToolbarOverrides.Entry> = emptyList(),
         val toolbarBackground: CustomBackground? = null,
+        val allKeysBackground: String = "",
         val importedSkin: ImportedSkin? = null,
         val importedHeightPercent: Int = 100,
         val exportedHeight: Int = 0,
@@ -37,6 +38,7 @@ object CustomKeyboardYaml {
         val row: Int = 1, val spacer: Boolean = false,
         val skinId: String = "", val skin: ImportedKeyStyle? = null,
         val exportedWidth: Float = 0f, val exportedHeight: Int = 0, val exportedBackground: String = "",
+        val background: CustomBackground? = null,
         val appearance: Map<String, String> = emptyMap(),
         val exportedAppearance: Map<String, String> = emptyMap(),
     )
@@ -81,7 +83,7 @@ object CustomKeyboardYaml {
             kb.rows.forEachIndexed { rowIndex, row ->
                 row.keys.forEach { key ->
                     val effective = KeyAppearance.merge(kb.keyAppearance, key.appearance)
-                    val bg = effective.keyBackColor.ifEmpty { background(key.resolvedBackground()) }
+                    val bg = kb.allKeysBackground.ifBlank { effective.keyBackColor.ifEmpty { background(key.resolvedBackground()) } }
                     val data = linkedMapOf<String, JsonElement>("label" to string(key.label), "width" to JsonPrimitive(key.width),
                         "height" to JsonPrimitive(row.height), "key_back_color" to string(bg))
                     KeyAppearance.values(effective).filter { (name, value) -> name in KeyAppearance.fields && name != "keyBackColor" && value != JsonNull }.forEach { (name, value) ->
@@ -90,7 +92,7 @@ object CustomKeyboardYaml {
                     behaviors.forEach { (behavior, yamlName) -> key.bindings[behavior]?.let { data[yamlName] = string(it) } }
                     data["mie"] = json.encodeToJsonElement(KeyInfo.serializer(), KeyInfo(rowIndex + 1, skinId = key.skinId, skin = key.skin,
                         exportedWidth = key.width, exportedHeight = row.height, exportedBackground = bg,
-                        appearance = KeyAppearance.textValues(key.appearance), exportedAppearance = KeyAppearance.textValues(effective) + ("keyBackColor" to bg)))
+                        background = key.resolvedBackground(), appearance = KeyAppearance.textValues(key.appearance), exportedAppearance = KeyAppearance.textValues(effective) + ("keyBackColor" to bg)))
                     keys += JsonObject(data)
                 }
                 val rest = 100f - row.keys.sumOf { it.width.toDouble() }.toFloat()
@@ -110,7 +112,7 @@ object CustomKeyboardYaml {
                 "landscape_split_percent" to JsonPrimitive(layout.landscapeSplitPercent), "label_transform" to string(layout.labelTransform.name.lowercase()),
                 "keyboard_back_color" to string(bg),
                 "mie" to json.encodeToJsonElement(KeyboardInfo.serializer(), KeyboardInfo(kb.toolbar, kb.toolbarBackground,
-                    kb.importedSkin, kb.importedHeightPercent, portraitHeight, bg, kb.rowSpacing, KeyAppearance.textValues(kb.keyAppearance), kb.options)), "keys" to JsonArray(keys))
+                    allKeysBackground = kb.allKeysBackground, importedSkin = kb.importedSkin, importedHeightPercent = kb.importedHeightPercent, exportedHeight = portraitHeight, exportedBackground = bg, exportedRowSpacing = kb.rowSpacing, keyAppearance = KeyAppearance.textValues(kb.keyAppearance), options = kb.options)), "keys" to JsonArray(keys))
         }
         val first = layouts.values.first()
         val root = obj("name" to string(if (layouts.size == 1) first.name else "自定义键盘合集"), "config_version" to string("1.0"),
@@ -193,7 +195,7 @@ object CustomKeyboardYaml {
                 }
                 if (width != extra.exportedWidth || height != extra.exportedHeight) changedGeometry = true
                 row.keys += CustomKey(label = key.pairs["label"]?.string.orEmpty(), width = width, bindings = bindings,
-                    background = background(bg), skinId = extra.skinId, skin = extra.skin.takeIf { bg == extra.exportedBackground }, appearance = KeyAppearance.parse(appearance))
+                    background = if (bg == extra.exportedBackground) extra.background ?: background(bg) else background(bg), skinId = extra.skinId, skin = extra.skin.takeIf { bg == extra.exportedBackground }, appearance = KeyAppearance.parse(appearance))
             }
             require(grouped.isNotEmpty()) { "键盘不能没有行" }
             val rows = grouped.values.toMutableList()
@@ -226,7 +228,7 @@ object CustomKeyboardYaml {
                 uppercaseLabels = node.pairs["label_transform"]?.string?.let { it.equals("uppercase", true) } ?: info.options.uppercaseLabels,
             ).validated()
             result[id] = CustomKeyboard(name = node.pairs["name"]?.string ?: id, rows = rows, rowSpacing = spacing,
-                background = background(bg), toolbar = info.toolbar.toMutableList(), toolbarBackground = info.toolbarBackground,
+                background = background(bg), toolbar = info.toolbar.toMutableList(), toolbarBackground = info.toolbarBackground, allKeysBackground = info.allKeysBackground,
                 importedSkin = skin, importedHeightPercent = percent, keyAppearance = KeyAppearance.parse(info.keyAppearance), options = options)
         }
         require(result.isNotEmpty()) { "未找到可导入的自定义键盘" }

@@ -60,12 +60,18 @@ class ToolbarEditActivity : AppCompatActivity() {
         }
         kbId = intent.getStringExtra(EXTRA_KB_ID).orEmpty()
         if (kbId.isNotEmpty()) {
+            require(CustomKeyboards.get(kbId) != null) { "自定义键盘不存在" }
             toolbar.title = getString(R.string.toolbar_edit_kb, CustomKeyboards.get(kbId)?.name ?: "")
         }
+        toolbar.menu.add(0, 2180, 0, "全局外观设置")
+        findViewById<TextView>(R.id.toolbar_edit_hint).text =
+            (if (kbId.isEmpty()) "主题键盘状态栏。" else "仅修改当前自定义布局的状态栏。") + "点击按钮名称编辑功能与外观，支持增删、排序和停用。"
         toolbar.setNavigationOnClickListener { finish() }
         toolbar.inflateMenu(R.menu.toolbar_edit)
         toolbar.setOnMenuItemClickListener { item ->
-            if (item.itemId == R.id.action_reset_toolbar) {
+            if (item.itemId == 2180) {
+                SurfaceAppearanceEditor.show(this, kbId.isNotEmpty())
+            } else if (item.itemId == R.id.action_reset_toolbar) {
                 MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.toolbar_edit_reset)
                     .setMessage(R.string.toolbar_edit_reset_confirm)
@@ -121,7 +127,8 @@ class ToolbarEditActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        commit()
+        val saved = if (kbId.isEmpty()) ToolbarOverrides.flush() else CustomKeyboards.flush()
+        if (!saved) Toast.makeText(this, "工具栏保存失败，请检查剩余存储空间", Toast.LENGTH_LONG).show()
         ThemeManager.requestCustomizationRefresh()
     }
 
@@ -156,115 +163,39 @@ class ToolbarEditActivity : AppCompatActivity() {
 
     private fun displayName(action: String): String {
         ToolbarOverrides.builtinName(action)?.let { return it }
+        com.osfans.trime.data.theme.Theme.BUILTIN_ACTIONS[action]?.label?.let { return it }
         val btn = themeButtons[action] ?: return theme.presetKeys[action]?.label?.ifEmpty { action } ?: action
         val fg = btn.foreground.style.ifEmpty { btn.foreground.optionStyles.firstOrNull().orEmpty() }
         return fg.ifEmpty { action }
     }
 
-    private var iconPickTarget = -1
-
-    private val iconImagePicker =
-        registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.GetContent()) { uri ->
-            val pos = iconPickTarget
-            if (uri == null || pos !in working.indices) return@registerForActivityResult
-            val target = working[pos]
-            SkinPicker.handleImageResult(this, uri) { name ->
-                if (name != null && pos in working.indices && working[pos] == target) {
-                    working[pos] = target.copy(icon = name)
-                    commit()
-                    adapter.notifyItemChanged(pos)
-                }
-            }
-        }
-
-    private fun showIconDialog(position: Int) {
+    private fun editButton(position: Int) {
         if (position !in working.indices) return
         val entry = working[position]
-        val root =
-            android.widget.LinearLayout(this).apply {
-                orientation = android.widget.LinearLayout.VERTICAL
-                setPadding(dp(12), dp(4), dp(12), 0)
-            }
-        val layout =
-            com.google.android.material.textfield.TextInputLayout(this).apply {
-                hint = getString(R.string.toolbar_edit_icon_hint)
-            }
-        val input =
-            com.google.android.material.textfield.TextInputEditText(layout.context).apply {
-                setText(entry.icon)
-                setSingleLine(true)
-            }
-        layout.addView(
-            input,
-            android.widget.LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ),
-        )
-        root.addView(
-            layout,
-            android.widget.LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ),
-        )
-        val pickButton =
-            com.google.android.material.button.MaterialButton(this).apply {
-                androidx.core.widget.TextViewCompat.setTextAppearance(this, com.google.android.material.R.style.TextAppearance_Material3_LabelLarge)
-                text = getString(R.string.toolbar_edit_pick_image)
-                icon = androidx.core.content.ContextCompat.getDrawable(context, R.drawable.ic_baseline_add_24)
-                setOnClickListener {
-                    iconPickTarget = position
-                    iconImagePicker.launch("image/*")
-                }
-            }
-        root.addView(pickButton,
-            android.widget.LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ),
-        )
-        MaterialAlertDialogBuilder(this)
-            .setTitle(getString(R.string.toolbar_edit_icon, displayName(entry.action)))
-            .setView(root)
-            .setPositiveButton(R.string.ok) { _, _ ->
-                working[position] = entry.copy(icon = input.text?.toString()?.trim().orEmpty())
+        ToolbarButtonEditor.show(this, entry, kbId.isNotEmpty()) { next ->
+            if (position in working.indices && working[position] == entry) {
+                working[position] = next
                 commit()
-                adapter.notifyDataSetChanged()
+                adapter.notifyItemChanged(position)
             }
-            .setNeutralButton(R.string.key_editor_restore_default) { _, _ ->
-                working[position] = entry.copy(icon = "")
-                commit()
-                adapter.notifyDataSetChanged()
-            }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
+        }
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density + 0.5f).toInt()
 
     private fun showAddDialog() {
-        val catalog =
-            themeButtons.keys.filterNot { ToolbarOverrides.isModeAction(it) || ToolbarOverrides.isModeAction(theme.presetKeys[it]?.command.orEmpty()) }
-        val available = catalog.filter { action -> working.none { it.action == action } }
-        val displays = arrayOf(getString(R.string.toolbar_edit_custom_action)) + available.map { "${displayName(it)} · $it" }.toTypedArray()
-        fun addAction(action: String) {
-            if (action.isEmpty() || ToolbarOverrides.isModeAction(action) || ToolbarOverrides.isModeAction(theme.presetKeys[action]?.command.orEmpty()) || working.any { it.action == action }) return
-            working.add(ToolbarOverrides.Entry(action))
-            commit()
-            adapter.notifyDataSetChanged()
-        }
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.toolbar_edit_add)
+        val available = (com.osfans.trime.data.theme.Theme.BUILTIN_ACTIONS.keys + themeButtons.keys + theme.presetKeys.keys)
+            .distinct().filterNot { ToolbarOverrides.isModeAction(it) || ToolbarOverrides.isModeAction(theme.presetKeys[it]?.command.orEmpty()) }
+        val displays = arrayOf("新增自定义按钮…") + available.map { "${displayName(it)} · $it" }.toTypedArray()
+        MaterialAlertDialogBuilder(this).setTitle(R.string.toolbar_edit_add)
             .setItems(displays) { _, which ->
-                if (which == 0) {
-                    KeyTokenPicker.show(this, getString(R.string.toolbar_edit_custom_action), false) { token ->
-                        if (token != null) addAction(token)
-                    }
-                } else addAction(available[which - 1])
-            }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
+                val entry = if (which == 0) ToolbarOverrides.Entry("") else ToolbarOverrides.Entry(available[which - 1])
+                ToolbarButtonEditor.show(this, entry, kbId.isNotEmpty()) { next ->
+                    working.add(next)
+                    commit()
+                    adapter.notifyItemInserted(working.lastIndex)
+                }
+            }.setNegativeButton(R.string.cancel, null).show()
     }
 
     private inner class Adapter : RecyclerView.Adapter<Adapter.Holder>() {
@@ -289,9 +220,10 @@ class ToolbarEditActivity : AppCompatActivity() {
             position: Int,
         ) {
             val entry = working[position]
-            holder.name.text = displayName(entry.action)
+            holder.name.text = entry.icon.takeUnless { it.startsWith("/") || it.startsWith("ic@") || it.isBlank() } ?: displayName(entry.action)
             holder.action.text =
                 if (entry.icon.isNotEmpty()) entry.action + " · " + entry.icon else entry.action
+            holder.enableSwitch.setOnCheckedChangeListener(null)
             holder.enableSwitch.isChecked = entry.enabled
             holder.enableSwitch.setOnCheckedChangeListener { _, checked ->
                 val idx = holder.bindingAdapterPosition
@@ -300,8 +232,8 @@ class ToolbarEditActivity : AppCompatActivity() {
                     commit()
                 }
             }
-            // 点名字改自定义图标
-            holder.name.setOnClickListener { showIconDialog(holder.bindingAdapterPosition) }
+            holder.name.setOnClickListener { editButton(holder.bindingAdapterPosition) }
+            holder.action.setOnClickListener { editButton(holder.bindingAdapterPosition) }
             holder.up.setOnClickListener { move(holder.bindingAdapterPosition, -1) }
             holder.down.setOnClickListener { move(holder.bindingAdapterPosition, +1) }
             holder.delete.setOnClickListener {
@@ -333,10 +265,12 @@ class ToolbarEditActivity : AppCompatActivity() {
         fun start(
             context: Context,
             kbId: String = "",
+            themeMode: Boolean = false,
         ) {
             context.startActivity(
                 Intent(context, ToolbarEditActivity::class.java).apply {
-                    putExtra(EXTRA_KB_ID, kbId)
+                    val target = kbId.ifEmpty { if (!themeMode && CustomKeyboards.mode == CustomKeyboards.MODE_CUSTOM) CustomKeyboards.resolveId("default") else "" }
+                    putExtra(EXTRA_KB_ID, target)
                     if (context !is AppCompatActivity) addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 },
             )

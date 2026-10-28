@@ -76,10 +76,15 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         toolbar.setNavigationOnClickListener { finish() }
         toolbar.title = kb.name
         toolbar.inflateMenu(R.menu.custom_kb_edit)
-        toolbar.menu.add(0, 2180, 0, "全局外观设置")
+        toolbar.menu.add(0, 2180, 0, "自定义键盘全局外观")
+        toolbar.menu.add(0, 2181, 1, "全体按键背景 · 一键设置")
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
-                2180 -> { returningFromAppearance = true; SettingsPageFragment.launch(this, "appearance") }
+                2180 -> SurfaceAppearanceEditor.show(this, true) { refreshAppearancePreview { render() } }
+                2181 -> {
+                    val current = CustomKeyboards.get(kbId) ?: return@setOnMenuItemClickListener true
+                    AppearancePicker.show(this, "当前布局全体按键背景", current.allKeysBackground, true) { raw -> mutate { it.allKeysBackground = raw } }
+                }
                 R.id.action_kb_background -> pickKeyboardBackground()
                 R.id.action_kb_toolbar -> ToolbarEditActivity.start(this, kbId)
                 R.id.action_kb_key_appearance -> {
