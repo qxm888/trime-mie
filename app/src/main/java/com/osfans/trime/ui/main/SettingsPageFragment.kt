@@ -195,6 +195,7 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
             "fonts" -> FontSettingsActivity::class.java
             "stats" -> InputStatsActivity::class.java
             "transfer" -> DataTransferActivity::class.java
+            "personal_data" -> PersonalDataActivity::class.java
             else -> null
         }
         if (activity != null) startActivity(Intent(requireContext(), activity)) else findNavController().navigateWithAnim(NavigationRoute.SettingsPage(id, key))

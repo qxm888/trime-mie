@@ -164,6 +164,25 @@ internal class FloatingKeyboardContainer(
 ) : ConstraintLayout(context) {
     var floating: Boolean = floating
         private set
+    private val clipPath = Path()
+    private var radii = FloatArray(8)
+    fun setCornerRadii(corners: List<Float>) {
+        radii = FloatArray(8) { corners.getOrElse(it / 2) { 0f } }
+        rebuildClip(); invalidate()
+    }
+    private fun rebuildClip() {
+        clipPath.reset()
+        clipPath.addRoundRect(RectF(0f, 0f, width.toFloat(), height.toFloat()), radii, Path.Direction.CW)
+    }
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh); rebuildClip()
+    }
+    override fun draw(canvas: Canvas) {
+        val save = canvas.save()
+        if (radii.any { it > 0 }) canvas.clipPath(clipPath)
+        super.draw(canvas)
+        canvas.restoreToCount(save)
+    }
 }
 
 /**

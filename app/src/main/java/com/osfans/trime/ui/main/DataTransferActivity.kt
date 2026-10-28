@@ -107,6 +107,9 @@ class DataTransferActivity : AppCompatActivity() {
             windowInsets
         }
         toolbar.setNavigationOnClickListener { finish() }
+        toolbar.menu.add("统计与候选备份").setOnMenuItemClickListener {
+            startActivity(android.content.Intent(this, PersonalDataActivity::class.java)); true
+        }
 
         findViewById<com.google.android.material.button.MaterialButton>(R.id.data_export_button)
             .setOnClickListener {

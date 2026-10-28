@@ -28,19 +28,20 @@ object SettingsCatalog {
         Page("gestures", "手势与长按", "滑动距离、速度、长按、重复与双击", "keyboard", keys = listOf("key_swipe_travel", "key_swipe_velocity", "key_long_press_timeout", "key_repeat_interval", "key_double_tap_timeout", "key_slide_step_size")),
         Page("hardware", "实体键盘快捷键", "Ctrl 与 Shift 组合键行为", "keyboard", collapsed = true),
         Page("theme", "主题与配色", "键盘主题、配色与跟随昼夜", "appearance"),
-        Page("background", "背景", "主题视频与状态栏共用整体背景", "appearance", keys = listOf("keyboard_video_background", "keyboard_unified_background", "custom_keyboard_unified_background")),
-        Page("surface", "全局按键与状态栏样式", "主题与自定义模式独立的背景、边框、圆角与模糊", "appearance"),
+        Page("background", "主题视频背景", "选择视频；背景共用开关在各自全局外观中", "appearance", keys = listOf("keyboard_video_background")),
+        Page("surface", "全局按键与状态栏样式", "主题与自定义独立的背景共用、四角圆角、边框与模糊", "appearance"),
         Page("fonts", "字体", "按键、候选栏与工具栏字体", "appearance"),
         Page("app_theme", "应用外观", "仅设置应用的浅色 / 深色模式", "appearance", keys = listOf("ui_mode")),
         Page("voice", "语音输入", "在线识别、离线模型与系统语音服务", "tools", keys = listOf("preferred_voice_input")),
         Page("clipboard", "剪贴板", "监听、建议、清理与粘贴规则", "tools"),
         Page("stats", "输入统计", "输入字数与使用情况", "tools"),
         Page("profile", "数据位置与同步", "存储位置、后台同步与配置维护", "data"),
+        Page("personal_data", "统计与候选备份", "跨设备恢复统计、候选调序与词典草稿", "data"),
         Page("transfer", "导入导出", "备份与恢复输入法数据", "data"),
         Page("compatibility", "系统兼容", "应用图标与系统手势区域", "advanced", keys = listOf("show_app_icon", "ignore_system_gesture_insets")),
         Page("diagnostics", "诊断与日志", "主题诊断与配置问题排查", "advanced"),
         Page("developer", "开发者", "开发与调试工具", "advanced"),
-        Page("about", "关于与开源许可", "Trime Mie V2.1.1 · 版本与许可证", "advanced"),
+        Page("about", "关于与开源许可", "Trime Mie V2.1.2 · 版本与许可证", "advanced"),
     )
     fun page(id: String) = pages.first { it.id == id }
     fun path(page: Page): String = if (page.parent.isEmpty()) page.title else path(page(page.parent)) + " › " + page.title

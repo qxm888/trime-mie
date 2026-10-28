@@ -64,6 +64,7 @@ object ToolbarOverrides {
         val bindings: Map<String, String> = emptyMap(),
         val width: Int = 0,
         val height: Int = 0,
+        val iconSize: Int = 0, // dp; 0 fits available button area
     )
 
     @Serializable
@@ -189,6 +190,7 @@ object ToolbarOverrides {
                                     optionStyles = if (entry.icon.isEmpty()) btn.foreground.optionStyles else emptyList(),
                                     normal = style.keyTextColor.ifBlank { btn.foreground.normal },
                                     highlight = style.hilitedKeyTextColor.ifBlank { btn.foreground.highlight },
+                                    iconSize = entry.iconSize.coerceIn(0, 96),
                                     fontSize = style.keyTextSize.takeIf { it > 0 } ?: btn.foreground.fontSize,
                                 ),
                                 longPressAction = entry.bindings["longClick"] ?: btn.longPressAction,

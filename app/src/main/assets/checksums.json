@@ -1,12 +1,18 @@
 {
-    "sha256": "a2475b2c7d00382e46c2893ca668aa1a6eca36d6d691e706b99efc5afa4a6d7d",
+    "sha256": "4ca0b69ce7981285e17c130a88f637d52ba6891f6ef9af9f4fcbe7227cbd4b24",
     "files": {
         "licenses": "",
         "licenses/Apache-2.0.txt": "6c11db5f4f0d8521559233b532c635692b6525bde771139723dc1ee489fac393",
         "licenses/bibi-builtin-NOTICE.txt": "46620f7c52446eadc8fd88b30e15f490c1e834de1debad65fa9cc7f250a017b9",
         "licenses/bibi-port-NOTICE.txt": "31b6a6ce3deb63c515419bd9dc93892189a17dd9105c0cff14b34ecba03aff32",
         "licenses/bibi-upstream-NOTICE.txt": "ca09523229a50ef9ad7c1b4ff90703a94ce9f7b05fa783d8667dba9df24bda2f",
+        "licenses/rime-prelude-LGPL-3.0.txt": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+        "licenses/rime-prelude-NOTICE.txt": "a10dae4c4edcd3d289eb16e3b3d96cbff7022f514f23378100b96c67d716284e",
         "shared": "",
+        "shared/default.yaml": "dd55653a991f9418eb425ee2112666f82e3e753c5ce3ed5702dd243041a45382",
+        "shared/key_bindings.yaml": "5c484257cccbab899bc874dfeb9257ce7190c99fee3abc33321767c8dac56af9",
+        "shared/punctuation.yaml": "d6f89592149098f0a2d0ed3e5c83f49adb6226cdf1d967b0bc0d293f4e5c496a",
+        "shared/symbols.yaml": "f12ee3a61bb9739c29fe6ba12890c5c9c50ca38f63ce9c85e1a16e223ae0b04f",
         "shared/tongwenfeng.trime.yaml": "01e33c34ab057f47d54c41a578182e3562e07f607421a2a57d012405b252d196",
         "shared/trime.yaml": "44d29a6ace16ca9f59b3d6bc32b457a8ce41f8b080d94fdbe67e8d89900983f6"
     }

@@ -93,6 +93,8 @@ class Rime :
     private var personalHighlight = 0
     private var displayedCandidates: Candidates? = null
     private var projectedCommit: CommitProto? = null
+    private var lastSlowInputLog = 0L
+    private var slowInputCount = 0
 
     private fun updateCandidateProjection(schema: String, code: String) {
         val changed = code != projectionCode || schema != projectionSchema
@@ -102,18 +104,23 @@ class Rime :
         if (rule == null) { candidateProjection = null; projectionSourceSize = 0; return }
         if (changed || candidateProjection == null) personalPageSize = (RimeConfig.openSchema(schema).use { it.getInt("menu/page_size") }
             ?: RimeConfig.openConfig("default").use { it.getInt("menu/page_size") } ?: 5).coerceIn(1, 100)
-        val source = getRimeCandidates(0, rule.searchLimit.coerceIn(32, 20000))
+        val source = getRimeCandidates(0, maxOf(rule.searchLimit, rule.order.size).coerceIn(32, 20000))
         projectionSourceSize = source.size
         val existing = source.map { it.text }.toSet()
         val entries = source.mapIndexed { index, candidate -> OrderedCandidate(candidate, index) }.filter { it.candidate.text !in rule.hidden }.toMutableList()
         rule.aliases.filter { it !in existing && it !in rule.hidden }.forEach { entries.add(OrderedCandidate(CandidateProto(it, "自定义编码", ""), -1)) }
         val ranks = rule.order.withIndex().associate { it.value to it.index }
-        candidateProjection = entries.sortedBy { ranks[it.candidate.text] ?: Int.MAX_VALUE }
+        // Linear stable projection instead of sorting the whole candidate range on each key.
+        val buckets = entries.groupBy { it.candidate.text }
+        val pinned = rule.order.filterNot { it in rule.forgotten }.flatMap { buckets[it].orEmpty() }
+        candidateProjection = pinned + entries.filter { it.candidate.text !in ranks && it.candidate.text !in rule.forgotten } +
+            entries.filter { it.candidate.text in rule.forgotten }
     }
 
     private fun projectedCandidates(start: Int, limit: Int): List<OrderedCandidate> {
         val projection = candidateProjection ?: return getRimeCandidates(start, limit).mapIndexed { i, c -> OrderedCandidate(c, start + i) }
-        val result = projection.drop(start).take(limit).toMutableList()
+        val begin = start.coerceIn(0, projection.size)
+        val result = projection.subList(begin, (begin + limit).coerceAtMost(projection.size)).toMutableList()
         if (result.size < limit) {
             val nativeStart = projectionSourceSize + (start - projection.size).coerceAtLeast(0)
             getRimeCandidates(nativeStart, limit - result.size).forEachIndexed { i, c -> result.add(OrderedCandidate(c, nativeStart + i)) }
@@ -123,7 +130,12 @@ class Rime :
 
     private fun chooseProjected(index: Int): Boolean {
         val entry = projectedCandidates(index, 1).firstOrNull() ?: return false
-        if (entry.source >= 0) return selectRimeCandidate(entry.source, true)
+        if (entry.source >= 0) {
+            return selectRimeCandidate(entry.source, true).also { selected ->
+                if (selected) CandidatePreferences.selected(projectionSchema, projectionCode, entry.candidate.text)
+            }
+        }
+        CandidatePreferences.selected(projectionSchema, projectionCode, entry.candidate.text)
         clearRimeComposition()
         projectedCommit = CommitProto(entry.candidate.text)
         return true
@@ -272,21 +284,32 @@ class Rime :
         val current = if (candidateProjection != null) projectedCandidates(index, 1).firstOrNull() else if (global)
             getRimeCandidates(idx, 1).firstOrNull()?.let { OrderedCandidate(it, idx) }
         else displayedCandidates?.candidates?.getOrNull(idx)?.let { candidate ->
-            val sourceIndex = getRimeCandidates(0, 20000).indexOfFirst { it.text == candidate.text && it.comment == candidate.comment }
-            if (sourceIndex < 0) null else OrderedCandidate(candidate, sourceIndex)
+            var found: OrderedCandidate? = null
+            var offset = 0
+            while (offset < 20000 && found == null) {
+                val chunk = getRimeCandidates(offset, 128)
+                val localIndex = chunk.indexOfFirst { it.text == candidate.text && it.comment == candidate.comment }
+                if (localIndex >= 0) found = OrderedCandidate(candidate, offset + localIndex)
+                if (chunk.size < 128) break
+                offset += chunk.size
+            }
+            found
         }
         if (current?.candidate?.text != text) return@withRimeContext false
-        val rule = CandidatePreferences.get(schema, code) ?: CandidatePreferences.Rule()
+        val rule = CandidatePreferences.get(schema, code) ?: CandidatePreferences.Rule(searchLimit = 64)
         if (action == "reset") {
             CandidatePreferences.save(schema, code, null)
         } else {
-            val limit = maxOf(rule.searchLimit, (current.source + 64).coerceAtLeast(512)).coerceAtMost(20000)
+            val limit = maxOf(rule.searchLimit, current.source + 32, rule.order.size + 32).coerceIn(64, 20000)
             val source = getRimeCandidates(0, limit)
             val ranks = rule.order.withIndex().associate { it.value to it.index }
             val order = (source.map { it.text } + rule.aliases).distinct().filter { it !in rule.hidden }.sortedBy { ranks[it] ?: Int.MAX_VALUE }.toMutableList()
             val oldIndex = order.indexOf(text)
             if (oldIndex < 0) return@withRimeContext false
             when (action) {
+                "forget" -> CandidatePreferences.save(schema, code,
+                    rule.copy(order = rule.order - text, forgotten = rule.forgotten + text,
+                        hidden = rule.hidden - text, searchLimit = limit))
                 "delete", "code" -> {
                     if (action == "code") {
                         require(value.isNotBlank() && value.length <= 128 && value.none { it.isWhitespace() }) { "请输入有效编码（不含空白）" }
@@ -304,7 +327,7 @@ class Rime :
                         else -> return@withRimeContext false
                     }.coerceIn(0, order.lastIndex)
                     order.removeAt(oldIndex); order.add(target, text)
-                    CandidatePreferences.save(schema, code, rule.copy(order = order, searchLimit = limit))
+                    CandidatePreferences.save(schema, code, rule.copy(order = order.take(maxOf(target + 1, rule.order.size + if (oldIndex >= rule.order.size) 1 else 0)), forgotten = rule.forgotten - text, searchLimit = limit))
                 }
             }
         }
@@ -389,6 +412,7 @@ class Rime :
     private fun startRime(fullCheck: Boolean) {
         DataManager.sync()
         UserDataManager.ensureDefaultCustomConfig()
+        InputStats.restoreFromRimeIfEmpty()
         val sharedDataDir = DataManager.sharedDataDir.absolutePath
         val userDataDir = UserDataManager.userDataDir.absolutePath
         Timber.d(
@@ -431,8 +455,20 @@ class Rime :
                 emitResponse(); return true
             }
         }
+        val started = android.os.SystemClock.elapsedRealtime()
         val handled = processRimeKey(value, modifiers)
+        val engineDone = android.os.SystemClock.elapsedRealtime()
         val committed = emitResponse(rawInputBefore = rawInputBefore)
+        val total = android.os.SystemClock.elapsedRealtime() - started
+        if (total >= 48) {
+            slowInputCount++
+            val now = android.os.SystemClock.elapsedRealtime()
+            if (now - lastSlowInputLog >= 5000) {
+                com.osfans.trime.util.DiagnosticLog.event("input", "slow",
+                    "schema=${status.schemaId} engine=${engineDone - started}ms response=${total - (engineDone - started)}ms projection=${candidateProjection != null} count=$slowInputCount")
+                lastSlowInputLog = now; slowInputCount = 0
+            }
+        }
         if (!handled) {
             handleRimeMessage(
                 10, // RimeMessage.MessageType.Key,

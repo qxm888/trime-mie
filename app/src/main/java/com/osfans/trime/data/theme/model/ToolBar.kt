@@ -51,6 +51,7 @@ data class ToolBar(
             val normal: String = "",
             val highlight: String = "",
             val fontSize: Float = 18f,
+            val iconSize: Int = 0,
             val padding: Int = 4,
         )
     }

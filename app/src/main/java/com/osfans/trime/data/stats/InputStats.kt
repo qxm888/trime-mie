@@ -19,8 +19,12 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import timber.log.Timber
 import java.io.File
+import com.osfans.trime.util.readBoundedText
 import com.osfans.trime.util.readAtomicText
 import com.osfans.trime.util.writeAtomicText
+import com.osfans.trime.core.data.DataManager
+import com.osfans.trime.core.data.UserDataManager
+import com.osfans.trime.BuildConfig
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.ZoneId
@@ -227,6 +231,8 @@ object InputStats {
 
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var saveJob: Job? = null
+    private var nextSaveAt = 0L
+    private var firstDirtyAt = 0L
 
     @Volatile
     private var dirty = false
@@ -239,9 +245,11 @@ object InputStats {
         synchronized(lock) {
             appContext = context.applicationContext
             runCatching {
-                val file = storeFile()
-                file.readAtomicText()?.let { contents ->
-                    store = json.decodeFromString(Store.serializer(), contents)
+                val local = storeFile()
+                val file = if (!local.exists()) rimeFile().takeIf { it.isFile } ?: local else local
+                val raw = if (file != local && file.isFile) file.inputStream().use { it.readBoundedText(32 * 1024 * 1024) } else file.readAtomicText()
+                raw?.let { contents ->
+                    store = if (file != local) decodeBackup(contents) else json.decodeFromString(Store.serializer(), contents)
                     if (store.schemas.values.any { it.logVer < SPEED_LOG_VERSION }) {
                         // Old durations cannot be reconstructed. Preserve the original data before
                         // replacing only the invalid speed samples, never character/heat totals.
@@ -259,6 +267,7 @@ object InputStats {
                 }
             }.onFailure { Timber.w(it, "$TAG: failed to load stats, starting fresh") }
             store.schemas.values.forEach { normalizePeriods(it) }
+            if (!storeFile().exists() && store.schemas.isNotEmpty()) scheduleSaveLocked()
             if (store.heatVersion < 1) {
                 store.schemas.values.forEach { stats ->
                     arrayOf(stats.weekly, stats.monthly, stats.yearly).forEach { period ->
@@ -297,12 +306,87 @@ object InputStats {
             revision to copy
         } ?: return@synchronized
         runCatching {
-            storeFile().writeAtomicText(json.encodeToString(checkpoint.second))
+            val raw = json.encodeToString(checkpoint.second)
+            storeFile().writeAtomicText(raw)
+            // Rime data is a portable mirror. Failure must not lose the local checkpoint.
+            if (checkpoint.second.schemas.isNotEmpty()) runCatching {
+                if (UserDataManager.isStorageAvailable()) rimeFile().writeAtomicText(raw)
+            }.onFailure { Timber.w(it, "$TAG: Rime mirror failed; local statistics preserved") }
             synchronized(lock) { if (revision == checkpoint.first) dirty = false }
         }.onFailure { Timber.w(it, "$TAG: failed to save stats") }
     }
 
     private fun storeFile(): File = File(appContext!!.filesDir, "input_stats.json")
+
+    fun rimeFile(): File {
+        val suffix = if (BuildConfig.DEBUG) "-${appContext!!.packageName}" else ""
+        return File(DataManager.userDataDir, "mie_input_stats$suffix.json")
+    }
+
+    fun saveToRime() = synchronized(saveLock) {
+        check(UserDataManager.isStorageAvailable()) { "请先设置并授权数据目录" }
+        rimeFile().writeAtomicText(exportJson())
+    }
+    fun restoreFromRime(): Int = synchronized(saveLock) {
+        val file = rimeFile()
+        require(file.isFile) { "Rime 目录中没有统计备份" }
+        importJson(file.inputStream().use { it.readBoundedText(32 * 1024 * 1024) })
+    }
+
+    fun restoreFromRimeIfEmpty() = synchronized(saveLock) {
+        if (synchronized(lock) { store.schemas.isNotEmpty() }) return@synchronized
+        if (!UserDataManager.isStorageAvailable()) return@synchronized
+        val file = rimeFile()
+        if (!file.isFile) return@synchronized
+        runCatching { importJson(file.inputStream().use { it.readBoundedText(32 * 1024 * 1024) }) }
+            .onFailure { Timber.w(it, "$TAG: Rime restore failed; original file preserved") }
+    }
+
+    fun exportJson(): String = synchronized(lock) {
+        val copy = store.copy(schemas = store.schemas.mapValues { it.value.snapshot() }.toMutableMap(),
+            schemaNames = store.schemaNames.toMutableMap(), layoutRows = store.layoutRows.map { it.toList() },
+            layoutGeometry = store.layoutGeometry.map { it.toList() })
+        if (sessionChars > 0) copy.schemas[sessionSchemaId]?.let { appendSessionSample(it) }
+        // Encoding a large backup must not hold up keystrokes.
+        copy
+    }.let { json.encodeToString(it) }
+
+    private fun decodeBackup(raw: String): Store {
+        val imported = json.decodeFromString<Store>(raw)
+        require(imported.version == 2L && imported.schemas.size <= 256) { "不支持的统计版本或方案数量过多" }
+        require(imported.layoutGeometry.sumOf { it.size } <= 1024 && imported.layoutRows.sumOf { it.size } <= 1024) { "键盘记录过大" }
+        imported.schemas.values.forEach { stats ->
+            require(stats.careerTotal >= 0) { "累计字数无效" }
+            for (period in arrayOf(stats.daily, stats.weekly, stats.monthly, stats.yearly)) {
+                require(period.count >= 0 && period.length >= 0 && period.keyTouchCnt >= 0 && period.codeLenNoSpace >= 0) { "统计计数无效" }
+                require(period.avgGaps.size <= SEGMENTS_LIMIT && period.avgGaps.size == period.avgCnts.size && period.avgGaps.size == period.avgCodeLens.size) { "速度记录不完整" }
+                require(period.avgGaps.all { it.isFinite() && it >= 0 } && period.avgCnts.all { it >= 0 } && period.avgCodeLens.all { it >= 0 }) { "速度记录无效" }
+                require(period.keyCounts.size <= HEAT_KEYS_LIMIT && period.lengths.size <= 4096 && period.codeLengths.size <= 4096 && period.keyCounts.values.all { it >= 0 }) { "统计分布无效" }
+                if (stats.logVer < SPEED_LOG_VERSION) { period.avgGaps.clear(); period.avgCnts.clear(); period.avgCodeLens.clear(); period.fastest = Fastest() }
+            }
+            stats.logVer = SPEED_LOG_VERSION
+        }
+        return imported
+    }
+
+    fun importJson(raw: String): Int {
+        val imported = decodeBackup(raw)
+        synchronized(saveLock) {
+            // Backup is written on IO before atomically replacing the in-memory store.
+            val backup = exportJson()
+            File(storeFile().parentFile, "input_stats-before-import-${System.currentTimeMillis()}.json").writeAtomicText(backup)
+            storeFile().writeAtomicText(json.encodeToString(imported))
+            synchronized(lock) {
+                sessionStart = 0L; lastClick = 0L; lastCommit = 0L; sessionChars = 0; sessionCodeLen = 0
+                sessionSchemaId = ""; pendingKeys = 0; lastRawInput = ""
+                store = imported
+                store.schemas.values.forEach { normalizePeriods(it) }
+                scheduleSaveLocked()
+            }
+            flush()
+        }
+        return imported.schemas.size
+    }
 
     fun <T> read(schemaId: String, block: (Stats) -> T): T {
         val snapshot = synchronized(lock) {
@@ -556,8 +640,14 @@ object InputStats {
      * commit, so statistics always roll over at midnight even when the app
      * stayed alive across days.
      */
-    private fun normalizePeriods(stats: Stats, nowMs: Long = System.currentTimeMillis()) {
+    private var periodCacheMinute = Long.MIN_VALUE
+    private var periodCacheZone = ""
+    private var periodCache = LongArray(4)
+    private fun periodStarts(nowMs: Long): LongArray {
         val zone = ZoneId.systemDefault()
+        val minute = nowMs / 60000
+        if (periodCacheMinute == minute && periodCacheZone == zone.id) return periodCache
+        periodCacheMinute = minute; periodCacheZone = zone.id
         val today = Instant.ofEpochMilli(nowMs).atZone(zone).toLocalDate()
         fun startOf(date: java.time.LocalDate): Long = date.atStartOfDay(zone).toInstant().toEpochMilli()
 
@@ -566,6 +656,13 @@ object InputStats {
         val monthTs = startOf(today.withDayOfMonth(1))
         val yearTs = startOf(today.withDayOfYear(1))
 
+        periodCache = longArrayOf(dayTs, weekTs, monthTs, yearTs)
+        return periodCache
+    }
+
+    private fun normalizePeriods(stats: Stats, nowMs: Long = System.currentTimeMillis()) {
+        val starts = periodStarts(nowMs)
+        val dayTs = starts[0]; val weekTs = starts[1]; val monthTs = starts[2]; val yearTs = starts[3]
         if (stats.daily.ts != dayTs) {
             // Attribute completed text to the previous day before rolling the periods over.
             if (store.schemas[sessionSchemaId] === stats) {
@@ -644,10 +741,21 @@ object InputStats {
 
     private fun scheduleSaveLocked() {
         dirty = true; revision++
-        saveJob?.cancel()
+        val now = SystemClock.elapsedRealtime()
+        nextSaveAt = now + SAVE_DEBOUNCE_MS
+        if (saveJob?.isActive == true) return
+        firstDirtyAt = now
         saveJob = ioScope.launch {
-            delay(SAVE_DEBOUNCE_MS)
-            flush()
+            while (true) {
+                val wait = synchronized(lock) { minOf(nextSaveAt, firstDirtyAt + 30000) - SystemClock.elapsedRealtime() }
+                if (wait > 0) { delay(wait); continue }
+                flush()
+                synchronized(lock) {
+                    if (!dirty) { saveJob = null; return@launch }
+                    firstDirtyAt = SystemClock.elapsedRealtime()
+                    nextSaveAt = maxOf(nextSaveAt, firstDirtyAt + SAVE_DEBOUNCE_MS)
+                }
+            }
         }
     }
 

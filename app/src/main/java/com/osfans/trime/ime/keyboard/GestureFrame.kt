@@ -99,6 +99,11 @@ open class GestureFrame(context: Context) : FrameLayout(context) {
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 if (!isEnabled) return false
+                val queueDelay = SystemClock.uptimeMillis() - event.eventTime
+                if (queueDelay >= 100 && SystemClock.elapsedRealtime() - lastQueueDelayLog >= 5000) {
+                    lastQueueDelayLog = SystemClock.elapsedRealtime()
+                    com.osfans.trime.util.DiagnosticLog.event("input", "touch_queue", "delay=${queueDelay}ms")
+                }
                 touchId = (touchId + 1) and 0xFFFF
                 val currentTouchId = touchId
                 startX = x
@@ -335,6 +340,7 @@ open class GestureFrame(context: Context) : FrameLayout(context) {
     }
 
     companion object {
+        private var lastQueueDelayLog = 0L
         private val swipeTravel by AppPrefs.defaultInstance().keyboard.swipeTravel
         private val swipeVelocity by AppPrefs.defaultInstance().keyboard.swipeVelocity
         private val longPressTimeout by AppPrefs.defaultInstance().keyboard.longPressTimeout

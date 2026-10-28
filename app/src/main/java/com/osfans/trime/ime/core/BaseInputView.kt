@@ -132,6 +132,7 @@ abstract class BaseInputView(
                         service.showDialog(dialog)
                         true
                     }
+                    menu.add("忘记这个候选 · 再次选择可提升").setOnMenuItemClickListener { adjust("forget"); true }
                     menu.add("删除这个候选").setOnMenuItemClickListener { adjust("delete"); true }
                     menu.add("恢复此编码默认候选").setOnMenuItemClickListener { adjust("reset"); true }
                     setOnDismissListener {

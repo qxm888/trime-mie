@@ -66,6 +66,19 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
     private var actionLabel = ""
     private var config: ToolBar.Button? = null
 
+    private var localImage = false
+    private fun updateImageSize() {
+        val requested = config?.foreground?.iconSize ?: 0
+        val size = if (requested > 0) minOf(dp(requested) + maxOf(image.paddingLeft + image.paddingRight, image.paddingTop + image.paddingBottom), width, height).coerceAtLeast(0) else -1
+        val actual = if (size == 0) -1 else size
+        image.layoutParams = android.widget.FrameLayout.LayoutParams(if (localImage) actual else -2, if (localImage) actual else -2, gravityCenter)
+        image.scaleType = if (localImage) ImageView.ScaleType.FIT_CENTER else ImageView.ScaleType.CENTER_INSIDE
+    }
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        if (localImage) updateImageSize()
+    }
+
     private var fontSize = 0f
     private var colorStateList: ColorStateList? = null
 
@@ -307,6 +320,8 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
             null
         }
 
+        localImage = useLocalImage
+        updateImageSize()
         if (drawable != null) { // image icon
             image.imageDrawable = drawable
             image.imageTintList = if (!useLocalImage) colorStateList else null

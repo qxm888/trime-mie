@@ -84,8 +84,9 @@ class InputStatsActivity : AppCompatActivity() {
         }
         toolbar.setNavigationOnClickListener { finish() }
         toolbar.inflateMenu(R.menu.input_stats)
+        toolbar.menu.add(0, 2112, 0, "备份与恢复")
         toolbar.setOnMenuItemClickListener { item ->
-            onOptionSelected(item.itemId)
+            if (item.itemId == 2112) startActivity(Intent(this, PersonalDataActivity::class.java)) else onOptionSelected(item.itemId)
             true
         }
 

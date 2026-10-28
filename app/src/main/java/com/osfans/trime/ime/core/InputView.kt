@@ -609,10 +609,12 @@ class InputView(
     /** 把两个缩放手柄对准卡片下角（视觉坐标含缩放与平移）。 */
     private fun syncHandlePlacement() {
         if (!isFloatingKeyboardEnabled || isOneHandMode) return
-        val radius = minOf(dp(keyboardPrefs.floatingKeyboardCornerRadius.getValue().toFloat()),
-            keyboardView.width / 2f, keyboardView.height / 2f)
-        leftResizeHandle.setCornerGeometry(radius * keyboardView.scaleX, radius * keyboardView.scaleY)
-        rightResizeHandle.setCornerGeometry(radius * keyboardView.scaleX, radius * keyboardView.scaleY)
+        val corners = com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom).keyboardCorners
+        val inherited = keyboardPrefs.floatingKeyboardCornerRadius.getValue().toFloat()
+        val leftRadius = minOf(dp(corners.getOrElse(3) { inherited }), keyboardView.width / 2f, keyboardView.height / 2f)
+        val rightRadius = minOf(dp(corners.getOrElse(2) { inherited }), keyboardView.width / 2f, keyboardView.height / 2f)
+        leftResizeHandle.setCornerGeometry(leftRadius * keyboardView.scaleX, leftRadius * keyboardView.scaleY)
+        rightResizeHandle.setCornerGeometry(rightRadius * keyboardView.scaleX, rightRadius * keyboardView.scaleY)
         val visualLeft = keyboardView.left + keyboardView.translationX
         val visualBottom = keyboardView.top + keyboardView.translationY +
             keyboardView.height * keyboardView.scaleY
@@ -789,13 +791,16 @@ class InputView(
     private fun configureFloatingSurface(enabled: Boolean) {
         val surface = keyboardView as FloatingKeyboardContainer
         val backColor = resolveFloatingBackColor()
+        val corners = com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom).keyboardCorners
+        val resolvedCorners = if (corners.isNotEmpty()) corners else List(4) { if (enabled) keyboardPrefs.floatingKeyboardCornerRadius.getValue().toFloat() else 0f }
+        surface.setCornerRadii(resolvedCorners.map { dp(it) })
         if (enabled) {
             surface.background = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
-                cornerRadius = dp(keyboardPrefs.floatingKeyboardCornerRadius.getValue().toFloat())
+                cornerRadii = resolvedCorners.flatMap { listOf(dp(it), dp(it)) }.toFloatArray()
                 setColor(backColor)
             }
-            surface.clipToOutline = true
+            surface.clipToOutline = false // Four independent corners are clipped by the container path.
             surface.elevation = dp(FLOATING_KEYBOARD_ELEVATION_DP)
             surface.isClickable = true
             surface.contentDescription = context.getString(R.string.floating_keyboard_drag_handle)

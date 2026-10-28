@@ -21,6 +21,7 @@ data class SurfaceStyle(
 
 @Serializable
 data class SurfaceAppearanceConfig(
+    val keyboardCorners: List<Float> = emptyList(), // TL, TR, BR, BL; empty inherits floating defaults
     val keys: SurfaceStyle = SurfaceStyle(),
     val toolbar: SurfaceStyle = SurfaceStyle(),
     val linkToolbar: Boolean = false,
@@ -44,7 +45,7 @@ object SurfaceAppearance {
         val background = (if (customMode) prefs.customKeyBackground else prefs.keyBackground).getValue()
         if (cacheKey?.first != raw || cacheKey?.second != background) {
             val parsed = runCatching { json.decodeFromString<SurfaceAppearanceConfig>(raw) }.getOrDefault(SurfaceAppearanceConfig())
-            cached = parsed.copy(keys = parsed.keys.copy(background = background),
+            cached = parsed.copy(keyboardCorners = parsed.keyboardCorners.takeIf { it.size == 4 }?.map { it.takeIf(Float::isFinite)?.coerceIn(0f, 64f) ?: 0f }.orEmpty(), keys = parsed.keys.copy(background = background),
                 blurRadius = parsed.blurRadius.coerceIn(2, 32), glassOpacity = parsed.glassOpacity.coerceIn(0, 100))
             cacheKey = raw to background
         }

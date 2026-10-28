@@ -110,6 +110,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
             android:theme="@style/Theme.TrimeAppTheme"
             android:windowSoftInputMode="stateAlwaysVisible|adjustResize" />
 
+        <activity android:name=".ui.main.PersonalDataActivity" android:exported="false" />
+
         <activity
             android:name=".ui.main.DataTransferActivity"
             android:exported="false"

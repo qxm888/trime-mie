@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <instrumentation android:name="com.osfans.trime.benchmark.Mie212Runner" android:targetPackage="${applicationId}" />
     <instrumentation android:name="com.osfans.trime.benchmark.Mie211Runner" android:targetPackage="${applicationId}" />
     <instrumentation android:name="com.osfans.trime.benchmark.Mie19Runner" android:targetPackage="${applicationId}" />
     <instrumentation android:name="com.osfans.trime.benchmark.Mie18Runner" android:targetPackage="${applicationId}" />

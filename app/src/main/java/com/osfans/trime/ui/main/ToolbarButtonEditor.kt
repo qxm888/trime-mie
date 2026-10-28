@@ -25,6 +25,8 @@ object ToolbarButtonEditor {
         val body = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(20), dp(8), dp(20), dp(16)) }
         val label = TextInputEditText(activity).apply { setText(entry.icon); setSingleLine() }
         body.addView(TextInputLayout(activity).apply { hint = "显示文字、表情或图片路径（空为默认）"; addView(label) })
+        val iconSize = TextInputEditText(activity).apply { setText(entry.iconSize.toString()); inputType = android.text.InputType.TYPE_CLASS_NUMBER }
+        body.addView(TextInputLayout(activity).apply { hint = "图片图标大小 dp（0 自动填充，8–96，上限为按钮大小）"; addView(iconSize) })
         val width = TextInputEditText(activity).apply { setText(entry.width.toString()); inputType = android.text.InputType.TYPE_CLASS_NUMBER }
         val extras = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL; visibility = android.view.View.GONE }
         extras.addView(TextInputLayout(activity).apply { hint = "按钮宽度 dp（0 跟随默认，24–160）"; addView(width) })
@@ -75,11 +77,13 @@ object ToolbarButtonEditor {
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val action = bindings["click"].orEmpty()
                 val size = width.text.toString().toIntOrNull()
+                val imageSize = iconSize.text.toString().toIntOrNull()
+                if (imageSize == null || imageSize != 0 && imageSize !in 8..96) { iconSize.error = "请输入0或8–96"; return@setOnClickListener }
                 if (action.isBlank()) { Toast.makeText(activity, "请先设置点击功能", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
                 if (ToolbarOverrides.isModeAction(action)) { Toast.makeText(activity, "这是已停用的旧动作，请从功能列表重新选择", Toast.LENGTH_LONG).show(); return@setOnClickListener }
                 if (size == null || size != 0 && size !in 24..160) { width.error = "请输入0或24–160"; return@setOnClickListener }
                 save(draft.copy(action = action, icon = label.text.toString().trim(), id = entry.id.ifEmpty { UUID.randomUUID().toString() },
-                    bindings = bindings.filterKeys { it != "click" }, width = size))
+                    bindings = bindings.filterKeys { it != "click" }, width = size, iconSize = imageSize))
                 dialog.dismiss()
             }
         }

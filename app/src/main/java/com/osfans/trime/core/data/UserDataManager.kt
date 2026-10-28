@@ -139,6 +139,15 @@ object UserDataManager {
      */
     fun ensureDefaultCustomConfig() {
         check(userDataDir.mkdirs() || userDataDir.isDirectory) { "无法创建数据目录：${userDataDir.path}" }
+        // Prelude resources are public dependencies of many third-party schemas.
+        // Seed only missing files; never replace the user's customized YAML.
+        listOf("default.yaml", "key_bindings.yaml", "punctuation.yaml", "symbols.yaml").forEach { name ->
+            val source = File(DataManager.sharedDataDir, name)
+            val target = File(userDataDir, name)
+            if (!target.exists() && source.isFile) {
+                MissingFileCopier.copyFileIfMissing(source, target)
+            }
+        }
         val custom = File(userDataDir, DEFAULT_CUSTOM_FILE_NAME)
         if (!custom.exists() && custom.createNewFile()) {
             custom.writeText(SCHEMA_LIST_CUSTOM_PATCH.trimIndent())

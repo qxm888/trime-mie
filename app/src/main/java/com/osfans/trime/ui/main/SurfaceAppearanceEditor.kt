@@ -19,6 +19,14 @@ import com.osfans.trime.ime.appearance.SurfaceStyle
 object SurfaceAppearanceEditor {
     fun show(context: Context, customMode: Boolean = SurfaceAppearance.isCustomMode(), changed: () -> Unit = {}): androidx.appcompat.app.AlertDialog {
         var draft = SurfaceAppearance.current(customMode)
+        var unified = SurfaceAppearance.unifiedBackground(customMode)
+        fun save(config: SurfaceAppearanceConfig) {
+            SurfaceAppearance.save(config, customMode)
+            val prefs = com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard
+            (if (customMode) prefs.customUnifiedBackground else prefs.unifiedBackground).setValue(unified)
+            com.osfans.trime.data.theme.ThemeManager.requestCustomizationRefresh()
+            changed()
+        }
         fun dp(n: Int) = (context.resources.displayMetrics.density * n).toInt()
         fun column() = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL }
         val body = column().apply { setPadding(dp(12), dp(4), dp(12), dp(12)) }
@@ -88,6 +96,19 @@ object SurfaceAppearanceEditor {
             toggle(parent, "动态模糊背景", style.blur) { update(style.copy(blur = it)) }
         }
         note(body, (if (customMode) "只影响自定义键盘，与主题键盘独立。" else "只影响主题键盘，与自定义键盘独立。") + "可分别设置按键和状态栏，或让它们共用外观。动态模糊只处理背景。")
+        val shape = drawer("键盘整体 · 四角圆角")
+        val corners = draft.keyboardCorners.takeIf { it.size == 4 }?.toMutableList() ?: MutableList(4) { 0f }
+        val cornerControls = column().apply { visibility = if (draft.keyboardCorners.isEmpty()) View.GONE else View.VISIBLE }
+        toggle(shape, "自定义键盘四角", draft.keyboardCorners.isNotEmpty()) {
+            draft = draft.copy(keyboardCorners = if (it) corners.toList() else emptyList())
+            cornerControls.visibility = if (it) View.VISIBLE else View.GONE
+        }
+        shape.addView(cornerControls)
+        listOf("左上角", "右上角", "右下角", "左下角").forEachIndexed { index, title ->
+            slider(cornerControls, title, corners[index], 0f, 64f, 1f, " dp") {
+                corners[index] = it; draft = draft.copy(keyboardCorners = corners.toList())
+            }
+        }
         styleControls(drawer("按键 · 背景、边框与模糊"), draft.keys) { draft = draft.copy(keys = it) }
         val toolbar = drawer("状态栏图标 · 独立或跟随按键")
         val toolbarControls = column()
@@ -97,6 +118,7 @@ object SurfaceAppearanceEditor {
         toolbar.addView(toolbarControls)
         styleControls(toolbarControls, draft.toolbar) { draft = draft.copy(toolbar = it) }
         val bar = drawer("整条状态栏 · 背景与模糊")
+        toggle(bar, "状态栏与键盘共用背景", unified) { unified = it }
         backgroundButton(bar, "状态栏背景", draft.barBackground, true) { draft = draft.copy(barBackground = it) }
         toggle(bar, "动态模糊背景", draft.barBlur) { draft = draft.copy(barBlur = it) }
         note(bar, "图片和视频背景会透过磨砂层显示。需要一整块背景时，可同时开启“状态栏与键盘共用背景”。")
@@ -109,8 +131,8 @@ object SurfaceAppearanceEditor {
             .setNegativeButton(android.R.string.cancel, null)
             .setNeutralButton("恢复默认") { _, _ ->
                 MaterialAlertDialogBuilder(context).setTitle("恢复默认外观？").setMessage("清除整体按键与状态栏外观设置，恢复跟随主题。")
-                    .setNegativeButton(android.R.string.cancel, null).setPositiveButton("恢复") { _, _ -> SurfaceAppearance.save(SurfaceAppearanceConfig(), customMode); changed() }.show()
+                    .setNegativeButton(android.R.string.cancel, null).setPositiveButton("恢复") { _, _ -> unified = false; save(SurfaceAppearanceConfig()) }.show()
             }
-            .setPositiveButton("应用") { _, _ -> SurfaceAppearance.save(draft, customMode); changed() }.show()
+            .setPositiveButton("应用") { _, _ -> save(draft) }.show()
     }
 }

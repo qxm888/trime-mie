@@ -8,6 +8,19 @@ import java.nio.file.Files
 
 /** Publishes only complete files. A killed copy leaves a .tmp, never a truncated dictionary. */
 internal object MissingFileCopier {
+    fun copyFileIfMissing(source: File, target: File) {
+        if (target.exists()) return
+        check(target.parentFile!!.mkdirs() || target.parentFile!!.isDirectory)
+        val temporary = File.createTempFile(".mie-copy-", ".tmp", target.parentFile)
+        try {
+            FileOutputStream(temporary).use { output ->
+                source.inputStream().use { it.copyTo(output) }; output.fd.sync()
+            }
+            try { Files.move(temporary.toPath(), target.toPath()) }
+            catch (_: FileAlreadyExistsException) { /* Existing user config wins. */ }
+        } finally { temporary.delete() }
+    }
+
     fun copy(source: File, target: File): Int {
         if (!source.isDirectory || source.canonicalFile == target.canonicalFile) return 0
         val sourceRoot = source.canonicalFile
