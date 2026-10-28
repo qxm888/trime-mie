@@ -15,7 +15,7 @@ import com.osfans.trime.data.theme.ThemeScope
 import com.osfans.trime.util.styledFloat
 import splitties.dimensions.dp
 import splitties.resources.drawable
-import splitties.views.dsl.constraintlayout.startOfParent
+import splitties.views.dsl.constraintlayout.before
 import splitties.views.dsl.constraintlayout.centerVertically
 import splitties.views.dsl.constraintlayout.constraintLayout
 import splitties.views.dsl.constraintlayout.endOfParent
@@ -34,8 +34,8 @@ class PaginationUi(
     ) = imageView {
         imageTintList = ColorStateList.valueOf(scope.colors.keyTextColor)
         imageDrawable = drawable(icon)
-        scaleType = ImageView.ScaleType.CENTER_INSIDE
-        setPadding(dp(8), dp(4), dp(8), dp(4))
+        scaleType = ImageView.ScaleType.CENTER_CROP
+        setPadding(0, 0, 0, 0)
     }
 
     val prevIcon = createIcon(R.drawable.ic_baseline_arrow_left_24)
@@ -49,9 +49,8 @@ class PaginationUi(
 
     override val root =
         constraintLayout {
-            minimumWidth = dp(144)
-            val w = dp(32)
-            val h = dp(24)
+            val w = dp(10)
+            val h = dp(20)
             add(
                 nextIcon,
                 lParams(w, h) {
@@ -63,7 +62,7 @@ class PaginationUi(
                 prevIcon,
                 lParams(w, h) {
                     centerVertically()
-                    startOfParent()
+                    before(nextIcon)
                 },
             )
         }
