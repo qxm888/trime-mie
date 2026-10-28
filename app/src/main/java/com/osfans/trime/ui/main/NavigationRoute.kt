@@ -64,12 +64,16 @@ sealed class NavigationRoute : Parcelable {
     @Serializable
     data object License : NavigationRoute()
 
+    @Serializable
+    data class SettingsPage(val id: String, val focusKey: String = "") : NavigationRoute()
+
     companion object {
         fun createGraph(controller: NavController) = controller.createGraph(Main) {
             val ctx = controller.context
 
+            fragment<SettingsPageFragment, SettingsPage> { label = "设置" }
             fragment<MainFragment, Main> {
-                label = ctx.getString(R.string.trime_app_name)
+                label = "Trime Mie"
             }
 
             fragment<SchemaListFragment, SchemaList> {
@@ -82,22 +86,22 @@ sealed class NavigationRoute : Parcelable {
                 label = ctx.getString(R.string.profile)
             }
 
-            fragment<GeneralSettingsFragment, General> {
+            fragment<LegacySettingsFragment, General> {
                 label = ctx.getString(R.string.general)
             }
-            fragment<KeyboardSettingsFragment, VirtualKeyboard> {
+            fragment<LegacySettingsFragment, VirtualKeyboard> {
                 label = ctx.getString(R.string.virtual_keyboard)
             }
-            fragment<CandidatesSettingsFragment, CandidatesWindow> {
+            fragment<LegacySettingsFragment, CandidatesWindow> {
                 label = ctx.getString(R.string.candidates_window)
             }
             fragment<ThemeSettingsFragment, Theme> {
                 label = ctx.getString(R.string.theme)
             }
-            fragment<ClipboardSettingsFragment, Clipboard> {
+            fragment<LegacySettingsFragment, Clipboard> {
                 label = ctx.getString(R.string.clipboard)
             }
-            fragment<AdvancedSettingsFragment, Advanced> {
+            fragment<LegacySettingsFragment, Advanced> {
                 label = ctx.getString(R.string.advanced)
             }
             fragment<DeveloperFragment, Developer> {

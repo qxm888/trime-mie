@@ -28,7 +28,7 @@ open class PersonalizationActivity : AppCompatActivity() {
             setNavigationOnClickListener { finish() }
         }
         root.addView(toolbar, LinearLayout.LayoutParams(-1, dp(64)))
-        body = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(20), dp(8), dp(20), dp(24)) }
+        body = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(8), dp(16), dp(24)) }
         root.addView(ScrollView(this).apply { addView(body) }, LinearLayout.LayoutParams(-1, 0, 1f))
         ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -40,9 +40,19 @@ open class PersonalizationActivity : AppCompatActivity() {
         body.addView(TextView(this).apply { this.text = text; textSize = 14f; setPadding(0, dp(8), 0, dp(16)) })
     }
     protected fun button(text: String, action: () -> Unit): MaterialButton = MaterialButton(this, null,
-        com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
-        this.text = text; setOnClickListener { action() }
-        body.addView(this, LinearLayout.LayoutParams(-1, -2))
+        com.google.android.material.R.attr.materialButtonStyle).apply {
+        this.text = text
+        textSize = 16f
+        setTextColor(androidx.core.content.ContextCompat.getColor(this@PersonalizationActivity, com.osfans.trime.R.color.framework_text_primary))
+        cornerRadius = dp(4)
+        isAllCaps = false
+        gravity = android.view.Gravity.START or android.view.Gravity.CENTER_VERTICAL
+        minHeight = dp(56)
+        insetTop = 0; insetBottom = 0
+        setPadding(dp(16), dp(12), dp(16), dp(12))
+        setBackgroundColor(androidx.core.content.ContextCompat.getColor(this@PersonalizationActivity, com.osfans.trime.R.color.settings_surface))
+        setOnClickListener { action() }
+        body.addView(this, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(1) })
     }
 }
 
@@ -68,7 +78,11 @@ class FontSettingsActivity : PersonalizationActivity() {
             render()
         }
     }
-    override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState); page("字体设置"); render() }
+    override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState); targetRole = savedInstanceState?.getString("fontRole") ?: "key"; page("字体设置"); render() }
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString("fontRole", targetRole)
+        super.onSaveInstanceState(outState)
+    }
     private fun render() {
         body.removeAllViews()
         note("分别设置输入法各区域的字体，也可恢复为跟随当前主题。支持导入 TTF、OTF、TTC 文件；设置对两种键盘模式生效，不修改主题文件。")

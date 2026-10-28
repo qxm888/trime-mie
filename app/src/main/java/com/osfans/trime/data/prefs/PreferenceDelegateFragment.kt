@@ -17,8 +17,6 @@ import kotlinx.coroutines.launch
 abstract class PreferenceDelegateFragment(
     private val preferenceProvider: PreferenceDelegateProvider,
 ) : PaddingPreferenceFragment() {
-    private val visibility = mutableMapOf<String, Boolean>()
-
     // it would be better to declare the dependency relationship, rather than reevaluating on each value changed
     @Keep
     private val onValueChangeListener = PreferenceDelegateProvider.OnChangeListener {
@@ -45,22 +43,16 @@ abstract class PreferenceDelegateFragment(
     }
 
     fun evaluateVisibility() {
-        val changed = mutableMapOf<String, Boolean>()
-        preferenceProvider.preferenceDelegatesUi.forEach { ui ->
-            val old = visibility[ui.key]
-            val new = ui.isEnabled()
-            if (old != null && old != new) {
-                changed[ui.key] = new
-            }
-            visibility[ui.key] = new
-        }
-        if (changed.isNotEmpty()) {
-            lifecycleScope.launch {
-                changed.forEach { (key, enable) ->
-                    findPreference<Preference>(key)?.isEnabled = enable
-                }
+        lifecycleScope.launch {
+            preferenceProvider.preferenceDelegatesUi.forEach { ui ->
+                findPreference<Preference>(ui.key)?.isEnabled = ui.isEnabled()
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        evaluateVisibility()
     }
 
     override fun onStop() {

@@ -44,14 +44,6 @@ import kotlinx.coroutines.withContext
  * a keyboard is (re)built — the theme files themselves are never touched.
  */
 class KeyEditActivity : AppCompatActivity() {
-    private val themeVideoPicker = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.GetContent()) { uri ->
-        SkinPicker.handleVideoResult(this, uri) { path ->
-            if (path != null) {
-                com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.videoBackground.setValue(path)
-                ThemeManager.requestCustomizationRefresh()
-            }
-        }
-    }
     private lateinit var rowsContainer: LinearLayout
     private lateinit var keyboardInput: MaterialAutoCompleteTextView
 
@@ -60,8 +52,18 @@ class KeyEditActivity : AppCompatActivity() {
 
     private val theme by lazy { ThemeManager.activeTheme }
 
+    private var returningFromAppearance = false
+    override fun onResume() {
+        super.onResume()
+        if (returningFromAppearance) {
+            returningFromAppearance = false
+            refreshAppearancePreview { rebuildPreview() }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        returningFromAppearance = savedInstanceState?.getBoolean("returningFromAppearance") ?: false
         setContentView(R.layout.activity_key_edit)
 
         val toolbar = findViewById<MaterialToolbar>(R.id.key_edit_toolbar)
@@ -72,21 +74,13 @@ class KeyEditActivity : AppCompatActivity() {
         }
         toolbar.setNavigationOnClickListener { finish() }
         toolbar.inflateMenu(R.menu.key_edit)
-        toolbar.menu.add(0, 2180, 0, "按键与状态栏外观")
+        toolbar.menu.add(0, 2180, 0, "全局外观设置")
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
-                2180 -> AppearancePicker.showKeyboard(this) { rebuildPreview() }
+                2180 -> { returningFromAppearance = true; SettingsPageFragment.launch(this, "appearance") }
                 R.id.action_export_bindings -> exportBindings()
                 R.id.action_import_bindings -> importLauncher.launch(arrayOf("application/json", "text/plain", "*/*"))
-                R.id.action_theme_video -> MaterialAlertDialogBuilder(this)
-                    .setTitle(R.string.keyboard_video_background)
-                    .setView(SkinPicker.unifiedBackgroundToggle(this))
-                    .setItems(arrayOf("选择本地视频", "恢复主题原背景")) { _, which ->
-                        if (which == 0) themeVideoPicker.launch("video/*") else {
-                            com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.videoBackground.setValue("")
-                            ThemeManager.requestCustomizationRefresh()
-                        }
-                    }.show()
+                R.id.action_theme_video -> { returningFromAppearance = true; SettingsPageFragment.launch(this, "background") }
                 R.id.action_reset_all_bindings -> {
                     MaterialAlertDialogBuilder(this)
                         .setTitle(R.string.key_editor_reset_all)
@@ -114,7 +108,7 @@ class KeyEditActivity : AppCompatActivity() {
             return
         }
 
-        val preferred = runCatching { KeyboardWindow.lastAttachedId }.getOrDefault("")
+        val preferred = savedInstanceState?.getString("editingKeyboard") ?: runCatching { KeyboardWindow.lastAttachedId }.getOrDefault("")
         currentKeyboardId = if (preferred in keyboardIds) preferred else keyboardIds.first()
         val displayNames = keyboardIds.map { id ->
             displayNameOf(id) + "  ($id)"
@@ -127,6 +121,12 @@ class KeyEditActivity : AppCompatActivity() {
         }
 
         rebuildPreview()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString("editingKeyboard", currentKeyboardId)
+        outState.putBoolean("returningFromAppearance", returningFromAppearance)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onPause() {

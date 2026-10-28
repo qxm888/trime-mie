@@ -46,8 +46,18 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
     private var kbId: String = ""
     private lateinit var rowsBox: LinearLayout
 
+    private var returningFromAppearance = false
+    override fun onResume() {
+        super.onResume()
+        if (returningFromAppearance) {
+            returningFromAppearance = false
+            refreshAppearancePreview { render() }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        returningFromAppearance = savedInstanceState?.getBoolean("returningFromAppearance") ?: false
         kbId = intent.getStringExtra(EXTRA_ID).orEmpty()
         val kb = CustomKeyboards.get(kbId)
         if (kb == null) {
@@ -66,10 +76,10 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         toolbar.setNavigationOnClickListener { finish() }
         toolbar.title = kb.name
         toolbar.inflateMenu(R.menu.custom_kb_edit)
-        toolbar.menu.add(0, 2180, 0, "按键与状态栏外观")
+        toolbar.menu.add(0, 2180, 0, "全局外观设置")
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
-                2180 -> AppearancePicker.showKeyboard(this) { render() }
+                2180 -> { returningFromAppearance = true; SettingsPageFragment.launch(this, "appearance") }
                 R.id.action_kb_background -> pickKeyboardBackground()
                 R.id.action_kb_toolbar -> ToolbarEditActivity.start(this, kbId)
                 R.id.action_kb_key_appearance -> {
@@ -92,6 +102,11 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
             mutate { it.rows.add(CustomKeyboards.CustomRow()) }
         }
         render()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putBoolean("returningFromAppearance", returningFromAppearance)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onPause() {

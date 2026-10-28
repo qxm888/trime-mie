@@ -142,12 +142,7 @@ class MainActivity : AppCompatActivity() {
         }
         navController.addOnDestinationChangedListener { _, dest, _ ->
             dest.label?.let { viewModel.setToolbarTitle(it.toString()) }
-            binding.mainToolbar.toolbar.subtitle =
-                if (dest.hasRoute<NavigationRoute.Main>()) {
-                    getString(R.string.trime_app_slogan)
-                } else {
-                    ""
-                }
+            binding.mainToolbar.toolbar.subtitle = ""
         }
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -179,7 +174,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupToolbarMenu(menu: Menu) {
         val iconTint = ContextCompat.getColor(this, R.color.toolbarForegroundColor)
         val optionMenuItems = listOf(
-            menu.item(R.string.deploy, R.drawable.ic_baseline_refresh_reversed_24, iconTint = iconTint, showAsAction = true) {
+            menu.item(R.string.deploy, R.drawable.ic_baseline_refresh_reversed_24, iconTint = iconTint, showAsAction = false) {
                 viewModel.rime.launchOnReady { it.deploy() }
             },
             menu.item(R.string.test_input, R.drawable.ic_baseline_keyboard_24, iconTint = iconTint, showAsAction = true) {
