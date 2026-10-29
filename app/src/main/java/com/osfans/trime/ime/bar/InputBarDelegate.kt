@@ -40,6 +40,8 @@ import com.osfans.trime.ime.core.TrimeInputMethodService
 import com.osfans.trime.ime.keyboard.CommonKeyboardActionListener
 import com.osfans.trime.ime.keyboard.KeyBehavior
 import com.osfans.trime.ime.keyboard.KeyboardWindow
+import com.osfans.trime.ime.keyboard.KeyboardPrefs.isFloatingEffective
+import com.osfans.trime.ime.keyboard.KeyboardPrefs.oneHandActive
 import com.osfans.trime.ime.switches.SwitchOptionWindow
 import com.osfans.trime.ime.window.BoardWindow
 import com.osfans.trime.ime.window.BoardWindowManager
@@ -77,7 +79,7 @@ class InputBarDelegate(override val di: DI) :
 
     private val prefs = AppPrefs.defaultInstance()
 
-    private val hideQuickBar by prefs.keyboard.hideInputBar
+    private val hideQuickBar get() = InputBarVisibility.hidden(prefs.keyboard.hideInputBar.getValue(),service.isFloatingEffective(),service.oneHandActive())
 
     private val clipboardSuggestion by prefs.clipboard.clipboardSuggestion
 

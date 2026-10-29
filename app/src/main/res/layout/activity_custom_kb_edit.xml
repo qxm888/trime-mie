@@ -89,7 +89,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
             </com.google.android.material.card.MaterialCardView>
 
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:text="键盘结构 · 点击按键编辑" android:textSize="14sp" android:textStyle="bold"
+                android:text="键盘结构 · 点击编辑，长按拖动" android:textSize="14sp" android:textStyle="bold"
                 android:textColor="?attr/colorOnSurface" android:paddingTop="20dp" android:paddingBottom="12dp" />
             <LinearLayout
                 android:id="@+id/cbe_rows"

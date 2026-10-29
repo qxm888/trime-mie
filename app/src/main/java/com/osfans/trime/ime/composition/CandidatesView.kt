@@ -26,6 +26,7 @@ import com.osfans.trime.daemon.launchOnReady
 import com.osfans.trime.data.prefs.AppPrefs
 import com.osfans.trime.data.theme.ThemeScope
 import com.osfans.trime.util.sp
+import com.osfans.trime.ime.appearance.*
 import com.osfans.trime.ime.candidates.popup.PagedCandidatesUi
 import com.osfans.trime.ime.core.BaseInputView
 import com.osfans.trime.ime.core.TouchEventReceiverWindow
@@ -94,6 +95,7 @@ class CandidatesView(
             scope,
             setupPreeditView = { setPaddingDp(3, 1, 3, 1) },
             onMoveCursor = { pos -> rime.launchOnReady { it.moveCursorPos(pos) } },
+            appearance = { floatingStyle },
         )
 
     private val candidatesUi =
@@ -173,17 +175,66 @@ class CandidatesView(
 
     fun refreshVisibility() = updateUi()
 
+    private val floatingStyle get() = FloatingCandidateStyle.current(theme.isCustom)
+    private var paintedStyle: FloatingCandidateStyle? = null
+    private var paintedColors: com.osfans.trime.data.theme.ThemeColors? = null
+    private var paintedMode = -1
+    private var blurConfig = SurfaceAppearanceConfig()
+    private var panelBase: android.graphics.drawable.Drawable? = null
+    private var blur: BackdropBlur? = null
+    private fun bottomPager() = when(floatingStyle?.pagination) { "top" -> false; "bottom" -> true; else -> AppPrefs.defaultInstance().candidates.bottomPagination.getValue() }
+    private fun styleWindow(ballOnly: Boolean, idle: Boolean) {
+        val style=floatingStyle
+        val mode=if(ballOnly) 1 else if(idle) 2 else 0
+        if(paintedStyle==style && paintedColors===scope.colors && paintedMode==mode) return
+        paintedStyle=style;paintedColors=scope.colors;paintedMode=mode
+        minWidth=if(ballOnly) 0 else dp(style?.minWidth ?: theme.window.minWidth)
+        val ph=if(ballOnly) 0 else style?.paddingHorizontal ?: theme.window.insets.horizontal
+        val pv=if(ballOnly) 0 else style?.paddingVertical ?: theme.window.insets.vertical
+        setPadding(dp(ph),dp(pv),dp(ph),dp(pv))
+        if(style==null) {
+            background=if(ballOnly) null else scope.decorDrawable("text_back_color","candidate_border_color",dp(theme.window.border),dp(theme.window.cornerRadius))
+            elevation=if(ballOnly) 0f else dp(theme.window.shadow)
+            outlineProvider=ViewOutlineProvider.BACKGROUND
+            ball.background=android.graphics.drawable.GradientDrawable().apply { shape=android.graphics.drawable.GradientDrawable.OVAL;setColor(scope.colors.textBackColor) }
+            ball.text="●";ball.textSize=28f;ball.elevation=0f;ball.minWidth=dp(44);ball.minHeight=dp(44);ball.setTextColor(scope.colors.candidateTextColor)
+            blurConfig=SurfaceAppearanceConfig()
+        } else {
+            panelBase=FloatingCandidateRenderer.base(scope,style)
+            background=if(ballOnly) null else FloatingCandidateRenderer.panel(this,scope,style,panelBase)
+            FloatingCandidateRenderer.elevation(this,style.panel.radius ?: theme.window.cornerRadius,if(ballOnly) 0 else style.elevation,style.shadowColor)
+            ball.text=style.ballLabel;ball.minWidth=dp(style.ballSize);ball.minHeight=dp(style.ballSize)
+            ball.textSize=style.ballSize*.55f;ball.setTextColor(style.color("ball",scope.colors.candidateTextColor))
+            ball.background=FloatingCandidateRenderer.surface(ball,style.ball,KeyEffects(),scope.colors.textBackColor,style.ballSize/2f,style.glassOpacity)
+            FloatingCandidateRenderer.elevation(ball,style.ball.radius ?: style.ballSize/2f,style.elevation,style.shadowColor)
+            blurConfig=SurfaceAppearanceConfig(keys=style.normal.copy(blur=style.normal.blur || style.highlighted.blur || style.pager.blur || style.ball.blur),bar=style.panel,blurRadius=style.blurRadius,glassOpacity=style.glassOpacity)
+            if(blur==null && blurConfig.needsBlur) blur=BackdropBlur(this,{blurConfig}) { canvas ->
+                panelBase?.let { it.setBounds(0,0,width,height);it.draw(canvas) }
+            }
+        }
+        clipToOutline=!ballOnly
+        BackdropBlur.invalidateBackground(this)
+    }
+
+    private var touchMode = -1
     private fun updateUi() {
+        shouldUpdatePosition = true
         preeditUi.update(composition)
         val expanded = evaluateVisibility()
-        val idle = !expanded && AppPrefs.defaultInstance().keyboard.hideInputBar.getValue() && AppPrefs.defaultInstance().candidates.floatingBall.getValue()
+        val idle = !expanded && AppPrefs.defaultInstance().candidates.floatingBall.getValue()
         if (!idle) showingTools = false
-        preeditUi.root.visibility = if (expanded && preeditUi.visible) VISIBLE else GONE
+        val nextTouchMode = if (expanded) 0 else if (idle && showingTools) 1 else if (idle) 2 else 3
+        if (touchMode != nextTouchMode) {
+            // Do not retain a candidate-size input window while the much smaller ball lays out.
+            touchEventReceiverWindow.dismiss()
+            touchMode = nextTouchMode
+        }
+        preeditUi.root.visibility = if (expanded && preeditUi.visible && floatingStyle?.showPreedit != false) VISIBLE else GONE
         candidatesUi.root.visibility = if (expanded) VISIBLE else GONE
         ball.visibility = if (idle) VISIBLE else GONE
         tools.visibility = if (idle && showingTools) VISIBLE else GONE
-        alpha = if (idle && !showingTools) AppPrefs.defaultInstance().candidates.ballOpacity.getValue() / 100f else theme.window.alpha
-        background = if (idle && !showingTools) null else scope.decorDrawable("text_back_color", "candidate_border_color", dp(theme.window.border), dp(theme.window.cornerRadius))
+        alpha = if (idle && !showingTools) AppPrefs.defaultInstance().candidates.ballOpacity.getValue() / 100f else floatingStyle?.opacity?.div(100f) ?: theme.window.alpha
+        styleWindow(idle && !showingTools,idle)
         // the candidate layout is queried natively with the page itself
         candidatesUi.update(candidates, layout)
         candidatesUi.paginationUi.root.visibility = if (expanded && (candidates.hasPrevPage || candidates.hasNextPage)) VISIBLE else GONE
@@ -197,13 +248,8 @@ class CandidatesView(
 
     /** Restyles after a scheme switch without rebuilding this view. */
     fun refreshColors() {
-        background =
-            scope.decorDrawable(
-                colorKey = "text_back_color",
-                borderColorKey = "candidate_border_color",
-                borderPx = dp(theme.window.border),
-                cornerRadius = dp(theme.window.cornerRadius),
-            )
+        paintedColors=null
+        updateUi()
         preeditUi.refreshColors()
         preeditUi.update(composition)
         candidatesUi.refreshColors()
@@ -288,7 +334,9 @@ class CandidatesView(
         translationX = resolvedX - left
         translationY = resolvedY - this.top
         // update touchEventReceiverWindow's position after CandidatesView's
-        touchEventReceiverWindow.show()
+        if (ball.visibility == VISIBLE && tools.visibility != VISIBLE) {
+            touchEventReceiverWindow.show(android.graphics.Rect(ball.left, ball.top, ball.right, ball.bottom))
+        } else touchEventReceiverWindow.show()
         shouldUpdatePosition = false
     }
 
@@ -398,7 +446,7 @@ class CandidatesView(
             CandidateArea(viewport.left, viewport.top, viewport.right, viewport.bottom),
             if (floatingObstruction.isEmpty) null else CandidateArea(floatingObstruction.left, floatingObstruction.top, floatingObstruction.right, floatingObstruction.bottom),
             minOf(dp(96f), viewport.width()),
-            dp(32f) + ctx.sp(theme.window.foreground.textFontSize),
+            dp(32f) + ctx.sp(floatingStyle?.size("candidate",theme.window.foreground.textFontSize) ?: theme.window.foreground.textFontSize),
         )
         return RectF(region.left, region.top, region.right, region.bottom)
     }
@@ -408,7 +456,7 @@ class CandidatesView(
         val viewport = availableViewport()
         val offeredWidth = if (MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.UNSPECIFIED) viewport.width().toInt()
             else minOf(viewport.width().toInt(), MeasureSpec.getSize(widthMeasureSpec))
-        val maxWidth = (offeredWidth - spacing).coerceAtLeast(1)
+        val maxWidth = ((offeredWidth - spacing) * (floatingStyle?.maxWidthPercent ?: 100) / 100).coerceAtLeast(1)
         val cap = popupCandidateHeightLimit(resources.displayMetrics.heightPixels, viewport.height().toInt(), spacing)
         val maxHeight = if (MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.UNSPECIFIED) cap
             else minOf(cap, MeasureSpec.getSize(heightMeasureSpec)).coerceAtLeast(1)
@@ -418,15 +466,15 @@ class CandidatesView(
         val list = candidatesUi.root
         candidatesUi.constrainWidth(innerWidth)
         val extra = if (ball.visibility == VISIBLE) { if (tools.visibility == VISIBLE) tools else ball } else null
-        extra?.measure(MeasureSpec.makeMeasureSpec(innerWidth, MeasureSpec.AT_MOST), MeasureSpec.makeMeasureSpec(dp(44), MeasureSpec.EXACTLY))
+        extra?.measure(MeasureSpec.makeMeasureSpec(innerWidth, MeasureSpec.AT_MOST), MeasureSpec.makeMeasureSpec(dp(if(tools.visibility == VISIBLE) 44 else floatingStyle?.ballSize ?: 44), MeasureSpec.EXACTLY))
         val extraHeight = (extra?.measuredHeight ?: 0).coerceAtMost(innerHeight)
         val pager = candidatesUi.paginationUi.root
         val contentHeight = (innerHeight - extraHeight).coerceAtLeast(0)
-        val bottomPager = com.osfans.trime.data.prefs.AppPrefs.defaultInstance().candidates.bottomPagination.getValue()
+        val bottomPager = bottomPager()
         candidatesUi.paginationUi.configure(bottomPager)
-        val footerHeight = if (bottomPager && pager.visibility == VISIBLE) dp(36).coerceAtMost(contentHeight) else 0
-        val pagerWidth = if (pager.visibility == VISIBLE && !bottomPager) dp(20).coerceAtMost(innerWidth) else 0
-        val pagerHeight = if (pager.visibility == VISIBLE && !bottomPager) dp(20).coerceAtMost(contentHeight) else 0
+        val footerHeight = if (bottomPager && pager.visibility == VISIBLE) dp(floatingStyle?.arrowSize ?: 36).coerceAtMost(contentHeight) else 0
+        val pagerWidth = if (pager.visibility == VISIBLE && !bottomPager) dp(floatingStyle?.arrowSize ?: 20).coerceAtMost(innerWidth) else 0
+        val pagerHeight = if (pager.visibility == VISIBLE && !bottomPager) dp(floatingStyle?.arrowSize ?: 20).coerceAtMost(contentHeight) else 0
         val pagerGap = if (pagerWidth > 0) dp(4) else 0
         val hasItems = list.visibility == VISIBLE && (list.adapter?.itemCount ?: 0) > 0
         val preedit = preeditUi.root
@@ -441,7 +489,7 @@ class CandidatesView(
         list.measure(MeasureSpec.makeMeasureSpec(innerWidth, MeasureSpec.AT_MOST),
             MeasureSpec.makeMeasureSpec(listLimit, MeasureSpec.AT_MOST))
         val desiredWidth = maxOf(if(bottomPager && pager.visibility==VISIBLE) dp(88) else 0, (if (preedit.visibility == GONE) 0 else preedit.measuredWidth) + pagerWidth + pagerGap,
-            if (hasItems) list.measuredWidth else 0, extra?.measuredWidth ?: 0, if (ball.visibility == VISIBLE && tools.visibility != VISIBLE) dp(44) else dp(theme.window.minWidth) - paddingLeft - paddingRight).coerceIn(1, innerWidth)
+            if (hasItems) list.measuredWidth else 0, extra?.measuredWidth ?: 0, if (ball.visibility == VISIBLE && tools.visibility != VISIBLE) dp(floatingStyle?.ballSize ?: 44) else minWidth - paddingLeft - paddingRight).coerceIn(1, innerWidth)
         val listHeight = if (hasItems) list.measuredHeight.coerceAtMost(listLimit) else 0
         // The RecyclerView's own viewport must match the visible space, not its unbounded content.
         list.measure(MeasureSpec.makeMeasureSpec(desiredWidth, MeasureSpec.EXACTLY),
@@ -461,7 +509,7 @@ class CandidatesView(
         val hasPreedit = preedit.visibility != GONE
         val preeditHeight = if (hasPreedit) preedit.measuredHeight.coerceAtMost((height - paddingTop - paddingBottom).coerceAtLeast(0)) else 0
         val pager = candidatesUi.paginationUi.root
-        val bottomPager = com.osfans.trime.data.prefs.AppPrefs.defaultInstance().candidates.bottomPagination.getValue()
+        val bottomPager = bottomPager()
         val footerHeight = if (bottomPager && pager.visibility == VISIBLE) pager.measuredHeight else 0
         val pagerHeight = if (pager.visibility == VISIBLE && !bottomPager) pager.measuredHeight else 0
         val pagerWidth = if (pager.visibility == VISIBLE && !bottomPager) pager.measuredWidth else 0

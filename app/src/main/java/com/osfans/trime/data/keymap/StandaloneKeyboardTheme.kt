@@ -12,6 +12,7 @@ object StandaloneKeyboardTheme {
     fun base(): Theme {
         val colors = ColorKey.entries.associate { key ->
             key.key to when {
+                key.key.endsWith("text_back_color") -> "#FFF1F3F5"
                 key.key.contains("text") || key.key.contains("symbol") || key.key.contains("label") -> "#FF111827"
                 key.key.contains("border") || key.key.contains("separator") || key.key.contains("shadow") -> "#00000000"
                 key.key == "root_background" || key.key == "keyboard_background" -> "#00000000"

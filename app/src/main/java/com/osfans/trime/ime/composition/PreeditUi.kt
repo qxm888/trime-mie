@@ -26,13 +26,14 @@ open class PreeditUi(
     private val scope: ThemeScope,
     private val setupPreeditView: (TextView.() -> Unit)? = null,
     private val onMoveCursor: ((Int) -> Unit)? = null,
+    private val appearance: () -> com.osfans.trime.ime.appearance.FloatingCandidateStyle? = { null },
 ) : Ui {
     private val theme: Theme
         get() = scope.theme
 
     // Read at use time so a scheme switch re-renders with the new colors.
-    private val textColor: Int get() = scope.colors.textColor
-    private val highlightTextColor: Int get() = scope.colors.hilitedTextColor
+    private val textColor: Int get() = appearance()?.color("text", scope.colors.textColor) ?: scope.colors.textColor
+    private val highlightTextColor: Int get() = appearance()?.color("highlight.text", scope.colors.hilitedTextColor) ?: scope.colors.hilitedTextColor
 
     val preedit =
         view(::PreeditTextView) {
@@ -77,8 +78,11 @@ open class PreeditUi(
     }
 
     fun update(composition: CompositionProto) {
-        preedit.textSize = com.osfans.trime.data.keymap.LayoutTypography.size("text", theme.preedit.foreground.fontSize)
-        preedit.typeface = theme.fonts.text
+        val defaultSize=com.osfans.trime.data.keymap.LayoutTypography.size("text", theme.preedit.foreground.fontSize)
+        val style = appearance()
+        preedit.textSize = style?.size("text",defaultSize) ?: defaultSize
+        preedit.typeface = com.osfans.trime.data.theme.FontOverrides.fromSelection(style?.fonts?.get("text")?.font.orEmpty()) ?: theme.fonts.text
+        preedit.setTextColor(textColor)
         val string = composition.toSpannedString()
         val cursorPos = composition.cursorPos
         val hasPreedit = composition.length > 0

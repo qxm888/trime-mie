@@ -48,6 +48,7 @@ class BackdropBlur(
         root.addOnLayoutChangeListener { _, l, t, r, b, oldL, oldT, oldR, oldB ->
             if (l != oldL || t != oldT || r != oldR || b != oldB) requestedVersion++
         }
+        if(root.isAttachedToWindow) onViewAttachedToWindow(root)
     }
     override fun onViewAttachedToWindow(v: View) { attached = true; generation++; requestedVersion++; root.removeCallbacks(tick); root.post(tick) }
     override fun onViewDetachedFromWindow(v: View) {

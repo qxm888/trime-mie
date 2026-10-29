@@ -290,10 +290,10 @@ class KeyView(
     }
 
     private fun clearEffectCaches() {
-        shadowCache?.bitmap?.recycle()
+        // HWUI display lists may still reference the previous bitmap. Release ownership;
+        // explicit recycle can invalidate a frame that the render thread has not consumed.
         shadowCache = null
         shadowCacheKey = null
-        innerShadowCache?.bitmap?.recycle()
         innerShadowCache = null
         innerShadowCacheKey = null
     }
@@ -316,13 +316,13 @@ class KeyView(
     private fun animatePress(pressed: Boolean) {
         val effects = SurfaceAppearance.current(theme.isCustom).effects
         val target = if (pressed) 1f else 0f
+        pressAnimator?.cancel()
         if (effects.pressScale <= 0f && effects.pressSink <= 0f && effects.pressDarken <= 0) {
             pressProgress = target
             applyPressTransform(target, effects)
             if (effects.shadow.enabled) keyboardView.invalidateKeyShadows()
             return
         }
-        pressAnimator?.cancel()
         val animator = ValueAnimator.ofFloat(pressProgress, target).apply {
             duration = effects.animationMs.toLong().coerceIn(0, 300)
             interpolator = if (pressed) DecelerateInterpolator() else OvershootInterpolator(1.2f)
@@ -596,7 +596,6 @@ class KeyView(
         val spreadPx = dpf(shadow.spread)
         val previous = shadowCacheKey
         if (previous == null || previous.width != bodyWidth || previous.height != bodyHeight || previous.radius != radiusPx || previous.blur != blurPx || previous.spread != spreadPx || previous.color != color) {
-            shadowCache?.bitmap?.recycle()
             shadowCache = KeyEffectPainter.shadowBitmap(bodyWidth, bodyHeight, radiusPx, blurPx, spreadPx, color)
             shadowCacheKey = ShadowCacheKey(bodyWidth, bodyHeight, radiusPx, blurPx, spreadPx, color)
         }
@@ -642,7 +641,6 @@ class KeyView(
         val offsetY = dpf(shadow.offsetY)
         val previous = innerShadowCacheKey
         if (previous == null || previous.width != widthPx || previous.height != heightPx || previous.radius != radius || previous.blur != blurPx || previous.offsetX != offsetX || previous.offsetY != offsetY || previous.color != color) {
-            innerShadowCache?.bitmap?.recycle()
             innerShadowCache = KeyEffectPainter.innerShadowBitmap(widthPx, heightPx, radius, blurPx, offsetX, offsetY, color)
             innerShadowCacheKey = InnerShadowCacheKey(widthPx, heightPx, radius, blurPx, offsetX, offsetY, color)
         }

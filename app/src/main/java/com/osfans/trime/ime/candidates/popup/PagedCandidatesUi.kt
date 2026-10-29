@@ -31,9 +31,10 @@ class PagedCandidatesUi(
     private val onCandidateAction: (Int, String, View) -> Unit,
     private val onPrevPage: () -> Unit,
     private val onNextPage: () -> Unit,
+    private val styleProvider: () -> com.osfans.trime.ime.appearance.FloatingCandidateStyle? = { com.osfans.trime.ime.appearance.FloatingCandidateStyle.current(scope.theme.isCustom) },
 ) : Ui {
     private var candidates = Candidates.Paged()
-    val paginationUi = PaginationUi(ctx, scope).apply {
+    val paginationUi = PaginationUi(ctx, scope, styleProvider).apply {
         prevIcon.setOnClickListener { onPrevPage() }
         nextIcon.setOnClickListener { onNextPage() }
     }
@@ -72,7 +73,7 @@ class PagedCandidatesUi(
                 context: Context,
                 parent: ViewGroup,
                 viewType: Int,
-            ): UiHolder = UiHolder.Candidate(LabeledCandidateItemUi(ctx, scope)).apply {
+            ): UiHolder = UiHolder.Candidate(LabeledCandidateItemUi(ctx, scope, styleProvider)).apply {
                 // assign default LayoutParams, otherwise updateLayoutParams won't work
                 ui.root.layoutParams = FlexboxLayoutManager.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
             }

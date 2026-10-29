@@ -16,6 +16,7 @@ class SurfaceDrawable(
     private val effects: KeyEffects = KeyEffects(),
     private val externalShadow: Boolean = false,
     private val circle: Boolean = false,
+    private val glassOpacity: Int? = null,
 ) : Drawable(), Drawable.Callback {
     private val fill = if (style.background.isBlank()) fallback else if (style.background.startsWith("/"))
         com.osfans.trime.data.theme.AssetBitmapDrawable(style.background)
@@ -75,7 +76,7 @@ class SurfaceDrawable(
         val blurred = style.blur && BackdropBlur.draw(host, canvas, area)
         fill?.let {
             it.setBounds(area.left.toInt(), area.top.toInt(), area.right.toInt(), area.bottom.toInt())
-            val layer = if (blurred) canvas.saveLayerAlpha(area, SurfaceAppearance.current().glassOpacity * 255 / 100) else -1
+            val layer = if (blurred) canvas.saveLayerAlpha(area, (glassOpacity ?: SurfaceAppearance.current().glassOpacity) * 255 / 100) else -1
             it.draw(canvas)
             if (layer >= 0) canvas.restoreToCount(layer)
         }
@@ -110,7 +111,10 @@ class SurfaceDrawable(
     override fun setAlpha(alpha: Int) { fill?.alpha = alpha; invalidateSelf() }
     override fun setColorFilter(colorFilter: ColorFilter?) { fill?.colorFilter = colorFilter; invalidateSelf() }
     @Suppress("DEPRECATION") override fun getOpacity() = PixelFormat.TRANSLUCENT
-    override fun invalidateDrawable(who: Drawable) = invalidateSelf()
+    override fun invalidateDrawable(who: Drawable) {
+        if(who is com.osfans.trime.data.theme.AssetBitmapDrawable) BackdropBlur.invalidateBackground(host)
+        invalidateSelf()
+    }
     override fun scheduleDrawable(who: Drawable, what: Runnable, `when`: Long) = scheduleSelf(what, `when`)
     override fun unscheduleDrawable(who: Drawable, what: Runnable) = unscheduleSelf(what)
 }

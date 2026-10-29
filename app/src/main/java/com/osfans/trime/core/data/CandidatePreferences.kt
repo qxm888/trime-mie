@@ -36,6 +36,7 @@ object CandidatePreferences {
 
     @Synchronized fun get(schema: String, code: String): Rule? = data()[key(schema, code)]
     @Synchronized fun reload() { cache = null }
+    internal fun flush() = persist()
 
     @Synchronized fun save(schema: String, code: String, rule: Rule?, newCode: String? = null, word: String? = null) {
         val updated = data().toMutableMap()
@@ -69,6 +70,44 @@ object CandidatePreferences {
                     hidden = old.hidden - word, forgotten = old.forgotten - word)
                 file.writeAtomicText(json.encodeToString(updated))
                 cache = updated
+            }
+        }
+    }
+
+    data class CreatedWord(val schema: String, val code: String, val word: String)
+
+    /** Includes all aliases saved by earlier versions; no separate history can drift out of sync. */
+    @Synchronized fun createdWords(): List<CreatedWord> = data().flatMap { (id,rule) ->
+        val parts=runCatching { json.decodeFromString<List<String>>(id) }.getOrNull()
+        if(parts?.size!=2) emptyList() else rule.aliases.distinct().map { CreatedWord(parts[0],parts[1],it) }
+    }
+
+    /** Update both ends in one atomic file write, retaining unrelated order/hidden rules. */
+    fun editCreatedWord(original: CreatedWord, replacement: CreatedWord?) {
+        if(replacement!=null) {
+            require(replacement.schema.isNotBlank() && replacement.code.isNotBlank() && replacement.code.length<=128 && !replacement.code.any(Char::isWhitespace)) { "方案或编码无效" }
+            require(replacement.word.isNotEmpty() && replacement.word.length<=1024) { "词条需为1–1024个字符" }
+        }
+        synchronized(writeLock) {
+            synchronized(this) {
+                val updated=data().toMutableMap()
+                val oldId=key(original.schema,original.code)
+                val old=updated[oldId]
+                check(old!=null && original.word in old.aliases) { "词条已被修改或删除，请刷新列表" }
+                if(replacement==original) return
+                val targetId=replacement?.let { key(it.schema,it.code) }
+                require(replacement==null || replacement.word !in updated[targetId]?.aliases.orEmpty()) { "该方案和编码已存在此词条" }
+                val remaining=old.copy(aliases=old.aliases-original.word,order=old.order-original.word,
+                    hidden=old.hidden-original.word,forgotten=old.forgotten-original.word)
+                if(remaining.aliases.isEmpty() && remaining.order.isEmpty() && remaining.hidden.isEmpty() && remaining.forgotten.isEmpty()) updated.remove(oldId)
+                else updated[oldId]=remaining
+                if(replacement!=null) {
+                    val target=updated[targetId] ?: Rule(searchLimit=64)
+                    updated[targetId!!]=target.copy(aliases=listOf(replacement.word)+target.aliases,
+                        order=listOf(replacement.word)+target.order.filterNot { it==replacement.word },
+                        hidden=target.hidden-replacement.word,forgotten=target.forgotten-replacement.word)
+                }
+                file.writeAtomicText(json.encodeToString(updated));cache=updated
             }
         }
     }

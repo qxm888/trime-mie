@@ -112,6 +112,9 @@ class InputView(
     val isOneHandMode: Boolean
         get() = isFloatingKeyboardEnabled && oneHandEnabled
 
+    val isInputBarHidden: Boolean
+        get() = com.osfans.trime.ime.bar.InputBarVisibility.hidden(keyboardPrefs.hideInputBar.getValue(),isFloatingKeyboardEnabled,isOneHandMode)
+
     /**
      * 宽/高档位偏好镜像（双指缩放松手落盘时更新）。
      *
@@ -1115,7 +1118,7 @@ class InputView(
                 }
             }
             is RimeMessage.CompositionMessage -> {
-                val data = if (candidatesMode == PopupCandidatesMode.ALWAYS_SHOW || AppPrefs.defaultInstance().keyboard.hideInputBar.getValue()) {
+                val data = if (candidatesMode == PopupCandidatesMode.ALWAYS_SHOW || isInputBarHidden) {
                     CompositionProto()
                 } else {
                     it.data

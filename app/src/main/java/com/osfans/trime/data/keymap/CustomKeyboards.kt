@@ -84,6 +84,7 @@ object CustomKeyboards {
         var surfaceAppearance: com.osfans.trime.ime.appearance.SurfaceAppearanceConfig? = null,
         var unifiedBackground: Boolean? = null,
         var typography: Map<String, FontSpec> = emptyMap(),
+        var floatingCandidates: com.osfans.trime.ime.appearance.FloatingCandidateStyle? = null,
         var keyAppearance: KeyAppearance.Style = KeyAppearance.Style(),
         var options: KeyboardOptions = KeyboardOptions(),
         var importedSkin: com.osfans.trime.data.baiduskin.ImportedSkin? = null,
@@ -258,6 +259,7 @@ object CustomKeyboards {
     private fun normalizedCopy(kb: CustomKeyboard): CustomKeyboard = kb.copy(
         options = kb.options.validated(),
         surfaceAppearance=kb.surfaceAppearance?.sanitized(),
+        floatingCandidates=kb.floatingCandidates?.sanitized(),
         typography=kb.typography.filterKeys { it in com.osfans.trime.data.theme.FontOverrides.roles }.mapValues { (_,spec) -> spec.copy(size=if(spec.size.isFinite()) spec.size.coerceIn(0f,200f) else 0f) },
         bgColor = "", bgImage = "", background = kb.resolvedBackground(),
         toolbar = kb.toolbar.toMutableList(),

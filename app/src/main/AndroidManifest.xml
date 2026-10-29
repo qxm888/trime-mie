@@ -16,6 +16,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
@@ -30,7 +31,9 @@ SPDX-License-Identifier: GPL-3.0-or-later
         android:requestLegacyExternalStorage="true"
         tools:targetApi="29">
 
+        <activity android:name=".ui.main.CreatedWordsActivity" android:exported="false" />
         <activity android:name=".ui.main.WordCreationActivity" android:exported="false" />
+        <activity android:name=".ui.main.FloatingCandidatesEditActivity" android:exported="false" />
         <activity android:name=".ui.main.ClipboardSyncActivity" android:exported="false" />
         <activity android:name=".ui.main.FullBackupActivity" android:exported="false" />
         <activity android:name=".ui.main.RestartAfterRestoreActivity" android:exported="false" android:process=":mie_restore" android:excludeFromRecents="true" />

@@ -109,7 +109,12 @@ class KeyboardView(
     }
 
     fun invalidateKeyShadows() {
-        if (::keyShadowLayer.isInitialized && hasKeyShadows) keyShadowLayer.invalidate()
+        if (::keyShadowLayer.isInitialized) {
+            keyShadowLayer.invalidate()
+            // Shadows extend outside individual keys and may cross this view's edge.
+            // Include their parent surface when clearing the previous frame.
+            (parent as? View)?.invalidate()
+        }
     }
 
     fun invalidateKeyByIndex(index: Int) {

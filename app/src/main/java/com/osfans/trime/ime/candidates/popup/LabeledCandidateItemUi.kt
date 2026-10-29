@@ -25,33 +25,39 @@ import com.osfans.trime.data.theme.ThemeScope
 import com.osfans.trime.util.sp
 import splitties.dimensions.dp
 import splitties.views.dsl.core.Ui
-import splitties.views.dsl.core.textView
+import splitties.views.dsl.core.view
+import com.osfans.trime.ime.appearance.*
 
 class LabeledCandidateItemUi(
     override val ctx: Context,
     private val scope: ThemeScope,
+    private val styleProvider: () -> FloatingCandidateStyle? = { FloatingCandidateStyle.current(scope.theme.isCustom) },
 ) : Ui {
     private val theme: Theme
         get() = scope.theme
 
-    private val labelSize get() = com.osfans.trime.data.keymap.LayoutTypography.size("label", theme.window.foreground.labelFontSize)
-    private val textSize get() = com.osfans.trime.data.keymap.LayoutTypography.size("candidate", theme.window.foreground.textFontSize)
-    private val commentSize get() = com.osfans.trime.data.keymap.LayoutTypography.size("comment", theme.window.foreground.commentFontSize)
-    private val labelFont get() = theme.fonts.label
-    private val textFont get() = theme.fonts.candidate
-    private val commentFont get() = theme.fonts.comment
+    private val appearance get() = styleProvider()
+    private val labelSize get() = appearance?.size("label", defaultLabelSize) ?: defaultLabelSize
+    private val textSize get() = appearance?.size("candidate", defaultTextSize) ?: defaultTextSize
+    private val commentSize get() = appearance?.size("comment", defaultCommentSize) ?: defaultCommentSize
+    private val defaultLabelSize get() = com.osfans.trime.data.keymap.LayoutTypography.size("label", theme.window.foreground.labelFontSize)
+    private val defaultTextSize get() = com.osfans.trime.data.keymap.LayoutTypography.size("candidate", theme.window.foreground.textFontSize)
+    private val defaultCommentSize get() = com.osfans.trime.data.keymap.LayoutTypography.size("comment", theme.window.foreground.commentFontSize)
+    private val labelFont get() = com.osfans.trime.data.theme.FontOverrides.fromSelection(appearance?.fonts?.get("label")?.font.orEmpty()) ?: theme.fonts.label
+    private val textFont get() = com.osfans.trime.data.theme.FontOverrides.fromSelection(appearance?.fonts?.get("candidate")?.font.orEmpty()) ?: theme.fonts.candidate
+    private val commentFont get() = com.osfans.trime.data.theme.FontOverrides.fromSelection(appearance?.fonts?.get("comment")?.font.orEmpty()) ?: theme.fonts.comment
 
     // Read at use time so a scheme switch re-binds rows with the new colors.
-    private val labelColor: Int get() = scope.colors.labelColor
-    private val textColor: Int get() = scope.colors.candidateTextColor
-    private val commentColor: Int get() = scope.colors.commentTextColor
-    private val highlightLabelColor: Int get() = scope.colors.hilitedLabelColor
-    private val highlightCommentTextColor: Int get() = scope.colors.hilitedCommentTextColor
-    private val highlightCandidateTextColor: Int get() = scope.colors.hilitedCandidateTextColor
+    private val labelColor: Int get() = appearance?.color("label", scope.colors.labelColor) ?: scope.colors.labelColor
+    private val textColor: Int get() = appearance?.color("candidate", scope.colors.candidateTextColor) ?: scope.colors.candidateTextColor
+    private val commentColor: Int get() = appearance?.color("comment", scope.colors.commentTextColor) ?: scope.colors.commentTextColor
+    private val highlightLabelColor: Int get() = appearance?.color("highlight.label", scope.colors.hilitedLabelColor) ?: scope.colors.hilitedLabelColor
+    private val highlightCommentTextColor: Int get() = appearance?.color("highlight.comment", scope.colors.hilitedCommentTextColor) ?: scope.colors.hilitedCommentTextColor
+    private val highlightCandidateTextColor: Int get() = appearance?.color("highlight.candidate", scope.colors.hilitedCandidateTextColor) ?: scope.colors.hilitedCandidateTextColor
     private val highlightCandidateBackColor: Int get() = scope.colors.hilitedCandidateBackColor
 
     override val root =
-        textView {
+        view(::FloatingCandidateTextView) {
             val v = dp(theme.window.itemPadding.vertical)
             val h = dp(theme.window.itemPadding.horizontal)
             setPadding(h, v, h, v)
@@ -81,10 +87,12 @@ class LabeledCandidateItemUi(
         val textFg = if (highlighted) highlightCandidateTextColor else textColor
         val commentFg = if (highlighted) highlightCommentTextColor else commentColor
         return buildSpannedString {
-            inSpanWith(labelFg, ctx.sp(labelSize * scale), labelFont) { append(candidate.label) }
-            append(" ")
+            if(appearance?.showLabels != false && candidate.label.isNotEmpty()) {
+                inSpanWith(labelFg, ctx.sp(labelSize * scale), labelFont) { append(candidate.label) }
+                append(" ")
+            }
             inSpanWith(textFg, ctx.sp(textSize * scale), textFont) { append(candidate.text) }
-            if (comment.isNotBlank()) {
+            if (appearance?.showComments != false && comment.isNotBlank()) {
                 append(" ")
                 inSpanWith(commentFg, ctx.sp(commentSize * scale), commentFont) { append(comment) }
             }
@@ -92,6 +100,9 @@ class LabeledCandidateItemUi(
     }
 
     /** 当次 [update] 应用的行数上限（0=不限）；[setExpanded] 收起时按它还原。 */
+    private var boundStyle: FloatingCandidateStyle? = null
+    private var boundHighlight: Boolean? = null
+    private var boundFill = 0
     private var boundRowLimit = 1
 
     /** 行数上限的 TextView 口径：0 表示不限，其余至少 1 行。 */
@@ -156,6 +167,16 @@ class LabeledCandidateItemUi(
         lastMaxWidth = maxWidth
         isExpanded = false
         lastBindTruncated = false
+        val style = appearance
+        val d = ctx.resources.displayMetrics.density
+        if(style != null) {
+            root.setPadding((style.itemPaddingHorizontal*d).toInt(),(style.itemPaddingVertical*d).toInt(),(style.itemPaddingHorizontal*d).toInt(),(style.itemPaddingVertical*d).toInt())
+            root.setLineSpacing(style.lineSpacing*d,1f)
+            root.applyEffects(style.itemEffects)
+        } else {
+            root.setPadding(ctx.dp(theme.window.itemPadding.horizontal),ctx.dp(theme.window.itemPadding.vertical),ctx.dp(theme.window.itemPadding.horizontal),ctx.dp(theme.window.itemPadding.vertical))
+            root.setLineSpacing(0f,1f); root.applyEffects(KeyEffects()); root.elevation=0f
+        }
         root.maxLines = maxLinesFor(rowLimit)
         val scale =
             if (root.maxLines == 1 && autoShrink) {
@@ -164,9 +185,15 @@ class LabeledCandidateItemUi(
                 root.text = textOf(candidate, highlighted, scale = 1f)
                 1f
             }
-        root.background = GradientDrawable().apply {
-            setColor(if (highlighted) highlightCandidateBackColor else Color.TRANSPARENT)
-            cornerRadius = ctx.dp(theme.style.candidateCornerRadius)
+        val fill = if(highlighted) highlightCandidateBackColor else Color.TRANSPARENT
+        if(boundStyle != style || boundHighlight != highlighted || boundFill != fill) {
+            if(style == null) root.background = GradientDrawable().apply { setColor(fill);cornerRadius=ctx.dp(theme.style.candidateCornerRadius) }
+            else {
+                val surface = if(highlighted) style.highlighted else style.normal
+                root.background=FloatingCandidateRenderer.surface(root,surface,style.itemEffects,fill,theme.style.candidateCornerRadius,style.glassOpacity)
+                FloatingCandidateRenderer.elevation(root,surface.radius ?: theme.style.candidateCornerRadius,style.itemElevation,style.shadowColor)
+            }
+            boundStyle=style;boundHighlight=highlighted;boundFill=fill
         }
         return scale
     }
@@ -198,8 +225,8 @@ class LabeledCandidateItemUi(
             if (scale < 1f) root.text = textOf(candidate, highlighted, scale)
             return scale
         }
-        val comment = candidate.comment
-        if (comment.isNotBlank()) {
+        val comment = if(appearance?.showComments == false) "" else candidate.comment
+        if (appearance?.showComments != false && comment.isNotBlank()) {
             // 分隔空格不在任何 span 里，按宿主 TextView 自身的画笔计量。
             val available = maxWidth - headWidth - Layout.getDesiredWidth(" ", root.paint).toInt()
             if (available <= 0) {

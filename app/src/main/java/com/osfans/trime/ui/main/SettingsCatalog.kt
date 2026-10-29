@@ -14,6 +14,7 @@ object SettingsCatalog {
         Page("data", "数据与备份", "存储位置、同步与导入导出", icon = R.drawable.ic_baseline_snippet_folder_24),
         Page("advanced", "高级与关于", "系统兼容、诊断、开发者与版本信息", icon = R.drawable.ic_baseline_more_horiz_24),
         Page("schema", "输入方案", "选择方案与部署配置", "input"),
+        Page("created_words", "造词管理", "新建词条、查看已造词列表并编辑词条与编码", "input"),
         Page("dictionary", "用户词典", "管理与同步用户词典", "input"),
         Page("behavior", "输入行为", "行内编码、切换提示与自动填充", "input", keys = listOf("inline_preedit_mode", "ascii_switch_tips", "inline_suggestions", "use_soft_cursor")),
         Page("horizontal", "横向候选栏", "候选排列方式、竖屏与横屏行数", "input", keys = listOf("horizontal_candidate_mode", "max_span_count", "max_span_count_landscape")),

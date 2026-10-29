@@ -46,6 +46,7 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
     private var kbId: String = ""
     private lateinit var rowsBox: LinearLayout
 
+    private data class KeyDrag(val keyboard: String, val row: Int, val key: Int, val version: Long)
     private var returningFromAppearance = false
     override fun onResume() {
         super.onResume()
@@ -81,12 +82,14 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         toolbar.menu.add(0, 2180, 0, "自定义键盘全局外观")
         toolbar.menu.add(0, 2182, 2, "字体与字号（当前布局）")
         toolbar.menu.add(0, 2183, 3, "自定义功能")
+        toolbar.menu.add(0, 2184, 4, "悬浮候选窗编辑")
         toolbar.menu.add(0, 2181, 1, "全体按键背景 · 一键设置")
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 2180 -> SurfaceAppearanceEditor.show(this, true, layoutId = kbId) { refreshAppearancePreview { render() } }
                 2182 -> LayoutTypographyEditor.show(this, kbId)
                 2183 -> NamedFunctionsEditor.show(this)
+                2184 -> FloatingCandidatesEditActivity.start(this,kbId)
                 2181 -> {
                     val current = CustomKeyboards.get(kbId) ?: return@setOnMenuItemClickListener true
                     AppearancePicker.show(this, "当前布局全体按键背景", current.allKeysBackground, true) { raw -> mutate { it.allKeysBackground = raw } }
@@ -218,7 +221,7 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         preview.removeAllViews()
         preview.background = kb.backgroundFor(this).drawable(this, resources.displayMetrics.widthPixels)
         val importedPreview = kb.importedSkin?.layout(this)?.preview?.takeIf { it.isNotEmpty() }
-        if (importedPreview != null && com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.keyBackground.getValue().isEmpty()) {
+        if (importedPreview != null && kb.allKeysBackground.ifBlank { com.osfans.trime.ime.appearance.SurfaceAppearance.current(true,kbId).keys.background }.isEmpty()) {
             val image = android.widget.ImageView(this).apply {
                 scaleType = android.widget.ImageView.ScaleType.FIT_XY
                 setImageDrawable(com.osfans.trime.data.theme.AssetBitmapDrawable(importedPreview))
@@ -252,7 +255,7 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
                         isSingleLine = true
                         includeFontPadding = false
                         setPadding(dp(1), 0, dp(1), 0)
-                        background = outlinedPreview(AppearancePicker.preview(com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.keyBackground.getValue()) ?: ck.resolvedBackground().drawable(this@CustomKeyboardEditActivity, dp(80)))
+                        background = outlinedPreview(AppearancePicker.preview(kb.allKeysBackground.ifBlank { com.osfans.trime.ime.appearance.SurfaceAppearance.current(true,kbId).keys.background }) ?: ck.resolvedBackground().drawable(this@CustomKeyboardEditActivity, dp(80)))
                         setTextColor(android.graphics.Color.parseColor(ck.resolvedBackground().textColor(kb.resolvedBackground())))
                     }
                 rowView.addView(
@@ -374,10 +377,17 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
                     includeFontPadding = false
                     setPadding(dp(2), 0, dp(2), 0)
                     setTypeface(typeface, if (ck.bindings.isNotEmpty()) Typeface.BOLD else Typeface.NORMAL)
-                    background = outlinedPreview(AppearancePicker.preview(com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.keyBackground.getValue()) ?: ck.resolvedBackground().drawable(this@CustomKeyboardEditActivity, w))
+                    background = outlinedPreview(AppearancePicker.preview(kb.allKeysBackground.ifBlank { com.osfans.trime.ime.appearance.SurfaceAppearance.current(true,kbId).keys.background }) ?: ck.resolvedBackground().drawable(this@CustomKeyboardEditActivity, w))
                     setTextColor(android.graphics.Color.parseColor(ck.resolvedBackground().textColor(kb.resolvedBackground())))
                 }
+            chip.contentDescription = "${ck.label.ifEmpty { "未命名按键" }}；点击编辑，长按拖动位置"
             chip.setOnClickListener { showKeyEditor(rowIdx, keyIdx) }
+            chip.setOnLongClickListener {
+                val token = KeyDrag(kbId,rowIdx,keyIdx,CustomKeyboards.version)
+                val data = android.content.ClipData.newPlainText("keyboard-key","")
+                if (android.os.Build.VERSION.SDK_INT >= 24) chip.startDragAndDrop(data,View.DragShadowBuilder(chip),token,0)
+                else @Suppress("DEPRECATION") chip.startDrag(data,View.DragShadowBuilder(chip),token,0)
+            }
             strip.addView(
                 chip,
                 LinearLayout.LayoutParams(w, dp(46)).apply { setMargins(dp(2), dp(2), dp(2), dp(2)) },
@@ -399,7 +409,7 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         )
 
         card.addView(
-            HorizontalScrollView(this).apply { addView(strip) },
+            HorizontalScrollView(this).apply { addView(strip); enableKeyDrop(this,strip,rowIdx) },
             LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(6) },
         )
         return card
@@ -516,10 +526,52 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         dialog.show()
     }
 
+    /** Drops insert between keys, including into empty rows. No mutation before ACTION_DROP. */
+    private fun enableKeyDrop(scroll: HorizontalScrollView, strip: LinearLayout, row: Int) {
+        var boundary = 0
+        fun boundaryAt(x:Float) = (0 until strip.childCount-1).firstOrNull { x < strip.getChildAt(it).let { v -> (v.left+v.right)/2f } } ?: (strip.childCount-1)
+        fun clearHint() { for (i in 0 until strip.childCount) strip.getChildAt(i).alpha=1f }
+        scroll.setOnDragListener { _, event ->
+            val token=event.localState as? KeyDrag
+            if(token==null || token.keyboard!=kbId) return@setOnDragListener false
+            when(event.action) {
+                android.view.DragEvent.ACTION_DRAG_STARTED -> true
+                android.view.DragEvent.ACTION_DRAG_LOCATION -> {
+                    val x=event.x+scroll.scrollX
+                    boundary=boundaryAt(x)
+                    clearHint();strip.getChildAt(boundary)?.alpha=.45f
+                    val edge=dp(32)
+                    if(event.x < edge) scroll.smoothScrollBy(-dp(20),0)
+                    else if(event.x > scroll.width-edge) scroll.smoothScrollBy(dp(20),0)
+                    var owner=scroll.parent
+                    while(owner is View && owner !is android.widget.ScrollView) owner=owner.parent
+                    (owner as? android.widget.ScrollView)?.let { vertical ->
+                        val rect=android.graphics.Rect();scroll.getDrawingRect(rect);vertical.offsetDescendantRectToMyCoords(scroll,rect)
+                        val y=rect.top+event.y-vertical.scrollY
+                        if(y < edge) vertical.smoothScrollBy(0,-dp(16))
+                        else if(y > vertical.height-edge) vertical.smoothScrollBy(0,dp(16))
+                    }
+                    true
+                }
+                android.view.DragEvent.ACTION_DROP -> {
+                    boundary=boundaryAt(event.x+scroll.scrollX)
+                    clearHint()
+                    if(token.version==CustomKeyboards.version) mutate { keyboard ->
+                        com.osfans.trime.data.keymap.KeyReorder.move(keyboard.rows,token.row,token.key,row,boundary)
+                    } else Toast.makeText(this,"布局已更新，请重新拖动",Toast.LENGTH_SHORT).show()
+                    true
+                }
+                android.view.DragEvent.ACTION_DRAG_EXITED,android.view.DragEvent.ACTION_DRAG_ENDED -> { clearHint();true }
+                else -> true
+            }
+        }
+    }
+
     private fun showKeyEditor(
         rowIdx: Int,
         keyIdx: Int,
     ) {
+        var editingIndex = keyIdx
         val kb = CustomKeyboards.get(kbId) ?: return
         val isNew = keyIdx >= (kb.rows.getOrNull(rowIdx)?.keys?.size ?: 0)
         val key =
@@ -687,14 +739,14 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
                         if (isNew) {
                             row.keys.add(newKey)
                         } else {
-                            row.keys[keyIdx] = newKey
+                            row.keys[editingIndex] = newKey
                         }
                     }
                 }
                 .apply {
                     if (!isNew) {
                         setNeutralButton(R.string.custom_kb_key_delete) { _, _ ->
-                            mutate { k -> k.rows[rowIdx].keys.removeAt(keyIdx) }
+                            mutate { k -> k.rows[rowIdx].keys.removeAt(editingIndex) }
                         }
                         setNegativeButton(R.string.custom_kb_key_move) { _, _ -> }
                     } else {
@@ -718,10 +770,10 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
                         val dir = if (which == 0) -1 else 1
                         mutate { k ->
                             val row = k.rows[rowIdx]
-                            val target = keyIdx + dir
+                            val target = editingIndex + dir
                             if (target in row.keys.indices) {
-                                val moved = row.keys.removeAt(keyIdx)
-                                row.keys.add(target, moved)
+                                val boundary = if (dir > 0) target + 1 else target
+                                editingIndex = com.osfans.trime.data.keymap.KeyReorder.move(k.rows,rowIdx,editingIndex,rowIdx,boundary) ?: editingIndex
                             }
                         }
                     }

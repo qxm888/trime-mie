@@ -182,6 +182,9 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
         }
     }
     override fun onDetachedFromWindow() {
+        animate().cancel()
+        animate().setUpdateListener(null)
+        invalidateShadowHost()
         if (voiceHeld) { voiceHeld = false; voiceInput()?.cancel() }
         super.onDetachedFromWindow()
     }
@@ -207,6 +210,7 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
 
     private fun applySurfaceBackground() {
         normalSurface = null; pressedSurface = null
+        invalidateShadowHost()
         val appearance = com.osfans.trime.ime.appearance.SurfaceAppearance.current(scope.theme.isCustom)
         var style = appearance.effectiveToolbar
         if (appearance.linkToolbar && scope.theme.isCustom) {
@@ -273,10 +277,20 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
         val sink = if(isPressed) effects.pressSink*resources.displayMetrics.density else 0f
         animate().cancel()
         if (scaleX != scale || scaleY != scale || translationY != sink) {
-            animate().scaleX(scale).scaleY(scale).translationY(sink).setDuration(effects.animationMs.toLong()).start()
+            animate().scaleX(scale).scaleY(scale).translationY(sink).setDuration(effects.animationMs.toLong())
+                .setUpdateListener { invalidateShadowHost() }.start()
         }
+        invalidateShadowHost()
         val shadow=effects.textShadow
         label.setShadowLayer(if(shadow.enabled) shadow.blur*resources.displayMetrics.density else 0f,shadow.offsetX*resources.displayMetrics.density,shadow.offsetY*resources.displayMetrics.density,com.osfans.trime.ime.appearance.KeyEffectPainter.color(shadow.color,0x55000000))
+    }
+
+    private fun invalidateShadowHost() {
+        var owner = parent
+        while (owner is android.view.View) {
+            if (owner is ToolbarShadowAnimator) { owner.invalidate(); (owner.parent as? android.view.View)?.invalidate(); return }
+            owner = owner.parent
+        }
     }
 
     private fun themeKeyBorder() = scope.theme.style.keyBorder.toFloat()

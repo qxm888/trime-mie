@@ -28,6 +28,7 @@ import splitties.views.imageDrawable
 class PaginationUi(
     override val ctx: Context,
     private val scope: ThemeScope,
+    private val styleProvider: () -> com.osfans.trime.ime.appearance.FloatingCandidateStyle? = { com.osfans.trime.ime.appearance.FloatingCandidateStyle.current(scope.theme.isCustom) },
 ) : Ui {
     private fun createIcon(
         @DrawableRes icon: Int,
@@ -68,11 +69,14 @@ class PaginationUi(
         }
 
     private var bottomLayout: Boolean? = null
+    private var iconSize = -1
+    private var appliedStyle: com.osfans.trime.ime.appearance.FloatingCandidateStyle? = null
     fun configure(bottom: Boolean) {
-        if(bottomLayout==bottom) return
-        bottomLayout=bottom
-        val w = if (bottom) ctx.dp(44) else ctx.dp(10)
-        val h = if (bottom) ctx.dp(36) else ctx.dp(20)
+        val size = styleProvider()?.arrowSize ?: if(bottom) 36 else 20
+        if(bottomLayout==bottom && iconSize==size) return
+        bottomLayout=bottom; iconSize=size
+        val w = if(bottom) { if(styleProvider()==null) ctx.dp(44) else maxOf(ctx.dp(size),ctx.dp(32)) } else ctx.dp(size/2)
+        val h = ctx.dp(size)
         nextIcon.layoutParams = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams(w,h).apply {
             endToEnd = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
             topToTop = 0; bottomToBottom = 0
@@ -88,7 +92,14 @@ class PaginationUi(
     fun update(paged: Candidates.Paged) {
         // Re-apply the tint as well: a scheme switch rebinds the pagination holder
         // (see PagedCandidatesUi.refreshColors), which only calls update().
-        val tint = ColorStateList.valueOf(scope.colors.keyTextColor)
+        val style=styleProvider()
+        val tint = ColorStateList.valueOf(style?.color("arrow",scope.colors.keyTextColor) ?: scope.colors.keyTextColor)
+        if(style != appliedStyle) {
+            listOf(prevIcon,nextIcon).forEach { icon -> icon.background=style?.let {
+                com.osfans.trime.ime.appearance.FloatingCandidateRenderer.surface(icon,it.pager,com.osfans.trime.ime.appearance.KeyEffects(),android.graphics.Color.TRANSPARENT,6f,it.glassOpacity)
+            } }
+            appliedStyle=style
+        }
         prevIcon.imageTintList = tint
         nextIcon.imageTintList = tint
         prevIcon.isEnabled = paged.hasPrevPage

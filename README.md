@@ -6,7 +6,17 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前源码版本：**V3.0.2**，正式 APK 文件名 `trime-mie-v3.0.2.apk`。本版已在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 发布。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
+> 当前源码版本：**V3.0.3**，正式 APK 文件名 `trime-mie-v3.0.3.apk`。本版已在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 发布。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
+
+## V3.0.3 更新
+
+- 自定义键盘新增悬浮候选窗编辑：实时预览，窗口、候选、文字、辅助分组，各布局独立保存。
+- 修复美化残影和动画刷新、悬浮球透明区域拦截 Q、按键移动后保存覆盖相邻键；支持长按拖动插入。
+- 悬浮球独立开关；悬浮键盘临时恢复候选/状态栏，回到普通键盘恢复隐藏偏好。
+- 输入与候选新增造词管理，历史造词列表支持搜索、筛选及编辑词条、编码、所属方案。
+- Android 17 局域网同步补齐运行时授权；保存相同配置也立即重试并保留待上传内容。
+
+详见 [V3.0.3 更新说明与验证边界](docs/v3.0.3/更新说明.md)。
 
 ## V3.0.2 性能优化
 
@@ -126,7 +136,7 @@
 
 ## 下载与安装
 
-1. 可在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 下载 `trime-mie-v3.0.2.apk`。
+1. 可在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 下载 `trime-mie-v3.0.3.apk`。
 2. 允许浏览器或文件管理器安装该 APK，安装后在系统设置启用“同文输入法咩版”并选为当前输入法。
 3. 配置 Rime 方案与词库并部署。需要沿用旧目录时，按[使用指南](docs/使用指南.md)切换外部目录。
 

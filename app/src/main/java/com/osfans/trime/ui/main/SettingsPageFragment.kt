@@ -191,7 +191,8 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
         findPreference<Preference>("custom_sound_effect_name")?.setOnPreferenceClickListener {
             lifecycleScope.launch { SoundEffectPickerDialog.build(lifecycleScope, requireContext()).show() }; true
         }
-        findPreference<Preference>("candidate_floating_ball")?.summary = "仅隐藏状态栏时生效；保留当前开关，不自动更改。请到 键盘 › 工具栏 设置状态栏显示。"
+        findPreference<Preference>("hide_input_bar")?.summary = "悬浮键盘临时显示，回到普通键盘恢复此设置；不修改开关值。"
+        findPreference<Preference>("candidate_floating_ball")?.summary = "独立开关，不受状态栏显示影响；点击悬浮球显示工具栏，长按展开键盘菜单。"
     }
     private fun open(id: String, key: String = "") {
         view?.let { current ->
@@ -210,6 +211,7 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
         }
         if (route != null) { findNavController().navigateWithAnim(route); return }
         val activity = when (id) {
+            "created_words" -> CreatedWordsActivity::class.java
             "voice" -> VoiceSettingsActivity::class.java
             "layout" -> CustomKeyboardActivity::class.java
             "fonts" -> FontSettingsActivity::class.java
@@ -222,8 +224,8 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
     }
     private fun updateDependencies() {
         allUi.forEach { findPreference<Preference>(it.key)?.isEnabled = it.isEnabled() }
-        findPreference<Preference>("candidate_floating_ball")?.isEnabled = prefs.keyboard.hideInputBar.getValue()
-        findPreference<Preference>("candidate_ball_opacity")?.isEnabled = prefs.keyboard.hideInputBar.getValue() && prefs.candidates.floatingBall.getValue()
+        findPreference<Preference>("candidate_floating_ball")?.isEnabled = true
+        findPreference<Preference>("candidate_ball_opacity")?.isEnabled = prefs.candidates.floatingBall.getValue()
     }
     private fun applySideEffect(key: String) {
         when (key) {

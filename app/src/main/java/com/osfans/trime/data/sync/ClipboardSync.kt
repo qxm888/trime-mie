@@ -37,7 +37,7 @@ object ClipboardSync : ClipboardManager.OnPrimaryClipChangedListener {
     @Volatile private var blockRemote = false
     private var seen = ""
     private val client = OkHttpClient.Builder().followRedirects(false).followSslRedirects(false)
-        .connectTimeout(8, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).writeTimeout(60, TimeUnit.SECONDS).callTimeout(180, TimeUnit.SECONDS).build()
+        .dns(LocalNetworkAccess.dns { context }).connectTimeout(8, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).writeTimeout(60, TimeUnit.SECONDS).callTimeout(180, TimeUnit.SECONDS).build()
 
     fun init(ctx: Context) { context = ctx.applicationContext }
     fun config() = Config(prefs.getBoolean("enabled",false), prefs.getString("url","").orEmpty(), prefs.getString("user","").orEmpty(), prefs.getString("password","").orEmpty(), prefs.getBoolean("allow_http",false))
@@ -47,12 +47,17 @@ object ClipboardSync : ClipboardManager.OnPrimaryClipChangedListener {
         require(url.isHttps || c.allowHttp) { "请使用 HTTPS；局域网 HTTP 需主动开启允许明文传输" }
     }
     fun save(c: Config) {
-        if(c.url.isNotBlank() || c.enabled) validate(c)
-        val old=config()
-        check(prefs.edit().putBoolean("enabled",c.enabled).putString("url",c.url.trim()).putString("user",c.user)
-            .putString("password",c.password).putBoolean("allow_http",c.allowHttp).commit())
-        if(old!=c) { prefs.edit().remove("seen").apply(); restart() }
+        val normalized = c.copy(url=c.url.trim())
+        if(normalized.url.isNotBlank() || normalized.enabled) validate(normalized)
+        val changed = config()!=normalized
+        check(prefs.edit().putBoolean("enabled",normalized.enabled).putString("url",normalized.url).putString("user",normalized.user)
+            .putString("password",normalized.password).putBoolean("allow_http",normalized.allowHttp).commit())
+        if(changed) prefs.edit().remove("seen").apply()
+        // Explicit Save is also a retry: reset backoff even if no field changed.
+        // Preserve an unsent clipboard item when retrying the same endpoint.
+        restart(resetContent=changed)
     }
+    fun retry() = restart(resetContent=false)
     fun start() {
         if(android.os.Build.VERSION.SDK_INT>=24 && !(context.getSystemService(Context.USER_SERVICE) as android.os.UserManager).isUserUnlocked) return
         serviceAlive = true; restart()
@@ -62,8 +67,9 @@ object ClipboardSync : ClipboardManager.OnPrimaryClipChangedListener {
         client.dispatcher.cancelAll()
         clipboard.removePrimaryClipChangedListener(this); pending = null
     }
-    private fun restart() {
-        generation++; loop?.cancel(); uploadJob?.cancel(); pending = null; received = null
+    private fun restart(resetContent: Boolean = true) {
+        generation++; loop?.cancel(); uploadJob?.cancel()
+        if (resetContent) { pending = null; received = null }
         client.dispatcher.cancelAll()
         clipboard.removePrimaryClipChangedListener(this)
         val c=config(); seen=prefs.getString("seen","").orEmpty()
@@ -104,6 +110,7 @@ object ClipboardSync : ClipboardManager.OnPrimaryClipChangedListener {
     }
     private fun request(c: Config,vararg path: String): Request.Builder {
         validate(c)
+        LocalNetworkAccess.checkHost(context,c.url.trim().toHttpUrl().host)
         val url=(c.url.trimEnd('/')+"/").toHttpUrl().newBuilder().apply {
             (path.toList().ifEmpty { listOf("SyncClipboard.json") }).forEach { addPathSegment(it) }
         }.build()
@@ -166,7 +173,7 @@ object ClipboardSync : ClipboardManager.OnPrimaryClipChangedListener {
         } }
     }
     private fun reportError(error: Throwable) {
-        status.value=if(error is IllegalArgumentException || error is IllegalStateException) error.message.orEmpty() else "同步连接失败，请检查网络、地址与证书"
-        DiagnosticLog.event("clipboard_sync","error","type=${error.javaClass.simpleName}")
+        status.value=if(error is LocalNetworkAccess.PermissionRequired) error.message.orEmpty() else if(error is IllegalArgumentException || error is IllegalStateException) error.message.orEmpty() else "同步连接失败，请检查网络、地址与证书"
+        DiagnosticLog.event("clipboard_sync","error","type=${error.javaClass.simpleName} localPermission=${LocalNetworkAccess.granted(context)}")
     }
 }
