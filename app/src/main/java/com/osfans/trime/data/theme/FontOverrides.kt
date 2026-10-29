@@ -13,6 +13,7 @@ object FontOverrides {
     private var context: Context? = null
     private val cache = mutableMapOf<String, Typeface>()
     private val failed = mutableSetOf<String>()
+    private var cacheGeneration = 0L
     @Volatile private var snapshot: Map<String, Any?> = emptyMap()
     private val prefs get() = context!!.getSharedPreferences("font_overrides", Context.MODE_PRIVATE)
     val version: Long get() = snapshot["version"] as? Long ?: 0
@@ -42,19 +43,28 @@ object FontOverrides {
         "system:monospace" -> "系统等宽"
         else -> File(value).name
     }
-    fun invalidate() { synchronized(cache) { cache.clear(); failed.clear() } }
+    fun invalidate() { synchronized(cache) { cacheGeneration++;cache.clear(); failed.clear() } }
     fun typeface(role: String): Typeface? {
         return fromSelection(selection(role))
     }
     fun fromSelection(value: String): Typeface? {
         if (value.isEmpty()) return null
+        val generation=synchronized(cache) {
+            cache[value]?.let { return it }
+            if(value in failed) return null
+            cacheGeneration
+        }
+        // Typeface construction can map a large font. Do not hold the shared cache
+        // monitor while unrelated, already-cached fonts are needed by the IME UI.
+        val loaded=runCatching {
+            if(value.startsWith("system:")) Typeface.create(value.removePrefix("system:"),Typeface.NORMAL)
+            else Typeface.createFromFile(value)
+        }
         return synchronized(cache) {
-            if (value in failed) return@synchronized null
-            cache[value] ?: runCatching {
-                if (value.startsWith("system:")) Typeface.create(value.removePrefix("system:"), Typeface.NORMAL)
-                else Typeface.createFromFile(value)
-            }.onFailure { failed.add(value); timber.log.Timber.w("Invalid font skipped (cached)") }
-                .getOrNull()?.also { cache[value] = it }
+            if(generation!=cacheGeneration) return@synchronized loaded.getOrNull()
+            cache[value] ?: loaded.onFailure {
+                failed.add(value);timber.log.Timber.w("Invalid font skipped (cached)")
+            }.getOrNull()?.also { cache[value]=it }
         }
     }
 }

@@ -2,25 +2,20 @@
 package com.osfans.trime.ime.appearance
 
 import android.graphics.drawable.GradientDrawable
+import java.util.IdentityHashMap
 
-/** Drawable setters invalidate their host, even when assigning the same geometry. */
+/** Keep geometry for normal/pressed/modifier drawables instead of forgetting on each press. */
 internal class KeyBackgroundStyle {
-    private var drawable: GradientDrawable? = null
-    private var radius = Float.NaN
-    private var strokeWidth = -1
-    private var strokeColor = 0
-
+    private data class Geometry(var radius: Float=Float.NaN,var width: Int=-1,var color: Int=0)
+    private val entries=IdentityHashMap<GradientDrawable,Geometry>()
     fun apply(background: GradientDrawable, corner: Float, width: Int, color: Int) {
-        val changed = drawable !== background
-        if (changed || radius != corner) {
-            background.cornerRadius = corner
-            radius = corner
+        val previous=entries[background] ?: run {
+            if(entries.size>=8) entries.clear()
+            Geometry().also { entries[background]=it }
         }
-        if (changed || strokeWidth != width || strokeColor != color) {
-            background.setStroke(width, color)
-            strokeWidth = width
-            strokeColor = color
+        if(previous.radius!=corner) { background.cornerRadius=corner;previous.radius=corner }
+        if(previous.width!=width || previous.color!=color) {
+            background.setStroke(width,color);previous.width=width;previous.color=color
         }
-        drawable = background
     }
 }

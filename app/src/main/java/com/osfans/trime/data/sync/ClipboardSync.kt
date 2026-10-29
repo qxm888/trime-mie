@@ -84,7 +84,7 @@ object ClipboardSync : ClipboardManager.OnPrimaryClipChangedListener {
                 runCatching { mutex.withLock { sync(c,epoch) } }.onSuccess { failures=0 }.onFailure {
                     if(it is CancellationException) throw it
                     failures++
-                    reportError(it)
+                    reportError(it,epoch)
                 }
                 delay(if(failures==0) 5000L else (5000L * failures).coerceAtMost(60000))
             }
@@ -93,7 +93,9 @@ object ClipboardSync : ClipboardManager.OnPrimaryClipChangedListener {
     private fun localContent() = ClipboardTransfer.read(context)
     override fun onPrimaryClipChanged() {
         revision++
-        val text=localContent() ?: run { pending=null; received=null; blockRemote=true; return }
+        val text=runCatching { localContent() }.onFailure {
+            DiagnosticLog.event("clipboard_sync","clipboard_unavailable","type=${it.javaClass.simpleName}")
+        }.getOrNull() ?: run { pending=null; received=null; blockRemote=true; return }
         blockRemote=false
         if(text.key==received) return
         received=null
@@ -104,7 +106,7 @@ object ClipboardSync : ClipboardManager.OnPrimaryClipChangedListener {
             delay(300)
             if(c.enabled && epoch==generation) runCatching { mutex.withLock { sync(c,epoch) } }.onFailure {
                 if(it is CancellationException) throw it
-                reportError(it)
+                reportError(it,epoch)
             }
         }
     }
@@ -117,62 +119,105 @@ object ClipboardSync : ClipboardManager.OnPrimaryClipChangedListener {
         return Request.Builder().url(url).header("Authorization",Credentials.basic(c.user,c.password,Charsets.UTF_8))
     }
     private fun checkStatus(code: Int) { check(code in 200..299) { when(code) { 401,403 -> "服务器认证失败，请检查账号密码"; else -> "服务器返回 HTTP $code" } } }
-    private fun transfer(c: Config)=ClipboardTransfer(context,client) { path -> request(c,*path.toTypedArray()) }
-    private fun send(c: Config,content: ClipboardTransfer.Local): String = transfer(c).upload(content)
-    private suspend fun sync(c: Config,epoch: Long,sendPending: Boolean=true) {
-        if(epoch!=generation) return
-        if(blockRemote && pending==null) { status.value="本地内容不参与自动同步，可手动接收远端"; return }
-        if(sendPending) pending?.let { text ->
-            val stamp=revision
-            val digest=send(c,text)
-            if(epoch!=generation) return
-            if(stamp==revision) pending=null
-            seen=digest; prefs.edit().putString("seen",seen).apply()
+    private fun checkEpoch(epoch: Long) {
+        if(epoch!=generation) throw CancellationException("同步配置或服务状态已改变")
+    }
+    private fun transfer(c: Config,epoch: Long)=ClipboardTransfer(context,client) { path ->
+        checkEpoch(epoch);request(c,*path.toTypedArray())
+    }
+    private fun send(c: Config,content: ClipboardTransfer.Local,epoch: Long): String = transfer(c,epoch).upload(content)
+    private suspend fun sync(c: Config,epoch: Long,sendPending: Boolean=true,manualRevision: Long?=null) {
+        checkEpoch(epoch)
+        val local=withContext(Dispatchers.Main) {
+            checkEpoch(epoch)
+            if(manualRevision==null && blockRemote && pending==null) {
+                status.value="本地内容不参与自动同步，可手动接收远端"
+                null
+            } else revision to pending
+        } ?: return
+        if(sendPending) local.second?.let { text ->
+            val digest=send(c,text,epoch)
+            withContext(Dispatchers.Main) {
+                checkEpoch(epoch)
+                if(local.first==revision && pending==text) pending=null
+                seen=digest;prefs.edit().putString("seen",seen).apply()
+            }
         }
-        val stamp=revision
+        currentCoroutineContext().ensureActive();checkEpoch(epoch)
+        val stamp=manualRevision ?: withContext(Dispatchers.Main) { revision }
         val raw=client.newCall(request(c).get().build()).execute().use {
-            if(it.code==404) { status.value="连接正常，远端暂无剪贴板"; return }
+            checkEpoch(epoch)
+            if(it.code==404) {
+                withContext(Dispatchers.Main) { checkEpoch(epoch);status.value="连接正常，远端暂无剪贴板" }
+                return
+            }
             checkStatus(it.code)
             it.body?.byteStream()?.use { input -> input.readBoundedText(2*1024*1024) } ?: error("服务器返回空内容")
         }
+        currentCoroutineContext().ensureActive();checkEpoch(epoch)
         val obj=JSONObject(raw)
         require(obj.has("type") && obj.has("text") && obj.has("hasData")) { "协议不兼容，请使用 SyncClipboard v3.1.1 或以上版本" }
         val digest=ClipboardTransfer.signature(obj)
-        if(digest!=seen) {
-            val remote=transfer(c).receive(obj)
-            val applied=withContext(Dispatchers.Main) {
-                if(epoch!=generation || stamp!=revision || pending!=null || blockRemote) false
-                else {
-                    received=remote.local.key
-                    if(localContent()?.key!=remote.local.key) clipboard.setPrimaryClip(remote.clip(context))
-                    seen=digest; prefs.edit().putString("seen",seen).apply(); true
+        if(manualRevision!=null || digest!=seen) {
+            val remote=transfer(c,epoch).receive(obj)
+            var applied=false
+            try {
+                withContext(Dispatchers.Main) {
+                    checkEpoch(epoch)
+                    if(stamp!=revision || manualRevision==null && (pending!=null || blockRemote)) {
+                        status.value="已保留更新的本地剪贴板，跳过此次接收"
+                    } else {
+                        val before=received
+                        received=remote.local.key
+                        try {
+                            if(localContent()?.key!=remote.local.key) clipboard.setPrimaryClip(remote.clip(context))
+                        } catch(error:Exception) { received=before;throw error }
+                        applied=true
+                        if(manualRevision!=null) { pending=null;blockRemote=false }
+                        seen=digest;prefs.edit().putString("seen",seen).apply()
+                        status.value="同步正常 · 文本 / 图片 / 文件"
+                    }
                 }
+            } finally {
+                // Cancellation between receiving an attachment and applying the clipboard
+                // must also remove the newly created temporary download directory.
+                if(!applied) remote.file?.parentFile?.deleteRecursively()
             }
-            if(!applied) remote.file?.parentFile?.deleteRecursively()
+        } else withContext(Dispatchers.Main) { checkEpoch(epoch);status.value="同步正常 · 文本 / 图片 / 文件" }
+    }
+    private data class Command(val config:Config,val epoch:Long,val revision:Long)
+    private suspend fun command()=withContext(Dispatchers.Main) { Command(config(),generation,revision) }
+    private suspend fun upload(content:ClipboardTransfer.Local,command:Command):String = withContext(Dispatchers.IO) {
+        mutex.withLock {
+            currentCoroutineContext().ensureActive();checkEpoch(command.epoch)
+            val digest=send(command.config,content,command.epoch)
+            withContext(Dispatchers.Main) {
+                checkEpoch(command.epoch)
+                seen=digest;prefs.edit().putString("seen",seen).apply()
+                if(revision==command.revision) pending=null
+            }
+            "已上传"
         }
-        if(epoch==generation) status.value="同步正常 · 文本 / 图片 / 文件"
     }
     suspend fun uploadNow(): String {
-        val text=withContext(Dispatchers.Main) { localContent() } ?: error("剪贴板为空、敏感内容或不支持的多文件内容")
-        return withContext(Dispatchers.IO) { mutex.withLock {
-            val digest=send(config(),text)
-            seen=digest; prefs.edit().putString("seen",seen).apply()
-            "已上传"
-        } }
+        val (snapshot,text)=withContext(Dispatchers.Main) {
+            Command(config(),generation,revision) to (localContent() ?: error("剪贴板为空、敏感内容或不支持的多文件内容"))
+        }
+        return upload(text,snapshot)
     }
-    suspend fun uploadFile(uri: android.net.Uri): String = withContext(Dispatchers.IO) { mutex.withLock {
-        val digest=send(config(),ClipboardTransfer.Local(uri=uri))
-        seen=digest; prefs.edit().putString("seen",seen).apply(); "附件已上传"
-    } }
+    suspend fun uploadFile(uri: android.net.Uri): String = upload(ClipboardTransfer.Local(uri=uri),command()).let { "附件已上传" }
     suspend fun downloadNow(): String {
-        val requested=withContext(Dispatchers.Main) { revision }
+        val snapshot=command()
         return withContext(Dispatchers.IO) { mutex.withLock {
-        // Manual receive is explicit; retain newer local copies during the request.
-        if(revision==requested) { pending=null; blockRemote=false }
-        seen=""; sync(config(),generation,false); status.value
+            currentCoroutineContext().ensureActive();checkEpoch(snapshot.epoch)
+            // Pending local content and the seen marker are changed only after a successful
+            // explicit receive. A timeout/404/cancel leaves the unsent clipboard available.
+            sync(snapshot.config,snapshot.epoch,false,snapshot.revision)
+            withContext(Dispatchers.Main) { checkEpoch(snapshot.epoch);status.value }
         } }
     }
-    private fun reportError(error: Throwable) {
+    private suspend fun reportError(error: Throwable,epoch:Long) = withContext(Dispatchers.Main) {
+        if(epoch!=generation) return@withContext
         status.value=if(error is LocalNetworkAccess.PermissionRequired) error.message.orEmpty() else if(error is IllegalArgumentException || error is IllegalStateException) error.message.orEmpty() else "同步连接失败，请检查网络、地址与证书"
         DiagnosticLog.event("clipboard_sync","error","type=${error.javaClass.simpleName} localPermission=${LocalNetworkAccess.granted(context)}")
     }

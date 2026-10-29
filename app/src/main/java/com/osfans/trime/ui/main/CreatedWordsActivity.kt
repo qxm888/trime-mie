@@ -38,6 +38,8 @@ class CreatedWordsActivity : AppCompatActivity() {
     private lateinit var count:TextView
     private lateinit var empty:TextView
     private var filtering:Job?=null
+    private var loading:Job?=null
+    private data class WordRow(val entry:CreatedWord,val schemaName:String)
     private val adapter=WordsAdapter()
     private fun dp(n:Int)=(n*resources.displayMetrics.density).toInt()
     override fun onCreate(state:Bundle?) {
@@ -77,13 +79,22 @@ class CreatedWordsActivity : AppCompatActivity() {
         setContentView(root)
         search.doAfterTextChanged { query=it.toString();showWords(true) }
     }
-    override fun onResume() {
-        super.onResume()
-        lifecycleScope.launch {
-            val snapshot=withContext(Dispatchers.IO) { WordSchemas.load() to CandidatePreferences.createdWords() }
-            current=snapshot.first.current;names=snapshot.first.names;all=snapshot.second
-            filter.text=if(schema.isBlank()) "全部方案" else names[schema] ?: schema
-            showWords()
+    override fun onResume() { super.onResume();reload() }
+    override fun onStop() { loading?.cancel();filtering?.cancel();super.onStop() }
+    private fun reload() {
+        loading?.cancel()
+        loading=lifecycleScope.launch {
+            try {
+                val (snapshot,entries)=withContext(Dispatchers.IO) {
+                    val words=CandidatePreferences.createdWords()
+                    val schemas=WordSchemas.load(words)
+                    schemas to words.sortedWith(compareBy<CreatedWord> { schemas.names[it.schema] ?: it.schema }.thenBy { it.code }.thenBy { it.word })
+                }
+                current=snapshot.current;names=snapshot.names;all=entries
+                filter.text=if(schema.isBlank()) "全部方案" else names[schema] ?: schema
+                showWords()
+            } catch(error:CancellationException) { throw error }
+            catch(error:Exception) { Toast.makeText(this@CreatedWordsActivity,"词条列表加载失败，请重新进入",Toast.LENGTH_LONG).show() }
         }
     }
     private fun showWords(debounce:Boolean=false) {
@@ -93,7 +104,7 @@ class CreatedWordsActivity : AppCompatActivity() {
             val source=all;val selected=schema;val term=query.trim();val labels=names
             val words=withContext(Dispatchers.Default) { source.filter { (selected.isBlank() || it.schema==selected) &&
                 (term.isBlank() || it.word.contains(term,true) || it.code.contains(term,true) || it.schema.contains(term,true) || labels[it.schema].orEmpty().contains(term,true)) }
-                .sortedWith(compareBy<CreatedWord> { labels[it.schema] ?: it.schema }.thenBy { it.code }.thenBy { it.word }) }
+                .map { WordRow(it,labels[it.schema] ?: it.schema) } }
             adapter.submitList(words)
             count.text="${words.size} 条 / 共 ${source.size} 条 · 点击词条编辑"
             empty.text=if(source.isEmpty()) "还没有造词\n点击“新建词条”开始" else "没有找到匹配的词条"
@@ -115,13 +126,13 @@ class CreatedWordsActivity : AppCompatActivity() {
         MaterialAlertDialogBuilder(this).setTitle("删除此造词？").setMessage("${word.word}\n${word.code} · ${names[word.schema] ?: word.schema}\n\n只移除这条应用内造词，不删除 Rime 原有词典中的词。")
             .setNegativeButton(android.R.string.cancel,null).setPositiveButton("删除") { _,_ -> lifecycleScope.launch {
                 runCatching { withContext(Dispatchers.IO) { CandidatePreferences.editCreatedWord(word,null) } }
-                    .onSuccess { all=withContext(Dispatchers.IO) { CandidatePreferences.createdWords() };showWords() }
+                    .onSuccess { all=all.filterNot { it==word };showWords();reload() }
                     .onFailure { Toast.makeText(this@CreatedWordsActivity,it.message ?: "删除失败",1).show() }
             } }.show()
     }
-    private inner class WordsAdapter : ListAdapter<CreatedWord,Holder>(object:DiffUtil.ItemCallback<CreatedWord>() {
-        override fun areItemsTheSame(a:CreatedWord,b:CreatedWord)=a==b
-        override fun areContentsTheSame(a:CreatedWord,b:CreatedWord)=a==b
+    private inner class WordsAdapter : ListAdapter<WordRow,Holder>(object:DiffUtil.ItemCallback<WordRow>() {
+        override fun areItemsTheSame(a:WordRow,b:WordRow)=a.entry==b.entry
+        override fun areContentsTheSame(a:WordRow,b:WordRow)=a==b
     }) {
         override fun onCreateViewHolder(parent:ViewGroup,type:Int):Holder {
             val row=LinearLayout(this@CreatedWordsActivity).apply {
@@ -137,7 +148,7 @@ class CreatedWordsActivity : AppCompatActivity() {
             row.addView(more,LinearLayout.LayoutParams(dp(48),dp(48)));return Holder(row,word,detail,more)
         }
         override fun onBindViewHolder(holder:Holder,index:Int) {
-            val entry=getItem(index);holder.word.text=entry.word;holder.detail.text="${entry.code} · ${names[entry.schema] ?: entry.schema}"
+            val row=getItem(index);val entry=row.entry;holder.word.text=entry.word;holder.detail.text="${entry.code} · ${row.schemaName}"
             holder.itemView.setOnClickListener { edit(entry) }
             holder.more.setOnClickListener { MaterialAlertDialogBuilder(this@CreatedWordsActivity).setTitle(entry.word.take(40)).setItems(arrayOf("编辑词条与编码","删除造词")) { _,which -> if(which==0) edit(entry) else delete(entry) }.show() }
         }

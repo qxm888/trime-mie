@@ -9,11 +9,11 @@ import kotlinx.coroutines.withTimeoutOrNull
 /** Reuse an existing engine session; opening phrase management never starts deployment. */
 internal object WordSchemas {
     data class Snapshot(val current: String, val names: Map<String,String>)
-    suspend fun load(): Snapshot {
+    suspend fun load(words:List<CandidatePreferences.CreatedWord> = CandidatePreferences.createdWords()): Snapshot {
         val names=InputStats.schemaList().toMap().toMutableMap()
-        CandidatePreferences.createdWords().forEach { names.putIfAbsent(it.schema,it.schema) }
+        words.forEach { names.putIfAbsent(it.schema,it.schema) }
         var current=InputStats.activeSchemaId.takeUnless { it=="_" }.orEmpty()
-        runCatching {
+        try {
             val session=RimeDaemon.getFirstSessionOrNull()
             if(session!=null) withTimeoutOrNull(1500) {
                 session.runOnReady {
@@ -21,8 +21,11 @@ internal object WordSchemas {
                     selectedSchemaId().takeIf { it.isNotBlank() }?.let { current=it }
                 }
             }
+        } catch(error:kotlinx.coroutines.CancellationException) { throw error }
+        catch(error:Exception) {
+            com.osfans.trime.util.DiagnosticLog.event("words","schema_names_unavailable","type=${error.javaClass.simpleName}")
         }
         if(current.isNotBlank()) names.putIfAbsent(current,current)
-        return Snapshot(current,names)
+        return Snapshot(current,names.toMap())
     }
 }

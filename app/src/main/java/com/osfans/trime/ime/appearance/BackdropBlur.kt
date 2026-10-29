@@ -34,33 +34,50 @@ class BackdropBlur(
     private val location = RectF()
     private val rootLocation = IntArray(2)
     private val viewLocation = IntArray(2)
-    private val tick = object : Runnable {
-        override fun run() {
-            if (!attached) return
-            if (root.isShown && root.windowVisibility == View.VISIBLE && !busy && requestedVersion != renderedVersion && appearance().needsBlur) update()
-            root.postDelayed(this, 100)
-        }
+    private var scheduled = false
+    private var lastCapture = 0L
+    private val layoutObserver = android.view.ViewTreeObserver.OnGlobalLayoutListener { schedule() }
+    private val windowObserver=android.view.ViewTreeObserver.OnWindowVisibilityChangeListener { if(it==View.VISIBLE) schedule() }
+    private var observedTree: android.view.ViewTreeObserver? = null
+    private val tick = Runnable {
+        scheduled = false
+        if(attached && root.isShown && root.windowVisibility==View.VISIBLE && !busy && requestedVersion!=renderedVersion && appearance().needsBlur) update()
     }
+    private fun schedule() {
+        if(!attached || scheduled || busy || requestedVersion==renderedVersion || !appearance().needsBlur || !root.isShown || root.windowVisibility!=View.VISIBLE) return
+        scheduled=true
+        root.postDelayed(tick,(100L-(android.os.SystemClock.uptimeMillis()-lastCapture)).coerceAtLeast(0L))
+    }
+    private fun request() { requestedVersion++;schedule() }
 
     init {
         root.setTag(R.id.keyboard_backdrop_blur, this)
         root.addOnAttachStateChangeListener(this)
         root.addOnLayoutChangeListener { _, l, t, r, b, oldL, oldT, oldR, oldB ->
-            if (l != oldL || t != oldT || r != oldR || b != oldB) requestedVersion++
+            if (l != oldL || t != oldT || r != oldR || b != oldB) request()
         }
         if(root.isAttachedToWindow) onViewAttachedToWindow(root)
     }
-    override fun onViewAttachedToWindow(v: View) { attached = true; generation++; requestedVersion++; root.removeCallbacks(tick); root.post(tick) }
+    override fun onViewAttachedToWindow(v: View) {
+        attached=true;generation++
+        observedTree?.takeIf { it.isAlive }?.let { it.removeOnGlobalLayoutListener(layoutObserver);it.removeOnWindowVisibilityChangeListener(windowObserver) }
+        observedTree=root.viewTreeObserver.also { it.addOnGlobalLayoutListener(layoutObserver);it.addOnWindowVisibilityChangeListener(windowObserver) }
+        request()
+    }
     override fun onViewDetachedFromWindow(v: View) {
-        attached = false; generation++; root.removeCallbacks(tick)
-        // A worker may still own the back bitmap. Let its coroutine finish before releasing it.
-        front = null
-        if (!busy) back = null
+        attached=false;generation++;root.removeCallbacks(tick);scheduled=false
+        observedTree?.takeIf { it.isAlive }?.let { it.removeOnGlobalLayoutListener(layoutObserver);it.removeOnWindowVisibilityChangeListener(windowObserver) };observedTree=null
+        // The private work bitmap may still be owned by the worker. Published frames
+        // are immutable and never reused as scratch memory for a future GPU frame.
+        front=null
+        if(!busy) back=null
     }
 
     private fun update() {
         if (root.width <= 0 || root.height <= 0) return
-        val scale = minOf(0.125f, 256f / root.width, 256f / root.height)
+        lastCapture=android.os.SystemClock.uptimeMillis()
+        val capturedWidth=root.width;val capturedHeight=root.height
+        val scale = minOf(0.125f, 256f / capturedWidth, 256f / capturedHeight)
         val w = (root.width * scale).roundToInt().coerceAtLeast(1)
         val h = (root.height * scale).roundToInt().coerceAtLeast(1)
         val bitmap = back?.takeIf { it.width == w && it.height == h } ?: Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -70,25 +87,36 @@ class BackdropBlur(
             val canvas = Canvas(bitmap)
             canvas.scale(w.toFloat() / root.width, h.toFloat() / root.height)
             capture(canvas)
-        } catch (_: RuntimeException) { back = bitmap; return }
+        } catch(error:RuntimeException) {
+            back=bitmap;renderedVersion=requestedVersion
+            com.osfans.trime.util.DiagnosticLog.event("appearance","blur_capture_failed","type=${error.javaClass.simpleName}")
+            return
+        }
         val version = generation
         val capturedVersion = requestedVersion
         val radius = (appearance().blurRadius * root.resources.displayMetrics.density * scale).roundToInt().coerceIn(1, 24)
         busy = true
         scope.launch {
             try {
-                withContext(Dispatchers.Default) {
+                val frame=withContext(Dispatchers.Default) {
                     val size = bitmap.width * bitmap.height
                     if (blurPixels.size != size) { blurPixels = IntArray(size); blurWork = IntArray(size) }
                     blur(bitmap, radius, blurPixels, blurWork)
+                    bitmap.copy(Bitmap.Config.ARGB_8888,false)
                 }
-                if (attached && generation == version) {
-                    back = front
-                    front = bitmap
+                if (attached && generation == version && root.width==capturedWidth && root.height==capturedHeight && appearance().needsBlur) {
+                    front = frame
                     renderedVersion = capturedVersion
                     invalidateChildren(root)
                 }
-            } finally { busy = false; if (!attached) back = null }
+            } catch(error:CancellationException) { throw error }
+            catch(error:Exception) {
+                renderedVersion=capturedVersion
+                com.osfans.trime.util.DiagnosticLog.event("appearance","blur_failed","type=${error.javaClass.simpleName}")
+            } finally {
+                busy=false;back=if(attached) bitmap else null
+                schedule()
+            }
         }
     }
 
@@ -98,7 +126,7 @@ class BackdropBlur(
     }
 
     private fun draw(view: View, canvas: Canvas, area: RectF): Boolean {
-        val bitmap = front ?: return false
+        val bitmap = front ?: run { schedule();return false }
         if (view.width == 0 || view.height == 0 || root.width == 0 || root.height == 0) return false
         relativeBounds(root, view, location, rootLocation, viewLocation)
         if (location.width() <= 0 || location.height() <= 0) return false
@@ -123,7 +151,7 @@ class BackdropBlur(
         fun invalidateBackground(view: View) {
             var ancestor: View? = view
             while (ancestor != null) {
-                (ancestor.getTag(R.id.keyboard_backdrop_blur) as? BackdropBlur)?.let { it.requestedVersion++; return }
+                (ancestor.getTag(R.id.keyboard_backdrop_blur) as? BackdropBlur)?.let { it.request(); return }
                 ancestor = ancestor.parent as? View
             }
         }

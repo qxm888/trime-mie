@@ -40,6 +40,7 @@ class FloatingCandidatesEditActivity : PersonalizationActivity() {
     private var fontRole="candidate"
     private val fontButtons=mutableMapOf<String,MaterialButton>()
     private val importer=registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        val role=fontRole
         if(uri!=null) lifecycleScope.launch {
             val file=File(FontOverrides.folder(),"popup-${UUID.randomUUID()}.ttf")
             val result=withContext(Dispatchers.IO) { runCatching {
@@ -53,8 +54,8 @@ class FloatingCandidatesEditActivity : PersonalizationActivity() {
                 FontOverrides.fromSelection(file.absolutePath) ?: error("字体不可用")
             } }
             result.onSuccess {
-                font(fontRole,(draft.fonts[fontRole] ?: FontSpec()).copy(font=file.absolutePath))
-                fontButtons[fontRole]?.text="字体 · ${file.name}"
+                font(role,(draft.fonts[role] ?: FontSpec()).copy(font=file.absolutePath))
+                fontButtons[role]?.text="字体 · ${file.name}"
             }.onFailure { file.delete();Toast.makeText(this@FloatingCandidatesEditActivity,it.message ?: "字体导入失败",1).show() }
         }
     }
@@ -84,12 +85,22 @@ class FloatingCandidatesEditActivity : PersonalizationActivity() {
             })
         }
         root.addView(tabs,2,LinearLayout.LayoutParams(-1,dp(48)))
+        var imeShown=false
+        fun fitPreview() {
+            val usable=(root.height.takeIf { it>0 } ?: resources.displayMetrics.heightPixels)-root.paddingTop-root.paddingBottom
+            val limit=(usable-dp(64+48+120)).coerceAtLeast(0)
+            val cap=minOf(dp(if(imeShown) 96 else 190),limit)
+            val height=if(cap<dp(96)) 0 else cap
+            preview.visibility=if(height==0) View.GONE else View.VISIBLE
+            if(preview.layoutParams.height!=height) preview.layoutParams=preview.layoutParams.apply { this.height=height }
+        }
+        root.addOnLayoutChangeListener { _,_,_,_,_,_,_,_,_ -> fitPreview() }
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(root) { view,insets ->
             val bars=insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars() or androidx.core.view.WindowInsetsCompat.Type.displayCutout())
             val ime=insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.ime())
             view.setPadding(bars.left,bars.top,bars.right,maxOf(bars.bottom,ime.bottom))
-            val height=dp(if(insets.isVisible(androidx.core.view.WindowInsetsCompat.Type.ime())) 96 else 190)
-            if(preview.layoutParams.height!=height) preview.layoutParams=preview.layoutParams.apply { this.height=height }
+            imeShown=insets.isVisible(androidx.core.view.WindowInsetsCompat.Type.ime())
+            fitPreview()
             insets
         }
         onBackPressedDispatcher.addCallback(this,object:OnBackPressedCallback(true) { override fun handleOnBackPressed()=leave() })

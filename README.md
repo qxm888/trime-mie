@@ -6,7 +6,16 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前源码版本：**V3.0.3**，正式 APK 文件名 `trime-mie-v3.0.3.apk`。本版已在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 发布。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
+> 当前源码版本：**V3.0.4**，正式 APK 文件名 `trime-mie-v3.0.4.apk`。本版已在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 发布。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
+
+## V3.0.4 优化
+
+- 修复手动接收失败丢失待上传内容、旧请求更新新连接状态；同步页面增加进度和重复提交保护。
+- 静态模糊取消空轮询，已发布画面与工作位图分离；减少按键常态/按下态切换的重复圆角与边框更新。
+- 大字体创建不再占用共享缓存锁；造词列表减少重复排序，取消离开页面后的旧加载任务。
+- 修正悬浮候选翻页按钮尺寸恢复、字体导入目标，并改善小屏幕和横屏的预览空间。
+
+详见 [V3.0.4 更新说明](docs/v3.0.4/更新说明.md)和[检查记录](docs/v3.0.4/检查记录.md)。
 
 ## V3.0.3 更新
 
@@ -136,7 +145,7 @@
 
 ## 下载与安装
 
-1. 可在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 下载 `trime-mie-v3.0.3.apk`。
+1. 可在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 下载 `trime-mie-v3.0.4.apk`。
 2. 允许浏览器或文件管理器安装该 APK，安装后在系统设置启用“同文输入法咩版”并选为当前输入法。
 3. 配置 Rime 方案与词库并部署。需要沿用旧目录时，按[使用指南](docs/使用指南.md)切换外部目录。
 

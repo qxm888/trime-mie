@@ -69,14 +69,16 @@ class PaginationUi(
         }
 
     private var bottomLayout: Boolean? = null
-    private var iconSize = -1
+    private var iconWidth = -1
+    private var iconHeight = -1
     private var appliedStyle: com.osfans.trime.ime.appearance.FloatingCandidateStyle? = null
     fun configure(bottom: Boolean) {
-        val size = styleProvider()?.arrowSize ?: if(bottom) 36 else 20
-        if(bottomLayout==bottom && iconSize==size) return
-        bottomLayout=bottom; iconSize=size
-        val w = if(bottom) { if(styleProvider()==null) ctx.dp(44) else maxOf(ctx.dp(size),ctx.dp(32)) } else ctx.dp(size/2)
-        val h = ctx.dp(size)
+        val style=styleProvider()
+        val size=style?.arrowSize ?: if(bottom) 36 else 20
+        val w=if(bottom) { if(style==null) ctx.dp(44) else maxOf(ctx.dp(size),ctx.dp(32)) } else ctx.dp(size/2)
+        val h=ctx.dp(size)
+        if(bottomLayout==bottom && iconWidth==w && iconHeight==h) return
+        bottomLayout=bottom;iconWidth=w;iconHeight=h
         nextIcon.layoutParams = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams(w,h).apply {
             endToEnd = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
             topToTop = 0; bottomToBottom = 0
