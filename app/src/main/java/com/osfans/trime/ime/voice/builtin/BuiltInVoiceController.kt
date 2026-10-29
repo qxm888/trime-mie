@@ -194,9 +194,9 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
         if (current === session) { current = null; lastStatus = status; service.updateVoiceRecording(false) }
     }
     override fun cancel(): Job? {
+        // Ordinary key actions call cancel too; an idle controller has no UI state to publish.
         current?.let { finish(it, "idle") }
         lastStatus = "idle"
-        service.updateVoiceRecording(false)
         return null
     }
     override fun dispose() { cancel(); scope.cancel() }

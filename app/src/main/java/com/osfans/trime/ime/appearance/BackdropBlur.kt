@@ -13,11 +13,17 @@ import kotlinx.coroutines.*
 import kotlin.math.roundToInt
 
 /** One low-resolution background capture/blur shared by every key and toolbar icon. */
-class BackdropBlur(private val root: ViewGroup, private val capture: (Canvas) -> Unit) : View.OnAttachStateChangeListener {
+class BackdropBlur(
+    private val root: ViewGroup,
+    private val appearance: () -> SurfaceAppearanceConfig = { SurfaceAppearance.current() },
+    private val capture: (Canvas) -> Unit,
+) : View.OnAttachStateChangeListener {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var attached = false
     private var busy = false
     private var generation = 0
+    private var requestedVersion = 0L
+    private var renderedVersion = -1L
     private var blurPixels = IntArray(0)
     private var blurWork = IntArray(0)
     private var front: Bitmap? = null
@@ -31,13 +37,19 @@ class BackdropBlur(private val root: ViewGroup, private val capture: (Canvas) ->
     private val tick = object : Runnable {
         override fun run() {
             if (!attached) return
-            if (root.isShown && root.windowVisibility == View.VISIBLE && !busy && SurfaceAppearance.current().needsBlur) update()
+            if (root.isShown && root.windowVisibility == View.VISIBLE && !busy && requestedVersion != renderedVersion && appearance().needsBlur) update()
             root.postDelayed(this, 100)
         }
     }
 
-    init { root.setTag(R.id.keyboard_backdrop_blur, this); root.addOnAttachStateChangeListener(this) }
-    override fun onViewAttachedToWindow(v: View) { attached = true; generation++; root.removeCallbacks(tick); root.post(tick) }
+    init {
+        root.setTag(R.id.keyboard_backdrop_blur, this)
+        root.addOnAttachStateChangeListener(this)
+        root.addOnLayoutChangeListener { _, l, t, r, b, oldL, oldT, oldR, oldB ->
+            if (l != oldL || t != oldT || r != oldR || b != oldB) requestedVersion++
+        }
+    }
+    override fun onViewAttachedToWindow(v: View) { attached = true; generation++; requestedVersion++; root.removeCallbacks(tick); root.post(tick) }
     override fun onViewDetachedFromWindow(v: View) {
         attached = false; generation++; root.removeCallbacks(tick)
         // A worker may still own the back bitmap. Let its coroutine finish before releasing it.
@@ -59,7 +71,8 @@ class BackdropBlur(private val root: ViewGroup, private val capture: (Canvas) ->
             capture(canvas)
         } catch (_: RuntimeException) { back = bitmap; return }
         val version = generation
-        val radius = (SurfaceAppearance.current().blurRadius * root.resources.displayMetrics.density * scale).roundToInt().coerceIn(1, 24)
+        val capturedVersion = requestedVersion
+        val radius = (appearance().blurRadius * root.resources.displayMetrics.density * scale).roundToInt().coerceIn(1, 24)
         busy = true
         scope.launch {
             try {
@@ -71,6 +84,7 @@ class BackdropBlur(private val root: ViewGroup, private val capture: (Canvas) ->
                 if (attached && generation == version) {
                     back = front
                     front = bitmap
+                    renderedVersion = capturedVersion
                     invalidateChildren(root)
                 }
             } finally { busy = false; if (!attached) back = null }
@@ -104,6 +118,15 @@ class BackdropBlur(private val root: ViewGroup, private val capture: (Canvas) ->
     }
 
     companion object {
+        /** Coalesce video frames/background changes; static skins keep their existing blur. */
+        fun invalidateBackground(view: View) {
+            var ancestor: View? = view
+            while (ancestor != null) {
+                (ancestor.getTag(R.id.keyboard_backdrop_blur) as? BackdropBlur)?.let { it.requestedVersion++; return }
+                ancestor = ancestor.parent as? View
+            }
+        }
+
         /** Keyboard keys are positioned with translationX/Y, not their layout left/top. */
         private fun relativeBounds(root: ViewGroup, view: View, out: RectF, rootLocation: IntArray, viewLocation: IntArray) {
             root.getLocationInWindow(rootLocation)

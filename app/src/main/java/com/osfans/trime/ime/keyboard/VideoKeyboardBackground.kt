@@ -79,7 +79,9 @@ class VideoKeyboardBackground(context: Context, private val path: String) : Text
         setTransform(android.graphics.Matrix().apply { setScale(sx, sy, width / 2f, height / 2f) })
     }
     override fun onSurfaceTextureSizeChanged(texture: SurfaceTexture, width: Int, height: Int) { fitVideo() }
-    override fun onSurfaceTextureUpdated(texture: SurfaceTexture) = Unit
+    override fun onSurfaceTextureUpdated(texture: SurfaceTexture) {
+        com.osfans.trime.ime.appearance.BackdropBlur.invalidateBackground(this)
+    }
     override fun onSurfaceTextureDestroyed(texture: SurfaceTexture): Boolean { release(); return true }
     override fun onDetachedFromWindow() { release(); super.onDetachedFromWindow() }
     fun release() {

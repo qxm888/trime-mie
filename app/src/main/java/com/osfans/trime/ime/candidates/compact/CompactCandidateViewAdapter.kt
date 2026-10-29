@@ -7,7 +7,6 @@ package com.osfans.trime.ime.candidates.compact
 
 import android.content.Context
 import android.view.ViewGroup
-import androidx.core.view.updateLayoutParams
 import com.chad.library.adapter4.BaseQuickAdapter
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.osfans.trime.core.CandidateProto
@@ -39,7 +38,10 @@ open class CompactCandidateViewAdapter(
     var layoutFlexGrow: Float = 0f
         private set
 
+    private var layoutChanged = false
+
     fun updateLayoutParams(minWidth: Int, flexGrow: Float) {
+        layoutChanged = layoutChanged || layoutMinWidth != minWidth || layoutFlexGrow != flexGrow
         layoutMinWidth = minWidth
         layoutFlexGrow = flexGrow
     }
@@ -49,9 +51,19 @@ open class CompactCandidateViewAdapter(
         total: Int,
         highlightedIndex: Int,
     ) {
-        super.submitList(data.toList(), null)
+        val oldHighlight = highlightedIdx
+        // A new total can change the expand button even if the visible prefix is identical.
+        val sameItems = this.total == total && data.size == items.size && data.indices.all { data[it] == items[it] }
         this.total = total
         this.highlightedIdx = highlightedIndex
+        if (sameItems) {
+            if (layoutChanged) notifyItemRangeChanged(0, itemCount)
+            else if (oldHighlight != highlightedIndex) {
+                if (oldHighlight in data.indices) notifyItemChanged(oldHighlight)
+                if (highlightedIndex in data.indices) notifyItemChanged(highlightedIndex)
+            }
+        } else super.submitList(data.toList(), null)
+        layoutChanged = false
     }
 
     override fun onCreateViewHolder(
@@ -78,9 +90,11 @@ open class CompactCandidateViewAdapter(
         holder.text = item.text
         holder.comment = item.comment
         holder.idx = position // unused
-        holder.ui.root.updateLayoutParams<FlexboxLayoutManager.LayoutParams> {
-            minWidth = this@CompactCandidateViewAdapter.layoutMinWidth
-            flexGrow = this@CompactCandidateViewAdapter.layoutFlexGrow
+        val params = holder.ui.root.layoutParams as FlexboxLayoutManager.LayoutParams
+        if (params.minWidth != layoutMinWidth || params.flexGrow != layoutFlexGrow) {
+            params.minWidth = layoutMinWidth
+            params.flexGrow = layoutFlexGrow
+            holder.ui.root.layoutParams = params
         }
     }
 }

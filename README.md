@@ -6,7 +6,16 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前源码版本：**V3.0.1**，正式 APK 文件名 `trime-mie-v3.0.1.apk`。本版已在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 发布。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
+> 当前源码版本：**V3.0.2**，正式 APK 文件名 `trime-mie-v3.0.2.apk`。本版已在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 发布。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
+
+## V3.0.2 性能优化
+
+- 按键背景圆角、边框和渐变只在参数变化时更新，减少连续输入的无效刷新与临时对象。
+- 候选内容、布局和高亮没有变化时复用视图；字体、背景和尺寸有变化时仍重新计算。
+- 静态背景模糊按需更新，视频帧合并刷新；关闭阴影和按压特效时跳过相应绘制与空动画。
+- 减少普通按键的重复状态查询、字体列表分配及语音空闲状态发布。
+
+详见 [V3.0.2 更新说明与验证边界](docs/v3.0.2/更新说明.md)。
 
 ## V3.0.1 更新
 
@@ -117,7 +126,7 @@
 
 ## 下载与安装
 
-1. 可在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 下载 `trime-mie-v3.0.1.apk`。
+1. 可在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 下载 `trime-mie-v3.0.2.apk`。
 2. 允许浏览器或文件管理器安装该 APK，安装后在系统设置启用“同文输入法咩版”并选为当前输入法。
 3. 配置 Rime 方案与词库并部署。需要沿用旧目录时，按[使用指南](docs/使用指南.md)切换外部目录。
 
@@ -125,7 +134,7 @@
 | --- | --- |
 | 应用名 | 同文输入法咩版 |
 | 包名 | `com.osfans.trime.mie`，可与原版同文共存 |
-| 版本 | `V3.0.1` / `20261129` |
+| 版本 | `V3.0.2` / `20261130` |
 | 系统 | Android 5.0 及以上 |
 | 架构 | **arm64-v8a**；本次未提供 32 位或 x86 包 |
 | 类型 | 签名正式版，无调试测试组件 |

@@ -9,6 +9,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
+import android.graphics.Typeface
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.view.Gravity
@@ -57,6 +58,27 @@ constructor(
     private var translateX = 0.0f
     private var textScaleX = 1.0f
     private var textScaleY = 1.0f
+
+    /** Rebinding an unchanged candidate must not invalidate its text geometry. */
+    fun updateTextStyle(sizeSp: Float, font: Typeface): Boolean {
+        val sizePx = android.util.TypedValue.applyDimension(android.util.TypedValue.COMPLEX_UNIT_SP, sizeSp, resources.displayMetrics)
+        var changed = false
+        if (textSize != sizePx) {
+            setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, sizePx)
+            changed = true
+        }
+        if (typeface !== font) {
+            typeface = font
+            changed = true
+        }
+        if (changed) {
+            needsMeasureText = true
+            needsCalculateTransform = true
+            requestLayout()
+            invalidate()
+        }
+        return changed
+    }
 
     override fun setText(
         charSequence: CharSequence?,

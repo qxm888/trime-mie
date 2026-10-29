@@ -54,6 +54,10 @@ class Key(
         bind(KeyBehavior.ASCII, keyDef.ascii)
     }
 
+    private val hasStateActions = keyActions.keys.any {
+        it == KeyBehavior.ASCII || it == KeyBehavior.PAGING || it == KeyBehavior.HAS_MENU || it == KeyBehavior.COMPOSING
+    }
+
     var edgeFlags = 0
     private val sendBindings: Boolean
 
@@ -275,6 +279,7 @@ class Key(
     fun getAction(behavior: KeyBehavior): KeyAction? = keyActions[behavior]?.takeIf { behavior != KeyBehavior.CLICK } ?: checkKeyAction(sendBindings) ?: click
 
     private fun checkKeyAction(): KeyAction? {
+        if (!hasStateActions) return null
         val rime = rime
         val asciiMode = rime.run { statusCached }.isAsciiMode
         val paging = rime.run { paging }
@@ -286,23 +291,26 @@ class Key(
             ?: keyActions[KeyBehavior.COMPOSING]?.takeIf { composing }
     }
 
-    private fun checkKeyAction(sendBindings: Boolean): KeyAction? = checkKeyAction().takeIf { sendBindings }
+    private fun checkKeyAction(sendBindings: Boolean): KeyAction? = if (sendBindings) checkKeyAction() else null
 
     val code: Int
         get() = click?.code ?: KeyEvent.KEYCODE_UNKNOWN
 
     fun getCode(behavior: KeyBehavior): Int = getAction(behavior)?.code ?: KeyEvent.KEYCODE_UNKNOWN
 
-    fun getLabel(): String = when {
-        theme.isCustom -> label
-        // 无点击动作的展示键：只显示自身标签
-        keyAction == null -> label
-        label.isNotEmpty() &&
-            keyAction == click &&
-            !keyActions.containsKey(KeyBehavior.ASCII) &&
-            !rime.run { statusCached }.let { it.isAsciiMode || it.isAsciiPunct } -> label
+    fun getLabel(): String {
+        if (theme.isCustom) return label
+        val action = keyAction
+        return when {
+            // 无点击动作的展示键：只显示自身标签
+            action == null -> label
+            label.isNotEmpty() &&
+                action == click &&
+                !keyActions.containsKey(KeyBehavior.ASCII) &&
+                !rime.run { statusCached }.let { it.isAsciiMode || it.isAsciiPunct } -> label
 
-        else -> keyAction?.getLabel(parent) ?: label // 中文狀態顯示標籤
+            else -> action.getLabel(parent) // 中文狀態顯示標籤
+        }
     }
 
     fun getPreviewText(behavior: KeyBehavior): String = when (behavior) {

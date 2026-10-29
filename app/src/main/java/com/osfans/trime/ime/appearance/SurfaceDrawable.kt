@@ -28,18 +28,24 @@ class SurfaceDrawable(
     private var effectHeight = -1f
     private var effectRadius = -1f
     private var effectDensity = -1f
+    private var effectLeft = Float.NaN
+    private var effectTop = Float.NaN
     private var shadow: EffectBitmap? = null
     private var inner: EffectBitmap? = null
     private var shader: Shader? = null
     private var borderShader: Shader? = null
+    private var glossShader: Shader? = null
     init { fill?.callback = this }
     private fun prepare(radius: Float, d: Float) {
-        if (area.width() == effectWidth && area.height() == effectHeight && radius == effectRadius && d == effectDensity) return
+        if (area.width() == effectWidth && area.height() == effectHeight && radius == effectRadius && d == effectDensity && area.left == effectLeft && area.top == effectTop) return
         effectWidth=area.width(); effectHeight=area.height(); effectRadius=radius; effectDensity=d
+        effectLeft=area.left; effectTop=area.top
+        clip.reset(); clip.addRoundRect(area, radius, radius, Path.Direction.CW)
         shadow = if (effects.shadow.enabled) effects.shadow.let { KeyEffectPainter.shadowBitmap(area.width(),area.height(),radius,it.blur*d,it.spread*d,KeyEffectPainter.color(it.color,0x22000000)) } else null
         inner = if (effects.innerShadow.enabled) effects.innerShadow.let { KeyEffectPainter.innerShadowBitmap(area.width(),area.height(),radius,it.blur*d,it.offsetX*d,it.offsetY*d,KeyEffectPainter.color(it.color,0x22000000)) } else null
         shader = if(effects.gradient.enabled) KeyEffectPainter.gradientShader(area,effects.gradient) else null
         borderShader = if(effects.borderGradient.enabled) effects.borderGradient.let { KeyEffectPainter.gradientShader(area,KeyGradient(enabled=true,startColor=it.startColor,endColor=it.endColor,angle=it.angle)) } else null
+        glossShader = if (effects.gloss) LinearGradient(0f,area.top,0f,area.bottom,Color.argb(effects.glossStrength*255/100,255,255,255),Color.TRANSPARENT,Shader.TileMode.CLAMP) else null
     }
     private fun prepareArea(): Boolean {
         val d = host.resources.displayMetrics.density
@@ -65,10 +71,10 @@ class SurfaceDrawable(
         if (!externalShadow) drawOuterShadow(canvas)
         paint.style=Paint.Style.FILL; paint.shader=null; paint.alpha=255
         val saved = canvas.save()
-        clip.reset(); clip.addRoundRect(area, radius, radius, Path.Direction.CW); canvas.clipPath(clip)
+        canvas.clipPath(clip)
         val blurred = style.blur && BackdropBlur.draw(host, canvas, area)
         fill?.let {
-            it.bounds = Rect(area.left.toInt(), area.top.toInt(), area.right.toInt(), area.bottom.toInt())
+            it.setBounds(area.left.toInt(), area.top.toInt(), area.right.toInt(), area.bottom.toInt())
             val layer = if (blurred) canvas.saveLayerAlpha(area, SurfaceAppearance.current().glassOpacity * 255 / 100) else -1
             it.draw(canvas)
             if (layer >= 0) canvas.restoreToCount(layer)
@@ -79,7 +85,7 @@ class SurfaceDrawable(
         inner?.draw(canvas,area.left,area.top,paint)
         shader?.let { paint.shader=it; paint.alpha=effects.gradient.opacity*255/100; canvas.drawRect(area,paint); paint.shader=null; paint.alpha=255 }
         if (effects.gloss) {
-            paint.shader=LinearGradient(0f,area.top,0f,area.bottom,Color.argb(effects.glossStrength*255/100,255,255,255),Color.TRANSPARENT,Shader.TileMode.CLAMP)
+            paint.shader=glossShader
             canvas.drawRect(area,paint); paint.shader=null
         }
         if (effects.noise) { paint.shader=KeyEffectPainter.noiseShader; paint.alpha=effects.noiseStrength*255/100; canvas.drawRect(area,paint); paint.shader=null; paint.alpha=255 }

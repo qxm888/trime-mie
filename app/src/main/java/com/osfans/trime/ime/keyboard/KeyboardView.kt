@@ -10,7 +10,6 @@ import android.content.Context
 import android.graphics.Canvas
 import android.view.View
 import android.widget.FrameLayout
-import androidx.core.view.children
 import com.osfans.trime.data.prefs.AppPrefs
 import com.osfans.trime.data.theme.Theme
 import com.osfans.trime.ime.broadcast.EnterKeyDisplayDelegate
@@ -32,6 +31,8 @@ class KeyboardView(
     private val keys get() = keyboard.keys
 
     private lateinit var keyShadowLayer: KeyShadowLayer
+    private val keyViews = ArrayList<KeyView>()
+    internal val hasKeyShadows get() = com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom).effects.shadow.enabled
 
     internal val labelEnter: String
         get() = enterKeyDisplay.keyLabel
@@ -56,12 +57,14 @@ class KeyboardView(
     }
 
     private fun buildKeyViews() {
+        keyViews.clear()
         for (i in childCount - 1 downTo 0) {
             if (getChildAt(i) is KeyView) removeViewAt(i)
         }
 
         keys.forEachIndexed { index, key ->
             val keyView = createKeyView(index, key)
+            keyViews.add(keyView)
             addView(keyView)
         }
     }
@@ -101,15 +104,16 @@ class KeyboardView(
     }
 
     fun invalidateAllKeys() {
-        children.forEach { it.invalidate() }
+        keyViews.forEach { it.invalidate() }
+        invalidateKeyShadows()
     }
 
     fun invalidateKeyShadows() {
-        if (::keyShadowLayer.isInitialized) keyShadowLayer.invalidate()
+        if (::keyShadowLayer.isInitialized && hasKeyShadows) keyShadowLayer.invalidate()
     }
 
     fun invalidateKeyByIndex(index: Int) {
-        children.firstOrNull { it is KeyView && it.id == index }?.invalidate()
+        keyViews.getOrNull(index)?.invalidate()
     }
 
     val isCapsOn: Boolean
@@ -136,6 +140,7 @@ private class KeyShadowLayer(
     }
 
     override fun onDraw(canvas: Canvas) {
+        if (!host.hasKeyShadows) return
         for (i in 0 until host.childCount) {
             val child = host.getChildAt(i)
             if (child is KeyView && child.visibility == View.VISIBLE) {

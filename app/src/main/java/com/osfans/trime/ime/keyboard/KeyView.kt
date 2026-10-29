@@ -10,15 +10,12 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
-import android.graphics.RadialGradient
 import android.graphics.Rect
 import android.graphics.RectF
-import android.graphics.Shader
 import android.graphics.drawable.GradientDrawable
 import android.view.KeyEvent
 import android.view.animation.DecelerateInterpolator
@@ -38,7 +35,6 @@ import com.osfans.trime.ime.popup.PopupAction
 import com.osfans.trime.ime.popup.PopupDelegate
 import com.osfans.trime.util.sp
 import splitties.dimensions.dp
-import timber.log.Timber
 import kotlin.math.hypot
 
 @SuppressLint("ClickableViewAccessibility", "ViewConstructor")
@@ -60,10 +56,12 @@ class KeyView(
     private val deletedTextBuffer = ArrayDeque<String>()
 
     private var voiceHeld = false
-    private fun voiceLongPress(): Boolean = key.longClick?.code == KeyEvent.KEYCODE_VOICE_ASSIST ||
-        key.getCode(KeyBehavior.CLICK) == KeyEvent.KEYCODE_VOICE_ASSIST ||
-        (service.voiceInput.enabled() && key.allowDefaultVoice && key.getCode(KeyBehavior.CLICK) == KeyEvent.KEYCODE_SPACE &&
-            !key.hasAction(KeyBehavior.LONG_CLICK) && key.popup.isEmpty())
+    private fun voiceLongPress(): Boolean {
+        val code = key.getCode(KeyBehavior.CLICK)
+        return key.longClick?.code == KeyEvent.KEYCODE_VOICE_ASSIST || code == KeyEvent.KEYCODE_VOICE_ASSIST ||
+            (code == KeyEvent.KEYCODE_SPACE && key.allowDefaultVoice && !key.hasAction(KeyBehavior.LONG_CLICK) &&
+                key.popup.isEmpty() && service.voiceInput.enabled())
+    }
 
     private var keyPressed = false
     override fun isPressed(): Boolean = keyPressed
@@ -76,9 +74,12 @@ class KeyView(
     }
     private val labelMetrics = Paint.FontMetrics()
     private val symbolMetrics = Paint.FontMetrics()
+    private val backgroundStyle = com.osfans.trime.ime.appearance.KeyBackgroundStyle()
+    private lateinit var frameAppearance: com.osfans.trime.ime.appearance.SurfaceAppearanceConfig
 
     private val effectPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val effectBounds = RectF()
+    private val effectShaders = com.osfans.trime.ime.appearance.KeyEffectShaders(resources.displayMetrics.density)
     private var shadowCache: EffectBitmap? = null
     private var shadowCacheKey: ShadowCacheKey? = null
     private var innerShadowCache: EffectBitmap? = null
@@ -147,7 +148,8 @@ class KeyView(
         hasPopup = key.popup.isNotEmpty()
 
         onPress = {
-            if (key.getCode(KeyBehavior.CLICK) == KeyEvent.KEYCODE_VOICE_ASSIST) {
+            val code = key.getCode(KeyBehavior.CLICK)
+            if (code == KeyEvent.KEYCODE_VOICE_ASSIST) {
                 voiceHeld = true
                 service.voiceInput.start()
             }
@@ -155,7 +157,7 @@ class KeyView(
             setPressedState(true)
             InputStats.onKeyHeat(key.heatLabel())
             key.importedStyle?.let { com.osfans.trime.data.baiduskin.BdsSound.currentPath = it.sound }
-            try { key.getCode(KeyBehavior.CLICK).let { keyboardActionListener.onPress(it) } }
+            try { keyboardActionListener.onPress(code) }
             finally { com.osfans.trime.data.baiduskin.BdsSound.currentPath = "" }
             showPopupPreview()
         }
@@ -169,7 +171,6 @@ class KeyView(
                 if (keyboard.firstPressedKeyIndex == id) keyboard.firstPressedKeyIndex = -1
                 return@release
             }
-            Timber.d("KeyView release: label=${key.getLabel()}, behavior=$behavior, fromLongPress=$isFromLongPress")
             if (isFromLongPress) {
                 if (hasPopup) {
                     val triggerAction = PopupAction.TriggerAction(id)
@@ -271,6 +272,7 @@ class KeyView(
     private var paintedBackground: android.graphics.drawable.Drawable? = null
     private val backgroundClip = android.graphics.Path()
     private val backgroundClipBounds = android.graphics.RectF()
+    private var backgroundClipRadius = Float.NaN
     override fun verifyDrawable(who: android.graphics.drawable.Drawable): Boolean =
         who === paintedBackground || who === key.customBgDrawable || super.verifyDrawable(who)
 
@@ -317,7 +319,7 @@ class KeyView(
         if (effects.pressScale <= 0f && effects.pressSink <= 0f && effects.pressDarken <= 0) {
             pressProgress = target
             applyPressTransform(target, effects)
-            keyboardView.invalidateKeyShadows()
+            if (effects.shadow.enabled) keyboardView.invalidateKeyShadows()
             return
         }
         pressAnimator?.cancel()
@@ -327,7 +329,7 @@ class KeyView(
             addUpdateListener {
                 pressProgress = it.animatedValue as Float
                 applyPressTransform(pressProgress, effects)
-                keyboardView.invalidateKeyShadows()
+                if (effects.shadow.enabled) keyboardView.invalidateKeyShadows()
             }
         }
         pressAnimator = animator
@@ -357,7 +359,6 @@ class KeyView(
     }
 
     private fun processKeyAction(action: KeyAction, behavior: KeyBehavior) {
-        Timber.d("processKeyAction: label=${key.getLabel()}, code=${action.code}, type=$behavior")
 
         if (action.isModifierKey) {
             keyboard.clickModifierKey(
@@ -462,10 +463,11 @@ class KeyView(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        frameAppearance = SurfaceAppearance.current(theme.isCustom)
 
         drawBackground(canvas, key)
 
-        val drawText = com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom).keys.blur || key.importedStyle == null || key.hasWholeKeyBackground
+        val drawText = frameAppearance.keys.blur || key.importedStyle == null || key.hasWholeKeyBackground
         val label = key.getLabel().let {
             if (it == "enter_labels") keyboardView.labelEnter else it
         }
@@ -489,7 +491,7 @@ class KeyView(
     private val surfaceBorderBounds = android.graphics.RectF()
 
     private fun drawBackground(canvas: Canvas, k: Key) {
-        val config = SurfaceAppearance.current(theme.isCustom)
+        val config = frameAppearance
         val surface = config.keys
         val effects = config.effects
         val corner = (surface.radius ?: k.roundCorner).coerceAtLeast(0f)
@@ -504,8 +506,9 @@ class KeyView(
         if (bg != null && bg.callback !== this) bg.callback = this
 
         if (bg is GradientDrawable) {
-            bg.cornerRadius = cornerPx
-            if (surface.overridesBorder) bg.setStroke(0, 0) else k.keyBorder.takeIf { it > 0 }?.let { bg.setStroke(dp(it), k.getBorderColor()) }
+            backgroundStyle.apply(bg, cornerPx,
+                if (surface.overridesBorder) 0 else dp(k.keyBorder.coerceAtLeast(0)),
+                if (surface.overridesBorder || k.keyBorder <= 0) 0 else k.getBorderColor())
         }
 
         bg?.setBounds(
@@ -516,11 +519,17 @@ class KeyView(
         )
         val body = effectBounds
         body.set(paddingLeft.toFloat(), paddingTop.toFloat(), (width - paddingRight).toFloat(), (height - paddingBottom).toFloat())
+        effectShaders.update(body, effects)
         val saved = canvas.save()
-        backgroundClipBounds.set(body)
-        backgroundClip.reset()
-        backgroundClip.addRoundRect(body, cornerPx, cornerPx, Path.Direction.CW)
-        canvas.clipPath(backgroundClip)
+        if (backgroundClipBounds != body || backgroundClipRadius != cornerPx) {
+            backgroundClipBounds.set(body)
+            backgroundClipRadius = cornerPx
+            backgroundClip.reset()
+            backgroundClip.addRoundRect(body, cornerPx, cornerPx, Path.Direction.CW)
+        }
+        // Plain rounded color drawables already clip themselves. Image/overlay effects still need the mask.
+        val overlay = (k.customBgDrawable != null && k.importedStyle == null || key.hasWholeKeyBackground) && k.isPressed
+        if (bg !is GradientDrawable || surface.blur || effects.customized || overlay) canvas.clipPath(backgroundClip)
         val blurred = surface.blur && com.osfans.trime.ime.appearance.BackdropBlur.draw(this, canvas, body)
         val layer = if (blurred) canvas.saveLayerAlpha(body, config.glassOpacity * 255 / 100) else -1
         bg?.draw(canvas)
@@ -539,7 +548,7 @@ class KeyView(
         }
 
         // image skins have no pressed state of their own — overlay one
-        if ((k.customBgDrawable != null && k.importedStyle == null || key.hasWholeKeyBackground) && k.isPressed) {
+        if (overlay) {
             canvas.drawColor(0x44FFFFFF)
         }
         if (effects.ripple) drawRipple(canvas, body, effects)
@@ -556,19 +565,8 @@ class KeyView(
         }
         if (effects.borderGradient.enabled) {
             val stroke = dpf(effects.borderGradient.width).coerceAtLeast(0.5f)
-            val border = RectF(backgroundClipBounds)
-            border.inset(stroke / 2, stroke / 2)
-            val shader = KeyEffectPainter.gradientShader(
-                border,
-                KeyGradient(
-                    enabled = true,
-                    type = "linear",
-                    startColor = effects.borderGradient.startColor,
-                    endColor = effects.borderGradient.endColor,
-                    angle = effects.borderGradient.angle,
-                    opacity = 100,
-                ),
-            )
+            val border = effectShaders.borderBounds
+            val shader = effectShaders.border
             if (shader != null) {
                 effectPaint.reset()
                 effectPaint.isAntiAlias = true
@@ -596,11 +594,11 @@ class KeyView(
         val radiusPx = dpf((config.keys.radius ?: key.roundCorner).coerceAtLeast(0f))
         val blurPx = dpf(shadow.blur)
         val spreadPx = dpf(shadow.spread)
-        val cacheKey = ShadowCacheKey(bodyWidth, bodyHeight, radiusPx, blurPx, spreadPx, color)
-        if (shadowCacheKey != cacheKey) {
+        val previous = shadowCacheKey
+        if (previous == null || previous.width != bodyWidth || previous.height != bodyHeight || previous.radius != radiusPx || previous.blur != blurPx || previous.spread != spreadPx || previous.color != color) {
             shadowCache?.bitmap?.recycle()
             shadowCache = KeyEffectPainter.shadowBitmap(bodyWidth, bodyHeight, radiusPx, blurPx, spreadPx, color)
-            shadowCacheKey = cacheKey
+            shadowCacheKey = ShadowCacheKey(bodyWidth, bodyHeight, radiusPx, blurPx, spreadPx, color)
         }
         val bitmap = shadowCache ?: return
         effectPaint.reset()
@@ -614,7 +612,7 @@ class KeyView(
     }
 
     private fun drawGradient(canvas: Canvas, body: RectF, radius: Float, gradient: KeyGradient) {
-        val shader = KeyEffectPainter.gradientShader(body, gradient) ?: return
+        val shader = effectShaders.gradient ?: return
         effectPaint.reset()
         effectPaint.isAntiAlias = true
         effectPaint.shader = shader
@@ -629,10 +627,7 @@ class KeyView(
         if (Color.alpha(color) == 0) return
         effectPaint.reset()
         effectPaint.isAntiAlias = true
-        effectPaint.shader = LinearGradient(
-            body.left, body.bottom - depth, body.left, body.bottom,
-            Color.TRANSPARENT, color, Shader.TileMode.CLAMP,
-        )
+        effectPaint.shader = effectShaders.edge(depth)
         canvas.drawRect(body.left, body.bottom - depth, body.right, body.bottom, effectPaint)
     }
 
@@ -645,11 +640,11 @@ class KeyView(
         val blurPx = dpf(shadow.blur)
         val offsetX = dpf(shadow.offsetX)
         val offsetY = dpf(shadow.offsetY)
-        val cacheKey = InnerShadowCacheKey(widthPx, heightPx, radius, blurPx, offsetX, offsetY, color)
-        if (innerShadowCacheKey != cacheKey) {
+        val previous = innerShadowCacheKey
+        if (previous == null || previous.width != widthPx || previous.height != heightPx || previous.radius != radius || previous.blur != blurPx || previous.offsetX != offsetX || previous.offsetY != offsetY || previous.color != color) {
             innerShadowCache?.bitmap?.recycle()
             innerShadowCache = KeyEffectPainter.innerShadowBitmap(widthPx, heightPx, radius, blurPx, offsetX, offsetY, color)
-            innerShadowCacheKey = cacheKey
+            innerShadowCacheKey = InnerShadowCacheKey(widthPx, heightPx, radius, blurPx, offsetX, offsetY, color)
         }
         val bitmap = innerShadowCache ?: return
         effectPaint.reset()
@@ -660,13 +655,9 @@ class KeyView(
 
     private fun drawGloss(canvas: Canvas, body: RectF, radius: Float, strength: Int) {
         if (strength <= 0) return
-        val alpha = (strength * 255 / 100).coerceIn(0, 255)
         effectPaint.reset()
         effectPaint.isAntiAlias = true
-        effectPaint.shader = LinearGradient(
-            body.left, body.top, body.left, body.top + body.height() * 0.58f,
-            KeyEffectPainter.withAlpha(Color.WHITE, alpha), Color.TRANSPARENT, Shader.TileMode.CLAMP,
-        )
+        effectPaint.shader = effectShaders.gloss
         canvas.drawRoundRect(body, radius, radius, effectPaint)
     }
 
@@ -686,15 +677,11 @@ class KeyView(
         val maxRadius = hypot(body.width(), body.height()) * 0.65f
         val radius = maxRadius * rippleProgress
         if (radius <= 0f) return
-        val base = KeyEffectPainter.color(effects.rippleColor, 0x33FFFFFF)
         val fade = ((1f - rippleProgress) * 255).toInt()
         effectPaint.reset()
         effectPaint.isAntiAlias = true
-        effectPaint.shader = RadialGradient(
-            cx, cy, radius,
-            intArrayOf(KeyEffectPainter.withAlpha(base, fade), KeyEffectPainter.withAlpha(base, 0)),
-            floatArrayOf(0f, 1f), Shader.TileMode.CLAMP,
-        )
+        effectPaint.shader = effectShaders.ripple(cx, cy, radius)
+        effectPaint.alpha = fade
         canvas.drawCircle(cx, cy, radius, effectPaint)
     }
 
@@ -764,7 +751,7 @@ class KeyView(
     }
 
     private fun applyTextShadow(paint: Paint) {
-        val shadow = SurfaceAppearance.current(theme.isCustom).effects.textShadow
+        val shadow = frameAppearance.effects.textShadow
         if (!shadow.enabled) {
             paint.clearShadowLayer()
             return

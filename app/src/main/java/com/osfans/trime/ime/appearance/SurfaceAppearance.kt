@@ -187,14 +187,14 @@ object SurfaceAppearance {
     private var cacheKey: Pair<String, String>? = null
     private var cached = SurfaceAppearanceConfig()
     private var layoutVersion = -1L
-    private var layoutId = ""
+    private var runtimeLayoutId = ""
     private var layout: com.osfans.trime.data.keymap.CustomKeyboards.CustomKeyboard? = null
     fun currentLayout(id: String = com.osfans.trime.ime.keyboard.KeyboardWindow.lastAttachedId): com.osfans.trime.data.keymap.CustomKeyboards.CustomKeyboard? {
-        val resolved = com.osfans.trime.data.keymap.CustomKeyboards.resolveId(id)
         val version = com.osfans.trime.data.keymap.CustomKeyboards.version
-        if (layoutVersion != version || layoutId != resolved) {
+        if (layoutVersion != version || runtimeLayoutId != id) {
+            val resolved = com.osfans.trime.data.keymap.CustomKeyboards.resolveId(id)
             layout = com.osfans.trime.data.keymap.CustomKeyboards.get(resolved)
-            layoutId = resolved; layoutVersion = version
+            layoutVersion = version; runtimeLayoutId = id
         }
         return layout
     }

@@ -230,6 +230,7 @@ class InputView(
         val enabled = com.osfans.trime.ime.appearance.SurfaceAppearance.unifiedBackground(theme.isCustom)
         val background = keyboardWindow.currentBackground.takeIf { enabled }
         keyboardBackground.imageDrawable = background?.drawable(context, resources.displayMetrics.widthPixels) ?: scope.drawable("keyboard_background")
+        com.osfans.trime.ime.appearance.BackdropBlur.invalidateBackground(keyboardView)
         val path = background?.takeIf { it.type == com.osfans.trime.data.keymap.CustomBackground.Type.VIDEO }?.image
         if (path == unifiedVideoPath && unifiedVideo != null) return
         unifiedVideo?.let { it.release(); (it.parent as? android.view.ViewGroup)?.removeView(it) }
@@ -916,7 +917,7 @@ class InputView(
         updateUnifiedBackground()
         if (com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom).needsBlur) {
             val root = keyboardView as android.view.ViewGroup
-            com.osfans.trime.ime.appearance.BackdropBlur(root) { canvas ->
+            com.osfans.trime.ime.appearance.BackdropBlur(root, { com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom) }) { canvas ->
                 com.osfans.trime.ime.appearance.BackdropBlur.drawLayer(root, keyboardBackground, canvas) { keyboardBackground.draw(it) }
                 unifiedVideo?.let { video ->
                     com.osfans.trime.ime.appearance.BackdropBlur.drawLayer(root, video, canvas) { video.drawBlurFrame(it) }

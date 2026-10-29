@@ -270,7 +270,11 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
         if (childCount == 0) return
         val effects = (config?.effects ?: com.osfans.trime.ime.appearance.SurfaceAppearance.current(scope.theme.isCustom).effectiveToolbarEffects).sanitized()
         val scale = if(isPressed) 1f-effects.pressScale/100f else 1f
-        animate().scaleX(scale).scaleY(scale).translationY(if(isPressed) effects.pressSink*resources.displayMetrics.density else 0f).setDuration(effects.animationMs.toLong()).start()
+        val sink = if(isPressed) effects.pressSink*resources.displayMetrics.density else 0f
+        animate().cancel()
+        if (scaleX != scale || scaleY != scale || translationY != sink) {
+            animate().scaleX(scale).scaleY(scale).translationY(sink).setDuration(effects.animationMs.toLong()).start()
+        }
         val shadow=effects.textShadow
         label.setShadowLayer(if(shadow.enabled) shadow.blur*resources.displayMetrics.density else 0f,shadow.offsetX*resources.displayMetrics.density,shadow.offsetY*resources.displayMetrics.density,com.osfans.trime.ime.appearance.KeyEffectPainter.color(shadow.color,0x55000000))
     }
