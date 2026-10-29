@@ -25,6 +25,7 @@ class ButtonsBarUi(
     private val scope: ThemeScope,
     private val onButtonClick: ((String) -> Unit)? = null,
     initialToolBar: ToolBar = ToolbarOverrides.forKeyboard(scope.theme),
+    private val allButtons: Boolean = false,
 ) : Ui {
     private val theme: Theme get() = scope.theme
     private val floating = com.osfans.trime.ime.keyboard.KeyboardPrefs.run { ctx.isFloatingEffective() }
@@ -80,13 +81,25 @@ class ButtonsBarUi(
 
     fun applyToolbar(config: ToolBar) {
         toolBar = config
-        firstButton = config.buttons.firstOrNull()?.let { toolButton(it) }
+        firstButton = if (allButtons) null else config.buttons.firstOrNull()?.let { toolButton(it) }
+        if (allButtons) {
+            root.flexDirection = FlexDirection.ROW
+            root.justifyContent = when (config.alignment) {
+                "center" -> JustifyContent.CENTER
+                "right" -> JustifyContent.FLEX_END
+                "distributed" -> JustifyContent.SPACE_BETWEEN
+                else -> JustifyContent.FLEX_START
+            }
+        }
         root.removeAllViews()
-        config.buttons.drop(1).forEach { buttonConfig ->
+        val primary = if (config.primaryVisible) listOf(config.primaryButton ?: ToolBar.Button(
+            action = "__mie_menu", foreground = ToolBar.Button.Foreground(style="•••"))) else emptyList()
+        val buttons = if (allButtons) primary + config.buttons.asReversed() else config.buttons.drop(1)
+        buttons.forEachIndexed { index, buttonConfig ->
             val button = toolButton(buttonConfig)
             val size = getButtonSize(buttonConfig)
             root.addView(button, FlexboxLayout.LayoutParams(size.first, size.second).apply {
-                marginEnd = ctx.dp(toolBar.buttonSpacing)
+                marginEnd = if (allButtons && index == buttons.lastIndex) 0 else ctx.dp(toolBar.buttonSpacing)
                 if (floating) flexShrink = 0f
             })
         }

@@ -14,5 +14,7 @@ object LayoutTypography {
     fun typeface(role: String, custom: Boolean) = if (custom)
         com.osfans.trime.data.theme.FontOverrides.fromSelection(spec(role)?.font.orEmpty()) else null
     fun size(role: String, fallback: Float): Float =
-        spec(role)?.size?.takeIf { it.isFinite() && it in 1f..200f } ?: fallback
+        (if (CustomKeyboards.mode == CustomKeyboards.MODE_CUSTOM) spec(role)?.size
+        else com.osfans.trime.data.theme.FontOverrides.size(role))
+            ?.takeIf { it.isFinite() && it in 1f..200f } ?: fallback
 }

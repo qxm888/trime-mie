@@ -8,6 +8,7 @@ import android.widget.Toast
 import com.osfans.trime.ime.core.TrimeInputMethodService
 import com.osfans.trime.ime.voice.VoiceInput
 import kotlinx.coroutines.*
+import androidx.lifecycle.lifecycleScope
 
 /** One held gesture owns its recorder, engine and editor. Old callbacks cannot affect a new one. */
 class BuiltInVoiceController(private val service: TrimeInputMethodService) : VoiceInput {
@@ -22,12 +23,54 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
         var engine: AsrEngine? = null
         var recorder: AudioRecorder? = null
         var held = true
+        var recorderStarted = false
+        var modelLoading = false
+        var level = 0f
         var finished = false
         var watchdog: Job? = null
         val id = android.os.SystemClock.elapsedRealtime()
         var bytes = 0L
+        var preparation: Job? = null
+        var preview = false
+        var previewText = ""
+        var replacedSelection = ""
+        var partialLogged = false
+        val streaming = com.osfans.trime.ime.voice.VoiceSettings.streaming
     }
     private var current: Session? = null
+    val isActive get() = current != null
+    val ownsComposition get() = current?.preview == true
+    private fun sameEditor(session: Session) = service.currentInputConnection === session.input &&
+        service.currentInputEditorInfo?.packageName == session.packageName
+
+    private fun publish(session: Session) {
+        if (current !== session || session.finished) return
+        val phase = when {
+            session.held && session.recorderStarted -> com.osfans.trime.ime.voice.VoiceRecordingState.Phase.RECORDING
+            session.modelLoading -> com.osfans.trime.ime.voice.VoiceRecordingState.Phase.LOADING_MODEL
+            session.held -> com.osfans.trime.ime.voice.VoiceRecordingState.Phase.CONNECTING
+            else -> com.osfans.trime.ime.voice.VoiceRecordingState.Phase.PROCESSING
+        }
+        service.updateVoicePhase(phase,session.level)
+    }
+
+    private fun clearPreview(session: Session) {
+        if (session.preview && sameEditor(session)) {
+            session.input.setComposingText(session.replacedSelection, 1)
+            session.input.finishComposingText()
+        }
+        session.preview = false
+    }
+
+    fun selectionChanged(start: Int, end: Int, composingStart: Int, composingEnd: Int) {
+        val session = current ?: return
+        if (!session.preview || session.finished) return
+        if (start != end || composingStart < 0 || start !in composingStart..composingEnd) {
+            session.input.finishComposingText()
+            session.preview = false
+            finish(session, "idle")
+        }
+    }
     var lastStatus = "idle"
         private set
     override fun enabled() = com.osfans.trime.ime.voice.VoiceSettings.enabled
@@ -50,18 +93,41 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
         val session = Session(input, service.currentInputEditorInfo?.packageName.orEmpty())
         current = session
         lastStatus = "connecting"
+        publish(session)
         com.osfans.trime.util.DiagnosticLog.event("voice", "start", "id=${session.id} vendor=${if (mock) "mock" else AsrSettings.selectedVendor}")
-        if (!mock) service.postRimeJob { commitComposition() }
+        if (!mock) session.preparation = service.postRimeJob { commitComposition() }
         val listener = object : AsrListener {
+            override fun onPartial(text: String) { main.post {
+                if (text.isBlank()) return@post
+                service.lifecycleScope.launch {
+                    session.preparation?.join()
+                    if (current !== session || session.finished || !sameEditor(session) || !session.streaming || text == session.previewText) return@launch
+                    if (!session.preview) session.replacedSelection = session.input.getSelectedText(0)?.toString().orEmpty()
+                    if (session.input.setComposingText(text, 1)) {
+                        session.preview = true
+                        session.previewText = text
+                        if (!session.partialLogged) {
+                            session.partialLogged = true
+                            com.osfans.trime.util.DiagnosticLog.event("voice", "first_partial", "id=${session.id} chars=${text.length} ms=${android.os.SystemClock.elapsedRealtime()-session.id}")
+                        }
+                    }
+                }
+            } }
             override fun onFinal(text: String) { main.post {
-                if (current !== session || session.finished) return@post
+                service.lifecycleScope.launch {
+                session.preparation?.join()
+                if (current !== session || session.finished) return@launch
                 session.finished = true
                 com.osfans.trime.util.DiagnosticLog.event("voice", "final", "id=${session.id} chars=${text.length} ms=${android.os.SystemClock.elapsedRealtime() - session.id}")
                 if (service.currentInputConnection === session.input &&
                     service.currentInputEditorInfo?.packageName == session.packageName) {
-                    if (text.isNotBlank()) service.commitText(text) else notice("未识别到内容")
+                    if (text.isNotBlank()) {
+                        session.preview = false
+                        service.commitText(text)
+                    } else { clearPreview(session); notice("未识别到内容") }
                 }
                 finish(session, "idle")
+                }
             } }
             override fun onError(message: String) { main.post {
                 if (current !== session || session.finished) return@post
@@ -72,8 +138,8 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
             } }
         }
         val engine = if (mock) MockEngine(scope, listener) else AsrEngineFactory.create(scope, listener,
-            onModelLoadStart = { main.post { if (current === session && !session.finished) { lastStatus = "loading_model"; notice("正在加载本地模型，首次加载可能较慢…") } } },
-            onModelLoadDone = { main.post { if (current === session && !session.finished) lastStatus = "recognizing" } },
+            onModelLoadStart = { main.post { if (current === session && !session.finished) { session.modelLoading = true; lastStatus = "loading_model"; publish(session); notice("正在加载本地模型，首次加载可能较慢…") } } },
+            onModelLoadDone = { main.post { if (current === session && !session.finished) { session.modelLoading = false; lastStatus = if(session.held) "recording" else "recognizing"; publish(session) } } },
         )
         if (engine == null) { finish(session, "error"); notice("识别引擎不可用，请重新选择"); return }
         session.engine = engine
@@ -82,10 +148,10 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
             if (!mock) {
                 session.recorder = AudioRecorder(service, scope, { listener.onError(it) },
                     onStarted = { main.post {
-                        if (current === session && session.held && !session.finished) service.updateVoiceRecording(true)
+                        if (current === session && session.held && !session.finished) { session.recorderStarted = true; publish(session) }
                     } },
                     onLevel = { level -> main.post {
-                        if (current === session && session.held && !session.finished) service.updateVoiceRecording(true, level)
+                        if (current === session && session.held && !session.finished) { session.level = level; publish(session) }
                     } },
                 ) { pcm -> session.bytes += pcm.size; engine.feed(pcm) }
                 if (session.recorder?.start() != true) { listener.onError("无法开始录音，请检查麦克风权限"); return }
@@ -98,7 +164,7 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
         val session = current ?: return
         if (!session.held || session.finished) return
         session.held = false
-        service.updateVoiceRecording(false)
+        publish(session)
         lastStatus = "processing"
         com.osfans.trime.util.DiagnosticLog.event("voice", "release", "id=${session.id} bytes=${session.bytes}")
         session.watchdog?.cancel()
@@ -118,6 +184,8 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
         finish(session, "error")
     } }
     private fun finish(session: Session, status: String) {
+        clearPreview(session)
+        session.finished = true
         com.osfans.trime.util.DiagnosticLog.event("voice", "finish", "id=${session.id} status=$status")
         session.held = false
         session.watchdog?.cancel()

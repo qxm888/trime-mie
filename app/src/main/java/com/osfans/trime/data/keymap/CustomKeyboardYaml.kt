@@ -28,6 +28,8 @@ object CustomKeyboardYaml {
         val typography: Map<String, FontSpec> = emptyMap(),
         val toolbar: List<ToolbarOverrides.Entry> = emptyList(),
         val toolbarBackground: CustomBackground? = null,
+        val toolbarAlignment: String = "legacy",
+        val rowAlignments: Map<Int,String> = emptyMap(),
         val allKeysBackground: String = "",
         val importedSkin: ImportedSkin? = null,
         val importedHeightPercent: Int = 100,
@@ -40,7 +42,7 @@ object CustomKeyboardYaml {
     @Serializable private data class KeyInfo(
         val row: Int = 1, val spacer: Boolean = false,
         val skinId: String = "", val skin: ImportedKeyStyle? = null,
-        val exportedWidth: Float = 0f, val exportedHeight: Int = 0, val exportedBackground: String = "",
+        val originalWidth: Float = 0f, val exportedWidth: Float = 0f, val exportedHeight: Int = 0, val exportedBackground: String = "",
         val background: CustomBackground? = null,
         val appearance: Map<String, String> = emptyMap(),
         val exportedAppearance: Map<String, String> = emptyMap(),
@@ -84,23 +86,26 @@ object CustomKeyboardYaml {
         layouts.forEach { (id, kb) ->
             val keys = mutableListOf<JsonElement>()
             kb.rows.forEachIndexed { rowIndex, row ->
-                row.keys.forEach { key ->
+                ButtonAlignment.slots(row).forEach slot@{ (key,width) ->
+                    if (key == null) {
+                        keys += obj("width" to JsonPrimitive(width),"height" to JsonPrimitive(row.height),
+                            "mie" to json.encodeToJsonElement(KeyInfo.serializer(),KeyInfo(rowIndex+1,spacer=true)))
+                        return@slot
+                    }
                     val effective = KeyAppearance.merge(kb.keyAppearance, key.appearance)
                     val bg = kb.allKeysBackground.ifBlank { effective.keyBackColor.ifEmpty { background(key.resolvedBackground()) } }
-                    val data = linkedMapOf<String, JsonElement>("label" to string(key.label), "width" to JsonPrimitive(key.width),
+                    val data = linkedMapOf<String, JsonElement>("label" to string(key.label), "width" to JsonPrimitive(width),
                         "height" to JsonPrimitive(row.height), "key_back_color" to string(bg))
                     KeyAppearance.values(effective).filter { (name, value) -> name in KeyAppearance.fields && name != "keyBackColor" && value != JsonNull }.forEach { (name, value) ->
                         data[KeyAppearance.yamlName(name)] = value
                     }
                     behaviors.forEach { (behavior, yamlName) -> key.bindings[behavior]?.let { data[yamlName] = string(it) } }
                     data["mie"] = json.encodeToJsonElement(KeyInfo.serializer(), KeyInfo(rowIndex + 1, skinId = key.skinId, skin = key.skin,
-                        exportedWidth = key.width, exportedHeight = row.height, exportedBackground = bg,
+                        originalWidth = key.width, exportedWidth = width, exportedHeight = row.height, exportedBackground = bg,
                         background = key.resolvedBackground(), appearance = KeyAppearance.textValues(key.appearance), exportedAppearance = KeyAppearance.textValues(effective) + ("keyBackColor" to bg)))
                     keys += JsonObject(data)
                 }
-                val rest = 100f - row.keys.sumOf { it.width.toDouble() }.toFloat()
-                if (row.keys.isEmpty() || rest > 0.5f) keys += obj("width" to JsonPrimitive(if (row.keys.isEmpty()) 100f else rest),
-                    "height" to JsonPrimitive(row.height), "mie" to json.encodeToJsonElement(KeyInfo.serializer(), KeyInfo(rowIndex + 1, spacer = true)))
+
             }
             val layout = CustomKeyboards.run { kb.toTextKeyboard() }
             val portraitHeight = if (kb.importedSkin != null) 240 * kb.importedHeightPercent / 100 else layout.keyboardHeight
@@ -114,7 +119,7 @@ object CustomKeyboardYaml {
                 "ascii_keyboard" to string(layout.asciiKeyboard), "landscape_keyboard" to string(layout.landscapeKeyboard),
                 "landscape_split_percent" to JsonPrimitive(layout.landscapeSplitPercent), "label_transform" to string(layout.labelTransform.name.lowercase()),
                 "keyboard_back_color" to string(bg),
-                "mie" to json.encodeToJsonElement(KeyboardInfo.serializer(), KeyboardInfo(surfaceAppearance=kb.surfaceAppearance, unifiedBackground=kb.unifiedBackground, typography=kb.typography, toolbar=kb.toolbar, toolbarBackground=kb.toolbarBackground,
+                "mie" to json.encodeToJsonElement(KeyboardInfo.serializer(), KeyboardInfo(toolbarAlignment=kb.toolbarAlignment, rowAlignments=kb.rows.mapIndexed { index,row -> index+1 to row.alignment }.toMap(), surfaceAppearance=kb.surfaceAppearance, unifiedBackground=kb.unifiedBackground, typography=kb.typography, toolbar=kb.toolbar, toolbarBackground=kb.toolbarBackground,
                     allKeysBackground = kb.allKeysBackground, importedSkin = kb.importedSkin, importedHeightPercent = kb.importedHeightPercent, exportedHeight = portraitHeight, exportedBackground = bg, exportedRowSpacing = kb.rowSpacing, keyAppearance = KeyAppearance.textValues(kb.keyAppearance), options = kb.options)), "keys" to JsonArray(keys))
         }
         val first = layouts.values.first()
@@ -186,7 +191,7 @@ object CustomKeyboardYaml {
                 require(extra.row in 1..128) { "mie.row 行号须为1–128" }
                 val height = key.pairs["height"]?.int ?: 60
                 require(height in 24..160) { "行高须为24–160dp" }
-                val row = grouped.getOrPut(extra.row) { CustomRow(height = height) }
+                val row = grouped.getOrPut(extra.row) { CustomRow(height = height, alignment = ButtonAlignment.normalized(info.rowAlignments[extra.row] ?: "left")) }
                 if (extra.spacer) return@keyLoop
                 val width = key.pairs["width"]?.float ?: 10f
                 require(width.isFinite() && width > 0f && width <= 100f) { "按键宽度须大于0且不超过100" }
@@ -203,7 +208,7 @@ object CustomKeyboardYaml {
                     if (extra.exportedAppearance[name] != text) appearance[name] = text
                 }
                 if (width != extra.exportedWidth || height != extra.exportedHeight) changedGeometry = true
-                row.keys += CustomKey(label = key.pairs["label"]?.string.orEmpty(), width = width, bindings = bindings,
+                row.keys += CustomKey(label = key.pairs["label"]?.string.orEmpty(), width = if(width == extra.exportedWidth && extra.originalWidth.isFinite() && extra.originalWidth > 0 && extra.originalWidth <= 100) extra.originalWidth else width, bindings = bindings,
                     background = if (bg == extra.exportedBackground) extra.background ?: background(bg) else background(bg), skinId = extra.skinId, skin = extra.skin.takeIf { bg == extra.exportedBackground }, appearance = KeyAppearance.parse(appearance))
             }
             require(grouped.isNotEmpty()) { "键盘不能没有行" }
@@ -237,7 +242,7 @@ object CustomKeyboardYaml {
                 uppercaseLabels = node.pairs["label_transform"]?.string?.let { it.equals("uppercase", true) } ?: info.options.uppercaseLabels,
             ).validated()
             result[id] = CustomKeyboard(name = node.pairs["name"]?.string ?: id, rows = rows, rowSpacing = spacing,
-                surfaceAppearance=info.surfaceAppearance, unifiedBackground=info.unifiedBackground, typography=info.typography, background = background(bg), toolbar = info.toolbar.toMutableList(), toolbarBackground = info.toolbarBackground, allKeysBackground = info.allKeysBackground,
+                toolbarAlignment=info.toolbarAlignment, surfaceAppearance=info.surfaceAppearance, unifiedBackground=info.unifiedBackground, typography=info.typography, background = background(bg), toolbar = info.toolbar.toMutableList(), toolbarBackground = info.toolbarBackground, allKeysBackground = info.allKeysBackground,
                 importedSkin = skin, importedHeightPercent = percent, keyAppearance = KeyAppearance.parse(info.keyAppearance), options = options)
         }
         require(result.isNotEmpty()) { "未找到可导入的自定义键盘" }

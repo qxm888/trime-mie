@@ -10,6 +10,9 @@ import com.charleskorn.kaml.YamlNode
 import com.osfans.trime.util.int
 import com.osfans.trime.util.string
 import com.osfans.trime.util.yamlNode
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.*
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -31,9 +34,11 @@ import kotlinx.serialization.encoding.Encoder
 object LenientStringListSerializer : KSerializer<List<String>> {
     override val descriptor: SerialDescriptor = buildSerialDescriptor("LenientStringList", SerialKind.CONTEXTUAL)
 
-    override fun serialize(encoder: Encoder, value: List<String>): Unit = throw UnsupportedOperationException("A theme list is only read from theme files")
+    override fun serialize(encoder: Encoder, value: List<String>) = encoder.encodeSerializableValue(ListSerializer(String.serializer()),value)
 
-    override fun deserialize(decoder: Decoder): List<String> = decoder.sequenceOrEmpty { it.string }
+    override fun deserialize(decoder: Decoder): List<String> = if(decoder is JsonDecoder)
+        (decoder.decodeJsonElement() as? JsonArray)?.mapNotNull { (it as? JsonPrimitive)?.contentOrNull }.orEmpty()
+        else decoder.sequenceOrEmpty { it.string }
 }
 
 /** [LenientStringListSerializer] for the numeric lists a toolbar button declares. */
@@ -41,9 +46,11 @@ object LenientStringListSerializer : KSerializer<List<String>> {
 object LenientIntListSerializer : KSerializer<List<Int>> {
     override val descriptor: SerialDescriptor = buildSerialDescriptor("LenientIntList", SerialKind.CONTEXTUAL)
 
-    override fun serialize(encoder: Encoder, value: List<Int>): Unit = throw UnsupportedOperationException("A theme list is only read from theme files")
+    override fun serialize(encoder: Encoder, value: List<Int>) = encoder.encodeSerializableValue(ListSerializer(Int.serializer()),value)
 
-    override fun deserialize(decoder: Decoder): List<Int> = decoder.sequenceOrEmpty { it.int }
+    override fun deserialize(decoder: Decoder): List<Int> = if(decoder is JsonDecoder)
+        (decoder.decodeJsonElement() as? JsonArray)?.mapNotNull { (it as? JsonPrimitive)?.intOrNull }.orEmpty()
+        else decoder.sequenceOrEmpty { it.int }
 }
 
 private inline fun <T> Decoder.sequenceOrEmpty(convert: (YamlNode) -> T?): List<T> = (yamlNode() as? YamlList)?.items?.mapNotNull(convert) ?: emptyList()

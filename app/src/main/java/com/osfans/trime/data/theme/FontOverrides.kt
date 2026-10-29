@@ -12,15 +12,24 @@ object FontOverrides {
         "label" to "候选序号", "toolbar" to "工具栏")
     private var context: Context? = null
     private val cache = mutableMapOf<String, Typeface>()
+    private val failed = mutableSetOf<String>()
+    @Volatile private var snapshot: Map<String, Any?> = emptyMap()
     private val prefs get() = context!!.getSharedPreferences("font_overrides", Context.MODE_PRIVATE)
-    val version: Long get() = context?.let { prefs.getLong("version", 0) } ?: 0
-    fun init(ctx: Context) { context = ctx.applicationContext }
-    fun selection(role: String): String = context?.let { prefs.getString(role, "").orEmpty() }.orEmpty()
+    val version: Long get() = snapshot["version"] as? Long ?: 0
+    fun init(ctx: Context) { context = ctx.applicationContext; snapshot = prefs.all.toMap() }
+    fun selection(role: String): String = snapshot[role] as? String ?: ""
+    fun size(role: String): Float = (snapshot["size.$role"] as? Float ?: 0f).takeIf { it.isFinite() && it in 0f..200f } ?: 0f
+    fun setSize(role: String, value: Float) {
+        require(role in roles && value.isFinite() && value in 0f..200f)
+        check(prefs.edit().putFloat("size.$role", value).putLong("version", version + 1).commit())
+        snapshot = prefs.all.toMap()
+        ThemeManager.requestCustomizationRefresh()
+    }
     @JvmOverloads
     fun set(role: String, value: String, refresh: Boolean = true) {
         require(role in roles)
         check(prefs.edit().putString(role, value).putLong("version", version + 1).commit()) { "字体设置保存失败" }
-        synchronized(cache) { cache.clear() }
+        snapshot = prefs.all.toMap()
         if (refresh) ThemeManager.requestCustomizationRefresh()
     }
     fun folder(): File = File(com.osfans.trime.core.data.DirectExternalStorage.resources(context!!), "custom_fonts").apply { mkdirs() }
@@ -33,17 +42,19 @@ object FontOverrides {
         "system:monospace" -> "系统等宽"
         else -> File(value).name
     }
-    fun invalidate() { synchronized(cache) { cache.clear() } }
+    fun invalidate() { synchronized(cache) { cache.clear(); failed.clear() } }
     fun typeface(role: String): Typeface? {
         return fromSelection(selection(role))
     }
     fun fromSelection(value: String): Typeface? {
         if (value.isEmpty()) return null
         return synchronized(cache) {
+            if (value in failed) return@synchronized null
             cache[value] ?: runCatching {
                 if (value.startsWith("system:")) Typeface.create(value.removePrefix("system:"), Typeface.NORMAL)
                 else Typeface.createFromFile(value)
-            }.getOrNull()?.also { cache[value] = it }
+            }.onFailure { failed.add(value); timber.log.Timber.w("Invalid font skipped (cached)") }
+                .getOrNull()?.also { cache[value] = it }
         }
     }
 }

@@ -9,6 +9,9 @@ object VoiceSettings {
     private val prefs get() = context!!.getSharedPreferences("voice_settings", Context.MODE_PRIVATE)
     fun init(ctx: Context) { context = ctx.applicationContext }
     val enabled: Boolean get() = context?.let { prefs.getBoolean("enabled", true) } ?: true
+    var streaming: Boolean
+        get() = context?.let { prefs.getBoolean("streaming", true) } ?: true
+        set(value) { prefs.edit().putBoolean("streaming", value).apply() }
     val version: Long get() = context?.let { prefs.getLong("version", 0) } ?: 0
     fun setEnabled(enabled: Boolean) {
         prefs.edit().putBoolean("enabled", enabled).putLong("version", version + 1).commit()

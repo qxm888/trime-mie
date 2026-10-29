@@ -63,6 +63,7 @@ object CustomKeyboards {
     data class CustomRow(
         val keys: MutableList<CustomKey> = mutableListOf(),
         var height: Int = 60,
+        var alignment: String = "left",
     )
 
     @Serializable
@@ -76,6 +77,7 @@ object CustomKeyboards {
         val rows: MutableList<CustomRow> = mutableListOf(),
         var background: CustomBackground? = null,
         var toolbarBackground: CustomBackground? = null,
+        var toolbarAlignment: String = "legacy",
         /** Overlay for every key in this layout; empty restores individual backgrounds. */
         var allKeysBackground: String = "",
         var rowSpacing: Int = 4,
@@ -259,6 +261,7 @@ object CustomKeyboards {
         typography=kb.typography.filterKeys { it in com.osfans.trime.data.theme.FontOverrides.roles }.mapValues { (_,spec) -> spec.copy(size=if(spec.size.isFinite()) spec.size.coerceIn(0f,200f) else 0f) },
         bgColor = "", bgImage = "", background = kb.resolvedBackground(),
         toolbar = kb.toolbar.toMutableList(),
+        toolbarAlignment = kb.toolbarAlignment.takeIf { it == "legacy" || it in ButtonAlignment.choices } ?: "legacy",
         toolbarBackground = kb.toolbarBackground?.normalized(CustomBackground.KEYBOARD_COLOR),
         rowSpacing = kb.rowSpacing.coerceIn(0, kb.maxRowSpacing()),
         importedHeightPercent = kb.importedHeightPercent.coerceIn(70, 150),
@@ -266,7 +269,7 @@ object CustomKeyboards {
             CustomRow(row.keys.map { key -> key.copy(
                 width = key.width.takeIf { it.isFinite() && it > 0 }?.coerceAtMost(100f) ?: 10f,
                 bindings = key.bindings.toMutableMap(), bgColor = "", bgImage = "", background = key.resolvedBackground(),
-            ) }.toMutableList(), height = row.height.coerceIn(24, 160))
+            ) }.toMutableList(), height = row.height.coerceIn(24, 160), alignment = ButtonAlignment.normalized(row.alignment))
         }.toMutableList(),
     )
 
@@ -429,15 +432,9 @@ object CustomKeyboards {
 
     internal fun CustomKeyboard.generatedKeys(): List<Pair<CustomKey?, TextKeyboard.TextKey>> = buildList {
         rows.forEach { row ->
-            val total = row.keys.sumOf { (it.width.takeIf { w -> w.isFinite() && w > 0 } ?: 10f).toDouble() }.toFloat()
-            val scale = if (total > 100f) 100f / total else 1f
-            row.keys.forEachIndexed { index, key ->
-                val width = (key.width.takeIf { it.isFinite() && it > 0 } ?: 10f) * scale
-                add(key to key.toTextKey(resolvedBackground(), keyAppearance).copy(width = width, height = row.height.coerceIn(24, 160).toFloat(), newRow = index == 0))
-            }
-            val rest = 100f - total * scale
-            if (rest > 0.01f || row.keys.isEmpty()) {
-                add(null to TextKeyboard.TextKey(width = if (row.keys.isEmpty()) 100f else rest, height = row.height.coerceIn(24, 160).toFloat(), newRow = row.keys.isEmpty()))
+            ButtonAlignment.slots(row).forEachIndexed { index, (key, width) ->
+                val text = key?.toTextKey(resolvedBackground(), keyAppearance) ?: TextKeyboard.TextKey()
+                add(key to text.copy(width = width, height = row.height.coerceIn(24, 160).toFloat(), newRow = index == 0))
             }
         }
     }

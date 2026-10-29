@@ -122,6 +122,7 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
             }
 
             override fun onAction(action: KeyAction) {
+                if (action.code != KeyEvent.KEYCODE_VOICE_ASSIST && action.command != "__mie_named_function" && !action.command.startsWith("__mie_voice_")) service.voiceInput.cancel()
                 val text = action.getText(KeyboardWindow.currentKeyboard)
                 val shouldHandle = when {
                     action.commit.isNotEmpty() -> {
@@ -401,6 +402,7 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
                 keyEventCode: Int,
                 metaState: Int,
             ) {
+                service.voiceInput.cancel()
                 if (keyEventCode == KeyEvent.KEYCODE_BACK && com.osfans.trime.ime.clipboard.ClipboardSearchBridge.exit()) return
                 // An uppercase letter key (e.g. from `{x: A}`) is passed to
                 // rime as the uppercase keysym with Shift, matching what a
@@ -444,6 +446,7 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
             }
 
             override fun onText(input: String) {
+                service.voiceInput.cancel()
                 if (input.isEmpty()) return
                 Timber.d("onText: $input")
                 val status = rime.run { statusCached }

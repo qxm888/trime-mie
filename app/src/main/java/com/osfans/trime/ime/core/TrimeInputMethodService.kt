@@ -244,6 +244,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         InputFeedbackManager.init(this)
         registerReceiver()
         super.onCreate()
+        com.osfans.trime.data.sync.ClipboardSync.start()
         Timber.d("onCreate")
         decorView = window.window!!.decorView
         contentView = decorView.findViewById(android.R.id.content)
@@ -409,6 +410,12 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         )
     }
 
+    fun updateVoicePhase(phase: com.osfans.trime.ime.voice.VoiceRecordingState.Phase, level: Float = 0f) {
+        val recording = phase == com.osfans.trime.ime.voice.VoiceRecordingState.Phase.RECORDING
+        mutableVoiceRecordingState.value = com.osfans.trime.ime.voice.VoiceRecordingState(
+            recording, if (recording && level.isFinite()) level.coerceIn(0f,1f) else 0f, phase)
+    }
+
     val builtInVoice by lazy { com.osfans.trime.ime.voice.builtin.BuiltInVoiceController(this) }
 
     /** 所有语音按键统一使用内置引擎。 */
@@ -416,6 +423,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         get() = builtInVoice
 
     override fun onDestroy() {
+        com.osfans.trime.data.sync.ClipboardSync.stop()
         builtInVoice.dispose()
         com.osfans.trime.data.stats.InputStats.endSession()
         InputFeedbackManager.destroy()
@@ -544,6 +552,8 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
             candidatesEnd,
         )
         cursorUpdateIndex += 1
+        builtInVoice.selectionChanged(newSelStart, newSelEnd, candidatesStart, candidatesEnd)
+        if (builtInVoice.isActive) return
         handleCursorUpdate(newSelStart, newSelEnd, candidatesStart, candidatesEnd, cursorUpdateIndex)
         inputView?.updateSelection(newSelStart, newSelEnd)
     }
@@ -986,6 +996,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         keyCode: Int,
         event: KeyEvent,
     ): Boolean {
+        voiceInput.cancel()
         if (keyCode == KeyEvent.KEYCODE_BACK && com.osfans.trime.ime.clipboard.ClipboardSearchBridge.exit()) return true
         if (inputDeviceManager.evaluateOnKeyDown(event, this)) {
             decorLocationUpdated = false
@@ -1184,6 +1195,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
     }
 
     internal fun updateComposingText(text: String) {
+        if (builtInVoice.ownsComposition) return
         if (com.osfans.trime.ime.clipboard.ClipboardSearchBridge.active) { composingText = ""; return }
         val ic = currentInputConnection ?: return
         ic.beginBatchEdit()

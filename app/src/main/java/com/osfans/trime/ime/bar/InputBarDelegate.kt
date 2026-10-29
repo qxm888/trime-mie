@@ -253,7 +253,7 @@ class InputBarDelegate(override val di: DI) :
     }
 
     private var normalBarState = QuickBarStateMachine.State.Always
-    private var isVoiceRecording = false
+    private var isVoiceActive = false
     private var voiceStateJob: Job? = null
     private val voiceRecordingView by lazy {
         com.osfans.trime.ime.bar.ui.VoiceRecordingView(context, scope.colors.candidateTextColor)
@@ -261,7 +261,7 @@ class InputBarDelegate(override val di: DI) :
 
     private fun switchUiByState(state: QuickBarStateMachine.State) {
         normalBarState = state
-        if (isVoiceRecording) {
+        if (isVoiceActive) {
             view.visibility = View.VISIBLE
             view.displayedChild = 3
             return
@@ -297,7 +297,7 @@ class InputBarDelegate(override val di: DI) :
     }
 
     val view by lazy {
-        ViewAnimator(context).apply {
+        com.osfans.trime.ime.bar.ui.ToolbarShadowAnimator(context).apply {
             visibility =
                 if (hideQuickBar) {
                     View.GONE
@@ -314,7 +314,7 @@ class InputBarDelegate(override val di: DI) :
                     voiceStateJob?.cancel()
                     voiceStateJob = service.lifecycleScope.launch {
                         service.voiceRecordingState.collect { state ->
-                            isVoiceRecording = state.recording
+                            isVoiceActive = state.active
                             voiceRecordingView.update(state)
                             switchUiByState(normalBarState)
                         }
@@ -323,7 +323,7 @@ class InputBarDelegate(override val di: DI) :
                 override fun onViewDetachedFromWindow(v: View) {
                     voiceStateJob?.cancel()
                     voiceStateJob = null
-                    isVoiceRecording = false
+                    isVoiceActive = false
                     voiceRecordingView.update(com.osfans.trime.ime.voice.VoiceRecordingState())
                 }
             })

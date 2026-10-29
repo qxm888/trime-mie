@@ -24,7 +24,7 @@ object BindingActions {
     }
     fun label(token: String): String = resolve(token)?.label?.ifBlank { null }
         ?: com.osfans.trime.data.theme.Theme.BUILTIN_ACTIONS[token]?.label
-        ?: ThemeManager.activeTheme.presetKeys[token]?.label?.ifBlank { null } ?: token
+        ?: ThemeManager.activeThemeOrNull()?.presetKeys?.get(token)?.label?.ifBlank { null } ?: token
 }
 
 object NamedFunctions {

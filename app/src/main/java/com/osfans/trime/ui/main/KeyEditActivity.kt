@@ -68,7 +68,7 @@ class KeyEditActivity : AppCompatActivity() {
 
         val toolbar = findViewById<MaterialToolbar>(R.id.key_edit_toolbar)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.key_edit_app_bar)) { v, windowInsets ->
-            val systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
             v.setPadding(0, systemBars.top, 0, 0)
             windowInsets
         }

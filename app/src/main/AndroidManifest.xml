@@ -20,6 +20,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
     <application
         android:name="com.osfans.trime.TrimeApplication"
+        android:usesCleartextTraffic="true"
         android:allowBackup="true"
         android:icon="@mipmap/ic_app_icon"
         android:label="@string/trime_app_name"
@@ -30,6 +31,9 @@ SPDX-License-Identifier: GPL-3.0-or-later
         tools:targetApi="29">
 
         <activity android:name=".ui.main.WordCreationActivity" android:exported="false" />
+        <activity android:name=".ui.main.ClipboardSyncActivity" android:exported="false" />
+        <activity android:name=".ui.main.FullBackupActivity" android:exported="false" />
+        <activity android:name=".ui.main.RestartAfterRestoreActivity" android:exported="false" android:process=":mie_restore" android:excludeFromRecents="true" />
         <activity android:name=".ui.main.ExternalDataActivity" android:exported="false" />
         <service
             android:name=".ime.core.TrimeInputMethodService"

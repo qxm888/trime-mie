@@ -46,6 +46,11 @@ class VoiceSettingsActivity : PersonalizationActivity() {
     private val permission = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) { granted ->
         Toast.makeText(this, if (granted) "麦克风权限已开启" else "需要麦克风权限才能按住说话", Toast.LENGTH_LONG).show()
         render()
+        scope.launch {
+            runCatching { withContext(Dispatchers.IO) { LocalAsrModels.migrateLegacy(this@VoiceSettingsActivity) } }
+                .onSuccess { if(it>0) { Toast.makeText(this@VoiceSettingsActivity,"已迁移 $it 个模型到用户目录，原文件已保留",1).show(); render() } }
+                .onFailure { Toast.makeText(this@VoiceSettingsActivity,it.message ?: "模型迁移失败，原文件已保留",1).show() }
+        }
     }
 
     private val zipImporter = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.GetContent()) { uri ->
@@ -54,7 +59,7 @@ class VoiceSettingsActivity : PersonalizationActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        page("语音输入")
+        page("识别服务与模型")
         render()
         // Finish a previously downloaded model automatically when returning to this page.
         val family = AsrSettings.selectedVendor
@@ -86,6 +91,12 @@ class VoiceSettingsActivity : PersonalizationActivity() {
         })
 
         val granted = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+        body.addView(MaterialSwitch(this).apply {
+            text = "流式输出：录音时显示识别文字"
+            isChecked = com.osfans.trime.ime.voice.VoiceSettings.streaming
+            setOnCheckedChangeListener { _, checked -> com.osfans.trime.ime.voice.VoiceSettings.streaming = checked }
+        })
+        note("火山流式、腾讯流式、X-ASR 支持边说边出字，最终结果会替换临时文字。SenseVoice 等离线整段模型及上传音频接口需松手后返回结果。")
         button(if (granted) "麦克风权限已开启" else "授予麦克风权限") {
             permission.launch(Manifest.permission.RECORD_AUDIO)
         }
@@ -93,6 +104,15 @@ class VoiceSettingsActivity : PersonalizationActivity() {
         val vendorId = AsrSettings.selectedVendor
         note("识别服务商：${AsrVendors.labelOf(vendorId)}")
         button("语音识别服务商") { pickVendor() }
+        note("本地模型目录：${LocalAsrModels.modelsRoot(this).absolutePath}")
+        if (!com.osfans.trime.core.data.DirectExternalStorage.hasPermission(this)) {
+            button("授权用户目录（用于模型与备份）") { startActivity(android.content.Intent(this,ExternalDataActivity::class.java)) }
+        }
+        button("迁移已有模型到用户目录") { scope.launch {
+            runCatching { withContext(Dispatchers.IO) { LocalAsrModels.migrateLegacy(this@VoiceSettingsActivity) } }
+                .onSuccess { render(); Toast.makeText(this@VoiceSettingsActivity,"迁移完成：$it 个模型",1).show() }
+                .onFailure { Toast.makeText(this@VoiceSettingsActivity,it.message,1).show() }
+        } }
 
         val def = AsrVendors.byId(vendorId)
         when {
@@ -109,6 +129,7 @@ class VoiceSettingsActivity : PersonalizationActivity() {
     // ---------- 服务商选择 ----------
 
     private fun pickVendor() {
+        lateinit var dialog: androidx.appcompat.app.AlertDialog
         val container = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         fun section(title: String) {
             container.addView(TextView(this).apply {
@@ -126,6 +147,7 @@ class VoiceSettingsActivity : PersonalizationActivity() {
                 if (id == AsrSettings.selectedVendor) setTextColor(0xFF7C4DFF.toInt())
                 setOnClickListener {
                     AsrSettings.setVendor(id)
+                    dialog.dismiss()
                     render()
                 }
             })
@@ -139,7 +161,7 @@ class VoiceSettingsActivity : PersonalizationActivity() {
 
         val scroll = androidx.core.widget.NestedScrollView(this)
         scroll.addView(container)
-        MaterialAlertDialogBuilder(this)
+        dialog = MaterialAlertDialogBuilder(this)
             .setTitle("语音识别服务商")
             .setView(scroll)
             .setNegativeButton(android.R.string.cancel, null)
@@ -151,6 +173,21 @@ class VoiceSettingsActivity : PersonalizationActivity() {
     private fun renderOnline(vendor: String) {
         val def = AsrVendors.byId(vendor)!!
         when (vendor) {
+            "tencent" -> {
+                textRow("AppID",AsrSettings.tencentField("app_id")) { AsrSettings.setTencentField("app_id",it.trim()) }
+                secretRow("SecretID",AsrSettings.tencentField("secret_id")) { AsrSettings.setTencentField("secret_id",it.trim()) }
+                secretRow("SecretKey",AsrSettings.tencentField("secret_key")) { AsrSettings.setTencentField("secret_key",it.trim()) }
+                val category=com.osfans.trime.ime.voice.builtin.TencentModels.category(AsrSettings.tencentField("category"))
+                val selected=com.osfans.trime.ime.voice.builtin.TencentModels.model(category,AsrSettings.model("tencent"))
+                choiceRow("识别类型",com.osfans.trime.ime.voice.builtin.TencentModels.categories.map { it.id to it.label },category.id) { id ->
+                    AsrSettings.setTencentField("category",id)
+                    val next=com.osfans.trime.ime.voice.builtin.TencentModels.category(id)
+                    AsrSettings.setModel("tencent",next.models.first().id)
+                }
+                choiceRow("识别引擎",category.models.map { it.id to "${it.label} · ${it.id}" },selected.id) { AsrSettings.setModel("tencent",it) }
+                note(if(category.streaming) "流式模式：录音时显示识别文字，支持标准分片与大模型逐句返回。" else "极速文件模式：松手后上传整段录音并返回结果，不提供录音中的部分文字。")
+                note("需在腾讯云开通所选识别服务，并使用自己的凭据；时间错误会导致签名验证失败。")
+            }
             "volc" -> {
                 note("使用你自己的火山引擎账号：控制台开通语音技术「流式语音识别大模型」。16kHz PCM 流式上传，实时返回结果。")
                 choiceRow(
@@ -286,9 +323,11 @@ class VoiceSettingsActivity : PersonalizationActivity() {
         }
         if (installed != null) {
             button("清理已下载的本地模型") {
-                LocalAsrModels.uninstall(this, family)
-                Toast.makeText(this, "已删除本地模型", Toast.LENGTH_SHORT).show()
-                render()
+                scope.launch {
+                    withContext(Dispatchers.IO) { LocalAsrModels.uninstall(this@VoiceSettingsActivity, family) }
+                    Toast.makeText(this@VoiceSettingsActivity, "已删除本地模型", Toast.LENGTH_SHORT).show()
+                    render()
+                }
             }
         }
         numberRow("识别线程数（1-8）", AsrSettings.localThreads(family)) { AsrSettings.setLocalThreads(family, it) }
@@ -504,8 +543,23 @@ class VoiceSettingsActivity : PersonalizationActivity() {
         }
     }
 
-    private fun secretRow(label: String, value: String, setter: (String) -> Unit) =
-        textRow(label, if (value.isBlank()) "" else "••••••（已设置）", setter)
+    private fun secretRow(label: String, value: String, setter: (String) -> Unit) {
+        button("$label：${if(value.isBlank()) "未设置" else "••••••（已设置）"}") {
+            val input=com.google.android.material.textfield.TextInputEditText(this).apply {
+                inputType=android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+                setSingleLine(); setText(value); setSelection(text?.length ?: 0)
+            }
+            val field=com.google.android.material.textfield.TextInputLayout(this).apply {
+                hint=label; boxBackgroundMode=com.google.android.material.textfield.TextInputLayout.BOX_BACKGROUND_OUTLINE
+                endIconMode=com.google.android.material.textfield.TextInputLayout.END_ICON_PASSWORD_TOGGLE
+                addView(input)
+            }
+            val wrap=LinearLayout(this).apply { setPadding(dp(24),dp(8),dp(24),0); addView(field,LinearLayout.LayoutParams(-1,-2)) }
+            MaterialAlertDialogBuilder(this).setTitle(label).setView(wrap)
+                .setPositiveButton("保存") { _,_ -> setter(input.text.toString().trim()); render() }
+                .setNegativeButton(android.R.string.cancel,null).show()
+        }
+    }
 
     private fun numberRow(label: String, value: Int, setter: (Int) -> Unit) {
         button("$label：$value") {

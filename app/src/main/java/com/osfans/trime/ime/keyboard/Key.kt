@@ -294,7 +294,7 @@ class Key(
     fun getCode(behavior: KeyBehavior): Int = getAction(behavior)?.code ?: KeyEvent.KEYCODE_UNKNOWN
 
     fun getLabel(): String = when {
-        theme.isCustom && label.isNotEmpty() -> label
+        theme.isCustom -> label
         // 无点击动作的展示键：只显示自身标签
         keyAction == null -> label
         label.isNotEmpty() &&

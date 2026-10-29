@@ -14,7 +14,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     android:orientation="vertical"
     tools:context=".ui.main.LogActivity">
 
-    <include
+    <include android:layout_width="0dp" android:layout_height="wrap_content"
         android:id="@+id/logToolbar"
         layout="@layout/toolbar"
         app:layout_constraintEnd_toEndOf="parent"

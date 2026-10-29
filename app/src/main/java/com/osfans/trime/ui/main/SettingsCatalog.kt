@@ -30,18 +30,18 @@ object SettingsCatalog {
         Page("theme", "主题与配色", "键盘主题、配色与跟随昼夜", "appearance"),
         Page("background", "主题视频背景", "选择视频；背景共用开关在各自全局外观中", "appearance", keys = listOf("keyboard_video_background")),
         Page("surface", "键盘与工具栏样式", "主题和每个自定义布局分别保存外观", "appearance"),
-        Page("fonts", "字体", "按键、候选栏与工具栏字体", "appearance"),
+        Page("fonts", "主题键盘字体与字号", "按键、候选栏与工具栏分别设置；自定义键盘独立保存", "appearance"),
         Page("app_theme", "应用外观", "仅设置应用的浅色 / 深色模式", "appearance", keys = listOf("ui_mode")),
-        Page("voice", "语音输入", "在线识别、离线模型与系统语音服务", "tools", keys = listOf("preferred_voice_input")),
-        Page("clipboard", "剪贴板", "监听、建议、清理与粘贴规则", "tools"),
+        Page("voice", "语音输入", "在线识别与离线模型", "tools"),
+        Page("clipboard", "剪贴板", "监听、建议、同步与粘贴规则", "tools"),
         Page("stats", "输入统计", "输入字数与使用情况", "tools"),
         Page("profile", "数据位置与同步", "存储位置、后台同步与配置维护", "data"),
         Page("personal_data", "统计与候选备份", "跨设备恢复统计、候选调序与词典草稿", "data"),
-        Page("transfer", "导入导出", "备份与恢复输入法数据", "data"),
+        Page("transfer", "导入导出", "整包设置、键盘资源与历史记录备份", "data"),
         Page("compatibility", "系统兼容", "应用图标与系统手势区域", "advanced", keys = listOf("show_app_icon", "ignore_system_gesture_insets")),
         Page("diagnostics", "诊断与日志", "主题诊断与配置问题排查", "advanced"),
         Page("developer", "开发者", "开发与调试工具", "advanced"),
-        Page("about", "关于与开源许可", "Trime Mie V2.1.4 · 版本与许可证", "advanced"),
+        Page("about", "关于与开源许可", "Trime Mie ${com.osfans.trime.BuildConfig.VERSION_NAME} · 版本与许可证", "advanced"),
     )
     fun page(id: String) = pages.first { it.id == id }
     fun path(page: Page): String = if (page.parent.isEmpty()) page.title else path(page(page.parent)) + " › " + page.title

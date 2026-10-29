@@ -51,6 +51,8 @@ object ThemeManager {
 
     private lateinit var _activeTheme: Theme
 
+    fun activeThemeOrNull(): Theme? = if (::_activeTheme.isInitialized) _activeTheme else null
+
     private var _activeFindings: List<ThemeDiagnostics.Finding>? = null
 
     /**
@@ -194,14 +196,15 @@ object ThemeManager {
     suspend fun selectTheme(configId: String): String {
         val request = themeRequestRevision.incrementAndGet()
         val resolvedTheme = withContext(Dispatchers.IO) {
+            FontOverrides.invalidate()
             getThemeById(configId).let { resolved -> resolved.copy(theme = resolved.theme.copy(
                 customizationVersion = resolved.theme.customizationVersion + resourceRevision.incrementAndGet())) }
+                .also { it.theme.fonts.preload() }
         }
         return withContext(Dispatchers.Main.immediate) {
             // A slower earlier load must not overwrite the newest theme/layout selection.
             if (request != themeRequestRevision.get()) return@withContext prefs.selectedTheme.getValue()
             BitmapAssets.invalidate()
-            FontOverrides.invalidate()
             applyTheme(resolvedTheme)
             prefs.selectedTheme.setValue(resolvedTheme.configId)
             resolvedTheme.configId

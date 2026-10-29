@@ -36,7 +36,7 @@ abstract class PaddingPreferenceFragment : PreferenceFragmentCompat() {
         fun dp(value: Int) = (value * density).toInt()
         listView.apply {
             setBackgroundColor(ContextCompat.getColor(context, R.color.framework_background))
-            setPadding(dp(16), 0, dp(16), paddingBottom)
+            setPadding(dp(16), dp(12), dp(16), paddingBottom)
             clipToPadding = false
             addItemDecoration(object : RecyclerView.ItemDecoration() {
                 val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -49,6 +49,7 @@ abstract class PaddingPreferenceFragment : PreferenceFragmentCompat() {
                 }
                 override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
                     val position = parent.getChildAdapterPosition(view)
+                    if (position == RecyclerView.NO_POSITION) return
                     val adapter = parent.adapter as? androidx.preference.PreferenceGroupAdapter
                     val nextCategory = adapter?.getItem(position + 1) is PreferenceCategory || position == (adapter?.itemCount ?: 0) - 1
                     outRect.bottom = dp(if (isCategory(parent, view)) 6 else if (nextCategory) 20 else 1)

@@ -17,6 +17,7 @@ object AsrEngineFactory {
         val vendor = AsrSettings.selectedVendor
         if (vendor == "none") return null
         return when (vendor) {
+            "tencent" -> TencentAsrEngine(scope, listener)
             "volc" -> VolcStreamAsrEngine(
                 scope, listener,
                 authProvider = {

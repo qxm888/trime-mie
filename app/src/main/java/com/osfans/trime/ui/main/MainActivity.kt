@@ -10,7 +10,6 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.view.Menu
 import android.view.ViewGroup
-import androidx.activity.addCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -19,10 +18,9 @@ import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsAnimationCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsAnimationCompat
 import androidx.core.view.forEach
-import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -50,7 +48,6 @@ class MainActivity : AppCompatActivity() {
     private val uiMode by AppPrefs.defaultInstance().advanced.uiMode
 
     private lateinit var navController: NavController
-    private var testInputPanel: TestInputPanel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val uiMode =
@@ -74,7 +71,7 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         val binding = ActivityMainBinding.inflate(layoutInflater)
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, windowInsets ->
-            val systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
             val ime = windowInsets.getInsets(WindowInsetsCompat.Type.ime())
             binding.root.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 leftMargin = systemBars.left
@@ -91,7 +88,7 @@ class MainActivity : AppCompatActivity() {
                     insets: WindowInsetsCompat,
                     runningAnimations: List<WindowInsetsAnimationCompat?>,
                 ): WindowInsetsCompat {
-                    val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                    val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
                     val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
                     binding.root.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                         bottomMargin = maxOf(systemBars.bottom, ime.bottom)
@@ -128,15 +125,6 @@ class MainActivity : AppCompatActivity() {
             // "minimize" the activity if we can't go back
             navController.navigateUp() || onSupportNavigateUp() || moveTaskToBack(false)
         }
-        onBackPressedDispatcher.addCallback {
-            if (binding.testInputPanel.isVisible) {
-                binding.testInputPanel.dismiss()
-            } else {
-                isEnabled = false
-                onBackPressedDispatcher.onBackPressed()
-            }
-        }
-        testInputPanel = binding.testInputPanel
         viewModel.toolbarTitle.observe(this) {
             binding.mainToolbar.toolbar.title = it
         }
@@ -176,9 +164,6 @@ class MainActivity : AppCompatActivity() {
         val optionMenuItems = listOf(
             menu.item(R.string.deploy, R.drawable.ic_baseline_refresh_reversed_24, iconTint = iconTint, showAsAction = false) {
                 viewModel.rime.launchOnReady { it.deploy() }
-            },
-            menu.item(R.string.test_input, R.drawable.ic_baseline_keyboard_24, iconTint = iconTint, showAsAction = true) {
-                testInputPanel?.show(window)
             },
             menu.item(R.string.developer) {
                 navController.navigate(NavigationRoute.Developer)
@@ -225,16 +210,6 @@ class MainActivity : AppCompatActivity() {
         if (UserDataManager.isStorageAvailable()) {
             SoundEffectManager.init()
         }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        testInputPanel?.dismiss()
-    }
-
-    override fun onDestroy() {
-        testInputPanel = null
-        super.onDestroy()
     }
 
     private fun checkNotificationPermission() {

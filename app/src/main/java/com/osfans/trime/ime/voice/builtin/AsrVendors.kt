@@ -2,8 +2,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * 语音识别服务商注册表（对照说点啥/BiBi-Keyboard AsrVendorRegistry 的常用项，
- * Apache-2.0）。未列入的说明：阿里千问（DashScope）依赖官方 Java SDK、腾讯云需要
- * 自实现签名，均未移植；说点啥的免费公益 Key（SiliconFlow）不复用，一律用户自带凭据。
+ * Apache-2.0）。未列入的说明：阿里千问（DashScope）依赖官方 Java SDK，未移植；说点啥的免费公益 Key（SiliconFlow）不复用，一律用户自带凭据。
  */
 package com.osfans.trime.ime.voice.builtin
 
@@ -49,6 +48,9 @@ object AsrVendors {
         listOf(AsrTag.ONLINE, AsrTag.RECOMMENDED, AsrTag.STREAMING, AsrTag.NON_STREAMING, AsrTag.CHINESE_DIALECT, AsrTag.ACCURATE),
         local = false,
     )
+    val TENCENT = AsrVendorDef("tencent", "腾讯云语音",
+        listOf(AsrTag.ONLINE,AsrTag.STREAMING,AsrTag.NON_STREAMING,AsrTag.CHINESE_DIALECT),
+        local=false,defaultModel="16k_zh")
     val OPENAI = AsrVendorDef(
         "openai", "OpenAI",
         listOf(AsrTag.ONLINE, AsrTag.STREAMING, AsrTag.NON_STREAMING, AsrTag.CUSTOM),
@@ -126,7 +128,7 @@ object AsrVendors {
         defaultModel = "stepaudio-2.5-asr",
     )
 
-    val ONLINE_ALL = listOf(VOLC, OPENAI, SILICONFLOW, OPENROUTER, ZHIPU, COHERE, GEMINI, MIMO, ELEVENLABS, SONIOX, STEPAUDIO)
+    val ONLINE_ALL = listOf(VOLC, TENCENT, OPENAI, SILICONFLOW, OPENROUTER, ZHIPU, COHERE, GEMINI, MIMO, ELEVENLABS, SONIOX, STEPAUDIO)
 
     /** 本地家族 id 与 LocalAsrModels.family(key) 一一对应。 */
     val LOCAL_ALL: List<AsrVendorDef> = listOf(

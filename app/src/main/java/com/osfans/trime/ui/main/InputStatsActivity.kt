@@ -78,7 +78,7 @@ class InputStatsActivity : AppCompatActivity() {
         // 状态栏 padding 要打在外层 AppBarLayout（wrap_content）上：
         // 打在固定高度 actionBarSize 的 toolbar 上会把标题下半截挤出屏幕
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.stats_app_bar)) { v, windowInsets ->
-            val systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
             v.setPadding(0, systemBars.top, 0, 0)
             windowInsets
         }

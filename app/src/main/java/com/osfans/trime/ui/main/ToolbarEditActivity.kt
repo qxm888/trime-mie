@@ -54,7 +54,7 @@ class ToolbarEditActivity : AppCompatActivity() {
 
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar_edit_toolbar)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.toolbar_edit_app_bar)) { v, windowInsets ->
-            val systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
             v.setPadding(0, systemBars.top, 0, 0)
             windowInsets
         }
@@ -95,6 +95,20 @@ class ToolbarEditActivity : AppCompatActivity() {
         findViewById<View>(R.id.toolbar_edit_background).apply {
             visibility = if (kbId.isNotEmpty()) View.VISIBLE else View.GONE
             setOnClickListener { pickToolbarBackground() }
+        }
+
+        findViewById<com.google.android.material.button.MaterialButton>(R.id.toolbar_edit_alignment).apply {
+            visibility = if (kbId.isNotEmpty()) View.VISIBLE else View.GONE
+            fun refresh() { text = "按钮排列 · " + (com.osfans.trime.data.keymap.ButtonAlignment.choices[CustomKeyboards.get(kbId)?.toolbarAlignment] ?: "原排列") }
+            refresh()
+            setOnClickListener {
+                val choices = linkedMapOf("legacy" to "原排列") + com.osfans.trime.data.keymap.ButtonAlignment.choices
+                MaterialAlertDialogBuilder(this@ToolbarEditActivity).setTitle("状态栏按钮排列")
+                    .setSingleChoiceItems(choices.values.toTypedArray(), choices.keys.indexOf(CustomKeyboards.get(kbId)?.toolbarAlignment)) { dialog, which ->
+                        CustomKeyboards.mutate(kbId) { it.toolbarAlignment = choices.keys.elementAt(which) }
+                        com.osfans.trime.data.theme.ThemeManager.requestCustomizationRefresh(); refresh(); dialog.dismiss()
+                    }.setNegativeButton(android.R.string.cancel,null).show()
+            }
         }
 
         working.addAll(initialEntries())

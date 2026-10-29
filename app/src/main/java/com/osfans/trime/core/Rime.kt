@@ -64,7 +64,10 @@ class Rime :
         RimeDispatcher(
             object : RimeDispatcher.RimeController {
                 override fun nativeStartup() {
-                    startRime(false)
+                    val restored=com.osfans.trime.util.appContext.getSharedPreferences("settings_restore_result",android.content.Context.MODE_PRIVATE)
+                    val full=restored.getBoolean("deploy",false)
+                    startRime(full)
+                    if(full) restored.edit().putBoolean("deploy",false).commit()
                     lifecycleRegistry.emitEvent(RimeLifecycle.Event.ON_READY)
                 }
 
@@ -297,6 +300,16 @@ class Rime :
         }
         if (current?.candidate?.text != text) return@withRimeContext false
         val rule = CandidatePreferences.get(schema, code) ?: CandidatePreferences.Rule(searchLimit = 64)
+        if (action == "forget") {
+            require(current.source >= 0) { "此词是应用内造词，还未写入 Rime 用户词典，不能执行原生忘词" }
+            try {
+                val forgotten = forgetNativeCandidate(current.source, current.candidate)
+                require(forgotten) { "当前方案未处理 Control+Delete，未执行忘词" }
+                if (forgotten) CandidatePreferences.save(schema, code, rule.copy(
+                    order = rule.order - text, forgotten = rule.forgotten - text, hidden = rule.hidden - text))
+                return@withRimeContext forgotten
+            } finally { personalPage = 0; personalHighlight = 0; emitResponse() }
+        }
         if (action == "reset") {
             CandidatePreferences.save(schema, code, null)
         } else {
@@ -307,9 +320,6 @@ class Rime :
             val oldIndex = order.indexOf(text)
             if (oldIndex < 0) return@withRimeContext false
             when (action) {
-                "forget" -> CandidatePreferences.save(schema, code,
-                    rule.copy(order = rule.order - text, forgotten = rule.forgotten + text,
-                        hidden = rule.hidden - text, searchLimit = limit))
                 "delete", "code" -> {
                     if (action == "code") {
                         require(value.isNotBlank() && value.length <= 128 && value.none { it.isWhitespace() }) { "请输入有效编码（不含空白）" }
@@ -334,6 +344,44 @@ class Rime :
         personalPage = 0; personalHighlight = 0
         emitResponse()
         true
+    }
+
+    /** Highlight the native source candidate, then use Trime's original Control+Delete. */
+    private fun forgetNativeCandidate(source: Int, expected: CandidateProto): Boolean {
+        val raw = getRimeRawInput()
+        val caret = getRimeCaretPos()
+        fun page(): Candidates.Paged? {
+            val response=getRimeResponse(true)
+            if(!response.commit.text.isNullOrEmpty()) projectedCommit=CommitProto(projectedCommit?.text.orEmpty()+response.commit.text)
+            return response.candidates as? Candidates.Paged
+        }
+        try {
+            setRimeCaretPos(raw.toByteArray(Charsets.UTF_8).size)
+            processRimeKey(0xff50, 0) // Home: native selector, no app projection.
+            setRimeCaretPos(raw.toByteArray(Charsets.UTF_8).size)
+            var menu = page() ?: return false
+            require(!menu.hasPrevPage && menu.highlighted == 0) { "当前方案不支持定位候选，未执行忘词" }
+            val pageSize = menu.candidates.size.coerceAtLeast(1)
+            repeat(source / pageSize) {
+                require(changeRimeCandidatePage(false)) { "候选定位失败，未执行忘词" }
+            }
+            menu = page() ?: return false
+            val target = source % pageSize
+            val linear = getRimeOption("_linear") || getRimeOption("_horizontal")
+            val vertical = getRimeOption("_vertical")
+            val forward = if (vertical && !linear) 0xff51 else if (!vertical && linear) 0xff53 else 0xff54
+            val backward = if (vertical && !linear) 0xff53 else if (!vertical && linear) 0xff51 else 0xff52
+            val delta = target - menu.highlighted
+            repeat(kotlin.math.abs(delta)) { processRimeKey(if (delta > 0) forward else backward, 0) }
+            menu = page() ?: return false
+            val actual = menu.candidates.getOrNull(menu.highlighted)
+            require(getRimeRawInput() == raw && menu.highlighted == target && actual?.text == expected.text && actual.comment == expected.comment) {
+                "候选已变化或方案不支持定位，未执行忘词"
+            }
+            return processRimeKey(0xffff, KeyModifier.Control.modifier.toInt())
+        } finally {
+            if (getRimeRawInput() == raw) setRimeCaretPos(caret)
+        }
     }
 
     override suspend fun changeCandidatePage(backward: Boolean): Boolean = withRimeContext {

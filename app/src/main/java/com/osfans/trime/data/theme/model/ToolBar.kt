@@ -11,6 +11,7 @@ import kotlinx.serialization.Serializable
 data class ToolBar(
     val primaryButton: Button? = null,
     val primaryVisible: Boolean = true,
+    val alignment: String = "legacy",
     val buttons: List<Button> = emptyList(),
     val buttonSpacing: Int = 18,
     val buttonFont: MaybeStringList = MaybeStringList.Empty,

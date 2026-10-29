@@ -44,7 +44,6 @@ object ToolbarButtonEditor {
             lateinit var view: MaterialButton
             fun caption(): String {
                 val token = bindings[key].orEmpty()
-                val theme = if (standalone) com.osfans.trime.data.keymap.StandaloneKeyboardTheme.base() else com.osfans.trime.data.theme.ThemeManager.activeTheme
                 val label = com.osfans.trime.data.keymap.BindingActions.label(token)
                 return "$name · ${label.ifBlank { token.ifBlank { "未绑定" } }}"
             }

@@ -82,7 +82,7 @@ class PersonalDataActivity : AppCompatActivity() {
         }
         root.addView(toolbar, LinearLayout.LayoutParams(-1, -2))
         ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
-            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
             v.setPadding(bars.left, bars.top, bars.right, bars.bottom); insets
         }
         body = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(8), dp(16), dp(24)) }
@@ -103,7 +103,7 @@ class PersonalDataActivity : AppCompatActivity() {
             }
             content.addView(header)
             content.addView(TextView(this).apply {
-                text = when (title) { "输入统计" -> "自动保存 · 跨设备恢复"; "候选调整" -> "完整保存调序与忘记规则"; else -> "按方案导出，接入前需核对编码" }
+                text = when (title) { "输入统计" -> "自动保存 · 跨设备恢复"; "候选调整" -> "保存应用内调序与造词"; else -> "按方案导出，接入前需核对编码" }
                 textSize = 14f; setPadding(0, 0, 0, dp(8))
                 setOnClickListener { header.performClick() }
             })
@@ -127,7 +127,7 @@ class PersonalDataActivity : AppCompatActivity() {
                 InputStats.restoreFromRime()
             } } },
         ))
-        card("候选调整", "JSON 完整保存各方案、各编码的固定位置、前后调序、忘记、隐藏和自定义编码。恢复会替换当前调整，并保留恢复前备份；重新输入后生效。", listOf(
+        card("候选调整", "JSON 保存各方案、各编码的固定位置、前后调序、隐藏和造词。原生 Control+Delete 忘词由 Rime 用户词典管理，请使用整包备份保存。恢复 JSON 会替换应用内调整，并保留恢复前备份。", listOf(
             "导出候选调整…" to { exporting = "candidates"; exportFile.launch("mie-candidate-order.json") },
             "导入候选调整…" to { importing = "candidates"; importFile.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
             "保存候选调整到 Rime 目录" to { task("已保存到 Rime 目录") {
@@ -170,6 +170,6 @@ class PersonalDataActivity : AppCompatActivity() {
         }
     }
     companion object {
-        private const val DICTIONARY_NOTE = "这是输入编码词典草稿。请先核对编码是否等于方案词典编码；双拼、形码和 Lua 方案可能需要转换。接入时需将草稿词典加入方案词典的 import_tables 后重新部署。权重只影响词典层，Lua 过滤和用户词频仍可能改变候选顺序。隐藏规则与忘记后的再次学习行为不能仅用词典表示，请另存 JSON 备份以完整恢复。"
+        private const val DICTIONARY_NOTE = "这是输入编码词典草稿。请先核对编码是否等于方案词典编码；双拼、形码和 Lua 方案可能需要转换。接入时需将草稿词典加入方案词典的 import_tables 后重新部署。权重只影响词典层，Lua 过滤和用户词频仍可能改变候选顺序。应用内隐藏等规则另存 JSON；原生忘词与用户词频请使用整包备份中的 Rime 用户词典保存。"
     }
 }

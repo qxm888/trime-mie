@@ -189,11 +189,11 @@ object UserDataManager {
 
             val remoteMap = buildMap {
                 StorageAccess.walk(externalRimeDir)
-                    .collect { put(it.relativePath, it.file) }
+                    .collect { if(isRimeDataPath(it.relativePath)) put(it.relativePath, it.file) }
             }
             val localMap = walkLocal(userDataDir)
 
-            val allPaths = (localMap.keys + remoteMap.keys + oldManifest.files.keys)
+            val allPaths = (localMap.keys + remoteMap.keys + oldManifest.files.keys.filter(::isRimeDataPath))
                 .sortedBy { it.count { c -> c == '/' } }
 
             // Fast path: when every path still matches the recorded state on both sides and no
@@ -445,9 +445,13 @@ object UserDataManager {
         if (!root.exists()) return emptyMap()
         return root
             .walkTopDown()
+            .onEnter { it==root || isRimeDataPath(it.toRelativeString(root)) }
             .filter { it != root }
             .associateBy { it.toRelativeString(root) }
     }
+
+    /** Models, app resources and ZIP backups are not native Rime synchronization data. */
+    private fun isRimeDataPath(path: String): Boolean = path.replace('\\','/').trimStart('/').substringBefore('/') !in setOf("mie","mie_resources")
 
     private fun isUnchanged(
         path: String,

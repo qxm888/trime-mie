@@ -10,6 +10,9 @@ import com.charleskorn.kaml.YamlNull
 import com.charleskorn.kaml.YamlScalar
 import com.osfans.trime.util.string
 import com.osfans.trime.util.yamlNode
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.*
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
@@ -26,16 +29,30 @@ import kotlinx.serialization.encoding.Encoder
  * Contextual for the same reason as [LenientStringListSerializer]: an empty
  * value has to reach this serializer instead of being rejected by kaml first.
  */
-@OptIn(InternalSerializationApi::class)
+@OptIn(InternalSerializationApi::class,kotlinx.serialization.ExperimentalSerializationApi::class)
 object MaybeStringListSerializer : KSerializer<MaybeStringList> {
     override val descriptor: SerialDescriptor = buildSerialDescriptor("MaybeStringList", SerialKind.CONTEXTUAL)
 
-    override fun serialize(encoder: Encoder, value: MaybeStringList): Unit = throw UnsupportedOperationException("A font is only read from theme files")
+    override fun serialize(encoder: Encoder, value: MaybeStringList) {
+        when(value) {
+            MaybeStringList.Empty -> encoder.encodeNull()
+            is MaybeStringList.Scalar -> encoder.encodeString(value.value)
+            is MaybeStringList.Sequence -> encoder.encodeSerializableValue(ListSerializer(String.serializer()),value.value)
+        }
+    }
 
-    override fun deserialize(decoder: Decoder): MaybeStringList = when (val node = decoder.yamlNode()) {
+    override fun deserialize(decoder: Decoder): MaybeStringList {
+        if(decoder is JsonDecoder) return when(val value=decoder.decodeJsonElement()) {
+            JsonNull -> MaybeStringList.Empty
+            is JsonPrimitive -> MaybeStringList.Scalar(value.content)
+            is JsonArray -> MaybeStringList.Sequence(value.mapNotNull { (it as? JsonPrimitive)?.contentOrNull })
+            else -> throw SerializationException("Expect a font name or font list")
+        }
+        return when (val node = decoder.yamlNode()) {
         is YamlNull -> MaybeStringList.Empty
         is YamlScalar -> MaybeStringList.Scalar(node.content)
         is YamlList -> MaybeStringList.Sequence(node.items.mapNotNull { it.string })
         else -> throw SerializationException("Expect a scalar, a list or no value")
+        }
     }
 }

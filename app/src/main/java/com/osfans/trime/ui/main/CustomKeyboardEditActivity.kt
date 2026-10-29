@@ -66,10 +66,12 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         }
 
         setContentView(R.layout.activity_custom_kb_edit)
+        androidx.core.view.WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars =
+            resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK != android.content.res.Configuration.UI_MODE_NIGHT_YES
 
         val toolbar = findViewById<MaterialToolbar>(R.id.cbe_toolbar)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.cbe_app_bar)) { v, windowInsets ->
-            val systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
             v.setPadding(0, systemBars.top, 0, 0)
             windowInsets
         }
@@ -168,8 +170,8 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         val before = CustomKeyboards.get(kbId) ?: return
         CustomKeyboards.mutate(kbId) { after ->
             block(after)
-            val geometryChanged = before.rows.map { row -> row.height to row.keys.map { it.skinId to it.width } } !=
-                after.rows.map { row -> row.height to row.keys.map { it.skinId to it.width } } || before.rowSpacing != after.rowSpacing || before.options != after.options
+            val geometryChanged = before.rows.map { row -> Triple(row.height, row.alignment, row.keys.map { it.skinId to it.width }) } !=
+                after.rows.map { row -> Triple(row.height, row.alignment, row.keys.map { it.skinId to it.width }) } || before.rowSpacing != after.rowSpacing || before.options != after.options
             if (geometryChanged || before.background != after.background) after.importedSkin = null
         }
         render()
@@ -236,10 +238,9 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
             val rowView = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
             val rowHeight = dp((row.height * 0.65f).toInt())
             val gap = dp((kb.rowSpacing * 0.65f).toInt())
-            var weightSum = 0f
-            row.keys.forEach { ck ->
-                val w = ck.width.takeIf { it > 0f } ?: 10f
-                weightSum += w
+            rowView.weightSum = 100f
+            com.osfans.trime.data.keymap.ButtonAlignment.slots(row).forEach { (ck, w) ->
+                if (ck == null) { rowView.addView(View(this),LinearLayout.LayoutParams(0,-1,w)); return@forEach }
                 val cell =
                     TextView(this).apply {
                         text = ck.label.ifEmpty {
@@ -257,14 +258,6 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
                 rowView.addView(
                     cell,
                     LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, w).apply { setMargins(dp(1), gap / 2, dp(1), gap - gap / 2) },
-                )
-            }
-            // 行尾空隙补齐，与运行时 toTextKeyboard 的 spacer 一致
-            val rest = 100f - weightSum
-            if (rest > 0.5f) {
-                rowView.addView(
-                    View(this),
-                    LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, rest),
                 )
             }
             preview.addView(
@@ -342,11 +335,25 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         })
         card.addView(header)
 
-        card.addView(com.google.android.material.button.MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
-            text = "行高 ${row.height} dp · 点击调整"
+        val rowControls = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        card.addView(rowControls)
+        rowControls.addView(com.google.android.material.button.MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+            text = "行高 ${row.height} dp"
             contentDescription = "调整第${rowIdx + 1}行高度，当前${row.height}dp"
             setOnClickListener { showRowHeightEditor(rowIdx) }
-        }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(48)))
+        }, LinearLayout.LayoutParams(0, dp(48), 1f))
+
+        rowControls.addView(com.google.android.material.button.MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+            textSize = 14f
+            text = "排列 · " + com.osfans.trime.data.keymap.ButtonAlignment.choices[com.osfans.trime.data.keymap.ButtonAlignment.normalized(row.alignment)]
+            setOnClickListener {
+                val choices = com.osfans.trime.data.keymap.ButtonAlignment.choices
+                MaterialAlertDialogBuilder(this@CustomKeyboardEditActivity).setTitle("第${rowIdx + 1}行按钮排列")
+                    .setSingleChoiceItems(choices.values.toTypedArray(), choices.keys.indexOf(row.alignment)) { dialog, which ->
+                        mutate { it.rows[rowIdx].alignment = choices.keys.elementAt(which) }; dialog.dismiss()
+                    }.setNegativeButton(android.R.string.cancel,null).show()
+            }
+        }, LinearLayout.LayoutParams(0, dp(48), 1f))
 
         // key strip
         val strip =

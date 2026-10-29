@@ -27,48 +27,46 @@ class ThemeFonts(private val theme: Theme) {
 
     private val fontDir get() = File(DataManager.userDataDir, "fonts")
 
-    private val fontFamilyCache =
-        object : androidx.collection.LruCache<FileState, FontFamily>(16) {}
-
-    private val typefaceCache =
-        object : androidx.collection.LruCache<TypefaceKey, Typeface>(16 * 1024) {
-            override fun sizeOf(key: TypefaceKey, value: Typeface): Int = key.files.sumOf {
-                (it.size / 1024).toInt().coerceAtLeast(1)
-            }
-        }
+    // Resolve metadata once per immutable theme, not once per draw/bind. Font file
+    // bytes are not Typeface heap usage: large Han fonts previously evicted themselves.
+    private val resolved = mutableMapOf<List<String>, Typeface>()
+    companion object {
+        private val fontFamilyCache = object : androidx.collection.LruCache<FileState, FontFamily>(24) {}
+        private val typefaceCache = object : androidx.collection.LruCache<TypefaceKey, Typeface>(24) {}
+    }
 
     val hanb: Typeface
-        get() = com.osfans.trime.data.keymap.LayoutTypography.typeface("hanb", theme.isCustom) ?: FontOverrides.typeface("hanb").takeUnless { theme.isCustom } ?: getTypeface(style.hanbFont.toList())
+        get() = com.osfans.trime.data.keymap.LayoutTypography.typeface("hanb", theme.isCustom) ?: (if (theme.isCustom) null else FontOverrides.typeface("hanb")) ?: getTypeface(style.hanbFont.toList())
 
     val latin: Typeface
-        get() = com.osfans.trime.data.keymap.LayoutTypography.typeface("latin", theme.isCustom) ?: FontOverrides.typeface("latin").takeUnless { theme.isCustom } ?: getTypeface(style.latinFont.toList())
+        get() = com.osfans.trime.data.keymap.LayoutTypography.typeface("latin", theme.isCustom) ?: (if (theme.isCustom) null else FontOverrides.typeface("latin")) ?: getTypeface(style.latinFont.toList())
 
     val candidate: Typeface
-        get() = com.osfans.trime.data.keymap.LayoutTypography.typeface("candidate", theme.isCustom) ?: FontOverrides.typeface("candidate").takeUnless { theme.isCustom } ?: getTypeface(style.candidateFont.toList())
+        get() = com.osfans.trime.data.keymap.LayoutTypography.typeface("candidate", theme.isCustom) ?: (if (theme.isCustom) null else FontOverrides.typeface("candidate")) ?: getTypeface(style.candidateFont.toList())
 
     val comment: Typeface
-        get() = com.osfans.trime.data.keymap.LayoutTypography.typeface("comment", theme.isCustom) ?: FontOverrides.typeface("comment").takeUnless { theme.isCustom } ?: getTypeface(style.commentFont.toList())
+        get() = com.osfans.trime.data.keymap.LayoutTypography.typeface("comment", theme.isCustom) ?: (if (theme.isCustom) null else FontOverrides.typeface("comment")) ?: getTypeface(style.commentFont.toList())
 
     val key: Typeface
-        get() = com.osfans.trime.data.keymap.LayoutTypography.typeface("key", theme.isCustom) ?: FontOverrides.typeface("key").takeUnless { theme.isCustom } ?: getTypeface(style.keyFont.toList())
+        get() = com.osfans.trime.data.keymap.LayoutTypography.typeface("key", theme.isCustom) ?: (if (theme.isCustom) null else FontOverrides.typeface("key")) ?: getTypeface(style.keyFont.toList())
 
     val label: Typeface
-        get() = com.osfans.trime.data.keymap.LayoutTypography.typeface("label", theme.isCustom) ?: FontOverrides.typeface("label").takeUnless { theme.isCustom } ?: getTypeface(style.labelFont.toList())
+        get() = com.osfans.trime.data.keymap.LayoutTypography.typeface("label", theme.isCustom) ?: (if (theme.isCustom) null else FontOverrides.typeface("label")) ?: getTypeface(style.labelFont.toList())
 
     val popup: Typeface
-        get() = com.osfans.trime.data.keymap.LayoutTypography.typeface("popup", theme.isCustom) ?: FontOverrides.typeface("popup").takeUnless { theme.isCustom } ?: getTypeface(style.popupFont.toList())
+        get() = com.osfans.trime.data.keymap.LayoutTypography.typeface("popup", theme.isCustom) ?: (if (theme.isCustom) null else FontOverrides.typeface("popup")) ?: getTypeface(style.popupFont.toList())
 
     val symbol: Typeface
-        get() = com.osfans.trime.data.keymap.LayoutTypography.typeface("symbol", theme.isCustom) ?: FontOverrides.typeface("symbol").takeUnless { theme.isCustom } ?: getTypeface(style.symbolFont.toList())
+        get() = com.osfans.trime.data.keymap.LayoutTypography.typeface("symbol", theme.isCustom) ?: (if (theme.isCustom) null else FontOverrides.typeface("symbol")) ?: getTypeface(style.symbolFont.toList())
 
     val hint: Typeface
-        get() = com.osfans.trime.data.keymap.LayoutTypography.typeface("hint", theme.isCustom) ?: FontOverrides.typeface("hint").takeUnless { theme.isCustom } ?: symbol
+        get() = com.osfans.trime.data.keymap.LayoutTypography.typeface("hint", theme.isCustom) ?: (if (theme.isCustom) null else FontOverrides.typeface("hint")) ?: symbol
 
     val text: Typeface
-        get() = com.osfans.trime.data.keymap.LayoutTypography.typeface("text", theme.isCustom) ?: FontOverrides.typeface("text").takeUnless { theme.isCustom } ?: getTypeface(style.textFont.toList())
+        get() = com.osfans.trime.data.keymap.LayoutTypography.typeface("text", theme.isCustom) ?: (if (theme.isCustom) null else FontOverrides.typeface("text")) ?: getTypeface(style.textFont.toList())
 
     val toolbar: Typeface
-        get() = com.osfans.trime.data.keymap.LayoutTypography.typeface("toolbar", theme.isCustom) ?: FontOverrides.typeface("toolbar").takeUnless { theme.isCustom } ?: getTypeface(theme.toolBar.buttonFont.toList())
+        get() = com.osfans.trime.data.keymap.LayoutTypography.typeface("toolbar", theme.isCustom) ?: (if (theme.isCustom) null else FontOverrides.typeface("toolbar")) ?: getTypeface(theme.toolBar.buttonFont.toList())
 
     private fun makeFileStateList(names: List<String>): List<FileState> = names.asSequence()
         .map { File(fontDir, it) }
@@ -85,16 +83,18 @@ class ThemeFonts(private val theme: Theme) {
         }
     }
 
-    private fun getTypeface(fonts: List<String>): Typeface {
-        val key = resolveKey(fonts)
+    @Synchronized private fun getTypeface(fonts: List<String>): Typeface = resolved.getOrPut(fonts) {
+        val primary = resolveKey(fonts)
+        val key = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && primary.files.isNotEmpty())
+            TypefaceKey(makeFileStateList(style.latinFont.toList() + fonts + style.hanbFont.toList()).distinct()) else primary
+        synchronized(typefaceCache) {
         val typeface = typefaceCache[key]
-        return if (typeface == null) {
+        if (typeface == null) {
             Timber.d("getTypeface: key=$key")
-            val newTypeface = if (key.files.isEmpty()) {
+            val newTypeface = runCatching { if (key.files.isEmpty()) {
                 Typeface.DEFAULT
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                val bulk = makeFileStateList(style.latinFont.toList() + fonts + style.hanbFont.toList())
-                val fontFamilies = bulk.map { getFontFamily(it) }
+                val fontFamilies = key.files.map { getFontFamily(it) }
                 Typeface.CustomFallbackBuilder(fontFamilies.first())
                     .apply {
                         for (i in 1 until fontFamilies.size) {
@@ -105,12 +105,18 @@ class ThemeFonts(private val theme: Theme) {
                     .build()
             } else {
                 Typeface.createFromFile(key.files.first().path)
-            }
+            } }.getOrElse { Timber.w(it, "Theme font unavailable; using system font"); Typeface.DEFAULT }
             typefaceCache.put(key, newTypeface)
             newTypeface
         } else {
             typeface
         }
+        }
+    }
+
+    fun preload() {
+        runCatching { listOf(key, candidate, comment, label, popup, symbol, hint, text, toolbar) }
+            .onFailure { Timber.w(it, "Font preload failed") }
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)

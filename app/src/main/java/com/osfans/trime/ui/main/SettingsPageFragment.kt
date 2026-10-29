@@ -54,7 +54,7 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
         preferenceScreen = preferenceManager.createPreferenceScreen(requireContext())
         owners.forEach { it.registerOnChangeListener(listener) }
         if (pageId == "search") {
-            viewModel.setToolbarTitle("搜索设置")
+            viewModel.setToolbarTitle("搜索")
             showSearch(savedInstanceState?.getString("query").orEmpty())
         } else buildPage()
     }
@@ -67,17 +67,29 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
             id = View.generateViewId()
             setSingleLine(); setText(query)
             imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH
-            contentDescription = "搜索设置"
+            hint = "搜索"
+            minimumHeight = dp(56)
+            background = null
+            contentDescription = "搜索"
             doAfterTextChanged { showSearch(it?.toString().orEmpty()) }
         }
         return LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(androidx.core.content.ContextCompat.getColor(context, com.osfans.trime.R.color.framework_background))
-            addView(TextInputLayout(context).apply {
-                hint = "搜索设置，例如：声音、单手、视频"
-                boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
-                endIconMode = TextInputLayout.END_ICON_CLEAR_TEXT
-                addView(input)
+            addView(com.google.android.material.card.MaterialCardView(context).apply {
+                radius = dp(28).toFloat()
+                cardElevation = 0f
+                strokeWidth = 0
+                setCardBackgroundColor(androidx.core.content.ContextCompat.getColor(context, com.osfans.trime.R.color.settings_surface))
+                addView(TextInputLayout(context).apply {
+                    hint = "搜索"
+                    startIconDrawable = androidx.core.content.ContextCompat.getDrawable(context, com.osfans.trime.R.drawable.ic_baseline_search_24)
+                    boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_NONE
+                    setPadding(dp(4), 0, dp(4), 0)
+                    endIconMode = TextInputLayout.END_ICON_CLEAR_TEXT
+                    addView(input)
+                    isHintEnabled = false
+                }, ViewGroup.LayoutParams(-1, -2))
             }, LinearLayout.LayoutParams(-1, -2).apply { setMargins(dp(16), dp(12), dp(16), dp(8)) })
             addView(content, LinearLayout.LayoutParams(-1, 0, 1f))
         }
@@ -87,7 +99,7 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
         query = value
         preferenceScreen.removeAll()
         val term = value.trim()
-        if (term.isEmpty()) { preferenceScreen.addPreference("查找设置", "输入名称后显示页面路径，点击结果即可前往。"); return }
+        if (term.isEmpty()) return
         var count = 0
         SettingsCatalog.pages.forEach { page ->
             if ((page.title + page.summary + SettingsCatalog.path(page)).contains(term, true)) {
@@ -123,8 +135,11 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
                 MaterialAlertDialogBuilder(requireContext()).setTitle("选择自定义键盘").setItems(layouts.map { it.name }.toTypedArray()) { _,index -> SurfaceAppearanceEditor.show(requireActivity(),true,layoutId=layouts[index].id) }.show()
             }
         }
+        if (pageId == "theme") preferenceScreen.addPreference("主题键盘字体与字号", "按键、符号、注解、候选和工具栏分别设置") { startActivity(Intent(requireContext(), FontSettingsActivity::class.java)) }
         if (pageId == "layout") preferenceScreen.addPreference("自定义功能", "命名并组合多个动作，供按键和工具栏绑定") { NamedFunctionsEditor.show(requireActivity()) }
+        if (pageId == "transfer") preferenceScreen.addPreference("整包备份与恢复", "打包全部设置与键盘资源到 rime/mie，支持一键导入") { startActivity(Intent(requireContext(), FullBackupActivity::class.java)) }
         if (pageId == "voice") preferenceScreen.addPreference("识别服务与模型", "在线服务、离线模型、下载与导入") { startActivity(Intent(requireContext(), VoiceSettingsActivity::class.java)) }
+        if (pageId == "clipboard") preferenceScreen.addPreference("剪贴板同步", "SyncClipboard / WebDAV · 文本、图片和文件，默认关闭") { startActivity(Intent(requireContext(), ClipboardSyncActivity::class.java)) }
         if (pageId == "toolbar") {
             preferenceScreen.addPreference("主题键盘状态栏", "主题模式的按钮、功能绑定与独立外观") { ToolbarEditActivity.start(requireContext(), themeMode = true) }
             preferenceScreen.addPreference("自定义键盘状态栏", "选择布局，编辑它自己的状态栏按钮") {
@@ -195,6 +210,7 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
         }
         if (route != null) { findNavController().navigateWithAnim(route); return }
         val activity = when (id) {
+            "voice" -> VoiceSettingsActivity::class.java
             "layout" -> CustomKeyboardActivity::class.java
             "fonts" -> FontSettingsActivity::class.java
             "stats" -> InputStatsActivity::class.java
@@ -220,8 +236,15 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
         }
     }
     override fun onResume() {
-        super.onResume(); updateDependencies()
-        viewModel.setToolbarTitle(if (pageId == "search") "搜索设置" else SettingsCatalog.page(pageId).title)
+        super.onResume()
+        if (pageId == "voice") {
+            val context = requireContext()
+            findNavController().popBackStack()
+            context.startActivity(Intent(context,VoiceSettingsActivity::class.java))
+            return
+        }
+        updateDependencies()
+        viewModel.setToolbarTitle(if (pageId == "search") "搜索" else SettingsCatalog.page(pageId).title)
         if (focusKey.isNotEmpty()) {
             val target = focusKey
             listView.post {
@@ -237,6 +260,7 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
     override fun onDestroy() { owners.forEach { it.unregisterOnChangeListener(listener) }; super.onDestroy() }
     companion object {
         fun launch(context: android.content.Context, id: String) {
+            if (id == "voice") { context.startActivity(Intent(context, VoiceSettingsActivity::class.java)); return }
             context.startActivity(Intent(context, MainActivity::class.java).apply {
                 action = Intent.ACTION_RUN
                 putExtra(MainActivity.EXTRA_SETTINGS_ROUTE, NavigationRoute.SettingsPage(id))

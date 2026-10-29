@@ -14,6 +14,8 @@ class SurfaceDrawable(
     private val inset: Float = 3f,
     private val defaultBorderColor: Int = 0x66FFFFFF,
     private val effects: KeyEffects = KeyEffects(),
+    private val externalShadow: Boolean = false,
+    private val circle: Boolean = false,
 ) : Drawable(), Drawable.Callback {
     private val fill = if (style.background.isBlank()) fallback else if (style.background.startsWith("/"))
         com.osfans.trime.data.theme.AssetBitmapDrawable(style.background)
@@ -22,29 +24,46 @@ class SurfaceDrawable(
     private val borderArea = RectF()
     private val clip = Path()
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-    private var effectSize = ""
+    private var effectWidth = -1f
+    private var effectHeight = -1f
+    private var effectRadius = -1f
+    private var effectDensity = -1f
     private var shadow: EffectBitmap? = null
     private var inner: EffectBitmap? = null
     private var shader: Shader? = null
     private var borderShader: Shader? = null
     init { fill?.callback = this }
     private fun prepare(radius: Float, d: Float) {
-        val key = "${area.width()}:${area.height()}:$radius:$d"
-        if (key == effectSize) return
-        effectSize = key
+        if (area.width() == effectWidth && area.height() == effectHeight && radius == effectRadius && d == effectDensity) return
+        effectWidth=area.width(); effectHeight=area.height(); effectRadius=radius; effectDensity=d
         shadow = if (effects.shadow.enabled) effects.shadow.let { KeyEffectPainter.shadowBitmap(area.width(),area.height(),radius,it.blur*d,it.spread*d,KeyEffectPainter.color(it.color,0x22000000)) } else null
         inner = if (effects.innerShadow.enabled) effects.innerShadow.let { KeyEffectPainter.innerShadowBitmap(area.width(),area.height(),radius,it.blur*d,it.offsetX*d,it.offsetY*d,KeyEffectPainter.color(it.color,0x22000000)) } else null
         shader = if(effects.gradient.enabled) KeyEffectPainter.gradientShader(area,effects.gradient) else null
         borderShader = if(effects.borderGradient.enabled) effects.borderGradient.let { KeyEffectPainter.gradientShader(area,KeyGradient(enabled=true,startColor=it.startColor,endColor=it.endColor,angle=it.angle)) } else null
     }
-    override fun draw(canvas: Canvas) {
+    private fun prepareArea(): Boolean {
         val d = host.resources.displayMetrics.density
         area.set(bounds); area.inset(inset * d, inset * d)
-        if (area.width() <= 0 || area.height() <= 0) return
-        val radius = ((style.radius ?: defaultRadius) * d).coerceAtLeast(0f)
+        if (area.width() <= 0 || area.height() <= 0) return false
+        val radius = radius(d)
         prepare(radius,d)
+        return true
+    }
+    private fun radius(d: Float) = if (circle && style.radius == null) minOf(area.width(),area.height())/2f
+        else ((style.radius ?: defaultRadius)*d).coerceAtLeast(0f)
+
+    fun drawOuterShadow(canvas: Canvas) {
+        if (!effects.shadow.enabled || !prepareArea()) return
         paint.style=Paint.Style.FILL; paint.shader=null; paint.alpha=255
+        val d=host.resources.displayMetrics.density
         shadow?.draw(canvas,area.left+effects.shadow.offsetX*d,area.top+effects.shadow.offsetY*d,paint)
+    }
+    override fun draw(canvas: Canvas) {
+        if (!prepareArea()) return
+        val d=host.resources.displayMetrics.density
+        val radius=radius(d)
+        if (!externalShadow) drawOuterShadow(canvas)
+        paint.style=Paint.Style.FILL; paint.shader=null; paint.alpha=255
         val saved = canvas.save()
         clip.reset(); clip.addRoundRect(area, radius, radius, Path.Direction.CW); canvas.clipPath(clip)
         val blurred = style.blur && BackdropBlur.draw(host, canvas, area)
@@ -82,8 +101,8 @@ class SurfaceDrawable(
     }
     override fun isStateful() = true
     override fun onStateChange(state: IntArray): Boolean { fill?.state = state; invalidateSelf(); return true }
-    override fun setAlpha(alpha: Int) { fill?.alpha = alpha }
-    override fun setColorFilter(colorFilter: ColorFilter?) { fill?.colorFilter = colorFilter }
+    override fun setAlpha(alpha: Int) { fill?.alpha = alpha; invalidateSelf() }
+    override fun setColorFilter(colorFilter: ColorFilter?) { fill?.colorFilter = colorFilter; invalidateSelf() }
     @Suppress("DEPRECATION") override fun getOpacity() = PixelFormat.TRANSLUCENT
     override fun invalidateDrawable(who: Drawable) = invalidateSelf()
     override fun scheduleDrawable(who: Drawable, what: Runnable, `when`: Long) = scheduleSelf(what, `when`)

@@ -98,6 +98,9 @@ class TrimeApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        val process=if(Build.VERSION.SDK_INT>=28) Application.getProcessName() else
+            (getSystemService(ACTIVITY_SERVICE) as android.app.ActivityManager).runningAppProcesses.orEmpty().firstOrNull { it.pid==Process.myPid() }?.processName.orEmpty()
+        if(process.endsWith(":mie_restore")) return
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && !userManager.isUserUnlocked) {
             isDirectBootMode = true
             registerReceiver(unlockReceiver, IntentFilter(Intent.ACTION_USER_UNLOCKED))
@@ -137,6 +140,7 @@ class TrimeApplication : Application() {
             }
         }
         instance = this
+        registerActivityLifecycleCallbacks(com.osfans.trime.ui.main.SettingsTestInput.callbacks())
         try {
             if (BuildConfig.DEBUG) {
                 Timber.plant(
@@ -173,6 +177,8 @@ class TrimeApplication : Application() {
                     },
                 )
             }
+            if(!isDirectBootMode) runCatching { com.osfans.trime.data.backup.FullSettingsBackup.applyPending(ctx) }
+                .onFailure { Timber.e(it,"Pending settings restore could not complete") }
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(ctx)
             com.osfans.trime.util.DiagnosticLog.event("app", "start", "version=${BuildConfig.VERSION_NAME} api=${Build.VERSION.SDK_INT} abi=${Build.SUPPORTED_ABIS.firstOrNull()}")
 
@@ -198,6 +204,7 @@ class TrimeApplication : Application() {
                 setValue(currentPid)
             }
             ClipboardHelper.init(ctx)
+            com.osfans.trime.data.sync.ClipboardSync.init(ctx)
             CollectionHelper.init(ctx)
             CategoryHelper.init(ctx)
             InputStats.init(ctx)

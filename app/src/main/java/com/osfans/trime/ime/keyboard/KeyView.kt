@@ -74,6 +74,8 @@ class KeyView(
     private val symbolPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         textAlign = Paint.Align.CENTER
     }
+    private val labelMetrics = Paint.FontMetrics()
+    private val symbolMetrics = Paint.FontMetrics()
 
     private val effectPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val effectBounds = RectF()
@@ -712,7 +714,7 @@ class KeyView(
 
             val centerX = (width - paddingLeft - paddingRight) / 2f + paddingLeft
             val centerY = (height - paddingTop - paddingBottom) / 2f + paddingTop
-            val fontMetrics = textPaint.fontMetrics
+            val fontMetrics = labelMetrics.also { textPaint.getFontMetrics(it) }
             val adjustmentY = -(fontMetrics.ascent + fontMetrics.descent) / 2f
 
             canvas.drawText(label, centerX + sp(key.keyTextOffsetX) * keyboardView.keyTextScale, centerY + adjustmentY + sp(key.keyTextOffsetY) * keyboardView.keyTextScale, textPaint)
@@ -797,7 +799,7 @@ class KeyView(
             }
 
             val lines = text.split("\n")
-            val fontMetrics = symbolPaint.fontMetrics
+            val fontMetrics = symbolMetrics.also { symbolPaint.getFontMetrics(it) }
             val lineHeight = fontMetrics.descent - fontMetrics.ascent
             val totalHeight = lineHeight * lines.size
 

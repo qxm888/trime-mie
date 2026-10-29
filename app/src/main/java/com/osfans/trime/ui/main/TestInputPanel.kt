@@ -5,8 +5,6 @@
 
 package com.osfans.trime.ui.main
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.content.Context
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
@@ -291,6 +289,8 @@ constructor(
         selectInputType(pills[0])
     }
 
+    var onDismiss: (() -> Unit)? = null
+
     fun show(window: Window) {
         if (isVisible) return
         alpha = 1f
@@ -304,13 +304,8 @@ constructor(
     fun dismiss() {
         if (!isVisible) return
         input.clearFocus()
-        animate().alpha(0f)
-            .setDuration(200L)
-            .setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    isVisible = false
-                }
-            })
+        isVisible = false
+        onDismiss?.invoke()
         inputMethodManager.hideSoftInputFromWindow(windowToken, 0)
     }
 

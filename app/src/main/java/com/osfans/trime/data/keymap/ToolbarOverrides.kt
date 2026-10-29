@@ -220,7 +220,7 @@ object ToolbarOverrides {
     fun forKeyboard(theme: Theme, runtimeId: String = "default"): ToolBar =
         withoutModeButtons(if (theme.isCustom) {
             val custom = CustomKeyboards.get(CustomKeyboards.resolveId(runtimeId))
-            val bar = applyForCustomKeyboard(theme.toolBar, custom?.toolbar ?: StandaloneKeyboardTheme.defaultToolbar())
+            val bar = applyForCustomKeyboard(theme.toolBar, custom?.toolbar ?: StandaloneKeyboardTheme.defaultToolbar()).copy(alignment = custom?.toolbarAlignment ?: "legacy")
             val textColor = custom?.toolbarTextColor()
             if (textColor == null) bar else bar.copy(buttons = bar.buttons.map { button ->
                 button.copy(foreground = button.foreground.copy(normal = button.appearance.keyTextColor.ifBlank { textColor }, highlight = button.appearance.hilitedKeyTextColor.ifBlank { textColor }))

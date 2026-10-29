@@ -25,11 +25,13 @@ data class EffectBitmap(
     val pad: Float,
     val scale: Float,
 ) {
+    private val drawBounds = RectF()
     fun draw(canvas: Canvas, bodyLeft: Float, bodyTop: Float, paint: Paint) {
         val left = bodyLeft - pad
         val top = bodyTop - pad
-        val dst = RectF(left, top, left + bitmap.width / scale, top + bitmap.height / scale)
-        canvas.drawBitmap(bitmap, null, dst, paint)
+        drawBounds.set(left, top, left + bitmap.width / scale, top + bitmap.height / scale)
+        paint.isFilterBitmap = true
+        canvas.drawBitmap(bitmap, null, drawBounds, paint)
     }
 }
 

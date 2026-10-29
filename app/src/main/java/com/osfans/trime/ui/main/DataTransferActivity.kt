@@ -102,11 +102,14 @@ class DataTransferActivity : AppCompatActivity() {
 
         val toolbar = findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.data_toolbar)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.data_app_bar)) { v, windowInsets ->
-            val systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
             v.setPadding(0, systemBars.top, 0, 0)
             windowInsets
         }
         toolbar.setNavigationOnClickListener { finish() }
+        toolbar.menu.add("整包备份与恢复").setOnMenuItemClickListener {
+            startActivity(android.content.Intent(this,FullBackupActivity::class.java)); true
+        }
         toolbar.menu.add("统计与候选备份").setOnMenuItemClickListener {
             startActivity(android.content.Intent(this, PersonalDataActivity::class.java)); true
         }

@@ -13,7 +13,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     android:layout_height="match_parent"
     tools:context=".ui.main.settings.theme.ThemeDiagnosticsActivity">
 
-    <include
+    <include android:layout_width="0dp" android:layout_height="wrap_content"
         android:id="@+id/diagnosticsToolbar"
         layout="@layout/toolbar"
         app:layout_constraintEnd_toEndOf="parent"

@@ -65,6 +65,14 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
 
     private var actionLabel = ""
     private var config: ToolBar.Button? = null
+    private var normalSurface: com.osfans.trime.ime.appearance.SurfaceDrawable? = null
+    private var pressedSurface: com.osfans.trime.ime.appearance.SurfaceDrawable? = null
+
+    fun drawOuterShadow(canvas: android.graphics.Canvas) {
+        val surface = (if (isPressed) pressedSurface else normalSurface) ?: return
+        surface.setBounds(0,0,width,height)
+        surface.drawOuterShadow(canvas)
+    }
 
     private var localImage = false
     private fun updateImageSize() {
@@ -141,8 +149,8 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
         colorStateList = ColorStateList(
             arrayOf(intArrayOf(android.R.attr.state_pressed), intArrayOf()),
             intArrayOf(
-                scope.color(fg.highlight.ifEmpty { "hilited_candidate_text_color" }),
-                scope.color(fg.normal.ifEmpty { "candidate_text_color" }),
+                runCatching { scope.color(fg.highlight.ifEmpty { "hilited_candidate_text_color" }) }.getOrDefault(scope.colors.candidateTextColor),
+                runCatching { scope.color(fg.normal.ifEmpty { "candidate_text_color" }) }.getOrDefault(scope.colors.candidateTextColor),
             ),
         )
         label.setTextColor(colorStateList)
@@ -198,6 +206,7 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
     }
 
     private fun applySurfaceBackground() {
+        normalSurface = null; pressedSurface = null
         val appearance = com.osfans.trime.ime.appearance.SurfaceAppearance.current(scope.theme.isCustom)
         var style = appearance.effectiveToolbar
         if (appearance.linkToolbar && scope.theme.isCustom) {
@@ -225,18 +234,33 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
             )
         }
         if (effects.customized || style.customized || appearance.linkToolbar || own?.hilitedKeyBackColor?.isNotEmpty() == true || own?.hilitedKeyBorderColor?.isNotEmpty() == true) {
-            val fallback = if (appearance.linkToolbar) scope.drawable("key_back_color") else background
+            val fallback = if (appearance.linkToolbar) scope.drawable("key_back_color") else
+                config?.background?.let { bg -> StateListDrawable().apply {
+                    addState(intArrayOf(android.R.attr.state_pressed), backgroundStateDrawable(bg,true, false))
+                    addState(intArrayOf(), backgroundStateDrawable(bg,false, false))
+                } } ?: background
             val pressed = style.copy(
                 background = own?.hilitedKeyBackColor?.ifBlank { style.background } ?: style.background,
                 borderColor = own?.hilitedKeyBorderColor?.ifBlank { style.borderColor } ?: style.borderColor,
             )
+            fun surface(style: com.osfans.trime.ime.appearance.SurfaceStyle) = com.osfans.trime.ime.appearance.SurfaceDrawable(
+                this@ToolButton, fallback?.constantState?.newDrawable()?.mutate() ?: fallback, style,
+                defaultRadius = config?.background?.cornerRadius ?: 8f,
+                defaultBorderColor = scope.colors.keyBorderColor, effects = effects, externalShadow = true,
+                circle = config?.background?.type == ToolBar.Button.Background.Type.CIRCLE)
+            normalSurface = surface(style)
+            pressedSurface = surface(pressed)
             background = StateListDrawable().apply {
-                addState(intArrayOf(android.R.attr.state_pressed), com.osfans.trime.ime.appearance.SurfaceDrawable(this@ToolButton, fallback?.constantState?.newDrawable()?.mutate() ?: fallback, pressed, defaultBorderColor = scope.colors.keyBorderColor, effects = effects))
-                addState(intArrayOf(), com.osfans.trime.ime.appearance.SurfaceDrawable(this@ToolButton, fallback, style, defaultBorderColor = scope.colors.keyBorderColor, effects = effects))
+                addState(intArrayOf(android.R.attr.state_pressed), pressedSurface)
+                addState(intArrayOf(), normalSurface)
             }
             if (effects.ripple) {
-                val mask=android.graphics.drawable.GradientDrawable().apply { setColor(android.graphics.Color.WHITE); cornerRadius=(style.radius ?: 8f)*resources.displayMetrics.density }
-                background=android.graphics.drawable.RippleDrawable(ColorStateList.valueOf(com.osfans.trime.ime.appearance.KeyEffectPainter.color(effects.rippleColor,0x33FFFFFF)),background,mask)
+                val mask=android.graphics.drawable.GradientDrawable().apply {
+                    setColor(android.graphics.Color.WHITE)
+                    shape = if(config?.background?.type == ToolBar.Button.Background.Type.CIRCLE && style.radius == null) android.graphics.drawable.GradientDrawable.OVAL else android.graphics.drawable.GradientDrawable.RECTANGLE
+                    cornerRadius=(style.radius ?: config?.background?.cornerRadius ?: 8f)*resources.displayMetrics.density
+                }
+                background=android.graphics.drawable.RippleDrawable(ColorStateList.valueOf(com.osfans.trime.ime.appearance.KeyEffectPainter.color(effects.rippleColor,0x33FFFFFF)),background,android.graphics.drawable.InsetDrawable(mask,dp(3)))
             }
         }
     }
@@ -244,11 +268,11 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
     override fun drawableStateChanged() {
         super.drawableStateChanged()
         if (childCount == 0) return
-        val effects = config?.effects ?: com.osfans.trime.ime.appearance.SurfaceAppearance.current(scope.theme.isCustom).effectiveToolbarEffects
+        val effects = (config?.effects ?: com.osfans.trime.ime.appearance.SurfaceAppearance.current(scope.theme.isCustom).effectiveToolbarEffects).sanitized()
         val scale = if(isPressed) 1f-effects.pressScale/100f else 1f
         animate().scaleX(scale).scaleY(scale).translationY(if(isPressed) effects.pressSink*resources.displayMetrics.density else 0f).setDuration(effects.animationMs.toLong()).start()
         val shadow=effects.textShadow
-        label.setShadowLayer(if(shadow.enabled) shadow.blur*resources.displayMetrics.density else 0f,shadow.offsetX,shadow.offsetY,com.osfans.trime.ime.appearance.KeyEffectPainter.color(shadow.color,0x55000000))
+        label.setShadowLayer(if(shadow.enabled) shadow.blur*resources.displayMetrics.density else 0f,shadow.offsetX*resources.displayMetrics.density,shadow.offsetY*resources.displayMetrics.density,com.osfans.trime.ime.appearance.KeyEffectPainter.color(shadow.color,0x55000000))
     }
 
     private fun themeKeyBorder() = scope.theme.style.keyBorder.toFloat()
@@ -292,7 +316,7 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
         }
     }
 
-    private fun backgroundStateDrawable(bg: ToolBar.Button.Background, highlight: Boolean): Drawable {
+    private fun backgroundStateDrawable(bg: ToolBar.Button.Background, highlight: Boolean, withInsets: Boolean = true): Drawable {
         val color = if (highlight) {
             scope.color(bg.highlight.ifEmpty { "hilited_candidate_button_color" })
         } else {
@@ -306,6 +330,7 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
 
             ToolBar.Button.Background.Type.CIRCLE -> ShapeDrawable(OvalShape()).apply { paint.color = color }
         }.let {
+            if (!withInsets) return@let it
             val vInset = dp(bg.verticalInset)
             val hInset = dp(bg.horizontalInset)
             LayerDrawable(arrayOf(it)).apply {

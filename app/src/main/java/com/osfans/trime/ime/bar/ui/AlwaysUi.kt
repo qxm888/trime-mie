@@ -64,6 +64,7 @@ class AlwaysUi(
     }
 
     val buttonsUi = ButtonsBarUi(ctx, scope, onButtonClick, toolBar)
+    private var alignedUi: ButtonsBarUi? = null
 
     val clipboardUi = ClipboardSuggestionUi(ctx, scope)
 
@@ -153,7 +154,17 @@ class AlwaysUi(
         // 非悬浮模式不显示收放按钮（占位清零），悬浮模式点击切换收放并持久化。
         collapseButton.visibility = if (floating) android.view.View.VISIBLE else android.view.View.GONE
         collapseButton.setOnClickListener { setToolbarCollapsed(!toolbarCollapsed) }
+        ensureAlignedToolbar(toolBar)
         applyCollapseState()
+    }
+
+    private fun ensureAlignedToolbar(config: ToolBar) {
+        if (config.alignment == "legacy") return
+        if (alignedUi == null) {
+            alignedUi = ButtonsBarUi(ctx, scope, onButtonClick, config, allButtons = true).also { ui ->
+                root.run { add(ui.viewport, lParams(matchConstraints, matchParent) { after(collapseButton); endOfParent(); centerVertically() }) }
+            }
+        } else alignedUi?.applyToolbar(config)
     }
 
     fun applyToolbar(config: ToolBar) {
@@ -166,6 +177,7 @@ class AlwaysUi(
         leftMostButton = replacement
         root.addView(replacement, params)
         buttonsUi.applyToolbar(config)
+        ensureAlignedToolbar(config)
         while (rightMostButton.childCount > 1) rightMostButton.removeViewAt(1)
         buttonsUi.firstButton?.let { rightMostButton.addView(it, android.widget.FrameLayout.LayoutParams(-1, -1)) }
         val (width, height) = buttonsUi.getButtonSize(config.buttons.firstOrNull())
@@ -180,12 +192,14 @@ class AlwaysUi(
         collapseButton.updateStyle(option, enabled)
         buttonsUi.firstButton?.updateStyle(option, enabled)
         buttonsUi.updateStyle(option, enabled)
+        alignedUi?.updateStyle(option, enabled)
     }
 
     fun toggleOptions(): Set<String> = buildSet {
         leftMostButton.option?.let { add(it) }
         buttonsUi.firstButton?.option?.let { add(it) }
         buttonsUi.root.children.forEach { (it as ToolButton).option?.let { add(it) } }
+        alignedUi?.root?.children?.forEach { (it as ToolButton).option?.let { add(it) } }
     }
 
     fun updateState(state: State) {
@@ -217,6 +231,13 @@ class AlwaysUi(
         leftMostButton.visibility = if (hideButtons || !toolBar.primaryVisible) android.view.View.GONE else android.view.View.VISIBLE
         rightMostButton.visibility = if (clipboard) android.view.View.GONE else android.view.View.VISIBLE
         if (hideButtons) rightMostButton.displayedChild = 0 else updateRightMostButton(currentState)
+        val aligned = toolBar.alignment != "legacy" && currentState == State.Toolbar && !hideButtons
+        alignedUi?.viewport?.visibility = if (aligned) android.view.View.VISIBLE else android.view.View.GONE
+        if (aligned) {
+            leftMostButton.visibility = android.view.View.GONE
+            rightMostButton.visibility = android.view.View.GONE
+            animator.visibility = android.view.View.GONE
+        } else animator.visibility = android.view.View.VISIBLE
     }
 
     /** Restyles the toolbar area after a scheme switch. */
@@ -225,6 +246,7 @@ class AlwaysUi(
         collapseButton.refreshColors()
         hideKeyboardButton.refreshColors()
         buttonsUi.refreshColors()
+        alignedUi?.refreshColors()
         clipboardUi.refreshColors()
     }
 

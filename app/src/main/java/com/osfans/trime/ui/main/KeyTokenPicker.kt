@@ -136,7 +136,7 @@ object KeyTokenPicker {
             }
             override fun afterTextChanged(s:android.text.Editable?) {}
         })
-        list.setOnItemClickListener { _,_,index,_ -> dialog.dismiss(); picked(visible[index]) }
+        list.setOnItemClickListener { _,_,index,_ -> visible.getOrNull(index)?.let { selected -> dialog.dismiss(); picked(selected) } }
         dialog.show()
     }
 
@@ -149,7 +149,7 @@ object KeyTokenPicker {
             "内置语音控制" to listOf(e("开始录音",com.osfans.trime.data.keymap.BindingActions.command("__mie_voice_start",label="开始录音")),e("结束录音并识别",com.osfans.trime.data.keymap.BindingActions.command("__mie_voice_finish",label="结束录音并识别")),e("取消录音",com.osfans.trime.data.keymap.BindingActions.command("__mie_voice_cancel",label="取消录音"))),
             "方案选项与中英切换" to (listOf(e("自定义方案选项…","__parameter:__rime_option")) + listOf("ascii_mode" to "中英切换", "full_shape" to "全角半角", "simplification" to "简繁切换", "ascii_punct" to "中西文标点").map { (option,name) -> e(name,com.osfans.trime.data.keymap.BindingActions.token(com.osfans.trime.data.theme.model.PresetKey(send="Mode_switch",toggle=option,label=name))) }),
             "Rime 按键（全部）" to com.osfans.trime.core.RimeKeyMapping::class.java.fields.filter { it.name.startsWith("RimeKey_") }.sortedBy { it.name }.map { e(it.name.removePrefix("RimeKey_")) },
-            "输入法与设置" to listOf(e("设置", "SETTINGS"),e("选择输入方案", "MENU"),e("选择配色", "PROG_RED"),e("切换系统输入法", "LANGUAGE_SWITCH"),e("系统语音输入", "VOICE_ASSIST")),
+            "输入法与设置" to listOf(e("设置", "SETTINGS"),e("选择输入方案", "MENU"),e("选择配色", "PROG_RED"),e("切换系统输入法", "LANGUAGE_SWITCH"),e("内置语音输入", "VOICE_ASSIST")),
             "系统按键（全部）" to android.view.KeyEvent::class.java.fields.filter { it.name.startsWith("KEYCODE_") && it.type == Int::class.javaPrimitiveType }.sortedBy { it.name }.map { field -> e(field.name.removePrefix("KEYCODE_"), field.name.removePrefix("KEYCODE_")) },
             "文本与组合输入" to listOf(e("直接上屏文本", "__parameter:commit"), e("日期时间", "__parameter:date"), e("自定义命令 / Intent", "__parameter:__custom_command")),
             "同文命令" to linkedMapOf("menu_keyboard" to "功能菜单", "clipboard_window" to "剪贴板 / 收藏", "liquid_keyboard" to "符号键盘（名称 / 类型）", "set_color_scheme" to "指定配色（配色ID）", "set_theme" to "指定主题（主题名）", "broadcast" to "发送广播（Action）", "commit" to "直接上屏文字", "date" to "格式化日期（格式）", "run" to "运行命令", "apply" to "处理选中文字", "share_text" to "分享文字", "select_candidate" to "选择候选（序号）", "input_stats" to "输入统计").map { (command,name) -> e(name, "__parameter:" + command) },
@@ -190,7 +190,8 @@ object KeyTokenPicker {
                 ),
         ) + listOf(
             activity.getString(R.string.key_editor_cat_actions) to
-                (com.osfans.trime.data.keymap.StandaloneKeyboardTheme.base().presetKeys + ThemeManager.activeTheme.presetKeys).map { (token, action) ->
+                (com.osfans.trime.data.keymap.StandaloneKeyboardTheme.base().presetKeys +
+                    if (standalone) emptyMap() else ThemeManager.activeThemeOrNull()?.presetKeys.orEmpty()).map { (token, action) ->
                         Entry(action.label.ifEmpty { action.states.joinToString("/").ifEmpty { token } } + " · " + token, com.osfans.trime.data.keymap.BindingActions.token(action))
                     },
         )

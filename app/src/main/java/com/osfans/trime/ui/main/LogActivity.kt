@@ -52,7 +52,7 @@ class LogActivity : AppCompatActivity() {
         enableEdgeToEdge()
         val binding = ActivityLogBinding.inflate(layoutInflater)
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, windowInsets ->
-            val systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
             binding.root.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 leftMargin = systemBars.left
                 rightMargin = systemBars.right

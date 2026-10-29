@@ -32,7 +32,7 @@ object CandidatePreferences {
         if (file.exists()) runCatching { file.copyTo(File(file.parentFile, "candidate_preferences-invalid-${System.currentTimeMillis()}.json")) }
         timber.log.Timber.e(error, "Cannot read candidate preferences; preserved backup")
         emptyMap()
-    }.also { cache = it }
+    }.mapValues { (_,rule) -> if(rule.forgotten.isEmpty()) rule else rule.copy(forgotten=emptySet()) }.also { cache = it }
 
     @Synchronized fun get(schema: String, code: String): Rule? = data()[key(schema, code)]
     @Synchronized fun reload() { cache = null }
@@ -96,8 +96,9 @@ object CandidatePreferences {
         synchronized(writeLock) {
             synchronized(this) {
                 File(file.parentFile, "candidate_preferences-before-import-${System.currentTimeMillis()}.json").writeAtomicText(json.encodeToString(data()))
-                file.writeAtomicText(json.encodeToString(backup.rules))
-                cache = backup.rules
+                val rules=backup.rules.mapValues { (_,rule) -> rule.copy(forgotten=emptySet()) }
+                file.writeAtomicText(json.encodeToString(rules))
+                cache = rules
             }
         }
         return backup.rules.size
@@ -112,7 +113,7 @@ object CandidatePreferences {
                 java.security.MessageDigest.getInstance("SHA-256").digest(schema.toByteArray()).take(4).joinToString("") { "%02x".format(it) }
             name to buildString {
                 append("# Trime Mie 候选调序词典草稿\n# 记录的是输入编码；接入前请确认与方案词典编码一致。\n")
-                append("# 不包含删除规则；忘记词以低权重导出。JSON备份可完整恢复行为。\n---\nname: $name\nversion: \"1\"\nsort: by_weight\ncolumns: [text, code, weight]\n...\n")
+                append("# 不包含隐藏规则和原生词频；应用调序另存JSON，原生忘词请备份Rime用户词典。\n---\nname: $name\nversion: \"1\"\nsort: by_weight\ncolumns: [text, code, weight]\n...\n")
                 entries.forEach { (id, rule) ->
                     val code = json.decodeFromString<List<String>>(id)[1]
                     if (code.any { it.isWhitespace() }) return@forEach

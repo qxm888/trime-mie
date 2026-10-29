@@ -12,6 +12,10 @@ import com.osfans.trime.data.keymap.CustomKeyboards
 import com.osfans.trime.data.keymap.FontSpec
 import com.osfans.trime.data.theme.FontOverrides
 import com.osfans.trime.data.theme.ThemeManager
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 object LayoutTypographyEditor {
     fun show(activity: FragmentActivity, id: String) {
@@ -20,18 +24,21 @@ object LayoutTypographyEditor {
         val body=LinearLayout(activity).apply { orientation=LinearLayout.VERTICAL; setPadding(32,8,32,16) }
         val importer=activity.activityResultRegistry.register("font-import-${java.util.UUID.randomUUID()}",androidx.activity.result.contract.ActivityResultContracts.GetContent()) { uri ->
             if(uri!=null) {
+                activity.lifecycleScope.launch {
                 val file=java.io.File(FontOverrides.folder(),"font-${java.util.UUID.randomUUID()}.ttf")
-                runCatching {
+                val result=withContext(Dispatchers.IO) { runCatching {
                     activity.contentResolver.openInputStream(uri).use { input ->
                         requireNotNull(input) { "无法读取字体" }
                         file.outputStream().use { output ->
                             val buffer=ByteArray(8192); var total=0
-                            while(true) { val count=input.read(buffer); if(count<0) break; total+=count; require(total<=20*1024*1024) { "字体不能超过20MB" }; output.write(buffer,0,count) }
+                            while(true) { val count=input.read(buffer); if(count<0) break; total+=count; require(total<=128*1024*1024) { "字体不能超过128MB" }; output.write(buffer,0,count) }
                         }
                     }
-                    android.graphics.Typeface.createFromFile(file)
-                }.onSuccess { android.widget.Toast.makeText(activity,"已导入，请在对应文字的字体列表中选择",1).show() }
+                    FontOverrides.fromSelection(file.absolutePath) ?: error("字体不可用")
+                } }
+                result.onSuccess { android.widget.Toast.makeText(activity,"已导入，请在对应文字的字体列表中选择",1).show() }
                     .onFailure { file.delete(); android.widget.Toast.makeText(activity,it.message ?: "字体导入失败",1).show() }
+                }
             }
         }
         body.addView(MaterialButton(activity,null,com.google.android.material.R.attr.materialButtonOutlinedStyle).apply { text="导入字体文件…"; setOnClickListener { importer.launch("*/*") } })

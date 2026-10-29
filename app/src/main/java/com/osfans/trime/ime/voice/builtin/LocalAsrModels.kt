@@ -188,7 +188,40 @@ object LocalAsrModels {
         return if (source <= 0) base else SOURCES.getOrElse(source) { SOURCES[0] }.second + "/" + base
     }
 
-    fun modelsRoot(context: Context): File = File(context.filesDir, "asr_models")
+    fun modelsRoot(context: Context): File =
+        if (com.osfans.trime.core.data.DirectExternalStorage.hasPermission(context))
+            File(com.osfans.trime.core.data.MieUserDirectory.directory(context), "语音模型")
+        else File(context.filesDir, "asr_models") // Keep old models usable until permission is granted.
+
+    /** IO-only migration: validate the copy before making it visible; preserve old files. */
+    fun migrateLegacy(context: Context): Int = synchronized(installLock) {
+        if (!com.osfans.trime.core.data.DirectExternalStorage.hasPermission(context)) return@synchronized 0
+        val old=File(context.filesDir,"asr_models")
+        if(!old.isDirectory) return@synchronized 0
+        var count=0
+        FAMILIES.forEach { family -> family.variants.forEach variants@ { variant ->
+            val source=File(File(old,family.key),variant.key)
+            if(!variant.files.all { File(source,it.name).let { f -> f.isFile && f.length()==it.sizeBytes } }) return@variants
+            val dest=dirFor(context,family.key,variant.key)
+            if(variant.files.all { File(dest,it.name).let { f -> f.isFile && f.length()==it.sizeBytes } }) return@variants
+            val stage=File(dest.parentFile,".${variant.key}.migration")
+            stage.deleteRecursively(); check(stage.mkdirs()) { "无法创建模型迁移目录" }
+            try {
+                variant.files.forEach { spec ->
+                    File(source,spec.name).copyTo(File(stage,spec.name),true)
+                    check(verify(spec,File(stage,spec.name))) { "模型迁移校验失败，原文件已保留" }
+                }
+                val previous=File(dest.parentFile,".${variant.key}.before-migration-${System.currentTimeMillis()}")
+                if(dest.exists()) check(dest.renameTo(previous)) { "无法保留原公开目录模型" }
+                if(!stage.renameTo(dest)) {
+                    if(previous.exists()) previous.renameTo(dest)
+                    error("模型迁移保存失败，原文件已保留")
+                }
+                count++
+            } finally { stage.deleteRecursively() }
+        } }
+        count
+    }
 
     fun dirFor(context: Context, familyKey: String, variantKey: String): File =
         File(File(modelsRoot(context), familyKey), variantKey)
@@ -209,9 +242,12 @@ object LocalAsrModels {
 
     /** 变体目录是否完整（存在 + 字节数匹配；SHA 在安装时已校验）。 */
     fun variantComplete(context: Context, familyKey: String, variant: LocalVariantSpec): Boolean {
-        val dir = dirFor(context, familyKey, variant.key)
-        return variant.files.all { spec -> File(dir, spec.name).let { it.isFile && it.length() == spec.sizeBytes } }
+        return installedDir(context,familyKey,variant) != null
     }
+
+    private fun installedDir(context: Context,familyKey: String,variant: LocalVariantSpec): File? =
+        listOf(dirFor(context,familyKey,variant.key),File(File(File(context.filesDir,"asr_models"),familyKey),variant.key))
+            .firstOrNull { dir -> variant.files.all { spec -> File(dir,spec.name).let { it.isFile && it.length()==spec.sizeBytes } } }
 
     fun installedVariant(context: Context, familyKey: String): String? {
         val def = family(familyKey) ?: return null
@@ -228,7 +264,7 @@ object LocalAsrModels {
         val def = family(familyKey) ?: return null
         val variant = def.variant(variantKey) ?: return null
         if (!variantComplete(context, familyKey, variant)) return null
-        val dir = dirFor(context, familyKey, variantKey)
+        val dir = installedDir(context,familyKey,variant) ?: return null
         return variant.files.associate { it.name to File(dir, it.name).absolutePath }
     }
 
@@ -276,6 +312,7 @@ object LocalAsrModels {
         onCallCreated: (Call) -> Unit = {},
         onStage: (ModelInstallPhase, Int) -> Unit = { _, _ -> },
     ): File = synchronized(installLock) {
+        check(com.osfans.trime.core.data.DirectExternalStorage.hasPermission(context)) { "请先授予共享存储权限，模型将保存到 rime/mie/语音模型" }
         val variant = family(familyKey)?.variant(variantKey) ?: throw IOException("未知模型变体")
         val dest = dirFor(context, familyKey, variantKey)
         val work = File(context.noBackupFilesDir, "asr_install").apply { mkdirs() }
@@ -376,8 +413,9 @@ object LocalAsrModels {
         return detected
     }
 
-    fun uninstall(context: Context, familyKey: String) {
+    fun uninstall(context: Context, familyKey: String) = synchronized(installLock) {
         File(modelsRoot(context), familyKey).deleteRecursively()
+        File(File(context.filesDir,"asr_models"),familyKey).deleteRecursively()
     }
 
     fun downloadClient(): OkHttpClient = OkHttpClient.Builder()

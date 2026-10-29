@@ -7,3 +7,12 @@ Trime Mie changes: integrated IME lifecycle, isolated sessions and recorder hand
 no external speech service binding. Model data is downloaded separately.
 The bundled sherpa-onnx library is provided by https://github.com/k2-fsa/sherpa-onnx
 under Apache-2.0. See bibi-upstream-NOTICE.txt for upstream notices.
+
+V3.0.1 Tencent support: model catalog, HMAC-SHA1 WS/flash protocol and response
+shape handling adapted from BiBi-Keyboard PR #134 and #135 (Apache-2.0):
+https://github.com/BryceWG/BiBi-Keyboard/pull/134
+https://github.com/BryceWG/BiBi-Keyboard/pull/135
+Source heads: 51655ef1fd5e5d0d717749c520e885c580984137 and
+445dccabb066417d5b021a0da6182fb671fa21b6.
+Mie modifications: PCM-only engine adapter, bounded/paced sending, cancellation,
+cumulative partial text by sentence ID, safe diagnostic metadata and backup exclusion.

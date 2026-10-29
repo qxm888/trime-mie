@@ -112,6 +112,12 @@ object AsrSettings {
         put(cfgKey(vendor, "language"), value); bumpVersion()
     }
 
+    fun tencentField(field: String): String = str(cfgKey("tencent",field))
+    fun setTencentField(field: String, value: String) {
+        require(field in setOf("app_id","secret_id","secret_key","category"))
+        put(cfgKey("tencent",field),value); bumpVersion()
+    }
+
     // ---- 火山（豆包语音）专有 ----
 
     fun volcUseNewAuth(): Boolean = str(cfgKey("volc", "use_new_auth"), "1") != "0"
@@ -184,6 +190,7 @@ object AsrSettings {
     fun hasCredential(): Boolean = when (selectedVendor) {
         "none" -> true
         "volc" -> volcHasCredential()
+        "tencent" -> TencentProtocol.Credentials(tencentField("app_id").trim(),tencentField("secret_id").trim(),tencentField("secret_key").trim()).valid()
         else -> {
             val def = AsrVendors.byId(selectedVendor) ?: return true
             if (def.local) {
