@@ -81,6 +81,7 @@ class Key(
 
     val keyTextSize: Float = keyDef?.keyTextSize ?: 0f
     val symbolTextSize: Float = keyDef?.symbolTextSize ?: 0f
+    val hintTextSize: Float = keyDef?.hintTextSize ?: 0f
     val roundCorner: Float = keyDef?.roundCorner?.takeIf { it >= 0 } ?: parent.roundCorner
     val keyBorder: Int = keyDef?.keyBorder?.takeIf { it >= 0 } ?: parent.keyBorder
     var keyTextOffsetX = 0f

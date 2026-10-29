@@ -10,6 +10,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ToolBar(
     val primaryButton: Button? = null,
+    val primaryVisible: Boolean = true,
     val buttons: List<Button> = emptyList(),
     val buttonSpacing: Int = 18,
     val buttonFont: MaybeStringList = MaybeStringList.Empty,
@@ -26,6 +27,7 @@ data class ToolBar(
         val size: List<Int> = emptyList(),
         val appearance: com.osfans.trime.data.keymap.KeyAppearance.Style = com.osfans.trime.data.keymap.KeyAppearance.Style(),
         val bindings: Map<String, String> = emptyMap(),
+        val effects: com.osfans.trime.ime.appearance.KeyEffects? = null,
     ) {
 
         @Serializable

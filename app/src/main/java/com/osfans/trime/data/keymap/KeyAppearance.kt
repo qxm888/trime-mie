@@ -12,6 +12,7 @@ object KeyAppearance {
     data class Style(
         val labelSymbol: String = "", val hint: String = "",
         val keyTextSize: Float = 0f, val symbolTextSize: Float = 0f,
+        val hintTextSize: Float = 0f,
         val roundCorner: Float = -1f, val keyBorder: Int = -1,
         val keyTextColor: String = "", val keySymbolColor: String = "",
         val keyBackColor: String = "", val keyBorderColor: String = "",
@@ -24,7 +25,7 @@ object KeyAppearance {
         val popup: List<String> = emptyList(), val sendBindings: Boolean? = null,
     ) {
         fun toTextKey() = TextKey(labelSymbol = labelSymbol, hint = hint,
-            keyTextSize = keyTextSize, symbolTextSize = symbolTextSize, roundCorner = roundCorner, keyBorder = keyBorder,
+            keyTextSize = keyTextSize, symbolTextSize = symbolTextSize, hintTextSize = hintTextSize, roundCorner = roundCorner, keyBorder = keyBorder,
             keyTextColor = keyTextColor, keySymbolColor = keySymbolColor, keyBackColor = keyBackColor, keyBorderColor = keyBorderColor,
             hilitedKeyTextColor = hilitedKeyTextColor, hilitedKeySymbolColor = hilitedKeySymbolColor,
             hilitedKeyBackColor = hilitedKeyBackColor, hilitedKeyBorderColor = hilitedKeyBorderColor,
@@ -35,7 +36,8 @@ object KeyAppearance {
     }
     val fields = linkedMapOf(
         "labelSymbol" to "符号文字", "hint" to "提示文字",
-        "keyTextSize" to "主文字字号 dp（0 继承）", "symbolTextSize" to "符号字号 dp（0 继承）",
+        "keyTextSize" to "主文字字号 dp（0 继承）", "hintTextSize" to "注解字号",
+        "symbolTextSize" to "符号字号 dp（0 继承）",
         "roundCorner" to "圆角 dp（-1 继承）", "keyBorder" to "边框宽度 dp（-1 继承）",
         "keyTextColor" to "文字颜色", "keySymbolColor" to "符号颜色",
         "keyBackColor" to "背景颜色或图片", "keyBorderColor" to "边框颜色",

@@ -72,7 +72,7 @@ class PopupKeyboardUi(
 
         val textView = view(::AutoScaleTextView) {
             scaleMode = AutoScaleTextView.Mode.Proportional
-            textSize = theme.style.popupTextSize
+            textSize = com.osfans.trime.data.keymap.LayoutTypography.size("popup", theme.style.popupTextSize)
             setTextColor(scope.colors.popupTextColor)
             typeface = theme.fonts.popup
         }
@@ -98,7 +98,7 @@ class PopupKeyboardUi(
             if (text.isIconFont) {
                 imageView.setImageDrawable(
                     IconicsDrawable(ctx, text.toIconName()).apply {
-                        sizeDp = theme.style.popupTextSize.toInt()
+                        sizeDp = com.osfans.trime.data.keymap.LayoutTypography.size("popup", theme.style.popupTextSize).toInt()
                         colorFilter = PorterDuffColorFilter(scope.colors.popupTextColor, PorterDuff.Mode.SRC_IN)
                     },
                 )

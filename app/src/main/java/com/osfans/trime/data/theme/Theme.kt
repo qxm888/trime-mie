@@ -41,7 +41,9 @@ data class Theme(
     }
 
     fun resolveAction(token: KeyActionToken) = actionCache.value.getOrPut(token) {
-        KeyAction(token, BUILTIN_ACTIONS + presetKeys)
+        KeyAction(token, BUILTIN_ACTIONS + presetKeys + ((token as? KeyActionToken.Plain)?.token?.let { value ->
+            com.osfans.trime.data.keymap.BindingActions.resolve(value)?.let { mapOf(value to it) }
+        } ?: emptyMap()))
     }
 
     fun resolveAction(tokenString: String) = resolveAction(KeyActionToken.Plain(tokenString))
@@ -50,6 +52,9 @@ data class Theme(
         // 内置功能键使用 __mie_ 前缀：主题 YAML 里写旧参数（switch_* / floating_keyboard /
         // one_hand_mode）不再绑定这些功能——执行端只认 __mie_* 命令，旧 token 一律落空。
         val BUILTIN_ACTIONS: Map<String, PresetKey> = mapOf(
+            "__mie_menu" to PresetKey(label = "功能菜单", send = "FUNCTION", command = "menu_keyboard"),
+            "__mie_hide_symbols" to PresetKey(label = "符号显示开关", send = "FUNCTION", command = "switch_hide_key_symbol"),
+            "__mie_hide_hints" to PresetKey(label = "注解显示开关", send = "FUNCTION", command = "switch_hide_key_hint"),
             "__mie_hide_bar" to PresetKey(label = "隐藏工具栏", send = "FUNCTION", command = "__mie_toggle_hide_bar"),
             "__mie_candidates_window" to PresetKey(label = "候选窗口切换", send = "FUNCTION", command = "__mie_toggle_candidates_window"),
             "__mie_floating_keyboard" to PresetKey(label = "悬浮键盘切换", send = "FUNCTION", command = "__mie_toggle_floating_keyboard"),

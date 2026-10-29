@@ -118,8 +118,12 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
         }
         if (pageId == "surface") {
             preferenceScreen.addPreference("主题键盘全局外观", "主题模式的按键与状态栏样式") { SurfaceAppearanceEditor.show(requireActivity(), false) }
-            preferenceScreen.addPreference("自定义键盘全局外观", "自定义模式独立保存，与主题键盘互不影响") { SurfaceAppearanceEditor.show(requireActivity(), true) }
+            preferenceScreen.addPreference("自定义键盘外观", "选择布局，分别保存外观与字号") {
+                val layouts=com.osfans.trime.data.keymap.CustomKeyboards.list()
+                MaterialAlertDialogBuilder(requireContext()).setTitle("选择自定义键盘").setItems(layouts.map { it.name }.toTypedArray()) { _,index -> SurfaceAppearanceEditor.show(requireActivity(),true,layoutId=layouts[index].id) }.show()
+            }
         }
+        if (pageId == "layout") preferenceScreen.addPreference("自定义功能", "命名并组合多个动作，供按键和工具栏绑定") { NamedFunctionsEditor.show(requireActivity()) }
         if (pageId == "voice") preferenceScreen.addPreference("识别服务与模型", "在线服务、离线模型、下载与导入") { startActivity(Intent(requireContext(), VoiceSettingsActivity::class.java)) }
         if (pageId == "toolbar") {
             preferenceScreen.addPreference("主题键盘状态栏", "主题模式的按钮、功能绑定与独立外观") { ToolbarEditActivity.start(requireContext(), themeMode = true) }
@@ -147,7 +151,7 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
                 group("播报与气泡", ui.filter { it.key.startsWith("speak_") || it.key == "show_key_popup" })
             }
             "candidates" -> {
-                group("窗口显示", ui.filter { it.key in listOf("show_candidates_window", "candidates_layout", "candidates_window_position") })
+                group("窗口显示", ui.filter { it.key in listOf("show_candidates_window", "candidates_layout", "candidates_window_position", "candidate_bottom_pagination") })
                 group("候选内容与行数", ui.filter { it.key in listOf("candidate_limit_lines", "candidate_auto_shrink", "candidate_full_display", "candidate_item_max_lines") })
                 group("悬浮球", ui.filter { it.key in listOf("candidate_floating_ball", "candidate_ball_opacity") })
             }

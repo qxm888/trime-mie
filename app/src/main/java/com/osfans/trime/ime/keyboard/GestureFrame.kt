@@ -73,6 +73,8 @@ open class GestureFrame(context: Context) : FrameLayout(context) {
     var onCancel: (() -> Unit)? = null
     var onMove: ((x: Float, y: Float, longPress: Boolean) -> Unit)? = null
     var onSwipe: ((behavior: KeyBehavior) -> Unit)? = null
+    /** 按下位置（View 本地坐标），用于波纹等从触点扩散的特效。 */
+    var onTouchDown: ((x: Float, y: Float) -> Unit)? = null
 
     var isRepeatable = false
     var isSlideCursor = false
@@ -118,6 +120,7 @@ open class GestureFrame(context: Context) : FrameLayout(context) {
 
                 drawableHotspotChanged(x, y)
                 isPressed = true
+                onTouchDown?.invoke(x, y)
                 if (vibrateOnKeyPress) InputFeedbackManager.keyPressVibrate(this)
                 onPress?.invoke()
 

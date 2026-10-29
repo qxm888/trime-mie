@@ -482,6 +482,7 @@ class AppPrefs(
 
         val mode = enum(R.string.show_candidates_window, MODE, PopupCandidatesMode.DISABLED)
         val floatingBall = switch(R.string.candidate_floating_ball, "candidate_floating_ball", false, R.string.candidate_floating_ball_summary)
+        val bottomPagination = switch(R.string.candidate_bottom_pagination, "candidate_bottom_pagination", false)
         val ballOpacity = int(R.string.candidate_ball_opacity, "candidate_ball_opacity", 65, 20, 100, "%", 5) { floatingBall.getValue() }
         val limitLines = switch(R.string.candidate_limit_lines, "candidate_limit_lines", true)
         val autoShrink = switch(R.string.candidate_auto_shrink, "candidate_auto_shrink", true, enableUiOn = { limitLines.getValue() && maxLines.getValue() == 1 })

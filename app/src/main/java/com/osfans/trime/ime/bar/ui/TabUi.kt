@@ -52,7 +52,7 @@ class TabUi(
     private val titleText = textView {
         typeface = Typeface.defaultFromStyle(Typeface.BOLD)
         gravity = gravityVerticalCenter
-        textSize = theme.style.candidateTextSize
+        textSize = com.osfans.trime.data.keymap.LayoutTypography.size("toolbar", theme.style.candidateTextSize)
         setTextColor(scope.colors.keyTextColor)
     }
 
@@ -85,6 +85,8 @@ class TabUi(
     }
 
     fun setTitle(title: String) {
+        titleText.typeface=theme.fonts.toolbar
+        titleText.textSize=com.osfans.trime.data.keymap.LayoutTypography.size("toolbar",theme.style.candidateTextSize)
         titleText.text = title
     }
 

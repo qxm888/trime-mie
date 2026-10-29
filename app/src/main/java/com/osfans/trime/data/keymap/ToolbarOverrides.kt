@@ -64,6 +64,8 @@ object ToolbarOverrides {
         val bindings: Map<String, String> = emptyMap(),
         val width: Int = 0,
         val height: Int = 0,
+        val effects: com.osfans.trime.ime.appearance.KeyEffects? = null,
+        val primary: Boolean = false,
         val iconSize: Int = 0, // dp; 0 fits available button area
     )
 
@@ -163,14 +165,22 @@ object ToolbarOverrides {
         return applyEntries(toolBar, customToolbar.map { it.copy() }, allowCustomActions = true)
     }
 
+    fun primaryEntry(button: ToolBar.Button? = null) = Entry(action = button?.action?.ifEmpty { "__mie_menu" } ?: "__mie_menu", icon = button?.foreground?.style?.ifEmpty { "•••" } ?: "•••", primary = true, id = "primary-menu")
+
+    fun editableEntries(bar: ToolBar, entries: List<Entry>): List<Entry> =
+        if (entries.any { it.primary || it.id == "primary-hidden" }) entries else listOf(primaryEntry(bar.primaryButton)) + entries
+
     private fun applyEntries(
         toolBar: ToolBar,
         stored: List<Entry>,
         allowCustomActions: Boolean = false,
     ): ToolBar {
-        val byAction = toolBar.buttons.associateBy { it.action }
+        val byAction = (listOfNotNull(toolBar.primaryButton) + toolBar.buttons).associateBy { it.action }
+        var primary: ToolBar.Button? = toolBar.primaryButton
+        var primaryVisible = true
         val result = mutableListOf<ToolBar.Button>()
         stored.forEach { entry ->
+            if (entry.primary || entry.id == "primary-hidden") primaryVisible = entry.enabled && entry.id != "primary-hidden"
             if (isModeAction(entry.action)) return@forEach
             when {
                 // 内置功能按钮不在主题里，按位置直接插入
@@ -184,7 +194,7 @@ object ToolbarOverrides {
                     ) else null)?.let { btn ->
                         if (entry.enabled) {
                             val style = entry.appearance
-                            result += btn.copy(
+                            val configured = btn.copy(
                                 foreground = btn.foreground.copy(
                                     style = entry.icon.ifEmpty { btn.foreground.style },
                                     optionStyles = if (entry.icon.isEmpty()) btn.foreground.optionStyles else emptyList(),
@@ -195,14 +205,15 @@ object ToolbarOverrides {
                                 ),
                                 longPressAction = entry.bindings["longClick"] ?: btn.longPressAction,
                                 bindings = entry.bindings,
-                                appearance = style,
+                                appearance = style, effects = entry.effects?.sanitized(),
                                 size = if (entry.width > 0 || entry.height > 0) listOf(entry.width.takeIf { it > 0 } ?: 44, entry.height.takeIf { it > 0 } ?: 44) else btn.size,
                             )
+                            if (entry.primary) primary = configured else result += configured
                         }
                     }
             }
         }
-        return toolBar.copy(buttons = result)
+        return toolBar.copy(primaryButton = primary, primaryVisible = primaryVisible, buttons = result)
     }
 
     /** Mode-aware selection: fully custom layouts never consult the theme overlay store. */

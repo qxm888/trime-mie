@@ -56,6 +56,23 @@ object CandidatePreferences {
             .onFailure { timber.log.Timber.e(it, "Candidate order persistence failed") }
     }
 
+    /** Save a user phrase without deleting or demoting the original candidate. */
+    fun createWord(schema: String, code: String, word: String) {
+        require(schema.isNotBlank() && code.isNotBlank() && code.length <= 128 && !code.any(Char::isWhitespace)) { "方案或编码无效" }
+        require(word.isNotEmpty() && word.length <= 1024) { "词条需为1–1024个字符" }
+        synchronized(writeLock) {
+            synchronized(this) {
+                val updated = data().toMutableMap()
+                val id = key(schema, code)
+                val old = updated[id] ?: Rule(searchLimit = 64)
+                updated[id] = old.copy(aliases = (listOf(word) + old.aliases).distinct(), order = (listOf(word) + old.order).distinct(),
+                    hidden = old.hidden - word, forgotten = old.forgotten - word)
+                file.writeAtomicText(json.encodeToString(updated))
+                cache = updated
+            }
+        }
+    }
+
     @Synchronized fun selected(schema: String, code: String, text: String) {
         val rule = get(schema, code) ?: return
         if (text !in rule.forgotten) return

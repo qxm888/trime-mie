@@ -105,7 +105,7 @@ object ThemeManager {
 
     private fun getThemeById(id: String): ResolvedTheme {
         if (CustomKeyboards.mode == CustomKeyboards.MODE_CUSTOM) {
-            return ResolvedTheme(id, CustomKeyboards.standaloneTheme().let { it.copy(customizationVersion = it.customizationVersion + FontOverrides.version + com.osfans.trime.ime.voice.VoiceSettings.version) }, null)
+            return ResolvedTheme(id, CustomKeyboards.standaloneTheme().let { it.copy(customizationVersion = it.customizationVersion + com.osfans.trime.data.keymap.NamedFunctions.version + FontOverrides.version + com.osfans.trime.ime.voice.VoiceSettings.version) }, null)
         }
         when (val result = ThemeLoader.loadTheme(id)) {
             is ThemeLoader.ThemeLoadResult.Success -> return resolvedWithCustomKeyboards(id, result.theme, result.findings)
@@ -157,7 +157,7 @@ object ThemeManager {
         findings: List<ThemeDiagnostics.Finding>?,
     ): ResolvedTheme = ResolvedTheme(configId, theme.copy(presetKeys = theme.presetKeys + mapOf("VoiceInput" to com.osfans.trime.data.theme.model.PresetKey(label = "内置语音", send = "VOICE_ASSIST"), "BibiVoice" to com.osfans.trime.data.theme.model.PresetKey(label = "内置语音", send = "VOICE_ASSIST")),
         // A video change must rebuild the keyboard even when its YAML is unchanged.
-        customizationVersion = KeyBindingOverrides.version + ToolbarOverrides.version + FontOverrides.version + com.osfans.trime.ime.voice.VoiceSettings.version + AppPrefs.defaultInstance().keyboard.videoBackground.getValue().hashCode().toLong()), findings)
+        customizationVersion = KeyBindingOverrides.version + ToolbarOverrides.version + com.osfans.trime.data.keymap.NamedFunctions.version + FontOverrides.version + com.osfans.trime.ime.voice.VoiceSettings.version + AppPrefs.defaultInstance().keyboard.videoBackground.getValue().hashCode().toLong()), findings)
 
     private fun applyTheme(resolvedTheme: ResolvedTheme) {
         val theme = resolvedTheme.theme

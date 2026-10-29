@@ -108,7 +108,7 @@ class Rime :
         projectionSourceSize = source.size
         val existing = source.map { it.text }.toSet()
         val entries = source.mapIndexed { index, candidate -> OrderedCandidate(candidate, index) }.filter { it.candidate.text !in rule.hidden }.toMutableList()
-        rule.aliases.filter { it !in existing && it !in rule.hidden }.forEach { entries.add(OrderedCandidate(CandidateProto(it, "自定义编码", ""), -1)) }
+        rule.aliases.filter { it !in existing && it !in rule.hidden }.forEach { entries.add(OrderedCandidate(CandidateProto(it, "用户造词", ""), -1)) }
         val ranks = rule.order.withIndex().associate { it.value to it.index }
         // Linear stable projection instead of sorting the whole candidate range on each key.
         val buckets = entries.groupBy { it.candidate.text }

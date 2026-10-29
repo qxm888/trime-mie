@@ -5,6 +5,8 @@
 
 package com.osfans.trime.ime.keyboard
 
+import kotlinx.coroutines.sync.withLock
+
 import android.app.Dialog
 import android.content.Intent
 import android.view.ContextThemeWrapper
@@ -180,6 +182,20 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
                 val arg = expandActiveText(action.option)
 
                 when (action.command) {
+                    "__mie_voice_start" -> service.voiceInput.start()
+                    "__mie_voice_finish" -> service.voiceInput.release()
+                    "__mie_voice_cancel" -> service.voiceInput.cancel()
+                    "__mie_named_function" -> {
+                        runCatching { com.osfans.trime.data.keymap.NamedFunctions.expanded(action.option) }
+                            .onSuccess { actions -> service.lifecycleScope.launch {
+                                com.osfans.trime.data.keymap.NamedFunctions.executionMutex.withLock {
+                                    actions.forEach { token ->
+                                        onAction(theme.resolveAction(token))
+                                        service.postRimeJob { }.join()
+                                    }
+                                }
+                            } }.onFailure { android.widget.Toast.makeText(service,it.message,android.widget.Toast.LENGTH_SHORT).show() }
+                    }
                     "liquid_keyboard" -> handleLiquidKeyboard(arg)
                     "menu_keyboard" -> windowManager.attachWindow(SwitchOptionWindow(di))
                     "clipboard_window" -> handleClipboardWindow(arg)

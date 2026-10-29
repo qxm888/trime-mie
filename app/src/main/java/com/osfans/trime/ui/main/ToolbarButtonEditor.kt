@@ -18,7 +18,7 @@ import java.util.UUID
 
 /** Draft editor shared by theme overlays and a custom layout's toolbar. */
 object ToolbarButtonEditor {
-    fun show(activity: FragmentActivity, entry: ToolbarOverrides.Entry, standalone: Boolean, save: (ToolbarOverrides.Entry) -> Unit) {
+    fun show(activity: FragmentActivity, entry: ToolbarOverrides.Entry, standalone: Boolean, layoutId: String? = null, save: (ToolbarOverrides.Entry) -> Unit) {
         fun dp(n: Int) = (n * activity.resources.displayMetrics.density).toInt()
         var draft = entry
         val bindings = entry.bindings.toMutableMap().apply { put("click", entry.action) }
@@ -45,12 +45,12 @@ object ToolbarButtonEditor {
             fun caption(): String {
                 val token = bindings[key].orEmpty()
                 val theme = if (standalone) com.osfans.trime.data.keymap.StandaloneKeyboardTheme.base() else com.osfans.trime.data.theme.ThemeManager.activeTheme
-                val label = (com.osfans.trime.data.theme.Theme.BUILTIN_ACTIONS[token] ?: theme.presetKeys[token])?.label.orEmpty()
+                val label = com.osfans.trime.data.keymap.BindingActions.label(token)
                 return "$name · ${label.ifBlank { token.ifBlank { "未绑定" } }}"
             }
             view = button(caption(), if (key == "click") body else extras) {
                 KeyTokenPicker.show(activity, "$name 绑定功能", !bindings[key].isNullOrEmpty(), standalone) { token ->
-                    if (token == null || token.isEmpty()) bindings.remove(key) else bindings[key] = token
+                    if (token == null) bindings.remove(key) else bindings[key] = token
                     view.text = caption()
                 }
             }
@@ -59,6 +59,11 @@ object ToolbarButtonEditor {
         button("按钮外观 · 字号、背景、边框与按下颜色") {
             KeyAppearanceEditor.show(activity, "状态栏按钮外观", draft.appearance, fields) { draft = draft.copy(appearance = it) }
         }
+        button("按钮特效 · 阴影、玻璃、渐变与按压") {
+            SurfaceAppearanceEditor.show(activity,standalone,initialEffects=draft.effects ?: com.osfans.trime.ime.appearance.SurfaceAppearance.current(standalone,layoutId).effectiveToolbarEffects,
+                onEffects={ draft=draft.copy(effects=it) })
+        }
+        button("特效恢复跟随工具栏") { draft=draft.copy(effects=null) }
         body.addView(android.widget.TextView(activity).apply {
             text = "▸ 更多手势与尺寸"; textSize = 16f; minHeight = dp(48); setPadding(dp(8), dp(14), dp(8), dp(14)); isFocusable = true
             setOnClickListener {

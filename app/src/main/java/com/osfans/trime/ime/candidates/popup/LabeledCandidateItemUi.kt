@@ -34,12 +34,12 @@ class LabeledCandidateItemUi(
     private val theme: Theme
         get() = scope.theme
 
-    private val labelSize = theme.window.foreground.labelFontSize
-    private val textSize = theme.window.foreground.textFontSize
-    private val commentSize = theme.window.foreground.commentFontSize
-    private val labelFont = theme.fonts.label
-    private val textFont = theme.fonts.candidate
-    private val commentFont = theme.fonts.comment
+    private val labelSize get() = com.osfans.trime.data.keymap.LayoutTypography.size("label", theme.window.foreground.labelFontSize)
+    private val textSize get() = com.osfans.trime.data.keymap.LayoutTypography.size("candidate", theme.window.foreground.textFontSize)
+    private val commentSize get() = com.osfans.trime.data.keymap.LayoutTypography.size("comment", theme.window.foreground.commentFontSize)
+    private val labelFont get() = theme.fonts.label
+    private val textFont get() = theme.fonts.candidate
+    private val commentFont get() = theme.fonts.comment
 
     // Read at use time so a scheme switch re-binds rows with the new colors.
     private val labelColor: Int get() = scope.colors.labelColor
@@ -148,6 +148,8 @@ class LabeledCandidateItemUi(
         rowLimit: Int = 2,
         autoShrink: Boolean = true,
     ): Float {
+        commentPaint.textSize = ctx.sp(commentSize)
+        commentPaint.typeface = commentFont
         boundRowLimit = rowLimit
         lastCandidate = candidate
         lastHighlighted = highlighted

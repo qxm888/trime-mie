@@ -14,7 +14,7 @@ import com.osfans.trime.data.keymap.KeyAppearance.Style as TextKey
 import kotlinx.serialization.json.*
 
 /** Accordion sections keep uncommon controls out of the initial dialog. */
-private class SettingsDrawers(private val root: LinearLayout) {
+internal class SettingsDrawers(private val root: LinearLayout) {
     private val sections = mutableListOf<Pair<android.widget.TextView, LinearLayout>>()
     fun pruneEmpty() { sections.forEach { (header, content) -> if (content.childCount == 0) (header.parent as android.view.View).visibility = android.view.View.GONE } }
     fun section(title: String): LinearLayout {
@@ -132,7 +132,7 @@ object KeyboardOptionsEditor {
         val drawers = SettingsDrawers(form)
         val geometry = drawers.section("尺寸与键距")
         val behavior = drawers.section("中英模式与锁定")
-        val navigation = drawers.section("关联键盘与标签")
+        val navigation = drawers.section("标签显示")
         var section = geometry
         fun input(label: String, value: Any): TextInputEditText {
             val view = TextInputEditText(context).apply { setSingleLine(true); setText(value.toString()) }
@@ -150,8 +150,6 @@ object KeyboardOptionsEditor {
         val lock = toggle("锁定为主键盘", current.lock)
         section = navigation
         val uppercase = toggle("字母标签大写", current.uppercaseLabels)
-        val asciiTarget = input("英文模式键盘 ID（留空保持当前）", current.asciiKeyboard)
-        val landscapeTarget = input("横屏键盘 ID（留空保持当前）", current.landscapeKeyboard)
         val dialog = MaterialAlertDialogBuilder(context).setTitle("布局与切换行为")
             .setView(ScrollView(context).apply { addView(form) }).setNegativeButton(android.R.string.cancel, null)
             .setNeutralButton("恢复默认") { _, _ -> save(com.osfans.trime.data.keymap.KeyboardOptions()) }
@@ -162,7 +160,7 @@ object KeyboardOptionsEditor {
                     current.copy(horizontalGap = gap.text.toString().toInt(), heightPercent = height.text.toString().toInt(),
                         landscapeHeightPercent = landHeight.text.toString().toInt(), landscapeSplitPercent = split.text.toString().toInt(),
                         asciiMode = if (ascii.isChecked) 1 else 0, resetAsciiMode = reset.isChecked, lock = lock.isChecked,
-                        uppercaseLabels = uppercase.isChecked, asciiKeyboard = asciiTarget.text.toString().trim(), landscapeKeyboard = landscapeTarget.text.toString().trim()).validated()
+                        uppercaseLabels = uppercase.isChecked, asciiKeyboard = "", landscapeKeyboard = "").validated()
                 }.onSuccess { save(it); dialog.dismiss() }
                     .onFailure { Toast.makeText(context, it.message ?: "请输入有效数字", Toast.LENGTH_LONG).show() }
             }

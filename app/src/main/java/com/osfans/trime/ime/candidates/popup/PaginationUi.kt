@@ -67,6 +67,24 @@ class PaginationUi(
             )
         }
 
+    private var bottomLayout: Boolean? = null
+    fun configure(bottom: Boolean) {
+        if(bottomLayout==bottom) return
+        bottomLayout=bottom
+        val w = if (bottom) ctx.dp(44) else ctx.dp(10)
+        val h = if (bottom) ctx.dp(36) else ctx.dp(20)
+        nextIcon.layoutParams = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams(w,h).apply {
+            endToEnd = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
+            topToTop = 0; bottomToBottom = 0
+        }
+        prevIcon.layoutParams = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams(w,h).apply {
+            if (bottom) startToStart = 0 else endToStart = nextIcon.id
+            topToTop = 0; bottomToBottom = 0
+        }
+        prevIcon.scaleType = ImageView.ScaleType.CENTER_INSIDE
+        nextIcon.scaleType = ImageView.ScaleType.CENTER_INSIDE
+    }
+
     fun update(paged: Candidates.Paged) {
         // Re-apply the tint as well: a scheme switch rebinds the pagination holder
         // (see PagedCandidatesUi.refreshColors), which only calls update().

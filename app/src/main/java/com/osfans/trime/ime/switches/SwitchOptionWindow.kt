@@ -228,16 +228,9 @@ class SwitchOptionWindow(di: DI) :
         }
     }
 
-    private val candidatesToggle by lazy {
-        ToolButton(context, R.drawable.ic_baseline_list_alt_24, scope).apply {
-            contentDescription = "开关悬浮候选栏"
-            setOnClickListener { service.toggleCandidatesWindow() }
-        }
-    }
     private val barExternalView by lazy {
         context.constraintLayout {
             val size = dp(theme.style.run { candidateViewHeight + commentHeight })
-            add(candidatesToggle, lParams(size, size) { endToStart = settingsButton.id })
             add(
                 settingsButton,
                 lParams(size, size) {

@@ -60,6 +60,7 @@ data class TextKeyboard(
         val sendBindings: Boolean = true,
         val keyTextSize: Float = 0f,
         val symbolTextSize: Float = 0f,
+        val hintTextSize: Float = 0f,
         val keyTextOffsetX: Float = 0f,
         val keyTextOffsetY: Float = 0f,
         val keySymbolOffsetX: Float = 0f,

@@ -63,14 +63,14 @@ class ToolbarEditActivity : AppCompatActivity() {
             require(CustomKeyboards.get(kbId) != null) { "自定义键盘不存在" }
             toolbar.title = getString(R.string.toolbar_edit_kb, CustomKeyboards.get(kbId)?.name ?: "")
         }
-        toolbar.menu.add(0, 2180, 0, "全局外观设置")
+        toolbar.menu.add(0, 2180, 0, if(kbId.isEmpty()) "主题键盘外观" else "当前布局外观")
         findViewById<TextView>(R.id.toolbar_edit_hint).text =
             (if (kbId.isEmpty()) "主题键盘状态栏。" else "仅修改当前自定义布局的状态栏。") + "点击按钮名称编辑功能与外观，支持增删、排序和停用。"
         toolbar.setNavigationOnClickListener { finish() }
         toolbar.inflateMenu(R.menu.toolbar_edit)
         toolbar.setOnMenuItemClickListener { item ->
             if (item.itemId == 2180) {
-                SurfaceAppearanceEditor.show(this, kbId.isNotEmpty())
+                SurfaceAppearanceEditor.show(this, kbId.isNotEmpty(), layoutId = kbId.takeIf { it.isNotEmpty() })
             } else if (item.itemId == R.id.action_reset_toolbar) {
                 MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.toolbar_edit_reset)
@@ -133,12 +133,12 @@ class ToolbarEditActivity : AppCompatActivity() {
     }
 
     private fun initialEntries(): List<ToolbarOverrides.Entry> =
-        (if (kbId.isEmpty()) {
+        ToolbarOverrides.editableEntries(theme.toolBar, (if (kbId.isEmpty()) {
             if (ToolbarOverrides.hasCustomization()) ToolbarOverrides.entries()
             else theme.toolBar.buttons.map { ToolbarOverrides.Entry(it.action) }
         } else {
             CustomKeyboards.get(kbId)?.toolbar.orEmpty()
-        }).filterNot { ToolbarOverrides.isModeAction(it.action) || ToolbarOverrides.isModeAction(theme.presetKeys[it.action]?.command.orEmpty()) }
+        })).filterNot { ToolbarOverrides.isModeAction(it.action) || ToolbarOverrides.isModeAction(theme.presetKeys[it.action]?.command.orEmpty()) }
 
     private fun commit() {
         if (kbId.isEmpty()) {
@@ -166,13 +166,13 @@ class ToolbarEditActivity : AppCompatActivity() {
         com.osfans.trime.data.theme.Theme.BUILTIN_ACTIONS[action]?.label?.let { return it }
         val btn = themeButtons[action] ?: return theme.presetKeys[action]?.label?.ifEmpty { action } ?: action
         val fg = btn.foreground.style.ifEmpty { btn.foreground.optionStyles.firstOrNull().orEmpty() }
-        return fg.ifEmpty { action }
+        return fg.takeUnless { value -> value.isEmpty() || value.any { it in '\uE000'..'\uF8FF' } } ?: com.osfans.trime.data.keymap.BindingActions.label(action)
     }
 
     private fun editButton(position: Int) {
         if (position !in working.indices) return
         val entry = working[position]
-        ToolbarButtonEditor.show(this, entry, kbId.isNotEmpty()) { next ->
+        ToolbarButtonEditor.show(this, entry, kbId.isNotEmpty(),layoutId=kbId.takeIf { it.isNotEmpty() }) { next ->
             if (position in working.indices && working[position] == entry) {
                 working[position] = next
                 commit()
@@ -190,7 +190,7 @@ class ToolbarEditActivity : AppCompatActivity() {
         MaterialAlertDialogBuilder(this).setTitle(R.string.toolbar_edit_add)
             .setItems(displays) { _, which ->
                 val entry = if (which == 0) ToolbarOverrides.Entry("") else ToolbarOverrides.Entry(available[which - 1])
-                ToolbarButtonEditor.show(this, entry, kbId.isNotEmpty()) { next ->
+                ToolbarButtonEditor.show(this, entry, kbId.isNotEmpty(),layoutId=kbId.takeIf { it.isNotEmpty() }) { next ->
                     working.add(next)
                     commit()
                     adapter.notifyItemInserted(working.lastIndex)
@@ -220,9 +220,9 @@ class ToolbarEditActivity : AppCompatActivity() {
             position: Int,
         ) {
             val entry = working[position]
-            holder.name.text = entry.icon.takeUnless { it.startsWith("/") || it.startsWith("ic@") || it.isBlank() } ?: displayName(entry.action)
+            holder.name.text = if(entry.primary) "菜单按钮" else entry.icon.takeUnless { it.startsWith("/") || it.startsWith("ic@") || it.isBlank() || it.any { c -> c in '\uE000'..'\uF8FF' } } ?: displayName(entry.action)
             holder.action.text =
-                if (entry.icon.isNotEmpty()) entry.action + " · " + entry.icon else entry.action
+                if (entry.primary) "最左侧菜单按钮 · 点击可编辑，开关可停用" else if (entry.icon.isNotEmpty()) entry.action + " · " + entry.icon else entry.action
             holder.enableSwitch.setOnCheckedChangeListener(null)
             holder.enableSwitch.isChecked = entry.enabled
             holder.enableSwitch.setOnCheckedChangeListener { _, checked ->
@@ -234,12 +234,14 @@ class ToolbarEditActivity : AppCompatActivity() {
             }
             holder.name.setOnClickListener { editButton(holder.bindingAdapterPosition) }
             holder.action.setOnClickListener { editButton(holder.bindingAdapterPosition) }
+            holder.up.isEnabled = !entry.primary && position > 0 && !working[position-1].primary
+            holder.down.isEnabled = !entry.primary
             holder.up.setOnClickListener { move(holder.bindingAdapterPosition, -1) }
             holder.down.setOnClickListener { move(holder.bindingAdapterPosition, +1) }
             holder.delete.setOnClickListener {
                 val idx = holder.bindingAdapterPosition
                 if (idx in working.indices) {
-                    working.removeAt(idx)
+                    if (working[idx].primary) working[idx] = working[idx].copy(enabled = false) else working.removeAt(idx)
                     commit()
                     notifyDataSetChanged()
                 }

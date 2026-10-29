@@ -37,7 +37,7 @@ open class PreeditUi(
     val preedit =
         view(::PreeditTextView) {
             setTextColor(textColor)
-            textSize = theme.preedit.foreground.fontSize
+            textSize = com.osfans.trime.data.keymap.LayoutTypography.size("text", theme.preedit.foreground.fontSize)
             typeface = theme.fonts.text
             setupPreeditView?.invoke(this)
             onMoveCursor = this@PreeditUi.onMoveCursor
@@ -77,6 +77,8 @@ open class PreeditUi(
     }
 
     fun update(composition: CompositionProto) {
+        preedit.textSize = com.osfans.trime.data.keymap.LayoutTypography.size("text", theme.preedit.foreground.fontSize)
+        preedit.typeface = theme.fonts.text
         val string = composition.toSpannedString()
         val cursorPos = composition.cursorPos
         val hasPreedit = composition.length > 0

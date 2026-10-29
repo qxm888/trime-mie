@@ -23,6 +23,9 @@ object CustomKeyboardYaml {
         "composing" to "composing", "hasMenu" to "has_menu", "paging" to "paging", "combo" to "combo", "ascii" to "ascii")
 
     @Serializable private data class KeyboardInfo(
+        val surfaceAppearance: com.osfans.trime.ime.appearance.SurfaceAppearanceConfig? = null,
+        val unifiedBackground: Boolean? = null,
+        val typography: Map<String, FontSpec> = emptyMap(),
         val toolbar: List<ToolbarOverrides.Entry> = emptyList(),
         val toolbarBackground: CustomBackground? = null,
         val allKeysBackground: String = "",
@@ -111,13 +114,13 @@ object CustomKeyboardYaml {
                 "ascii_keyboard" to string(layout.asciiKeyboard), "landscape_keyboard" to string(layout.landscapeKeyboard),
                 "landscape_split_percent" to JsonPrimitive(layout.landscapeSplitPercent), "label_transform" to string(layout.labelTransform.name.lowercase()),
                 "keyboard_back_color" to string(bg),
-                "mie" to json.encodeToJsonElement(KeyboardInfo.serializer(), KeyboardInfo(kb.toolbar, kb.toolbarBackground,
+                "mie" to json.encodeToJsonElement(KeyboardInfo.serializer(), KeyboardInfo(surfaceAppearance=kb.surfaceAppearance, unifiedBackground=kb.unifiedBackground, typography=kb.typography, toolbar=kb.toolbar, toolbarBackground=kb.toolbarBackground,
                     allKeysBackground = kb.allKeysBackground, importedSkin = kb.importedSkin, importedHeightPercent = kb.importedHeightPercent, exportedHeight = portraitHeight, exportedBackground = bg, exportedRowSpacing = kb.rowSpacing, keyAppearance = KeyAppearance.textValues(kb.keyAppearance), options = kb.options)), "keys" to JsonArray(keys))
         }
         val first = layouts.values.first()
         val root = obj("name" to string(if (layouts.size == 1) first.name else "自定义键盘合集"), "config_version" to string("1.0"),
             "author" to string("同文输入法咩版"),
-            "mie" to obj("format" to string(FORMAT), "version" to JsonPrimitive(1)),
+            "mie" to obj("format" to string(FORMAT), "version" to JsonPrimitive(1), "functions" to json.encodeToJsonElement(kotlinx.serialization.builtins.ListSerializer(NamedFunctions.Definition.serializer()), NamedFunctions.list())),
             "style" to obj("color_scheme" to string("default"), "keyboard_height" to JsonPrimitive(240), "keyboard_height_land" to JsonPrimitive(180),
                 "key_width" to JsonPrimitive(10), "key_height" to JsonPrimitive(60), "key_text_size" to JsonPrimitive(22),
                 "keyboard_back_color" to string(background(first.resolvedBackground()))),
@@ -155,6 +158,12 @@ object CustomKeyboardYaml {
             }
             else -> append(pad).append(value.toString()).append('\n')
         }
+    }
+
+    fun functions(text: String): List<NamedFunctions.Definition> {
+        val root=ThemeYaml.parser.parseToYamlNode(text).mapping ?: return emptyList()
+        val node=root.pairs["mie"]?.get("functions") ?: return emptyList()
+        return metadata.decodeFromYamlNode(kotlinx.serialization.builtins.ListSerializer(NamedFunctions.Definition.serializer()),node)
     }
 
     fun decode(text: String): Map<String, CustomKeyboard> {
@@ -228,7 +237,7 @@ object CustomKeyboardYaml {
                 uppercaseLabels = node.pairs["label_transform"]?.string?.let { it.equals("uppercase", true) } ?: info.options.uppercaseLabels,
             ).validated()
             result[id] = CustomKeyboard(name = node.pairs["name"]?.string ?: id, rows = rows, rowSpacing = spacing,
-                background = background(bg), toolbar = info.toolbar.toMutableList(), toolbarBackground = info.toolbarBackground, allKeysBackground = info.allKeysBackground,
+                surfaceAppearance=info.surfaceAppearance, unifiedBackground=info.unifiedBackground, typography=info.typography, background = background(bg), toolbar = info.toolbar.toMutableList(), toolbarBackground = info.toolbarBackground, allKeysBackground = info.allKeysBackground,
                 importedSkin = skin, importedHeightPercent = percent, keyAppearance = KeyAppearance.parse(info.keyAppearance), options = options)
         }
         require(result.isNotEmpty()) { "未找到可导入的自定义键盘" }

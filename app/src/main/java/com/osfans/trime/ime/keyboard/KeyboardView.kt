@@ -8,6 +8,7 @@ package com.osfans.trime.ime.keyboard
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
+import android.view.View
 import android.widget.FrameLayout
 import androidx.core.view.children
 import com.osfans.trime.data.prefs.AppPrefs
@@ -30,6 +31,8 @@ class KeyboardView(
 
     private val keys get() = keyboard.keys
 
+    private lateinit var keyShadowLayer: KeyShadowLayer
+
     internal val labelEnter: String
         get() = enterKeyDisplay.keyLabel
     internal val keyTextScale = keyboard.keyTextScale
@@ -47,10 +50,15 @@ class KeyboardView(
         clipChildren = false
         clipToPadding = false
         buildKeyViews()
+        // 阴影层位于视频背景之后、按键之前；放在最底部，视频背景会插到它前面。
+        keyShadowLayer = KeyShadowLayer(context, this)
+        addView(keyShadowLayer, 0, LayoutParams(-1, -1))
     }
 
     private fun buildKeyViews() {
-        removeAllViews()
+        for (i in childCount - 1 downTo 0) {
+            if (getChildAt(i) is KeyView) removeViewAt(i)
+        }
 
         keys.forEachIndexed { index, key ->
             val keyView = createKeyView(index, key)
@@ -96,8 +104,12 @@ class KeyboardView(
         children.forEach { it.invalidate() }
     }
 
+    fun invalidateKeyShadows() {
+        if (::keyShadowLayer.isInitialized) keyShadowLayer.invalidate()
+    }
+
     fun invalidateKeyByIndex(index: Int) {
-        getChildAt(index)?.invalidate()
+        children.firstOrNull { it is KeyView && it.id == index }?.invalidate()
     }
 
     val isCapsOn: Boolean
@@ -105,5 +117,34 @@ class KeyboardView(
 
     fun onDetach() {
         popup.dismissAll()
+    }
+}
+
+/**
+ * 所有按键的外阴影集中画在这一层：它排在视频背景之后、按键之前，
+ * 因此阴影可以越过单个按键的 View 边界，又不会盖住按键本身。
+ */
+private class KeyShadowLayer(
+    context: Context,
+    private val host: KeyboardView,
+) : View(context) {
+    init {
+        setWillNotDraw(false)
+        isClickable = false
+        isFocusable = false
+        importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        for (i in 0 until host.childCount) {
+            val child = host.getChildAt(i)
+            if (child is KeyView && child.visibility == View.VISIBLE) {
+                canvas.save()
+                canvas.translate(child.left + child.translationX, child.top + child.translationY)
+                canvas.scale(child.scaleX, child.scaleY, child.pivotX, child.pivotY)
+                child.drawOuterShadow(canvas)
+                canvas.restore()
+            }
+        }
     }
 }

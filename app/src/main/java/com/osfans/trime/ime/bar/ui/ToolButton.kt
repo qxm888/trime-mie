@@ -117,7 +117,7 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
         image.padding = padding
         label.padding = padding
 
-        fontSize = fg.fontSize
+        fontSize = config.appearance.keyTextSize.takeIf { it > 0 } ?: com.osfans.trime.data.keymap.LayoutTypography.size("toolbar", fg.fontSize)
         label.textSize = fontSize
 
         label.typeface = scope.theme.fonts.toolbar
@@ -214,6 +214,7 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
             borderColor = style.borderColor.ifBlank { String.format("#%08X", scope.colors.keyBorderColor) },
             radius = style.radius ?: scope.theme.style.roundCorner,
         )
+        val effects = (config?.effects ?: appearance.effectiveToolbarEffects).sanitized()
         val own = config?.appearance
         if (own != null) {
             style = style.copy(
@@ -223,17 +224,31 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
                 radius = own.roundCorner.takeIf { it >= 0 } ?: style.radius,
             )
         }
-        if (style.customized || appearance.linkToolbar || own?.hilitedKeyBackColor?.isNotEmpty() == true || own?.hilitedKeyBorderColor?.isNotEmpty() == true) {
+        if (effects.customized || style.customized || appearance.linkToolbar || own?.hilitedKeyBackColor?.isNotEmpty() == true || own?.hilitedKeyBorderColor?.isNotEmpty() == true) {
             val fallback = if (appearance.linkToolbar) scope.drawable("key_back_color") else background
             val pressed = style.copy(
                 background = own?.hilitedKeyBackColor?.ifBlank { style.background } ?: style.background,
                 borderColor = own?.hilitedKeyBorderColor?.ifBlank { style.borderColor } ?: style.borderColor,
             )
             background = StateListDrawable().apply {
-                addState(intArrayOf(android.R.attr.state_pressed), com.osfans.trime.ime.appearance.SurfaceDrawable(this@ToolButton, fallback?.constantState?.newDrawable()?.mutate() ?: fallback, pressed, defaultBorderColor = scope.colors.keyBorderColor))
-                addState(intArrayOf(), com.osfans.trime.ime.appearance.SurfaceDrawable(this@ToolButton, fallback, style, defaultBorderColor = scope.colors.keyBorderColor))
+                addState(intArrayOf(android.R.attr.state_pressed), com.osfans.trime.ime.appearance.SurfaceDrawable(this@ToolButton, fallback?.constantState?.newDrawable()?.mutate() ?: fallback, pressed, defaultBorderColor = scope.colors.keyBorderColor, effects = effects))
+                addState(intArrayOf(), com.osfans.trime.ime.appearance.SurfaceDrawable(this@ToolButton, fallback, style, defaultBorderColor = scope.colors.keyBorderColor, effects = effects))
+            }
+            if (effects.ripple) {
+                val mask=android.graphics.drawable.GradientDrawable().apply { setColor(android.graphics.Color.WHITE); cornerRadius=(style.radius ?: 8f)*resources.displayMetrics.density }
+                background=android.graphics.drawable.RippleDrawable(ColorStateList.valueOf(com.osfans.trime.ime.appearance.KeyEffectPainter.color(effects.rippleColor,0x33FFFFFF)),background,mask)
             }
         }
+    }
+
+    override fun drawableStateChanged() {
+        super.drawableStateChanged()
+        if (childCount == 0) return
+        val effects = config?.effects ?: com.osfans.trime.ime.appearance.SurfaceAppearance.current(scope.theme.isCustom).effectiveToolbarEffects
+        val scale = if(isPressed) 1f-effects.pressScale/100f else 1f
+        animate().scaleX(scale).scaleY(scale).translationY(if(isPressed) effects.pressSink*resources.displayMetrics.density else 0f).setDuration(effects.animationMs.toLong()).start()
+        val shadow=effects.textShadow
+        label.setShadowLayer(if(shadow.enabled) shadow.blur*resources.displayMetrics.density else 0f,shadow.offsetX,shadow.offsetY,com.osfans.trime.ime.appearance.KeyEffectPainter.color(shadow.color,0x55000000))
     }
 
     private fun themeKeyBorder() = scope.theme.style.keyBorder.toFloat()

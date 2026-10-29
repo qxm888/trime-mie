@@ -286,13 +286,13 @@ class InputBarDelegate(override val di: DI) :
     }
 
     private fun barBackground(host: View): android.graphics.drawable.Drawable? {
-        val fallback = if (com.osfans.trime.ime.appearance.SurfaceAppearance.unifiedBackground(theme.isCustom)) null else customBarBackground() ?: scope.decorDrawable(
+        val fallback = if (com.osfans.trime.ime.appearance.SurfaceAppearance.unifiedBackground(theme.isCustom) && !com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom).retainToolbarBackground) null else customBarBackground() ?: scope.decorDrawable(
             "candidate_background", "candidate_border_color", context.dp(theme.style.candidateBorder), context.dp(theme.style.candidateBorderRound))
         val appearance = com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom)
-        return if (appearance.barBlur || appearance.barBackground.isNotEmpty())
+        return if (appearance.barEffects.customized || appearance.effectiveBar.customized)
             com.osfans.trime.ime.appearance.SurfaceDrawable(host, fallback,
-                com.osfans.trime.ime.appearance.SurfaceStyle(background = appearance.barBackground, blur = appearance.barBlur),
-                defaultRadius = theme.style.candidateBorderRound.toFloat(), inset = 0f)
+                appearance.effectiveBar,
+                defaultRadius = theme.style.candidateBorderRound.toFloat(), inset = 0f, effects = appearance.barEffects)
         else fallback
     }
 

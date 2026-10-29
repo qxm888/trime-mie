@@ -257,8 +257,8 @@ class KeyboardWindow(di: DI) :
     private fun selectKeyboardConfig(name: String): TextKeyboard? = selectKeyboardPreset(theme.presetKeyboards, name)
 
     private fun attachKeyboard(target: String) {
+        if (currentKeyboardId.isNotEmpty() && currentKeyboardId != target) lastKeyboardId = currentKeyboardId
         currentKeyboardId = target
-        lastKeyboardId = target
         lastAttachedId = target
 
         // per-key overrides or custom layouts may have changed since this

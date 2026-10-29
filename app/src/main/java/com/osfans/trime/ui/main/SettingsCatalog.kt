@@ -29,7 +29,7 @@ object SettingsCatalog {
         Page("hardware", "实体键盘快捷键", "Ctrl 与 Shift 组合键行为", "keyboard", collapsed = true),
         Page("theme", "主题与配色", "键盘主题、配色与跟随昼夜", "appearance"),
         Page("background", "主题视频背景", "选择视频；背景共用开关在各自全局外观中", "appearance", keys = listOf("keyboard_video_background")),
-        Page("surface", "全局按键与状态栏样式", "主题与自定义独立的背景共用、四角圆角、边框与模糊", "appearance"),
+        Page("surface", "键盘与工具栏样式", "主题和每个自定义布局分别保存外观", "appearance"),
         Page("fonts", "字体", "按键、候选栏与工具栏字体", "appearance"),
         Page("app_theme", "应用外观", "仅设置应用的浅色 / 深色模式", "appearance", keys = listOf("ui_mode")),
         Page("voice", "语音输入", "在线识别、离线模型与系统语音服务", "tools", keys = listOf("preferred_voice_input")),
@@ -41,7 +41,7 @@ object SettingsCatalog {
         Page("compatibility", "系统兼容", "应用图标与系统手势区域", "advanced", keys = listOf("show_app_icon", "ignore_system_gesture_insets")),
         Page("diagnostics", "诊断与日志", "主题诊断与配置问题排查", "advanced"),
         Page("developer", "开发者", "开发与调试工具", "advanced"),
-        Page("about", "关于与开源许可", "Trime Mie V2.1.2 · 版本与许可证", "advanced"),
+        Page("about", "关于与开源许可", "Trime Mie V2.1.4 · 版本与许可证", "advanced"),
     )
     fun page(id: String) = pages.first { it.id == id }
     fun path(page: Page): String = if (page.parent.isEmpty()) page.title else path(page(page.parent)) + " › " + page.title

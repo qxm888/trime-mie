@@ -79,6 +79,9 @@ object CustomKeyboards {
         /** Overlay for every key in this layout; empty restores individual backgrounds. */
         var allKeysBackground: String = "",
         var rowSpacing: Int = 4,
+        var surfaceAppearance: com.osfans.trime.ime.appearance.SurfaceAppearanceConfig? = null,
+        var unifiedBackground: Boolean? = null,
+        var typography: Map<String, FontSpec> = emptyMap(),
         var keyAppearance: KeyAppearance.Style = KeyAppearance.Style(),
         var options: KeyboardOptions = KeyboardOptions(),
         var importedSkin: com.osfans.trime.data.baiduskin.ImportedSkin? = null,
@@ -252,6 +255,8 @@ object CustomKeyboards {
 
     private fun normalizedCopy(kb: CustomKeyboard): CustomKeyboard = kb.copy(
         options = kb.options.validated(),
+        surfaceAppearance=kb.surfaceAppearance?.sanitized(),
+        typography=kb.typography.filterKeys { it in com.osfans.trime.data.theme.FontOverrides.roles }.mapValues { (_,spec) -> spec.copy(size=if(spec.size.isFinite()) spec.size.coerceIn(0f,200f) else 0f) },
         bgColor = "", bgImage = "", background = kb.resolvedBackground(),
         toolbar = kb.toolbar.toMutableList(),
         toolbarBackground = kb.toolbarBackground?.normalized(CustomBackground.KEYBOARD_COLOR),
@@ -445,7 +450,7 @@ object CustomKeyboards {
         keyboardHeightLand = rows.sumOf { it.height.coerceIn(24, 160) }.coerceAtLeast(24) * options.landscapeHeightPercent / 100,
         asciiMode = if (importedSkin != null) { if (importedSkin?.page == "en_26" || importedSkin?.page == "num_9") 1 else 0 } else options.asciiMode,
         resetAsciiMode = importedSkin != null || options.resetAsciiMode,
-        lock = options.lock, asciiKeyboard = options.asciiKeyboard, landscapeKeyboard = options.landscapeKeyboard,
+        lock = options.lock,
         landscapeSplitPercent = options.landscapeSplitPercent,
         labelTransform = if (options.uppercaseLabels) TextKeyboard.LabelTransform.UPPERCASE else TextKeyboard.LabelTransform.NONE,
         keys = generatedKeys().map { it.second },
@@ -474,6 +479,7 @@ object CustomKeyboards {
     /** Wrapper written to / read from user-picked files. */
     @Serializable
     private data class ExportFile(
+        val functions: List<NamedFunctions.Definition> = emptyList(),
         val format: String = EXPORT_FORMAT,
         val formatVersion: Int = 1,
         val exportedAt: Long = 0,
@@ -481,13 +487,15 @@ object CustomKeyboards {
     )
 
     /** Serializes all custom keyboards to a self-describing JSON document. */
-    fun exportJson(now: Long = System.currentTimeMillis()): String =
-        synchronized(lock) {
+    fun exportJson(now: Long = System.currentTimeMillis()): String {
+        val functions=NamedFunctions.list()
+        return synchronized(lock) {
             json.encodeToString(
                 ExportFile.serializer(),
-                ExportFile(exportedAt = now, keyboards = store.keyboards),
+                ExportFile(functions=functions, exportedAt = now, keyboards = store.keyboards),
             )
         }
+    }
 
     /** Snapshot only the explicit selection before opening the system file picker. */
     fun exportYaml(ids: List<String>): String {
@@ -502,7 +510,12 @@ object CustomKeyboards {
     fun importDocument(text: String, replace: Boolean) {
         val trimmed = text.removePrefix("\uFEFF").trimStart()
         if (trimmed.startsWith('{')) importJson(trimmed, replace)
-        else applyImportedLayouts(CustomKeyboardYaml.decode(trimmed), replace)
+        else {
+            val layouts=CustomKeyboardYaml.decode(trimmed)
+            val functions=CustomKeyboardYaml.functions(trimmed)
+            if(functions.isNotEmpty()) NamedFunctions.merge(functions)
+            applyImportedLayouts(layouts, replace)
+        }
     }
 
     /**
@@ -524,6 +537,7 @@ object CustomKeyboards {
         require(file.format == EXPORT_FORMAT && file.formatVersion == 1) { "unsupported keyboard backup format" }
         require("keyboards" in json.parseToJsonElement(text).jsonObject) { "missing keyboard layouts" }
         require(file.keyboards.keys.all { it.startsWith(ID_PREFIX) }) { "invalid custom keyboard id" }
+        if(file.functions.isNotEmpty()) NamedFunctions.merge(file.functions)
         applyImportedLayouts(file.keyboards, replace)
     }
 

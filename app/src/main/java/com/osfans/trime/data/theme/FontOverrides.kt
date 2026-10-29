@@ -8,7 +8,7 @@ import java.io.File
 /** App-owned font overrides; neither layout mode nor YAML files are changed. */
 object FontOverrides {
     val roles = linkedMapOf("key" to "键盘按键", "candidate" to "候选文字", "comment" to "候选注释",
-        "symbol" to "按键提示 / 符号", "popup" to "按键弹出预览", "text" to "编码 / 预编辑文字",
+        "symbol" to "按键符号", "hint" to "按键注解", "popup" to "按键弹出预览", "text" to "编码 / 预编辑文字",
         "label" to "候选序号", "toolbar" to "工具栏")
     private var context: Context? = null
     private val cache = mutableMapOf<String, Typeface>()
@@ -35,7 +35,9 @@ object FontOverrides {
     }
     fun invalidate() { synchronized(cache) { cache.clear() } }
     fun typeface(role: String): Typeface? {
-        val value = selection(role)
+        return fromSelection(selection(role))
+    }
+    fun fromSelection(value: String): Typeface? {
         if (value.isEmpty()) return null
         return synchronized(cache) {
             cache[value] ?: runCatching {

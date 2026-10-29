@@ -76,7 +76,7 @@ class AlwaysUi(
             buttonsUi.firstButton?.let { add(it, lParams(matchParent, matchParent)) }
         }
 
-    private val leftMostButton = toolButton(
+    private var leftMostButton = toolButton(
         toolBar.primaryButton,
         R.drawable.ic_baseline_more_horiz_24,
     )
@@ -158,6 +158,13 @@ class AlwaysUi(
 
     fun applyToolbar(config: ToolBar) {
         toolBar = config
+        val old = leftMostButton
+        val replacement = toolButton(config.primaryButton, R.drawable.ic_baseline_more_horiz_24)
+        replacement.id = old.id
+        val params = old.layoutParams
+        root.removeView(old)
+        leftMostButton = replacement
+        root.addView(replacement, params)
         buttonsUi.applyToolbar(config)
         while (rightMostButton.childCount > 1) rightMostButton.removeViewAt(1)
         buttonsUi.firstButton?.let { rightMostButton.addView(it, android.widget.FrameLayout.LayoutParams(-1, -1)) }
@@ -207,7 +214,7 @@ class AlwaysUi(
         // ViewAnimator owns the active child; do not make the toolbar visible
         // again while it is displaying clipboard or inline suggestions.
         buttonsUi.viewport.visibility = if (hideButtons || currentState != State.Toolbar) android.view.View.GONE else android.view.View.VISIBLE
-        leftMostButton.visibility = if (hideButtons) android.view.View.GONE else android.view.View.VISIBLE
+        leftMostButton.visibility = if (hideButtons || !toolBar.primaryVisible) android.view.View.GONE else android.view.View.VISIBLE
         rightMostButton.visibility = if (clipboard) android.view.View.GONE else android.view.View.VISIBLE
         if (hideButtons) rightMostButton.displayedChild = 0 else updateRightMostButton(currentState)
     }

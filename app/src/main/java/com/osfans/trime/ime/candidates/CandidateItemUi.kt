@@ -49,8 +49,8 @@ class CandidateItemUi(
     private val theme: Theme
         get() = scope.theme
 
-    private val textSize = theme.style.candidateTextSize
-    private val commentSize = theme.style.commentTextSize
+    private val textSize get() = com.osfans.trime.data.keymap.LayoutTypography.size("candidate", theme.style.candidateTextSize)
+    private val commentSize get() = com.osfans.trime.data.keymap.LayoutTypography.size("comment", theme.style.commentTextSize)
 
     // Read at use time so a scheme switch re-binds rows with the new colors.
     private val textColor: Int get() = scope.colors.candidateTextColor
@@ -163,6 +163,10 @@ class CandidateItemUi(
         item: CandidateProto,
         highlighted: Boolean,
     ) {
+        text.textSize = textSize
+        text.typeface = theme.fonts.candidate
+        comment.textSize = commentSize
+        comment.typeface = theme.fonts.comment
         val tColor = if (highlighted) hlTextColor else textColor
         val cColor = if (highlighted) hlCommentColor else commentColor
         val cornerRadius = ctx.dp(theme.style.candidateCornerRadius)

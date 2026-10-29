@@ -422,8 +422,11 @@ class CandidatesView(
         val extraHeight = (extra?.measuredHeight ?: 0).coerceAtMost(innerHeight)
         val pager = candidatesUi.paginationUi.root
         val contentHeight = (innerHeight - extraHeight).coerceAtLeast(0)
-        val pagerWidth = if (pager.visibility == VISIBLE) dp(20).coerceAtMost(innerWidth) else 0
-        val pagerHeight = if (pager.visibility == VISIBLE) dp(20).coerceAtMost(contentHeight) else 0
+        val bottomPager = com.osfans.trime.data.prefs.AppPrefs.defaultInstance().candidates.bottomPagination.getValue()
+        candidatesUi.paginationUi.configure(bottomPager)
+        val footerHeight = if (bottomPager && pager.visibility == VISIBLE) dp(36).coerceAtMost(contentHeight) else 0
+        val pagerWidth = if (pager.visibility == VISIBLE && !bottomPager) dp(20).coerceAtMost(innerWidth) else 0
+        val pagerHeight = if (pager.visibility == VISIBLE && !bottomPager) dp(20).coerceAtMost(contentHeight) else 0
         val pagerGap = if (pagerWidth > 0) dp(4) else 0
         val hasItems = list.visibility == VISIBLE && (list.adapter?.itemCount ?: 0) > 0
         val preedit = preeditUi.root
@@ -434,18 +437,18 @@ class CandidatesView(
             preedit.measuredHeight.coerceAtMost(preeditLimit)
         } else 0
         val headerHeight = maxOf(preeditHeight, pagerHeight)
-        val listLimit = (contentHeight - headerHeight).coerceAtLeast(0)
+        val listLimit = (contentHeight - headerHeight - footerHeight).coerceAtLeast(0)
         list.measure(MeasureSpec.makeMeasureSpec(innerWidth, MeasureSpec.AT_MOST),
             MeasureSpec.makeMeasureSpec(listLimit, MeasureSpec.AT_MOST))
-        val desiredWidth = maxOf((if (preedit.visibility == GONE) 0 else preedit.measuredWidth) + pagerWidth + pagerGap,
+        val desiredWidth = maxOf(if(bottomPager && pager.visibility==VISIBLE) dp(88) else 0, (if (preedit.visibility == GONE) 0 else preedit.measuredWidth) + pagerWidth + pagerGap,
             if (hasItems) list.measuredWidth else 0, extra?.measuredWidth ?: 0, if (ball.visibility == VISIBLE && tools.visibility != VISIBLE) dp(44) else dp(theme.window.minWidth) - paddingLeft - paddingRight).coerceIn(1, innerWidth)
         val listHeight = if (hasItems) list.measuredHeight.coerceAtMost(listLimit) else 0
         // The RecyclerView's own viewport must match the visible space, not its unbounded content.
         list.measure(MeasureSpec.makeMeasureSpec(desiredWidth, MeasureSpec.EXACTLY),
             MeasureSpec.makeMeasureSpec(listHeight, MeasureSpec.EXACTLY))
-        pager.measure(MeasureSpec.makeMeasureSpec(pagerWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(pagerHeight, MeasureSpec.EXACTLY))
+        pager.measure(MeasureSpec.makeMeasureSpec(if (bottomPager) desiredWidth else pagerWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(if (bottomPager) footerHeight else pagerHeight, MeasureSpec.EXACTLY))
         setMeasuredDimension((desiredWidth + paddingLeft + paddingRight).coerceAtMost(maxWidth),
-            (extraHeight + headerHeight + listHeight + paddingTop + bottomInset).coerceIn(1, maxHeight))
+            (extraHeight + headerHeight + listHeight + footerHeight + paddingTop + bottomInset).coerceIn(1, maxHeight))
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
@@ -458,21 +461,24 @@ class CandidatesView(
         val hasPreedit = preedit.visibility != GONE
         val preeditHeight = if (hasPreedit) preedit.measuredHeight.coerceAtMost((height - paddingTop - paddingBottom).coerceAtLeast(0)) else 0
         val pager = candidatesUi.paginationUi.root
-        val pagerHeight = if (pager.visibility == VISIBLE) pager.measuredHeight else 0
-        val pagerWidth = if (pager.visibility == VISIBLE) pager.measuredWidth else 0
+        val bottomPager = com.osfans.trime.data.prefs.AppPrefs.defaultInstance().candidates.bottomPagination.getValue()
+        val footerHeight = if (bottomPager && pager.visibility == VISIBLE) pager.measuredHeight else 0
+        val pagerHeight = if (pager.visibility == VISIBLE && !bottomPager) pager.measuredHeight else 0
+        val pagerWidth = if (pager.visibility == VISIBLE && !bottomPager) pager.measuredWidth else 0
         val pagerGap = if (pagerWidth > 0) dp(4) else 0
         val headerHeight = maxOf(preeditHeight, pagerHeight)
         if (hasPreedit) {
             val x = if (layoutDirection == LAYOUT_DIRECTION_RTL) width - paddingRight - pagerWidth - pagerGap - preedit.measuredWidth else paddingLeft
             preedit.layout(x, contentTop, x + preedit.measuredWidth, contentTop + preeditHeight)
         }
-        val contentBottom = (height - paddingBottom).coerceAtLeast(contentTop + headerHeight)
+        val contentBottom = (height - paddingBottom - footerHeight).coerceAtLeast(contentTop + headerHeight)
         candidatesUi.root.layout(paddingLeft, contentTop + headerHeight,
             (width - paddingRight).coerceAtLeast(paddingLeft), contentBottom)
         // Small, adjacent page indicators share the upper row with the preedit.
         // They do not reserve a footer or increase the candidate area's minimum width.
         val pagerTop = contentTop + (headerHeight - pagerHeight) / 2
-        pager.layout(width - paddingRight - pagerWidth, pagerTop, width - paddingRight, pagerTop + pagerHeight)
+        if (bottomPager) pager.layout(paddingLeft, contentBottom, width - paddingRight, contentBottom + footerHeight)
+        else pager.layout(width - paddingRight - pagerWidth, pagerTop, width - paddingRight, pagerTop + pagerHeight)
     }
 
     override fun onApplyWindowInsets(insets: WindowInsets): WindowInsets {

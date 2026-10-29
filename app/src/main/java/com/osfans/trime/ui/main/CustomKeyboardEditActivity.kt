@@ -77,10 +77,14 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         toolbar.title = kb.name
         toolbar.inflateMenu(R.menu.custom_kb_edit)
         toolbar.menu.add(0, 2180, 0, "自定义键盘全局外观")
+        toolbar.menu.add(0, 2182, 2, "字体与字号（当前布局）")
+        toolbar.menu.add(0, 2183, 3, "自定义功能")
         toolbar.menu.add(0, 2181, 1, "全体按键背景 · 一键设置")
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
-                2180 -> SurfaceAppearanceEditor.show(this, true) { refreshAppearancePreview { render() } }
+                2180 -> SurfaceAppearanceEditor.show(this, true, layoutId = kbId) { refreshAppearancePreview { render() } }
+                2182 -> LayoutTypographyEditor.show(this, kbId)
+                2183 -> NamedFunctionsEditor.show(this)
                 2181 -> {
                     val current = CustomKeyboards.get(kbId) ?: return@setOnMenuItemClickListener true
                     AppearancePicker.show(this, "当前布局全体按键背景", current.allKeysBackground, true) { raw -> mutate { it.allKeysBackground = raw } }
@@ -739,7 +743,7 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
                             com.osfans.trime.ime.voice.VoiceSettings.enabled -> "内置语音 · 默认"
                         bound == null -> getString(R.string.key_editor_empty_bind)
                         bound.isEmpty() -> getString(R.string.key_editor_unbound)
-                        else -> bound
+                        else -> com.osfans.trime.data.keymap.BindingActions.label(bound)
                     } + if (bound != null) " · " + getString(R.string.key_editor_customized) else ""
                 v.setTextColor(
                     ContextCompat.getColor(
