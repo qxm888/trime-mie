@@ -43,7 +43,8 @@ class Keyboard(
 
     /** 按鍵默認水平間距  */
     internal val horizontalGap: Int =
-        resolvePositive(selfConfig?.horizontalGap, theme.style.horizontalGap) { context.dp(it) }
+        if (theme.isCustom && selfConfig != null) context.dp(selfConfig.horizontalGap.coerceAtLeast(0))
+        else resolvePositive(selfConfig?.horizontalGap, theme.style.horizontalGap) { context.dp(it) }
 
     /** 默認鍵寬  */
     private val keyWidth: Int = (allowedWidth * theme.style.keyWidth / 100).toInt()

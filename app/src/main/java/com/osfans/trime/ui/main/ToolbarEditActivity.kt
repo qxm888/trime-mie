@@ -176,6 +176,7 @@ class ToolbarEditActivity : AppCompatActivity() {
     }
 
     private fun displayName(action: String): String {
+        com.osfans.trime.data.keymap.BindingActions.resolve(action)?.let { return com.osfans.trime.data.keymap.BindingActions.label(action) }
         ToolbarOverrides.builtinName(action)?.let { return it }
         com.osfans.trime.data.theme.Theme.BUILTIN_ACTIONS[action]?.label?.let { return it }
         val btn = themeButtons[action] ?: return theme.presetKeys[action]?.label?.ifEmpty { action } ?: action
@@ -236,7 +237,7 @@ class ToolbarEditActivity : AppCompatActivity() {
             val entry = working[position]
             holder.name.text = if(entry.primary) "菜单按钮" else entry.icon.takeUnless { it.startsWith("/") || it.startsWith("ic@") || it.isBlank() || it.any { c -> c in '\uE000'..'\uF8FF' } } ?: displayName(entry.action)
             holder.action.text =
-                if (entry.primary) "最左侧菜单按钮 · 点击可编辑，开关可停用" else if (entry.icon.isNotEmpty()) entry.action + " · " + entry.icon else entry.action
+                if (entry.primary) "最左侧菜单按钮 · 点击可编辑，开关可停用" else if (entry.icon.isNotEmpty()) com.osfans.trime.data.keymap.BindingActions.label(entry.action) + " · " + entry.icon else com.osfans.trime.data.keymap.BindingActions.label(entry.action)
             holder.enableSwitch.setOnCheckedChangeListener(null)
             holder.enableSwitch.isChecked = entry.enabled
             holder.enableSwitch.setOnCheckedChangeListener { _, checked ->

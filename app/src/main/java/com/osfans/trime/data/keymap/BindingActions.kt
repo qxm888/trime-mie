@@ -22,7 +22,7 @@ object BindingActions {
             option = token.removePrefix(NamedFunctions.PREFIX), label = NamedFunctions.list().firstOrNull { NamedFunctions.PREFIX + it.id == token }?.name ?: "已删除功能")
         else -> null
     }
-    fun label(token: String): String = resolve(token)?.label?.ifBlank { null }
+    fun label(token: String): String = resolve(token)?.let { action -> action.label.ifBlank { action.commit.ifBlank { action.text.ifBlank { action.send.ifBlank { action.command } } } }.take(80).ifBlank { null } }
         ?: com.osfans.trime.data.theme.Theme.BUILTIN_ACTIONS[token]?.label
         ?: ThemeManager.activeThemeOrNull()?.presetKeys?.get(token)?.label?.ifBlank { null } ?: token
 }

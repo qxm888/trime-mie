@@ -69,6 +69,8 @@ object CustomKeyboards {
     @Serializable
     data class CustomKeyboard(
         var name: String = "",
+        /** Namespaced macro dependencies copied from a theme. */
+        var importedActions: Map<String, PresetKey> = emptyMap(),
         /** overall keyboard skin, drawn under every key */
         var bgColor: String = "",
         var bgImage: String = "",
@@ -258,6 +260,7 @@ object CustomKeyboards {
 
     private fun normalizedCopy(kb: CustomKeyboard): CustomKeyboard = kb.copy(
         options = kb.options.validated(),
+        importedActions = kb.importedActions.toMap(),
         surfaceAppearance=kb.surfaceAppearance?.sanitized(),
         floatingCandidates=kb.floatingCandidates?.sanitized(),
         typography=kb.typography.filterKeys { it in com.osfans.trime.data.theme.FontOverrides.roles }.mapValues { (_,spec) -> spec.copy(size=if(spec.size.isFinite()) spec.size.coerceIn(0f,200f) else 0f) },
@@ -399,7 +402,7 @@ object CustomKeyboards {
         val colors = if (imported == null) base.presetColorSchemes else base.presetColorSchemes.mapValues { (_, scheme) ->
             scheme + listOf("candidate_text_color", "comment_text_color", "text_color", "label_color", "hilited_candidate_text_color").associateWith { text }
         }
-        base.copy(presetKeyboards = merged, presetKeys = base.presetKeys + switches, presetColorSchemes = colors, customizationVersion = store.version)
+        base.copy(presetKeyboards = merged, presetKeys = base.presetKeys + store.keyboards.values.flatMap { it.importedActions.entries }.associate { it.key to it.value } + switches, presetColorSchemes = colors, customizationVersion = store.version)
     }
 
     /** Flat runtime index includes row-end and empty-row spacers. */

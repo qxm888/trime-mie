@@ -66,6 +66,8 @@ object ToolbarOverrides {
         val height: Int = 0,
         val effects: com.osfans.trime.ime.appearance.KeyEffects? = null,
         val primary: Boolean = false,
+        /** Frozen native toolbar definition for imported themes. Editor overrides still win. */
+        val template: ToolBar.Button? = null,
         val iconSize: Int = 0, // dp; 0 fits available button area
     )
 
@@ -189,12 +191,13 @@ object ToolbarOverrides {
                 }
 
                 else ->
-                    (byAction[entry.action] ?: if (allowCustomActions) ToolBar.Button(
+                    (entry.template ?: byAction[entry.action] ?: if (allowCustomActions) ToolBar.Button(
                         action = entry.action, foreground = ToolBar.Button.Foreground(style = entry.icon),
                     ) else null)?.let { btn ->
                         if (entry.enabled) {
                             val style = entry.appearance
                             val configured = btn.copy(
+                                action = entry.action,
                                 foreground = btn.foreground.copy(
                                     style = entry.icon.ifEmpty { btn.foreground.style },
                                     optionStyles = if (entry.icon.isEmpty()) btn.foreground.optionStyles else emptyList(),

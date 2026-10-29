@@ -6,7 +6,16 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前源码版本：**V3.0.4**，正式 APK 文件名 `trime-mie-v3.0.4.apk`。本版已在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 发布。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
+> 当前源码版本：**V3.0.5**，正式 APK 文件名 `trime-mie-v3.0.5.apk`。本版已在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 发布。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
+
+## V3.0.5 主题键盘导入
+
+- 布局管理新增“从主题键盘导入”，默认当前主题和布局，可生成新的独立自定义键盘。
+- 转换行、按键、绑定、符号注解、外观和工具栏；自动生成跳转所需的数字／符号页。
+- 冻结主题动作与宏，复制图片、视频和字体；生成后可继续编辑，支持原有整包备份与YAML元数据保存。
+- 修正自定义键盘零横向键距被默认值覆盖的问题。
+
+路径与兼容边界见 [V3.0.5 更新说明](docs/v3.0.5/更新说明.md)。
 
 ## V3.0.4 优化
 
@@ -145,7 +154,7 @@
 
 ## 下载与安装
 
-1. 可在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 下载 `trime-mie-v3.0.4.apk`。
+1. 可在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 下载 `trime-mie-v3.0.5.apk`。
 2. 允许浏览器或文件管理器安装该 APK，安装后在系统设置启用“同文输入法咩版”并选为当前输入法。
 3. 配置 Rime 方案与词库并部署。需要沿用旧目录时，按[使用指南](docs/使用指南.md)切换外部目录。
 

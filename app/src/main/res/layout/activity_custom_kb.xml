@@ -217,6 +217,15 @@ SPDX-License-Identifier: GPL-3.0-or-later
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/custom_kb_import_theme"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="从主题键盘导入"
+                app:cornerRadius="14dp" />
+
             <TextView
                 android:id="@+id/custom_kb_list_header"
                 android:layout_width="wrap_content"

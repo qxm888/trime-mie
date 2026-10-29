@@ -6,6 +6,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
 -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/action_import_theme_keyboard"
+        android:title="从主题键盘导入" app:showAsAction="never" />
     <item android:id="@+id/action_import_baidu_skin"
         android:title="@string/import_baidu_skin" app:showAsAction="never" />
     <item

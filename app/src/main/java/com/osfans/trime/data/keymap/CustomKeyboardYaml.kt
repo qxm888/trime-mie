@@ -23,6 +23,7 @@ object CustomKeyboardYaml {
         "composing" to "composing", "hasMenu" to "has_menu", "paging" to "paging", "combo" to "combo", "ascii" to "ascii")
 
     @Serializable private data class KeyboardInfo(
+        val importedActions: Map<String, com.osfans.trime.data.theme.model.PresetKey> = emptyMap(),
         val surfaceAppearance: com.osfans.trime.ime.appearance.SurfaceAppearanceConfig? = null,
         val unifiedBackground: Boolean? = null,
         val typography: Map<String, FontSpec> = emptyMap(),
@@ -69,7 +70,7 @@ object CustomKeyboardYaml {
         val base = StandaloneKeyboardTheme.base()
         // Theme model serializers are intentionally read-only. Export ordinary scalar fields.
         val presets = linkedMapOf<String, JsonElement>()
-        (com.osfans.trime.data.theme.Theme.BUILTIN_ACTIONS + base.presetKeys).forEach { (id, preset) ->
+        (com.osfans.trime.data.theme.Theme.BUILTIN_ACTIONS + base.presetKeys + layouts.values.flatMap { it.importedActions.entries }.associate { it.key to it.value }).forEach { (id, preset) ->
             val values = linkedMapOf<String, JsonElement>()
             mapOf("send" to preset.send, "command" to preset.command, "option" to preset.option, "select" to preset.select,
                 "toggle" to preset.toggle, "label" to preset.label, "shift_lock" to preset.shiftLock,
@@ -120,7 +121,7 @@ object CustomKeyboardYaml {
                 "ascii_keyboard" to string(layout.asciiKeyboard), "landscape_keyboard" to string(layout.landscapeKeyboard),
                 "landscape_split_percent" to JsonPrimitive(layout.landscapeSplitPercent), "label_transform" to string(layout.labelTransform.name.lowercase()),
                 "keyboard_back_color" to string(bg),
-                "mie" to json.encodeToJsonElement(KeyboardInfo.serializer(), KeyboardInfo(toolbarAlignment=kb.toolbarAlignment, rowAlignments=kb.rows.mapIndexed { index,row -> index+1 to row.alignment }.toMap(), surfaceAppearance=kb.surfaceAppearance, unifiedBackground=kb.unifiedBackground, typography=kb.typography, floatingCandidates=kb.floatingCandidates, toolbar=kb.toolbar, toolbarBackground=kb.toolbarBackground,
+                "mie" to json.encodeToJsonElement(KeyboardInfo.serializer(), KeyboardInfo(importedActions=kb.importedActions, toolbarAlignment=kb.toolbarAlignment, rowAlignments=kb.rows.mapIndexed { index,row -> index+1 to row.alignment }.toMap(), surfaceAppearance=kb.surfaceAppearance, unifiedBackground=kb.unifiedBackground, typography=kb.typography, floatingCandidates=kb.floatingCandidates, toolbar=kb.toolbar, toolbarBackground=kb.toolbarBackground,
                     allKeysBackground = kb.allKeysBackground, importedSkin = kb.importedSkin, importedHeightPercent = kb.importedHeightPercent, exportedHeight = portraitHeight, exportedBackground = bg, exportedRowSpacing = kb.rowSpacing, keyAppearance = KeyAppearance.textValues(kb.keyAppearance), options = kb.options)), "keys" to JsonArray(keys))
         }
         val first = layouts.values.first()
@@ -243,7 +244,7 @@ object CustomKeyboardYaml {
                 uppercaseLabels = node.pairs["label_transform"]?.string?.let { it.equals("uppercase", true) } ?: info.options.uppercaseLabels,
             ).validated()
             result[id] = CustomKeyboard(name = node.pairs["name"]?.string ?: id, rows = rows, rowSpacing = spacing,
-                toolbarAlignment=info.toolbarAlignment, surfaceAppearance=info.surfaceAppearance, unifiedBackground=info.unifiedBackground, typography=info.typography, floatingCandidates=info.floatingCandidates, background = background(bg), toolbar = info.toolbar.toMutableList(), toolbarBackground = info.toolbarBackground, allKeysBackground = info.allKeysBackground,
+                importedActions=info.importedActions, toolbarAlignment=info.toolbarAlignment, surfaceAppearance=info.surfaceAppearance, unifiedBackground=info.unifiedBackground, typography=info.typography, floatingCandidates=info.floatingCandidates, background = background(bg), toolbar = info.toolbar.toMutableList(), toolbarBackground = info.toolbarBackground, allKeysBackground = info.allKeysBackground,
                 importedSkin = skin, importedHeightPercent = percent, keyAppearance = KeyAppearance.parse(info.keyAppearance), options = options)
         }
         require(result.isNotEmpty()) { "未找到可导入的自定义键盘" }

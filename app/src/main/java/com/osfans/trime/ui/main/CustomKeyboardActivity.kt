@@ -63,6 +63,7 @@ class CustomKeyboardActivity : AppCompatActivity() {
         toolbar.inflateMenu(R.menu.custom_kb)
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
+                R.id.action_import_theme_keyboard -> importThemeKeyboard()
                 R.id.action_import_baidu_skin -> baiduLauncher.launch(arrayOf("*/*"))
                 R.id.action_export_custom_kbs -> exportLayouts()
                 R.id.action_import_custom_kbs ->
@@ -101,6 +102,7 @@ class CustomKeyboardActivity : AppCompatActivity() {
         }
 
         newButton.setOnClickListener { createKeyboard() }
+        findViewById<View>(R.id.custom_kb_import_theme).setOnClickListener { importThemeKeyboard() }
         themeSection.setOnClickListener { KeyEditActivity.start(this) }
         findViewById<View>(R.id.custom_kb_toolbar_section).setOnClickListener {
             startActivity(android.content.Intent(this, ToolbarEditActivity::class.java))
@@ -302,6 +304,27 @@ class CustomKeyboardActivity : AppCompatActivity() {
     private fun refreshTheme() {
         ThemeManager.requestCustomizationRefresh()
         Toast.makeText(this, R.string.custom_kb_mode_changed, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun importThemeKeyboard() {
+        ThemeKeyboardImportDialog(this) { result ->
+            renderSections()
+            val primary=CustomKeyboards.get(result.primaryId)?.name.orEmpty()
+            val message=buildString {
+                append("已生成「$primary」。")
+                if(result.ids.size>1) append("同时生成 ${result.ids.size-1} 个跳转布局，数字／符号等按键已关联到新布局。")
+                append("\n\n可继续编辑按键、工具栏和外观。")
+                if(result.warnings.isNotEmpty()) append("\n\n兼容说明：\n"+result.warnings.take(10).joinToString("\n"))
+            }
+            MaterialAlertDialogBuilder(this).setTitle("主题键盘导入完成").setMessage(message)
+                .setPositiveButton("编辑新键盘") { _,_ -> CustomKeyboardEditActivity.start(this,result.primaryId) }
+                .setNeutralButton("立即使用") { _,_ ->
+                    CustomKeyboards.activeId=result.primaryId
+                    CustomKeyboards.setMode(CustomKeyboards.MODE_CUSTOM)
+                    findViewById<MaterialButtonToggleGroup>(R.id.custom_kb_mode_toggle).check(R.id.custom_kb_mode_custom_btn)
+                    CustomKeyboards.flush();renderSections();ThemeManager.requestCustomizationRefresh()
+                }.setNegativeButton("完成",null).show()
+        }.show()
     }
 
     private fun createKeyboard() {
