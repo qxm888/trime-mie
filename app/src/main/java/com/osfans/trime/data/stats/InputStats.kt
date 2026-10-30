@@ -349,7 +349,7 @@ object InputStats {
 
     fun rimeFile(): File {
         val suffix = if (BuildConfig.DEBUG) "-${appContext!!.packageName}" else ""
-        return File(DataManager.userDataDir, "mie_input_stats$suffix.json")
+        return File(com.osfans.trime.core.data.MieUserDirectory.statsFolder(appContext!!), "mie_input_stats$suffix.json")
     }
 
     fun saveToRime() = synchronized(saveLock) {

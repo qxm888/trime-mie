@@ -25,7 +25,7 @@ class ThemeKeyboardImporter(private val context: Context) {
     suspend fun import(theme: Theme, sourceId: String, name: String, appearance: SurfaceAppearanceConfig,
         unified: Boolean, includeAppOverrides:Boolean=true): Result {
         require(name.isNotBlank() && name.length <= 80) { "键盘名称须为1–80个字符" }
-        val directory = File(DirectExternalStorage.resources(context), "custom_kb_bg/theme-${UUID.randomUUID()}")
+        val directory = File(DirectExternalStorage.resources(context, "custom_kb_bg"), "theme-${UUID.randomUUID()}")
         val warnings = linkedSetOf<String>()
         val owner=currentCoroutineContext()
         val assets = Assets(theme, directory, warnings) { owner.ensureActive() }

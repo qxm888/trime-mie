@@ -15,6 +15,8 @@ data class KeyboardOptions(
     val asciiKeyboard: String = "",
     val landscapeKeyboard: String = "",
     val uppercaseLabels: Boolean = false,
+    /** 按键上方符号的水平对齐：left / center / right。 */
+    val symbolAlignment: String = "center",
     val landscapeSplitPercent: Int = 0,
 ) {
     fun validated(): KeyboardOptions = apply {
@@ -22,5 +24,6 @@ data class KeyboardOptions(
         require(heightPercent in 50..200 && landscapeHeightPercent in 50..200) { "高度比例须为 50–200%" }
         require(asciiMode in 0..1) { "初始英文模式须为 0 或 1" }
         require(landscapeSplitPercent in 0..100) { "横屏分割比例须为 0–100%" }
+        require(symbolAlignment in setOf("left", "center", "right")) { "符号对齐须为 left / center / right" }
     }
 }

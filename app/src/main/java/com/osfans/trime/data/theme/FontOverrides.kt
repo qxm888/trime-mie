@@ -33,7 +33,7 @@ object FontOverrides {
         snapshot = prefs.all.toMap()
         if (refresh) ThemeManager.requestCustomizationRefresh()
     }
-    fun folder(): File = File(com.osfans.trime.core.data.DirectExternalStorage.resources(context!!), "custom_fonts").apply { mkdirs() }
+    fun folder(): File = com.osfans.trime.core.data.DirectExternalStorage.resources(context!!, "custom_fonts")
     fun choices(): List<String> = listOf("", "system:sans-serif", "system:serif", "system:monospace") +
         folder().listFiles().orEmpty().filter { it.isFile }.sortedBy { it.name }.map { it.absolutePath }
     fun name(value: String): String = when(value) {

@@ -771,8 +771,11 @@ class KeyView(
     }
 
     private fun drawSymbol(canvas: Canvas, text: String, isTop: Boolean = true) {
-        if (isTop && keyboardView.hideKeySymbol) return
-        if (!isTop && keyboardView.hideKeyHint) return
+        // 按键级覆盖优先于全局开关：showSymbol/showHint 三态（null 跟随全局）。
+        val hide =
+            if (isTop) key.showSymbol?.not() ?: keyboardView.hideKeySymbol
+            else key.showHint?.not() ?: keyboardView.hideKeyHint
+        if (hide) return
 
         val textColor = key.getSymbolColor()
         val textSize = sp((if (isTop) key.symbolTextSize else key.hintTextSize).takeIf { it > 0f } ?: com.osfans.trime.data.keymap.LayoutTypography.size(if (isTop) "symbol" else "hint", keyboardView.symbolTextSize)) * keyboardView.keyTextScale
@@ -794,7 +797,14 @@ class KeyView(
             val lineHeight = fontMetrics.descent - fontMetrics.ascent
             val totalHeight = lineHeight * lines.size
 
-            val centerX = (width - paddingLeft - paddingRight) / 2f + paddingLeft + sp(offsetX) * keyboardView.keyTextScale
+            // 按键上方符号的水平对齐：left / center / right（自定义键盘可设，默认居中）。
+            val contentWidth = width - paddingLeft - paddingRight
+            val textWidth = lines.maxOf { symbolPaint.measureText(it) }
+            val centerX = when (keyboard.symbolAlign) {
+                "left" -> paddingLeft + textWidth / 2f
+                "right" -> paddingLeft + contentWidth - textWidth / 2f
+                else -> contentWidth / 2f + paddingLeft
+            } + sp(offsetX) * keyboardView.keyTextScale
             val startY = if (isTop) {
                 paddingTop - fontMetrics.top + sp(offsetY) * keyboardView.keyTextScale - (totalHeight - lineHeight) / 2
             } else {

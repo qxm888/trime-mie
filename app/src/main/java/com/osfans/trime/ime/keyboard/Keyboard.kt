@@ -253,6 +253,8 @@ class Keyboard(
 
             var rowWeightAccumulo = 0f
             var currentRowHeight = rowHeightScaled[0]
+            // 当前行行边距（自定义键盘 rowMargin；-1 表示尚未遇到行首键）。
+            var currentRowMargin = -1
 
             // indicates whether the split gap has been inserted in the current row
             var splitInserted = false
@@ -266,6 +268,8 @@ class Keyboard(
 
                 val customId = if (theme.isCustom) CustomKeyboards.resolveId(keyboardId) else ""
                 val textKey = rawKey
+
+                if (textKey.newRow || currentRowMargin < 0) currentRowMargin = rowMarginOf(textKey)
 
                 val keyWidthWeight =
                     if (textKey.width == 0f && textKey.click.orAbsent != null) keyboardKeyWidth else textKey.width
@@ -281,7 +285,12 @@ class Keyboard(
                     rowWeightAccumulo = 0f
                     splitInserted = false
                     currentRowHeight = rowHeightScaled[row]
+                    currentRowMargin = rowMarginOf(textKey)
                 }
+
+                // 行边距：本行按键在 (allowedWidth - 2*margin) 内按权重排布并整体右移 margin。
+                val rowContentWidth = allowedWidth - 2 * currentRowMargin
+                if (currentRowMargin > 0) widthPx = (keyWidthWeight * rowContentWidth / MAX_TOTAL_WEIGHT).toInt()
 
                 rowWeightAccumulo += keyWidthWeight
 
@@ -334,8 +343,9 @@ class Keyboard(
                 key.y = yPos
 
                 // correct minor rounding errors on the right edge
-                val rightGap = abs(allowedWidth - xPos - widthPx)
-                key.width = if (rightGap <= allowedWidth / 100) allowedWidth - xPos else widthPx
+                val rowRight = allowedWidth - currentRowMargin
+                val rightGap = abs(rowRight - xPos - widthPx)
+                key.width = if (rightGap <= allowedWidth / 100) rowRight - xPos else widthPx
 
                 key.height = currentRowHeight
                 key.row = row
@@ -609,6 +619,14 @@ class Keyboard(
 
     val isLabelUppercase: Boolean
         get() = labelTransform == TextKeyboard.LabelTransform.UPPERCASE
+
+    /** 行边距 dp（由 generatedKeys 填充；主题键盘无此概念返回 0）。 */
+    private fun rowMarginOf(textKey: TextKeyboard.TextKey): Int =
+        if (theme.isCustom && textKey.rowMargin >= 0) context.dp(textKey.rowMargin) else 0
+
+    /** 按键上方符号的水平对齐：left / center / right。 */
+    val symbolAlign: String
+        get() = selfConfig?.symbolAlign?.takeIf { it in setOf("left", "center", "right") } ?: "center"
 
     companion object {
         const val EDGE_LEFT = 0x01

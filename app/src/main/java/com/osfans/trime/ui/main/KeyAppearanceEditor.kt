@@ -75,7 +75,16 @@ object KeyAppearanceEditor {
             }
             val body = groups.getValue(group)
             val value = values.getValue(name)
-            if (name == "sendBindings") {
+            if (name == "showSymbol" || name == "showHint") {
+                val input = com.google.android.material.textfield.MaterialAutoCompleteTextView(context).apply {
+                    inputType = android.text.InputType.TYPE_NULL
+                    setSimpleItems(arrayOf("跟随全局", "显示", "隐藏"))
+                    setText(when { value == JsonNull -> "跟随全局"; value.jsonPrimitive.booleanOrNull == true -> "显示"; value.jsonPrimitive.booleanOrNull == false -> "隐藏"; else -> "跟随全局" }, false)
+                    setOnClickListener { showDropDown() }
+                }
+                body.addView(TextInputLayout(context).apply { hint = label; setPadding(24, 4, 24, 4); addView(input) })
+                inputs[name] = { when (input.text.toString()) { "显示" -> "true"; "隐藏" -> "false"; else -> "" } }
+            } else if (name == "sendBindings") {
                 val input = com.google.android.material.textfield.MaterialAutoCompleteTextView(context).apply {
                     inputType = android.text.InputType.TYPE_NULL
                     setSimpleItems(arrayOf("继承", "启用", "禁用"))
@@ -150,6 +159,13 @@ object KeyboardOptionsEditor {
         val lock = toggle("锁定为主键盘", current.lock)
         section = navigation
         val uppercase = toggle("字母标签大写", current.uppercaseLabels)
+        val symbolAlignInput = com.google.android.material.textfield.MaterialAutoCompleteTextView(context).apply {
+            inputType = android.text.InputType.TYPE_NULL
+            setSimpleItems(arrayOf("居中", "靠左", "靠右"))
+            setText(when (current.symbolAlignment) { "left" -> "靠左"; "right" -> "靠右"; else -> "居中" }, false)
+            setOnClickListener { showDropDown() }
+        }
+        section.addView(TextInputLayout(context).apply { hint = "按键上方符号对齐"; setPadding(24, 4, 24, 4); addView(symbolAlignInput) })
         val dialog = MaterialAlertDialogBuilder(context).setTitle("布局与切换行为")
             .setView(ScrollView(context).apply { addView(form) }).setNegativeButton(android.R.string.cancel, null)
             .setNeutralButton("恢复默认") { _, _ -> save(com.osfans.trime.data.keymap.KeyboardOptions()) }
@@ -160,7 +176,9 @@ object KeyboardOptionsEditor {
                     current.copy(horizontalGap = gap.text.toString().toInt(), heightPercent = height.text.toString().toInt(),
                         landscapeHeightPercent = landHeight.text.toString().toInt(), landscapeSplitPercent = split.text.toString().toInt(),
                         asciiMode = if (ascii.isChecked) 1 else 0, resetAsciiMode = reset.isChecked, lock = lock.isChecked,
-                        uppercaseLabels = uppercase.isChecked, asciiKeyboard = "", landscapeKeyboard = "").validated()
+                        uppercaseLabels = uppercase.isChecked,
+                        symbolAlignment = when (symbolAlignInput.text.toString()) { "靠左" -> "left"; "靠右" -> "right"; else -> "center" },
+                        asciiKeyboard = "", landscapeKeyboard = "").validated()
                 }.onSuccess { save(it); dialog.dismiss() }
                     .onFailure { Toast.makeText(context, it.message ?: "请输入有效数字", Toast.LENGTH_LONG).show() }
             }

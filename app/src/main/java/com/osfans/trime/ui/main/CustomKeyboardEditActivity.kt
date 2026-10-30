@@ -170,8 +170,8 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         val before = CustomKeyboards.get(kbId) ?: return
         CustomKeyboards.mutate(kbId) { after ->
             block(after)
-            val geometryChanged = before.rows.map { row -> Triple(row.height, row.alignment, row.keys.map { it.skinId to it.width }) } !=
-                after.rows.map { row -> Triple(row.height, row.alignment, row.keys.map { it.skinId to it.width }) } || before.rowSpacing != after.rowSpacing || before.options != after.options
+            val geometryChanged = before.rows.map { row -> listOf(row.height, row.alignment, row.margin, row.keys.map { it.skinId to it.width }) } !=
+                after.rows.map { row -> listOf(row.height, row.alignment, row.margin, row.keys.map { it.skinId to it.width }) } || before.rowSpacing != after.rowSpacing || before.rowMargin != after.rowMargin || before.options != after.options
             if (geometryChanged || before.background != after.background) after.importedSkin = null
         }
         render()
@@ -244,12 +244,12 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
             toolbarStrip(kb, (toolbarHeight * 0.65f).toInt().coerceAtLeast(1)),
             LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp((toolbarHeight * 0.65f).toInt().coerceAtLeast(1))),
         )
-        val rowMarginPx = dp((kb.rowMargin * 0.65f).toInt())
         kb.rows.forEach { row ->
             val rowView = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
             val rowHeight = dp((row.height * 0.65f * heightScale).toInt().coerceAtLeast(1))
             val gap = dp((kb.rowSpacing * 0.65f * heightScale).toInt())
             rowView.weightSum = 100f
+            val rowMarginPx = dp(((row.margin ?: kb.rowMargin) * 0.65f).toInt())
             rowView.setPadding(rowMarginPx, 0, rowMarginPx, 0)
             com.osfans.trime.data.keymap.ButtonAlignment.slots(row).forEach { (ck, w) ->
                 if (ck == null) { rowView.addView(View(this),LinearLayout.LayoutParams(0,-1,w)); return@forEach }
@@ -353,6 +353,12 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
             text = "行高 ${row.height} dp"
             contentDescription = "调整第${rowIdx + 1}行高度，当前${row.height}dp"
             setOnClickListener { showRowHeightEditor(rowIdx) }
+        }, LinearLayout.LayoutParams(0, dp(48), 1f))
+
+        rowControls.addView(com.google.android.material.button.MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+            text = "行边距 · " + (row.margin?.let { "$it dp" } ?: "跟随")
+            contentDescription = "调整第${rowIdx + 1}行边距"
+            setOnClickListener { showRowMarginEditor(rowIdx) }
         }, LinearLayout.LayoutParams(0, dp(48), 1f))
 
         rowControls.addView(com.google.android.material.button.MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
@@ -573,28 +579,46 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    private fun showRowMarginEditor() {
+    private fun showRowMarginEditor(rowIdx: Int = -1) {
         val kb = CustomKeyboards.get(kbId) ?: return
+        val isRow = rowIdx >= 0
+        val current = if (isRow) kb.rows.getOrNull(rowIdx)?.margin else kb.rowMargin
         val input = TextInputEditText(this).apply {
             inputType = InputType.TYPE_CLASS_NUMBER
             if (android.os.Build.VERSION.SDK_INT >= 26) importantForAutofill = android.view.View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
-            setText(kb.rowMargin.toString())
+            setText(current?.toString().orEmpty())
+            hint = if (isRow) "留空跟随键盘行边距" else ""
             selectAll()
         }
         val field = TextInputLayout(this).apply {
             hint = getString(R.string.custom_kb_row_margin_range)
-            helperText = getString(R.string.custom_kb_row_margin_hint)
+            helperText = if (isRow) "留空跟随键盘级行边距；0–48 dp" else getString(R.string.custom_kb_row_margin_hint)
             setPadding(dp(24), dp(8), dp(24), 0)
             addView(input)
         }
-        val dialog = MaterialAlertDialogBuilder(this).setTitle(R.string.custom_kb_row_margin)
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(if (isRow) "第${rowIdx + 1}行 · 行边距" else getString(R.string.custom_kb_row_margin))
             .setView(field).setNegativeButton(android.R.string.cancel, null)
             .setPositiveButton(android.R.string.ok, null).create()
+        if (isRow) (dialog as androidx.appcompat.app.AlertDialog).setButton(androidx.appcompat.app.AlertDialog.BUTTON_NEUTRAL, "跟随键盘") { _, _ -> }
         dialog.setOnShowListener {
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEUTRAL)?.setOnClickListener {
+                mutate { it.rows.getOrNull(rowIdx)?.margin = null }
+                dialog.dismiss()
+            }
             dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                val margin = input.text?.toString()?.toIntOrNull()
+                val text = input.text?.toString()?.trim().orEmpty()
+                if (isRow && text.isEmpty()) {
+                    mutate { it.rows.getOrNull(rowIdx)?.margin = null }
+                    dialog.dismiss()
+                    return@setOnClickListener
+                }
+                val margin = text.toIntOrNull()
                 if (margin == null || margin !in 0..48) {
                     field.error = getString(R.string.custom_kb_row_margin_range)
+                } else if (isRow) {
+                    mutate { it.rows.getOrNull(rowIdx)?.margin = margin }
+                    dialog.dismiss()
                 } else {
                     mutate { it.rowMargin = margin }
                     dialog.dismiss()

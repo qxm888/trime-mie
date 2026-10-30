@@ -64,6 +64,8 @@ object CustomKeyboards {
         val keys: MutableList<CustomKey> = mutableListOf(),
         var height: Int = 60,
         var alignment: String = "left",
+        /** 本行行边距：null 跟随键盘级行边距，0–48 dp。 */
+        var margin: Int? = null,
     )
 
     @Serializable
@@ -298,7 +300,9 @@ object CustomKeyboards {
                 width = key.width.takeIf { it.isFinite() && it > 0 }?.coerceAtMost(100f) ?: 10f,
                 bindings = key.bindings.toMutableMap(), bgColor = "", bgImage = "", background = key.resolvedBackground(),
             ) }.toMutableList(), height = row.height.coerceIn(24, 160), alignment = ButtonAlignment.normalized(row.alignment))
-        }.toMutableList(),
+        }.toMutableList().onEachIndexed { index, row ->
+            row.margin = kb.rows.getOrNull(index)?.margin?.coerceIn(0, 48)
+        },
     )
 
     private fun starter(): CustomKeyboard {
@@ -358,14 +362,73 @@ object CustomKeyboards {
     fun listSecondaries(primaryId: String): List<Entry> = list().filter { it.secondaryOf == primaryId }
 
     fun delete(id: String) {
+        val removed = mutableListOf<CustomKeyboard>()
         synchronized(lock) {
-            store.keyboards.remove(id)
+            store.keyboards.remove(id)?.let(removed::add)
             // 次级键盘属于整套键盘：主键盘删除时一并删除。
-            store.keyboards.keys.filter { store.keyboards[it]?.secondaryOf == id }.forEach { store.keyboards.remove(it) }
+            store.keyboards.keys.filter { store.keyboards[it]?.secondaryOf == id }.forEach { key ->
+                store.keyboards.remove(key)?.let(removed::add)
+            }
             if (store.activeId == id) store.activeId = ""
             store.version++
             dirty = true
             scheduleSaveLocked()
+        }
+        // 键盘删了，它导入的素材（背景图 / 视频 / 百度皮肤目录 / 按键图片 / 工具栏图片）同步删除。
+        removed.forEach(::deleteOwnedFiles)
+    }
+
+    /** 收集键盘模型里引用的、位于咩版自有素材目录内的文件/目录并删除。 */
+    private fun deleteOwnedFiles(kb: CustomKeyboard) {
+        val context = appContext ?: return
+        val ownedRoots = buildList {
+            runCatching { add(com.osfans.trime.core.data.MieUserDirectory.assetFolder(context, "custom_kb_bg").canonicalPath) }
+            runCatching { add(com.osfans.trime.core.data.MieUserDirectory.assetFolder(context, "baidu_skins").canonicalPath) }
+            add(File(context.filesDir, "custom_kb_bg").canonicalPath)
+            add(File(context.filesDir, "baidu_skins").canonicalPath)
+        }.distinct()
+        fun owned(path: String): Boolean {
+            if (path.isBlank() || !path.startsWith("/")) return false
+            val canonical = runCatching { File(path).canonicalPath }.getOrNull() ?: return false
+            return ownedRoots.any { canonical.startsWith(it + File.separator) }
+        }
+        fun deletePath(path: String) {
+            if (!owned(path)) return
+            val file = File(path)
+            if (file.isDirectory) file.deleteRecursively() else file.delete()
+            com.osfans.trime.data.theme.BitmapAssets.invalidate()
+        }
+        kb.resolvedBackground().takeIf { it.type != CustomBackground.Type.COLOR && it.type != CustomBackground.Type.TRANSPARENT }?.image?.let(::deletePath)
+        kb.toolbarBackground?.takeIf { it.type == CustomBackground.Type.IMAGE }?.image?.let(::deletePath)
+        kb.allKeysBackground.takeIf { it.startsWith("/") }?.let(::deletePath)
+        kb.importedSkin?.let { skin ->
+            // 百度皮肤整目录：任一素材路径的公共祖先目录。
+            val paths = skin.variants.values.flatMap { layout ->
+                listOf(layout.background, layout.toolbarBackground, layout.preview) +
+                    layout.keys.flatMap { key -> key.style.layers.flatMap { listOfNotNull(it.normal?.file, it.pressed?.file) } }
+            }.filter { it.startsWith("/") }
+            val dirs = paths.map { File(it).parent }.filter { owned(it) }.map { File(it).canonicalPath }.distinct()
+            dirs.forEach { dir ->
+                val dirFile = File(dir)
+                if (!dirFile.isDirectory) return@forEach
+                val parent = dirFile.parentFile
+                if (parent != null && parent.isDirectory && parent.listFiles()?.size == 1) deletePath(parent.absolutePath) else deletePath(dir)
+            }
+        }
+        kb.rows.forEach { row -> row.keys.forEach { key ->
+            key.resolvedBackground().takeIf { it.type == CustomBackground.Type.IMAGE }?.image?.let(::deletePath)
+            key.skin?.layers?.forEach { layer -> listOfNotNull(layer.normal?.file, layer.pressed?.file).forEach(::deletePath) }
+        } }
+        kb.toolbar.forEach { entry -> entry.icon.takeIf { it.startsWith("/") }?.let(::deletePath) }
+        kb.surfaceAppearance?.let { config ->
+            listOf(config.keys.background, config.toolbar.background, config.bar.background, config.floatingBackground).forEach { value ->
+                value.takeIf { it.startsWith("/") }?.let(::deletePath)
+            }
+        }
+        kb.floatingCandidates?.let { style ->
+            listOf(style.panel.background, style.ball.background).forEach { value ->
+                value.takeIf { it.startsWith("/") }?.let(::deletePath)
+            }
         }
     }
 
@@ -474,7 +537,8 @@ object CustomKeyboards {
         rows.forEach { row ->
             ButtonAlignment.slots(row).forEachIndexed { index, (key, width) ->
                 val text = key?.toTextKey(resolvedBackground(), keyAppearance) ?: TextKeyboard.TextKey()
-                add(key to text.copy(width = width, height = row.height.coerceIn(24, 160).toFloat(), newRow = index == 0))
+                add(key to text.copy(width = width, height = row.height.coerceIn(24, 160).toFloat(), newRow = index == 0,
+                    rowMargin = row.margin ?: rowMargin))
             }
         }
     }
@@ -494,6 +558,7 @@ object CustomKeyboards {
         lock = options.lock,
         landscapeSplitPercent = options.landscapeSplitPercent,
         labelTransform = if (options.uppercaseLabels) TextKeyboard.LabelTransform.UPPERCASE else TextKeyboard.LabelTransform.NONE,
+        symbolAlign = options.symbolAlignment,
         keys = generatedKeys().map { it.second },
     )
 

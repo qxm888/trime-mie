@@ -32,6 +32,7 @@ object CustomKeyboardYaml {
         val toolbarBackground: CustomBackground? = null,
         val toolbarAlignment: String = "legacy",
         val rowAlignments: Map<Int,String> = emptyMap(),
+        val rowMargins: Map<Int,Int> = emptyMap(),
         val allKeysBackground: String = "",
         val importedSkin: ImportedSkin? = null,
         val importedHeightPercent: Int = 100,
@@ -128,7 +129,7 @@ object CustomKeyboardYaml {
                 "ascii_keyboard" to string(layout.asciiKeyboard), "landscape_keyboard" to string(layout.landscapeKeyboard),
                 "landscape_split_percent" to JsonPrimitive(layout.landscapeSplitPercent), "label_transform" to string(layout.labelTransform.name.lowercase()),
                 "keyboard_back_color" to string(bg),
-                "mie" to json.encodeToJsonElement(KeyboardInfo.serializer(), KeyboardInfo(importedActions=kb.importedActions, toolbarAlignment=kb.toolbarAlignment, rowAlignments=kb.rows.mapIndexed { index,row -> index+1 to row.alignment }.toMap(), surfaceAppearance=kb.surfaceAppearance, unifiedBackground=kb.unifiedBackground, typography=kb.typography, floatingCandidates=kb.floatingCandidates, toolbar=kb.toolbar, toolbarBackground=kb.toolbarBackground,
+                "mie" to json.encodeToJsonElement(KeyboardInfo.serializer(), KeyboardInfo(importedActions=kb.importedActions, toolbarAlignment=kb.toolbarAlignment, rowAlignments=kb.rows.mapIndexed { index,row -> index+1 to row.alignment }.toMap(), rowMargins=kb.rows.mapIndexed { index,row -> index+1 to (row.margin ?: -1) }.toMap(), surfaceAppearance=kb.surfaceAppearance, unifiedBackground=kb.unifiedBackground, typography=kb.typography, floatingCandidates=kb.floatingCandidates, toolbar=kb.toolbar, toolbarBackground=kb.toolbarBackground,
                     allKeysBackground = kb.allKeysBackground, importedSkin = kb.importedSkin, importedHeightPercent = kb.importedHeightPercent, keyboardHeightDp = kb.keyboardHeightDp, landscapeHeightDp = kb.landscapeHeightDp, toolbarHeightDp = kb.toolbarHeightDp, secondaryOf = kb.secondaryOf, exportedHeight = portraitHeight, exportedBackground = bg, exportedRowSpacing = kb.rowSpacing, rowMargin = kb.rowMargin, keyAppearance = KeyAppearance.textValues(kb.keyAppearance), options = kb.options)), "keys" to JsonArray(keys))
         }
         val first = layouts.values.first()
@@ -200,7 +201,12 @@ object CustomKeyboardYaml {
                 require(extra.row in 1..128) { "mie.row 行号须为1–128" }
                 val height = key.pairs["height"]?.int ?: 60
                 require(height in 24..160) { "行高须为24–160dp" }
-                val row = grouped.getOrPut(extra.row) { CustomRow(height = height, alignment = ButtonAlignment.normalized(info.rowAlignments[extra.row] ?: "left")) }
+                val row = grouped.getOrPut(extra.row) {
+                    val perRowMargin = info.rowMargins[extra.row]
+                    val fallbackMargin = if (info.rowMargin in 0..48) info.rowMargin else null
+                    CustomRow(height = height, alignment = ButtonAlignment.normalized(info.rowAlignments[extra.row] ?: "left"),
+                        margin = perRowMargin ?: fallbackMargin)
+                }
                 if (extra.spacer) return@keyLoop
                 val width = key.pairs["width"]?.float ?: 10f
                 require(width.isFinite() && width > 0f && width <= 100f) { "按键宽度须大于0且不超过100" }
@@ -258,9 +264,10 @@ object CustomKeyboardYaml {
                 landscapeSplitPercent = node.pairs["landscape_split_percent"]?.int ?: info.options.landscapeSplitPercent,
                 uppercaseLabels = node.pairs["label_transform"]?.string?.let { it.equals("uppercase", true) } ?: info.options.uppercaseLabels,
             ).validated()
-            val rowMargin = info.rowMargin
-            require(rowMargin in 0..48) { "行边距须为 0–48 dp" }
-            result[id] = CustomKeyboard(name = node.pairs["name"]?.string ?: id, rows = rows, rowSpacing = spacing, rowMargin = rowMargin,
+            val keyboardRowMargin = info.rowMargin
+            require(keyboardRowMargin in 0..48) { "行边距须为 0–48 dp" }
+            require(info.rowMargins.values.all { it in -1..48 }) { "行边距须为 0–48 dp" }
+            result[id] = CustomKeyboard(name = node.pairs["name"]?.string ?: id, rows = rows, rowSpacing = spacing, rowMargin = keyboardRowMargin,
                 importedActions=info.importedActions, toolbarAlignment=info.toolbarAlignment, surfaceAppearance=info.surfaceAppearance, unifiedBackground=info.unifiedBackground, typography=info.typography, floatingCandidates=info.floatingCandidates, background = background(bg), toolbar = info.toolbar.toMutableList(), toolbarBackground = info.toolbarBackground, allKeysBackground = info.allKeysBackground,
                 importedSkin = skin, importedHeightPercent = percent, keyboardHeightDp = heightDp, landscapeHeightDp = heightDpLand, toolbarHeightDp = toolbarHeight, secondaryOf = secondaryOf, keyAppearance = KeyAppearance.parse(info.keyAppearance), options = options)
         }

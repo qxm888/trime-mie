@@ -28,6 +28,10 @@ class Key(
 
     val allowDefaultVoice: Boolean get() = keyDef?.allowDefaultVoice != false
 
+    /** 按键级符号 / 注解显示覆盖；null 跟随全局设置。 */
+    val showSymbol: Boolean? get() = keyDef?.showSymbol
+    val showHint: Boolean? get() = keyDef?.showHint
+
     var importedStyle: com.osfans.trime.data.baiduskin.ImportedKeyStyle? = null
     var index: Int = -1
 
@@ -299,7 +303,11 @@ class Key(
     fun getCode(behavior: KeyBehavior): Int = getAction(behavior)?.code ?: KeyEvent.KEYCODE_UNKNOWN
 
     fun getLabel(): String {
-        if (theme.isCustom) return label
+        if (theme.isCustom) {
+            // 标签显示设置：字母标签大写对自定义键盘同样生效。
+            val base = label
+            return if (parent.isLabelUppercase) base.uppercase() else base
+        }
         val action = keyAction
         return when {
             // 无点击动作的展示键：只显示自身标签

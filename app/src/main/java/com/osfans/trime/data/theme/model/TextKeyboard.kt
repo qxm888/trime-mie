@@ -39,6 +39,8 @@ data class TextKeyboard(
     val keyPressOffsetX: Float = 0f,
     val keyPressOffsetY: Float = 0f,
     val importPreset: String = "",
+    /** 按键上方符号的水平对齐：left / center / right（空 = 居中）。 */
+    val symbolAlign: String = "",
     val keys: List<TextKey> = emptyList(),
 ) {
     enum class LabelTransform {
@@ -58,6 +60,11 @@ data class TextKeyboard(
         val labelSymbol: String = "",
         val hint: String = "",
         val sendBindings: Boolean = true,
+        /** 按键级符号 / 注解显示覆盖：null 跟随全局开关。 */
+        @Transient val showSymbol: Boolean? = null,
+        @Transient val showHint: Boolean? = null,
+        /** 本行行边距 dp（自定义键盘专用；-1 = 跟随键盘级设置）。 */
+        @Transient val rowMargin: Int = -1,
         val keyTextSize: Float = 0f,
         val symbolTextSize: Float = 0f,
         val hintTextSize: Float = 0f,

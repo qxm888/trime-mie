@@ -451,7 +451,7 @@ object UserDataManager {
     }
 
     /** Models, app resources and ZIP backups are not native Rime synchronization data. */
-    private fun isRimeDataPath(path: String): Boolean = path.replace('\\','/').trimStart('/').substringBefore('/') !in setOf("mie","mie_resources")
+    private fun isRimeDataPath(path: String): Boolean = path.replace('\\','/').trimStart('/').substringBefore('/') !in setOf("mie","mie_resources",".mie")
 
     private fun isUnchanged(
         path: String,

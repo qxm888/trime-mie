@@ -24,7 +24,10 @@ import java.util.zip.ZipOutputStream
 object FullSettingsBackup {
     private val prefNames=listOf("__default__","font_overrides","voice_settings","builtin_asr","named_functions","clipboard_sync")
     private val stateNames=setOf("custom_keyboards.json","toolbar_overrides.json","key_binding_overrides.json","candidate_preferences.json","input_stats.json")
-    private val assetNames=setOf("custom_fonts","custom_kb_bg","baidu_skins")
+    private val assetNames=setOf("键盘背景","字体","百度皮肤")
+    /** 旧版英文素材目录：备份可读入，恢复时映射到新中文目录。 */
+    private val legacyAssetNames=setOf("custom_fonts","custom_kb_bg","baidu_skins")
+    private val legacyToNew=mapOf("custom_kb_bg" to "键盘背景","custom_fonts" to "字体","baidu_skins" to "百度皮肤")
     private val skippedKeys=setOf("profile_data_storage_mode","profile_direct_external_path","profile_direct_external_ready","profile_external_rime_tree_uri","profile_external_rime_display_name","pid","last_crash_time","last_background_sync_time","last_background_sync_status")
     private const val LIMIT=16L*1024*1024*1024
     private const val FORMAT="trime-mie-settings"
@@ -58,7 +61,7 @@ object FullSettingsBackup {
         val p=PreferenceManager.getDefaultSharedPreferences(context)
         val direct=p.getString("profile_data_storage_mode","DIRECT_EXTERNAL")=="DIRECT_EXTERNAL"
         val rime=if(direct) DirectExternalStorage.validate(p.getString("profile_direct_external_path",DirectExternalStorage.defaultPath)!!) else File(context.getExternalFilesDir(null) ?: context.filesDir,"rime")
-        val assets=if(direct) File(rime,"mie_resources/${context.packageName}") else context.filesDir
+        val assets=if(direct) MieUserDirectory.directory(context) else context.filesDir
         return linkedMapOf("state" to context.filesDir,"assets" to assets,"privateAssets" to context.filesDir,"rime" to rime,"models" to File(MieUserDirectory.directory(context),"语音模型"))
     }
     @Synchronized fun create(context: Context,models: Boolean,secrets: Boolean): File {
@@ -101,7 +104,7 @@ object FullSettingsBackup {
                 com.osfans.trime.daemon.RimeDaemon.changeStorage {
                     tree(targets.getValue("rime"),"rime") { file ->
                         val top=file.relativeTo(targets.getValue("rime")).invariantSeparatorsPath.substringBefore('/')
-                        top !in setOf("mie","mie_resources","build",".git","installation.yaml")
+                        top !in setOf("mie","mie_resources",".mie","build",".git","installation.yaml")
                     }
                 }
                 if(models) tree(targets.getValue("models"),"models") { !it.name.startsWith('.') }
@@ -137,8 +140,8 @@ object FullSettingsBackup {
                     if(name=="preferences.json") require(size<=16*1024*1024)
                     if(name.startsWith("state/")) require(name.removePrefix("state/") in stateNames)
                     if(name.startsWith("state/")) require(size<=32*1024*1024)
-                    if(name.startsWith("assets/")) require(name.removePrefix("assets/").substringBefore('/') in assetNames)
-                    if(name.startsWith("privateAssets/")) require(name.removePrefix("privateAssets/").substringBefore('/') in assetNames)
+                    if(name.startsWith("assets/")) require(name.removePrefix("assets/").substringBefore('/') in assetNames || name.removePrefix("assets/").substringBefore('/') in legacyAssetNames)
+                    if(name.startsWith("privateAssets/")) require(name.removePrefix("privateAssets/").substringBefore('/') in assetNames || name.removePrefix("privateAssets/").substringBefore('/') in legacyAssetNames)
                     if(name.startsWith("rime/")) require(name.removePrefix("rime/").substringBefore('/') !in setOf("mie","mie_resources","build",".git","installation.yaml"))
                     target.parentFile!!.mkdirs(); val sha=MessageDigest.getInstance("SHA-256"); var actual=0L
                     zip.getInputStream(zip.getEntry(name) ?: error("备份缺少文件")).use { stream -> target.outputStream().use { out ->
@@ -214,8 +217,11 @@ object FullSettingsBackup {
         val mappings=linkedMapOf<String,String>()
         listOf("state","rime","models").forEach { mappings[old.getString(it)+"/"]=targets.getValue(it).absolutePath+"/" }
         assetNames.forEach { folder -> mappings[old.getString("assets")+"/$folder/"]=targets.getValue("assets").absolutePath+"/$folder/" }
-        if((0 until files.length()).any { files.getJSONObject(it).getString("name").startsWith("privateAssets/") })
+        legacyAssetNames.forEach { folder -> mappings[old.getString("assets")+"/$folder/"]=targets.getValue("assets").absolutePath+"/"+(legacyToNew[folder] ?: folder)+"/" }
+        if((0 until files.length()).any { files.getJSONObject(it).getString("name").startsWith("privateAssets/") }) {
             assetNames.forEach { folder -> mappings[old.getString("privateAssets")+"/$folder/"]=targets.getValue("privateAssets").absolutePath+"/$folder/" }
+            legacyAssetNames.forEach { folder -> mappings[old.getString("privateAssets")+"/$folder/"]=targets.getValue("privateAssets").absolutePath+"/"+(legacyToNew[folder] ?: folder)+"/" }
+        }
         // Android JSONObject escapes slashes, including JSON strings inside preferences.
         // Replace each original match once so moving into a child folder cannot rebase twice.
         val encoded=linkedMapOf<String,String>()

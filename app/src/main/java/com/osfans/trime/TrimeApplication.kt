@@ -204,6 +204,8 @@ class TrimeApplication : Application() {
             CustomKeyboards.init(ctx)
             ToolbarOverrides.init(ctx)
             com.osfans.trime.data.theme.FontOverrides.init(ctx)
+            // 键盘/字体存储就绪后，把 rime 目录里旧位置的自有文件搬进 .mie 并改写引用路径。
+            if (!isDirectBootMode) com.osfans.trime.core.data.MieUserDirectory.migrate(ctx)
             com.osfans.trime.ime.voice.VoiceSettings.init(ctx)
             com.osfans.trime.ime.voice.builtin.AsrSettings.init(ctx)
             com.osfans.trime.ime.voice.builtin.AsrContextHolder.init(ctx)

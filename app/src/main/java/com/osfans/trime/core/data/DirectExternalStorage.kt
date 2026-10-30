@@ -30,15 +30,11 @@ object DirectExternalStorage {
         return requested
     }
 
-    fun resources(context: Context): File = if (enabled()) {
-        check(hasPermission(context)) { "请先授予所有文件访问权限" }
-        File(directory, "mie_resources/${context.packageName}").apply {
-            check(mkdirs() || isDirectory)
-            // 图片/视频/字体素材不应出现在系统相册：资源根目录放屏蔽标记，覆盖全部子目录。
-            val marker = File(this, ".nomedia")
-            if (!marker.exists()) runCatching { marker.createNewFile() }
-        }
-    } else context.filesDir
+    /** 咩版素材目录：直接外部目录时在 `rime/.mie/<中文名>`；应用专属存储时维持 filesDir/旧名。 */
+    fun resources(
+        context: Context,
+        kind: String,
+    ): File = com.osfans.trime.core.data.MieUserDirectory.assetFolder(context, kind)
 
     private fun copyMissing(source: File, target: File): Int = MissingFileCopier.copy(source, target)
 
@@ -63,44 +59,18 @@ object DirectExternalStorage {
         var count = copyMissing(previous, target)
         count += copyMissing(UserDataManager.appUserDataDir, target)
         count += copyMissing(DataManager.sharedDataDir, target)
-        // Public media are partitioned by package; both channels can share Rime files.
-        val oldAssets = resources(context)
-        val newAssets = File(target, "mie_resources/${context.packageName}")
-        val oldRoots = listOf(oldAssets, context.filesDir).distinctBy { it.canonicalPath }
-        oldRoots.forEach { oldRoot ->
-            listOf("baidu_skins", "custom_kb_bg", "custom_fonts").forEach { folder ->
-                count += copyMissing(File(oldRoot, folder), File(newAssets, folder))
-            }
-        }
-        fun relocated(value: String): String {
-            var result = value
-            oldRoots.filter { it.canonicalFile != newAssets.canonicalFile }.forEach { oldRoot ->
-                listOf("baidu_skins", "custom_kb_bg", "custom_fonts").forEach { folder ->
-                    result = result.replace(oldRoot.absolutePath + "/$folder/", newAssets.absolutePath + "/$folder/")
-                }
-            }
-            return result
-        }
-        val before = CustomKeyboards.exportJson()
-        val after = relocated(before)
-        val oldMode = prefs.dataStorageMode.getValue()
-        val oldPath = prefs.directExternalPath.getValue()
-        val oldReady = prefs.directExternalReady.getValue()
-        val oldFonts = FontOverrides.roles.keys.associateWith(FontOverrides::selection)
-        if (after != before) {
-            val backup = File(context.filesDir, "custom_keyboards-before-external.json")
-            if (!backup.exists()) backup.writeText(before)
-        }
+        // 旧数据目录（切换前的直接外部目录）也纳入 .mie 迁移扫描。
+        val previousPath = prefs.directExternalPath.getValue()
+        val legacyRoots = listOfNotNull(
+            File(previousPath).takeIf { previousPath.isNotBlank() && it.isDirectory && it.absolutePath != target.absolutePath },
+        )
+        val previousMode = prefs.dataStorageMode.getValue()
+        val previousReady = prefs.directExternalReady.getValue()
         try {
-            if (after != before) { CustomKeyboards.importJson(after, true); check(CustomKeyboards.flush()) { "布局保存失败，未切换目录" } }
-            oldFonts.forEach { (role, value) -> if (relocated(value) != value) FontOverrides.set(role, relocated(value), refresh = false) }
             commitLocation(DataStorageMode.DIRECT_EXTERNAL, target.absolutePath, true)
+            com.osfans.trime.core.data.MieUserDirectory.migrate(context, legacyRoots)
         } catch (error: Exception) {
-            runCatching { commitLocation(oldMode, oldPath, oldReady) }.onFailure(error::addSuppressed)
-            if (after != before) runCatching { CustomKeyboards.importJson(before, true); check(CustomKeyboards.flush()) }.onFailure(error::addSuppressed)
-            oldFonts.forEach { (role, value) -> runCatching {
-                if (FontOverrides.selection(role) != value) FontOverrides.set(role, value, refresh = false)
-            }.onFailure(error::addSuppressed) }
+            runCatching { commitLocation(previousMode, previousPath, previousReady) }.onFailure(error::addSuppressed)
             throw error
         }
         return count
@@ -113,49 +83,40 @@ object DirectExternalStorage {
             check(UserDataManager.hasExternalAccess()) { "请先选择并授权外部同步目录" }
         val oldPath = prefs.directExternalPath.getValue()
         val oldReady = prefs.directExternalReady.getValue()
-        val oldAssets = resources(context)
-        val before = CustomKeyboards.exportJson()
-        val fonts = FontOverrides.roles.keys.associateWith(FontOverrides::selection)
+        val oldMieRoot = File(oldPath)
         val target = UserDataManager.appUserDataDir
         val tag = java.util.UUID.randomUUID().toString()
         val backup = File(target.parentFile, "rime-before-switch-$tag")
         val hadTarget = target.exists()
-        val assets = mutableListOf<Pair<File, File?>>()
         if (hadTarget) check(target.renameTo(backup)) { "无法保留原应用目录" }
         fun relocated(value: String): String {
             var text = value
-            listOf("baidu_skins", "custom_kb_bg", "custom_fonts").forEach { folder ->
-                text = text.replace(oldAssets.absolutePath + "/$folder/", context.filesDir.absolutePath + "/$folder/")
+            // 素材留在 rime/.mie（中文目录），应用侧引用改为新数据目录下的 .mie。
+            listOf("键盘背景", "字体", "百度皮肤", "统计", "备份", "语音模型", "剪贴板附件").forEach { folder ->
+                text = text.replace(File(oldMieRoot, ".mie/$folder").absolutePath + "/",
+                    File(UserDataManager.appUserDataDir, ".mie/$folder").absolutePath + "/")
+                text = text.replace(File(oldMieRoot, "mie_resources/${context.packageName}/$folder").absolutePath + "/",
+                    File(UserDataManager.appUserDataDir, ".mie/${folder}").absolutePath + "/")
             }
             return text
         }
         try {
+            copyMissing(File(oldMieRoot, ".mie"), File(UserDataManager.appUserDataDir, ".mie"))
             copyMissing(directory, target)
             check(target.isDirectory) { "无法准备应用数据目录" }
-            listOf("baidu_skins", "custom_kb_bg", "custom_fonts").forEach { folder ->
-                val source = File(oldAssets, folder)
-                if (source.isDirectory) {
-                    val dest = File(context.filesDir, folder)
-                    val prior = if (dest.exists()) File(context.filesDir, "$folder-before-switch-$tag").also {
-                        check(dest.renameTo(it)) { "无法保留原素材目录" }
-                    } else null
-                    assets += dest to prior
-                    copyMissing(source, dest)
-                }
-            }
+            com.osfans.trime.core.data.MieUserDirectory.migrate(context, listOfNotNull(oldMieRoot.takeIf { it.isDirectory }))
+            val before = CustomKeyboards.exportJson()
             val after = relocated(before)
             if (after != before) { CustomKeyboards.importJson(after, true); check(CustomKeyboards.flush()) { "布局素材路径保存失败" } }
-            fonts.forEach { (role, value) -> if (relocated(value) != value) FontOverrides.set(role, relocated(value), refresh = false) }
+            FontOverrides.roles.forEach { (role, _) ->
+                val value = FontOverrides.selection(role)
+                val moved = relocated(value)
+                if (moved != value) FontOverrides.set(role, moved, refresh = false)
+            }
             commitLocation(mode, oldPath, oldReady)
         } catch (error: Exception) {
             // Attempt every rollback even if one write fails (e.g. the disk is full).
             runCatching { commitLocation(DataStorageMode.DIRECT_EXTERNAL, oldPath, oldReady) }.onFailure(error::addSuppressed)
-            runCatching { CustomKeyboards.importJson(before, true); check(CustomKeyboards.flush()) }.onFailure(error::addSuppressed)
-            fonts.forEach { (role, value) -> runCatching { if (FontOverrides.selection(role) != value) FontOverrides.set(role, value, refresh = false) }.onFailure(error::addSuppressed) }
-            assets.asReversed().forEach { (dest, prior) -> runCatching {
-                check(dest.deleteRecursively())
-                if (prior != null) check(prior.renameTo(dest))
-            }.onFailure(error::addSuppressed) }
             runCatching {
                 check(target.deleteRecursively())
                 if (hadTarget) check(backup.renameTo(target)) { "请恢复原应用目录：${backup.path}" }

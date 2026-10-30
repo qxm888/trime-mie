@@ -283,11 +283,8 @@ class KeyboardWindow(di: DI) :
         val config = selectKeyboardConfig(target)
         val width = computeAllowedWidth()
         applyKeyboardSkin(target, width)
-        // 自定义键盘的行边距只收窄按键排布：背景和工具栏仍铺满整个键盘视图。
-        val keyLayoutWidth = if (theme.isCustom) {
-            width - 2 * context.dp(CustomKeyboards.get(CustomKeyboards.resolveId(target))?.rowMargin ?: 0).coerceAtMost(width / 3)
-        } else width
-        val keyboard = activeKeyboard ?: Keyboard(context, theme, keyLayoutWidth, config, target)
+        // 行边距在 Keyboard 布局内按行生效（背景铺满不动）。
+        val keyboard = activeKeyboard ?: Keyboard(context, theme, width, config, target)
         val view = currentKeyboardView ?: KeyboardView(context, theme, keyboard, popup, service, keyboardActionListener, enterKeyDisplay)
 
         if (activeKeyboard == null) {
@@ -319,13 +316,7 @@ class KeyboardWindow(di: DI) :
         view.let {
             keyboardView.apply {
                 (it.parent as? android.view.ViewGroup)?.removeView(it)
-                // 行边距只收窄按键排布；键盘视图仍铺满，按键整体居中。
-                if (theme.isCustom && keyLayoutWidth < width) {
-                    val margin = context.dp(CustomKeyboards.get(CustomKeyboards.resolveId(target))?.rowMargin ?: 0)
-                    add(it, android.widget.FrameLayout.LayoutParams(matchParent, matchParent).apply {
-                        leftMargin = margin; rightMargin = margin
-                    })
-                } else add(it, lParams(matchParent, matchParent))
+                add(it, lParams(matchParent, matchParent))
             }
         }
     }

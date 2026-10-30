@@ -36,7 +36,7 @@ class ExternalDataActivity : PersonalizationActivity() {
             setText(savedInstanceState?.getString("path") ?: AppPrefs.defaultInstance().profile.directExternalPath.getValue())
         }
         body.addView(TextInputLayout(this).apply { hint = "外部数据目录"; addView(path) })
-        note("切换时补齐旧目录中已有的数据和素材；目标目录已有同名文件优先保留，旧目录不删除。咩版与咩2可共用Rime文件，导入素材放在各自的 mie_resources 子目录。")
+        note("切换时补齐旧目录中已有的数据和素材；目标目录已有同名文件优先保留，旧目录不删除。咩版与咩2可共用Rime文件；咩版自有素材与备份统一存放在该目录的 .mie 子目录（键盘背景 / 字体 / 百度皮肤 / 统计 / 备份）。")
         status = android.widget.TextView(this).apply { textSize = 14f; setPadding(0, dp(8), 0, dp(8)) }
         body.addView(status)
         button("授予文件访问权限") { requestAccess() }

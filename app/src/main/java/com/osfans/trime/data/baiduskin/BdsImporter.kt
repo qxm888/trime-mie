@@ -14,7 +14,7 @@ object BdsImporter {
     private val pages = linkedMapOf("py_26" to "中文26键", "py_9" to "中文九宫格", "en_26" to "英文26键", "num_9" to "数字")
 
     fun import(context: Context, archiveFile: File, sourceName: String): Result {
-        val folder = File(com.osfans.trime.core.data.DirectExternalStorage.resources(context), "baidu_skins/${UUID.randomUUID()}").apply { mkdirs() }
+        val folder = File(com.osfans.trime.core.data.DirectExternalStorage.resources(context, "baidu_skins"), UUID.randomUUID().toString()).apply { mkdirs() }
         try {
             BdsArchive(archiveFile).use { zip ->
                 val reader = Reader(zip, folder)

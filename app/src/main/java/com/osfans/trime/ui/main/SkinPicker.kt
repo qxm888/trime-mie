@@ -102,7 +102,7 @@ object SkinPicker {
         if (uri == null) { onResult(null); return }
         activity.lifecycleScope.launch {
             val result = withContext(Dispatchers.IO) { runCatching {
-                val folder = File(com.osfans.trime.core.data.DirectExternalStorage.resources(activity), "custom_kb_bg")
+                val folder = com.osfans.trime.core.data.DirectExternalStorage.resources(activity, "custom_kb_bg")
                 check(folder.mkdirs() || folder.isDirectory)
                 val file = File(folder, "bg_${UUID.randomUUID()}.png")
                 try {
@@ -124,7 +124,7 @@ object SkinPicker {
         if (uri == null) { onResult(null); return }
         activity.lifecycleScope.launch {
             val result = withContext(Dispatchers.IO) { runCatching {
-                val folder = File(com.osfans.trime.core.data.DirectExternalStorage.resources(activity), "custom_kb_bg")
+                val folder = com.osfans.trime.core.data.DirectExternalStorage.resources(activity, "custom_kb_bg")
                 check(folder.mkdirs() || folder.isDirectory)
                 val file = File(folder, "video_${UUID.randomUUID()}.mp4")
                 try {
@@ -188,7 +188,7 @@ object SkinPicker {
                     activity.lifecycleScope.launch {
                         val result = withContext(Dispatchers.IO) {
                             runCatching {
-                                val folder = File(com.osfans.trime.core.data.DirectExternalStorage.resources(activity), "custom_kb_bg")
+                                val folder = com.osfans.trime.core.data.DirectExternalStorage.resources(activity, "custom_kb_bg")
                                 check(folder.mkdirs() || folder.isDirectory)
                                 val file = File(folder, "bg_${UUID.randomUUID()}.jpg")
                                 try {

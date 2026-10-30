@@ -23,6 +23,8 @@ object KeyAppearance {
         val keyHintOffsetX: Float = 0f, val keyHintOffsetY: Float = 0f,
         val keyPressOffsetX: Float = 0f, val keyPressOffsetY: Float = 0f,
         val popup: List<String> = emptyList(), val sendBindings: Boolean? = null,
+        /** 按键级符号 / 注解显示：null 跟随全局开关，true 强制显示，false 强制隐藏。 */
+        val showSymbol: Boolean? = null, val showHint: Boolean? = null,
     ) {
         fun toTextKey() = TextKey(labelSymbol = labelSymbol, hint = hint,
             keyTextSize = keyTextSize, symbolTextSize = symbolTextSize, hintTextSize = hintTextSize, roundCorner = roundCorner, keyBorder = keyBorder,
@@ -32,7 +34,8 @@ object KeyAppearance {
             keyTextOffsetX = keyTextOffsetX, keyTextOffsetY = keyTextOffsetY,
             keySymbolOffsetX = keySymbolOffsetX, keySymbolOffsetY = keySymbolOffsetY,
             keyHintOffsetX = keyHintOffsetX, keyHintOffsetY = keyHintOffsetY,
-            keyPressOffsetX = keyPressOffsetX, keyPressOffsetY = keyPressOffsetY, popup = popup, sendBindings = sendBindings ?: true)
+            keyPressOffsetX = keyPressOffsetX, keyPressOffsetY = keyPressOffsetY, popup = popup, sendBindings = sendBindings ?: true,
+            showSymbol = showSymbol, showHint = showHint)
     }
     val fields = linkedMapOf(
         "labelSymbol" to "符号文字", "hint" to "提示文字",
@@ -48,6 +51,7 @@ object KeyAppearance {
         "keyHintOffsetX" to "提示横向偏移 dp", "keyHintOffsetY" to "提示纵向偏移 dp",
         "keyPressOffsetX" to "按下横向偏移 dp", "keyPressOffsetY" to "按下纵向偏移 dp",
         "popup" to "弹出备选（每行一个）", "sendBindings" to "发送手势绑定",
+        "showSymbol" to "符号显示（留空跟随全局）", "showHint" to "注解显示（留空跟随全局）",
     )
     private val json = Json { encodeDefaults = true }
     fun values(style: Style): JsonObject = json.encodeToJsonElement(Style.serializer(), style).jsonObject
@@ -69,6 +73,12 @@ object KeyAppearance {
             val old = prototype.getValue(name)
             result[name] = when {
                 name == "sendBindings" -> if (text.isBlank()) JsonNull else JsonPrimitive(text.toBooleanStrict())
+                name == "showSymbol" || name == "showHint" -> when {
+                    text.isBlank() -> JsonNull
+                    text == "显示" || text == "true" -> JsonPrimitive(true)
+                    text == "隐藏" || text == "false" -> JsonPrimitive(false)
+                    else -> error("${fields[name]}：留空跟随，或填 显示 / 隐藏")
+                }
                 name == "popup" -> JsonArray(text.lines().filter { it.isNotEmpty() }.map(::JsonPrimitive))
                 old is JsonPrimitive && old.booleanOrNull != null -> JsonPrimitive(text.toBooleanStrict())
                 old is JsonPrimitive && old.isString -> JsonPrimitive(text)
