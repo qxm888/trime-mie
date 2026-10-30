@@ -54,6 +54,7 @@ sealed class RimeMessage<T>(
 
     data class DeployMessage(
         override val data: State,
+        val isUserDataSync: Boolean = false,
     ) : RimeMessage<DeployMessage.State>(data) {
         override val messageType: MessageType
             get() = MessageType.Deploy
@@ -64,7 +65,7 @@ sealed class RimeMessage<T>(
             Failure,
         }
 
-        override fun toString() = "DeployMessage(state=$data)"
+        override fun toString() = "DeployMessage(state=$data, userDataSync=$isUserDataSync)"
     }
 
     data class CommitTextMessage(

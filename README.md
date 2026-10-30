@@ -6,7 +6,15 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前源码版本：**V3.0.6**，正式 APK 文件名 `trime-mie-v3.0.6.apk`。本版已在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 发布。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
+> 当前源码版本：**V3.0.7**，正式 APK 文件名 `trime-mie-v3.0.7.apk`。本版已在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 发布。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
+
+## V3.0.7 手动部署
+
+- 切换输入法、进程重建、更新配置和恢复备份后只加载已有部署结果，不自动检查或部署。
+- 首次安装、修改方案词典、恢复数据后，请在设置右上角菜单中手动选择“部署”。
+- 主题加载不再隐式编译，依赖原生 DSL 的主题随手动部署统一编译。
+
+详见 [V3.0.7 更新说明](docs/v3.0.7/更新说明.md)。
 
 ## V3.0.6 开机初始化修复
 
@@ -162,7 +170,7 @@
 
 ## 下载与安装
 
-1. 可在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 下载 `trime-mie-v3.0.6.apk`。
+1. 可在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 下载 `trime-mie-v3.0.7.apk`。
 2. 允许浏览器或文件管理器安装该 APK，安装后在系统设置启用“同文输入法咩版”并选为当前输入法。
 3. 配置 Rime 方案与词库并部署。需要沿用旧目录时，按[使用指南](docs/使用指南.md)切换外部目录。
 

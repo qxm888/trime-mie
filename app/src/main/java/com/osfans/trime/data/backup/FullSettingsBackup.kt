@@ -266,7 +266,7 @@ object FullSettingsBackup {
         val prefBackup=File(rollback,"preferences.json")
         if(File(rollback,"committed").exists()) {
             context.getSharedPreferences("settings_restore_result",Context.MODE_PRIVATE).edit()
-                .putBoolean("deploy",true).putString("message","整包设置已恢复；输入引擎首次启动将完整部署。").commit()
+                .remove("deploy").putString("message","整包设置已恢复；请在设置菜单中手动选择部署，使方案和词典生效。").commit()
             if(journal.isFile) {
                 val list=JSONArray(journal.readText())
                 for(i in 0 until list.length()) File(list.getJSONObject(i).getString("saved")).delete()
@@ -306,7 +306,7 @@ object FullSettingsBackup {
             }
             writePreferences(context,JSONObject(File(pending,"prepared-preferences.json").readText())) { it }
             File(rollback,"committed").writeText("1")
-            result.edit().putBoolean("deploy",true).putString("message","整包设置已恢复；下次启动输入引擎将完整部署。剪贴板自动同步保持关闭，请按需重新开启。").commit()
+            result.edit().remove("deploy").putString("message","整包设置已恢复；请在设置菜单中手动选择部署，使方案和词典生效。剪贴板自动同步保持关闭，请按需重新开启。").commit()
             for(i in 0 until recorded.length()) File(recorded.getJSONObject(i).getString("saved")).delete()
             pending.deleteRecursively(); rollback.deleteRecursively()
         } catch(error: Exception) {

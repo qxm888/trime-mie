@@ -193,10 +193,11 @@ class Mie30Runner : Instrumentation() {
             val committed=File(fake.noBackupFilesDir,"mie-restore-rollback").apply { mkdirs() }
             File(committed,"committed").writeText("1")
             val restore=fake.getSharedPreferences("settings_restore_result",Context.MODE_PRIVATE)
-            restore.edit().putBoolean("deploy",false).commit()
+            restore.edit().putBoolean("deploy",true).commit()
             FullSettingsBackup.applyPending(fake)
-            check(restore.getBoolean("deploy",false) && !committed.exists())
-            pass("committed restore interrupted before cleanup still requests full deployment")
+            check(!restore.contains("deploy") && !committed.exists())
+            check(restore.getString("message", "").orEmpty().contains("手动选择部署"))
+            pass("committed restore clears legacy automatic deployment request and asks for manual deployment")
         } finally {
             FullSettingsBackup.discardPrepared(fake)
             public.deleteRecursively()

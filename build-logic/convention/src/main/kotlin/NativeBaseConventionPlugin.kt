@@ -29,6 +29,14 @@ open class NativeBaseConventionPlugin : Plugin<Project> {
             if (target.file("prebuilt").exists() && target.providers.gradleProperty("usePrebuiltNative").orNull != "false") {
                 check(target.file("prebuilt").exists()) { "app/prebuilt is missing" }
                 sourceSets.getByName("main").jniLibs.srcDirs(setOf("prebuilt"))
+                // Build only the public-API startup bridge beside the unchanged
+                // prebuilt engine. No librime submodules are needed here.
+                externalNativeBuild.apply {
+                    cmake {
+                        version = "3.22.1"
+                        path("src/main/native-startup/CMakeLists.txt")
+                    }
+                }
             } else {
                 externalNativeBuild.apply {
                     cmake {

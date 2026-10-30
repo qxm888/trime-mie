@@ -128,11 +128,11 @@ class ProfileSettingsFragment : PaddingPreferenceFragment() {
                     runCatching {
                         withContext(Dispatchers.IO) {
                             UserDataManager.persistTreeUri(picked.uri)
-                            viewModel.rime.runOnReady { deploy() }
+                            check(UserDataManager.sync())
                         }
                     }.onSuccess {
                         updateDataPathSummary()
-                        ctx.toast(R.string.setup__data_path_imported)
+                        ctx.toast("数据目录已导入，请在设置菜单中手动选择部署")
                     }.onFailure {
                         if (externalSyncSetup) {
                             fallbackToAppStorage()

@@ -12,6 +12,8 @@ import com.osfans.trime.core.data.UserDataManager
 import com.osfans.trime.ui.common.OnItemChangedListener
 import com.osfans.trime.ui.main.settings.ProgressFragment
 import com.osfans.trime.util.NaiveDustman
+import com.osfans.trime.util.appContext
+import com.osfans.trime.util.toast
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -96,9 +98,9 @@ class SchemaListFragment :
         viewModel.viewModelScope.launch {
             viewModel.rime.runOnReady {
                 setEnabledSchemata(schemaIds)
-                deploy()
                 UserDataManager.sync()
             }
+            appContext.toast("方案列表已保存，请在设置菜单中手动选择部署")
         }
     }
 

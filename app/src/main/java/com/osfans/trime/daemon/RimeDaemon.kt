@@ -200,6 +200,9 @@ object RimeDaemon {
 
     private suspend fun handleRimeMessage(it: RimeMessage<*>) {
         if (it is RimeMessage.DeployMessage) {
+            // librime reports dictionary backup/sync on the same callback.
+            // It must not look like automatic schema deployment or clear logs.
+            if (it.isUserDataSync) return
             when (it.data) {
                 RimeMessage.DeployMessage.State.Start -> {
                     DeployNotification.showProgress()

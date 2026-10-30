@@ -64,10 +64,9 @@ class Rime :
         RimeDispatcher(
             object : RimeDispatcher.RimeController {
                 override fun nativeStartup() {
-                    val restored=com.osfans.trime.util.appContext.getSharedPreferences("settings_restore_result",android.content.Context.MODE_PRIVATE)
-                    val full=restored.getBoolean("deploy",false)
-                    startRime(full)
-                    if(full) restored.edit().putBoolean("deploy",false).commit()
+                    // Switching IMEs, process recreation and settings restoration
+                    // must only load existing artifacts. Deployment is explicit.
+                    startRime(false)
                     lifecycleRegistry.emitEvent(RimeLifecycle.Event.ON_READY)
                 }
 
@@ -159,10 +158,11 @@ class Rime :
     }
 
     override suspend fun deploy() = lock.withLock {
+        com.osfans.trime.util.DiagnosticLog.event("rime", "manual_deploy", "requested")
         UserDataManager.sync()
         val deployFinished = CompletableDeferred<Boolean>()
         val deployHandler: (RimeMessage<*>) -> Unit = { message ->
-            if (message is RimeMessage.DeployMessage) {
+            if (message is RimeMessage.DeployMessage && !message.isUserDataSync) {
                 when (message.data) {
                     RimeMessage.DeployMessage.State.Start -> Unit
 
@@ -189,6 +189,17 @@ class Rime :
                     }
                 }
             check(success) { "Rime deploy failed" }
+            withRimeContext {
+                // The native maintenance has loaded the deployment plugins and
+                // finished writing shared artifacts. Compile themes sequentially.
+                com.osfans.trime.data.theme.ThemeLoader.deployThemeConfigs()
+            }
+            withContext(Dispatchers.Main) {
+                com.osfans.trime.data.theme.ThemeManager.requestCustomizationRefresh()
+            }
+            com.osfans.trime.util.appContext.getSharedPreferences("settings_restore_result", android.content.Context.MODE_PRIVATE)
+                .edit().remove("deploy").commit()
+            Unit
         } finally {
             unregisterRimeMessageHandler(deployHandler)
         }
@@ -206,7 +217,7 @@ class Rime :
         // proceed after sync/<installation_id>/ has been written.
         val syncFinished = CompletableDeferred<Boolean>()
         val syncHandler: (RimeMessage<*>) -> Unit = { message ->
-            if (message is RimeMessage.DeployMessage) {
+            if (message is RimeMessage.DeployMessage && message.isUserDataSync) {
                 when (message.data) {
                     RimeMessage.DeployMessage.State.Success -> syncFinished.complete(true)
                     RimeMessage.DeployMessage.State.Failure -> syncFinished.complete(false)
@@ -217,7 +228,15 @@ class Rime :
         registerRimeMessageHandler(syncHandler)
         val syncOk =
             try {
-                val started = withRimeContext { syncRimeUserData() }
+                val started = withRimeContext {
+                    userDataSyncInProgress = true
+                    try {
+                        syncRimeUserData().also { if (!it) userDataSyncInProgress = false }
+                    } catch (error: Throwable) {
+                        userDataSyncInProgress = false
+                        throw error
+                    }
+                }
                 if (!started) {
                     false
                 } else {
@@ -458,6 +477,8 @@ class Rime :
     }
 
     private fun startRime(fullCheck: Boolean) {
+        // exitRime joins any prior native maintenance before we get here.
+        userDataSyncInProgress = false
         DataManager.sync()
         UserDataManager.ensureDefaultCustomConfig()
         InputStats.restoreFromRimeIfEmpty()
@@ -471,12 +492,12 @@ class Rime :
             fullCheck: $fullCheck
             """.trimIndent(),
         )
-        startupRime(
-            sharedDataDir,
-            userDataDir,
-            BuildConfig.BUILD_VERSION_NAME,
-            fullCheck,
-        )
+        if (fullCheck) {
+            startupRime(sharedDataDir, userDataDir, BuildConfig.BUILD_VERSION_NAME, true)
+        } else {
+            startupRimeWithoutMaintenance(sharedDataDir, userDataDir, BuildConfig.BUILD_VERSION_NAME)
+        }
+        com.osfans.trime.util.DiagnosticLog.event("rime", "startup", "manualDeploy=$fullCheck")
     }
 
     private fun processKeyInner(value: Int, modifiers: Int, isVirtual: Boolean): Boolean {
@@ -614,7 +635,7 @@ class Rime :
             }
 
             is RimeMessage.DeployMessage -> {
-                if (it.data == RimeMessage.DeployMessage.State.Start) {
+                if (!it.isUserDataSync && it.data == RimeMessage.DeployMessage.State.Start) {
                     OpenCCDictManager.buildOpenCCDict()
                 }
             }
@@ -713,6 +734,7 @@ class Rime :
     }
 
     companion object {
+        @Volatile private var userDataSyncInProgress = false
         private val messageFlow_ =
             MutableSharedFlow<RimeMessage<*>>(
                 extraBufferCapacity = 15,
@@ -723,6 +745,7 @@ class Rime :
 
         init {
             System.loadLibrary("rime_jni")
+            System.loadLibrary("trime_startup")
         }
 
         // init
@@ -732,6 +755,13 @@ class Rime :
             userDir: String,
             versionName: String,
             fullCheck: Boolean,
+        )
+
+        @JvmStatic
+        private external fun startupRimeWithoutMaintenance(
+            sharedDir: String,
+            userDir: String,
+            versionName: String,
         )
 
         @JvmStatic
@@ -836,7 +866,12 @@ class Rime :
             type: Int,
             params: Array<Any>,
         ) {
-            val message = RimeMessage.nativeCreate(type, params)
+            val nativeMessage = RimeMessage.nativeCreate(type, params)
+            val message = if (nativeMessage is RimeMessage.DeployMessage && userDataSyncInProgress) {
+                nativeMessage.copy(isUserDataSync = true).also {
+                    if (it.data != RimeMessage.DeployMessage.State.Start) userDataSyncInProgress = false
+                }
+            } else nativeMessage
             Timber.d("Handling $message")
             rimeMessageHandlers.forEach { it.invoke(message) }
             messageFlow_.tryEmit(message)

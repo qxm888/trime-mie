@@ -275,13 +275,20 @@ object ThemeLoader {
         return yamlMapOf(root.pairs + (PATCH to yamlScalarOf("$patchId:/patch?")))
     }
 
-    /** Loads the theme from its librime-deployed artifact. */
-    private fun loadDeployedTheme(themeId: String): ThemeLoadResult {
-        // Returns false when the artifact is already up to date (mtime cache), which is fine.
-        if (!Rime.deployRimeConfigFile(themeId, CONFIG_VERSION_KEY)) {
-            Timber.w("Failed to deploy theme config file '$themeId.yaml'")
+    /** Invoked exclusively by the explicit Deploy action on the Rime dispatcher. */
+    internal fun deployThemeConfigs() {
+        val ids = sequenceOf(DataManager.sharedDataDir, DataManager.userDataDir)
+            .flatMap { dir -> dir.listFiles { _, name -> name.endsWith("trime.yaml") }.orEmpty().asSequence() }
+            .map { it.nameWithoutExtension }.plus("trime").distinct()
+        for (id in ids) {
+            if (!Rime.deployRimeConfigFile(id, CONFIG_VERSION_KEY)) {
+                Timber.w("Theme config '$id' was not rebuilt (unchanged or invalid)")
+            }
         }
+    }
 
+    /** Reads existing artifacts without compiling or deploying any files. */
+    private fun loadDeployedTheme(themeId: String): ThemeLoadResult {
         val path = DataManager.resolveDeployedResourcePath(themeId)
         val file = File(path)
         if (!file.exists()) {
