@@ -30,6 +30,7 @@ object ClipboardSync : ClipboardManager.OnPrimaryClipChangedListener {
     private var loop: Job? = null
     private var uploadJob: Job? = null
     @Volatile private var serviceAlive = false
+    @Volatile private var windowVisible = false
     @Volatile private var generation = 0L
     @Volatile private var revision = 0L
     @Volatile private var pending: ClipboardTransfer.Local? = null
@@ -77,6 +78,18 @@ object ClipboardSync : ClipboardManager.OnPrimaryClipChangedListener {
         status.value=if(c.enabled) "等待输入法服务连接" else "同步未开启"
         if(!serviceAlive || !c.enabled) return
         clipboard.addPrimaryClipChangedListener(this)
+        // 服务器轮询只在键盘可见时运行；隐藏时本地上传仍走事件驱动。
+        if(windowVisible) startPolling()
+    }
+    /** 键盘窗口显隐时由输入法服务调用，避免后台 24 小时轮询服务器。 */
+    fun setWindowVisible(visible: Boolean) {
+        if(windowVisible == visible) return
+        windowVisible = visible
+        if(visible) startPolling() else { loop?.cancel(); loop = null }
+    }
+    private fun startPolling() {
+        val c=config()
+        if(!serviceAlive || !c.enabled || loop?.isActive == true) return
         val epoch=generation
         loop=scope.launch {
             var failures=0

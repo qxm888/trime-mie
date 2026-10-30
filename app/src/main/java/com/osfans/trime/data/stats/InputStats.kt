@@ -249,7 +249,7 @@ object InputStats {
     fun isEnabled(): Boolean = enabled
 
     fun syncEnabled(): Boolean {
-        enabled = runCatching { AppPrefs.defaultInstance().general.inputStatsEnabled.getValue() }.getOrDefault(true)
+        setEnabled(runCatching { AppPrefs.defaultInstance().general.inputStatsEnabled.getValue() }.getOrDefault(true))
         return enabled
     }
 

@@ -795,6 +795,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         restarting: Boolean,
     ) {
         Timber.d("onStartInputView: restarting=$restarting")
+        com.osfans.trime.data.sync.ClipboardSync.setWindowVisible(true)
         val began = android.os.SystemClock.elapsedRealtime()
         inputView?.post { com.osfans.trime.util.DiagnosticLog.event("keyboard", "shown", "ms=${android.os.SystemClock.elapsedRealtime() - began} restarting=$restarting") }
         com.osfans.trime.ime.keyboard.KeyboardWindow.instance?.setVideoActive(true)
@@ -824,6 +825,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
     }
 
     override fun onFinishInputView(finishingInput: Boolean) {
+        com.osfans.trime.data.sync.ClipboardSync.setWindowVisible(false)
         com.osfans.trime.ime.keyboard.KeyboardWindow.instance?.setVideoActive(false)
         inputView?.setUnifiedVideoActive(false)
         com.osfans.trime.ime.clipboard.ClipboardSearchBridge.reset()
