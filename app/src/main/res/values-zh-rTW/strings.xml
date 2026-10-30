@@ -14,6 +14,11 @@
     <string name="qq_group_1">同文 QQ 羣 1</string>
     <string name="qq_group_2">同文 QQ 羣 2</string>
     <string name="rime_qq_group">中州韻 QQ 羣</string>
+    <string name="upstream_trime_version">基於上游同文版本</string>
+    <string name="action_catalog">功能代碼查詢</string>
+    <string name="action_catalog_search_hint">按代碼或說明搜尋</string>
+    <string name="action_catalog_copied">已複製：%1$s</string>
+    <string name="action_catalog_summary">全部可綁定動作的代碼與說明；可按代碼或說明搜尋，點擊複製代碼</string>
     <string name="librime_version">RIME 版本</string>
     <string name="opencc_version">OpenCC 版本</string>
     <string name="current_version">當前版本</string>

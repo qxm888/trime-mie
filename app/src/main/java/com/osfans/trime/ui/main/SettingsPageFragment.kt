@@ -128,6 +128,12 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
             preferenceScreen.addPreference("主题诊断", "检查当前主题与配置") { startActivity(Intent(requireContext(), ThemeDiagnosticsActivity::class.java)) }
             preferenceScreen.addPreference("应用日志", "查看运行日志与排查问题") { com.osfans.trime.util.AppUtils.launchLogActivity(requireContext()) }
         }
+        if (pageId == "advanced") {
+            preferenceScreen.addPreference(
+                com.osfans.trime.R.string.action_catalog,
+                com.osfans.trime.R.string.action_catalog_summary,
+            ) { startActivity(Intent(requireContext(), ActionCatalogActivity::class.java)) }
+        }
         if (pageId == "surface") {
             preferenceScreen.addPreference("主题键盘全局外观", "主题模式的按键与状态栏样式") { SurfaceAppearanceEditor.show(requireActivity(), false) }
             preferenceScreen.addPreference("自定义键盘外观", "选择布局，分别保存外观与字号") {

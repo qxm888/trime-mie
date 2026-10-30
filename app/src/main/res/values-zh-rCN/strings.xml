@@ -13,6 +13,11 @@
     <string name="qq_group_1">同文 QQ 群 1</string>
     <string name="qq_group_2">同文 QQ 群 2</string>
     <string name="rime_qq_group">中州韵 QQ 群</string>
+    <string name="upstream_trime_version">基于上游同文版本</string>
+    <string name="action_catalog">功能代码查询</string>
+    <string name="action_catalog_search_hint">按代码或说明搜索</string>
+    <string name="action_catalog_copied">已复制：%1$s</string>
+    <string name="action_catalog_summary">全部可绑定动作的代码与说明；可按代码或说明搜索，点击复制代码</string>
     <string name="librime_version">RIME 版本</string>
     <string name="opencc_version">OpenCC 版本</string>
     <string name="current_version">当前版本</string>

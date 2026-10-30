@@ -13,10 +13,21 @@ class NativeAppConventionPlugin : NativeBaseConventionPlugin() {
     private val Project.hasPrebuilt: Boolean
         get() = file("prebuilt").exists() && providers.gradleProperty("usePrebuiltNative").orNull != "false"
 
+    /**
+     * Prebuilt builds skip the submodules, so git describe cannot run. The shipped
+     * librime_jni.so carries its own version string (verified: 1.17.0) and librime
+     * 1.17.0 pins deps/opencc to BYVoid/OpenCC commit 556ed224 = tag ver.1.1.9.
+     */
+    private val Project.prebuiltLibrimeVersion: String
+        get() = providers.gradleProperty("prebuiltLibrimeVersion").orNull ?: "1.17.0"
+
+    private val Project.prebuiltOpenccVersion: String
+        get() = providers.gradleProperty("prebuiltOpenccVersion").orNull ?: "ver.1.1.9"
+
     private val Project.librimeVersion: String
         get() =
             if (hasPrebuilt) {
-                "prebuilt"
+                prebuiltLibrimeVersion
             } else {
                 runCmd(
                     "git -C app/src/main/jni/librime describe " +
@@ -27,7 +38,7 @@ class NativeAppConventionPlugin : NativeBaseConventionPlugin() {
     private val Project.openccVersion: String
         get() =
             if (hasPrebuilt) {
-                "bundled"
+                prebuiltOpenccVersion
             } else {
                 runCmd(
                     "git -C app/src/main/jni/librime/deps/opencc describe --tags --long --always",

@@ -14,6 +14,11 @@
     <string name="qq_group_1">Trime QQ group 1</string>
     <string name="qq_group_2">Trime QQ group 2</string>
     <string name="rime_qq_group">RIME QQ group</string>
+    <string name="upstream_trime_version">Upstream Trime version</string>
+    <string name="action_catalog">Action code lookup</string>
+    <string name="action_catalog_search_hint">Search code or description</string>
+    <string name="action_catalog_copied">Copied: %1$s</string>
+    <string name="action_catalog_summary">Every bindable action code with its description; search by code or description, tap to copy</string>
     <string name="librime_version">RIME version</string>
     <string name="opencc_version">OpenCC version</string>
     <string name="current_version">Current version</string>

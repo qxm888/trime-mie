@@ -32,7 +32,7 @@ object KeyTokenPicker {
     private const val OP_CUSTOM = 2
     private const val OP_CATEGORY = 100
 
-    private data class Entry(val display: String, val token: String)
+    data class Entry(val display: String, val token: String)
 
     fun show(
         activity: FragmentActivity,
@@ -140,7 +140,7 @@ object KeyTokenPicker {
         dialog.show()
     }
 
-    private fun categories(activity: FragmentActivity, standalone: Boolean): List<Pair<String, List<Entry>>> {
+    fun categories(activity: FragmentActivity, standalone: Boolean): List<Pair<String, List<Entry>>> {
         fun e(display: String, token: String = display) = Entry(display, token)
         fun fn(token: String, nameRes: Int) = Entry("$token · ${activity.getString(nameRes)}", token)
         return listOf(

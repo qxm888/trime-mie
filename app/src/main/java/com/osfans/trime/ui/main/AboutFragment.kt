@@ -35,6 +35,10 @@ class AboutFragment : PaddingPreferenceFragment() {
                     ),
                 )
             }
+            // 咩版基于上游 osfans/trime 的版本：3.3.13-mie.17 → 上游基线 3.3.13。
+            addPreference(R.string.upstream_trime_version, upstreamBaseVersion()) {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(Const.UPSTREAM_TRIME_URL)))
+            }
             addPreference(R.string.librime_version, BuildConfig.LIBRIME_VERSION) {
                 val hash = getCommitFromVersionName(BuildConfig.LIBRIME_VERSION)
                 startActivity(
@@ -146,5 +150,9 @@ class AboutFragment : PaddingPreferenceFragment() {
             val common = COMMON_PATTERN.find(versionCode)?.groupValues?.get(1)
             return dashG ?: common ?: versionCode
         }
+
+        /** 3.3.13-mie.17 → 3.3.13；已经没有 -mie 后缀时原样返回。 */
+        private fun upstreamBaseVersion(): String =
+            BuildConfig.BUILD_VERSION_NAME.substringBefore("-mie", BuildConfig.BUILD_VERSION_NAME)
     }
 }

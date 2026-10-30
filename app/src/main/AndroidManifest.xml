@@ -157,6 +157,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
             android:theme="@style/Theme.TrimeAppTheme" />
         <activity android:name=".ui.main.SecondaryKeyboardsActivity" android:exported="false" />
         <activity android:name=".ui.main.BallFanMenuEditActivity" android:exported="false" />
+        <activity android:name=".ui.main.ActionCatalogActivity" android:exported="false" />
 
         <activity
             android:name=".ui.main.ClipEditActivity"
