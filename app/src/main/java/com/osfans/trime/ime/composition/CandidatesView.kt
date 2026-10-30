@@ -129,15 +129,41 @@ class CandidatesView(
     private val ball = android.widget.TextView(ctx).apply {
         text = "●"; textSize = 28f; gravity = android.view.Gravity.CENTER; minWidth = dp(44); minHeight = dp(44)
         setTextColor(scope.colors.candidateTextColor)
-        contentDescription = "候选悬浮球；点击显示工具栏，长按展开键盘菜单"
+        contentDescription = "候选悬浮球；单击展开工具栏，双击打开键盘菜单，长按打开扇形菜单"
         background = android.graphics.drawable.GradientDrawable().apply { shape = android.graphics.drawable.GradientDrawable.OVAL; setColor(scope.colors.textBackColor) }
-        setOnClickListener {
-            showingTools = !showingTools
-            removeCallbacks(closeTools)
-            if (showingTools) postDelayed(closeTools, 6000)
-            updateUi()
+        setOnTouchListener { _, event ->
+            gestureDetector.onTouchEvent(event)
+            true
         }
-        setOnLongClickListener { showingTools = false; service.openKeyboardMenu(); updateUi(); true }
+    }
+
+    private fun toggleBallTools() {
+        showingTools = !showingTools
+        removeCallbacks(closeTools)
+        if (showingTools) postDelayed(closeTools, 6000)
+        updateUi()
+    }
+
+    private val gestureDetector: android.view.GestureDetector by lazy {
+        android.view.GestureDetector(ctx, object : android.view.GestureDetector.SimpleOnGestureListener() {
+        override fun onSingleTapConfirmed(e: android.view.MotionEvent): Boolean {
+            toggleBallTools()
+            return true
+        }
+
+        override fun onDoubleTap(e: android.view.MotionEvent): Boolean {
+            showingTools = false
+            service.openKeyboardMenu()
+            updateUi()
+            return true
+        }
+
+        override fun onLongPress(e: android.view.MotionEvent) {
+            showingTools = false
+            updateUi()
+            BallFanMenu.show(ball) { action -> service.performFloatingToolbarAction(action) }
+        }
+    })
     }
     private val tools = android.widget.HorizontalScrollView(ctx).apply {
         isHorizontalScrollBarEnabled = false
@@ -221,7 +247,12 @@ class CandidatesView(
         shouldUpdatePosition = true
         preeditUi.update(composition)
         val expanded = evaluateVisibility()
-        val idle = !expanded && AppPrefs.defaultInstance().candidates.floatingBall.getValue()
+        // 悬浮球只是悬浮候选窗的补充：候选窗被关闭时不再单独占一个窗口，
+        // 否则它会挡住工具栏里的候选栏开关。
+        val candidatesEnabled =
+            AppPrefs.defaultInstance().candidates.mode.getValue() !=
+                com.osfans.trime.ime.candidates.popup.PopupCandidatesMode.DISABLED
+        val idle = !expanded && candidatesEnabled && AppPrefs.defaultInstance().candidates.floatingBall.getValue()
         if (!idle) showingTools = false
         val nextTouchMode = if (expanded) 0 else if (idle && showingTools) 1 else if (idle) 2 else 3
         if (touchMode != nextTouchMode) {
@@ -332,7 +363,9 @@ class CandidatesView(
             selfHeight, viewport.height(), spacingDp,
         )
         translationX = resolvedX - left
-        translationY = resolvedY - this.top
+        // 球状态整体上移，避开悬浮键盘工具栏/手势区按钮。
+        val ballOnly = ball.visibility == VISIBLE && tools.visibility != VISIBLE
+        translationY = resolvedY - this.top - if (ballOnly) dp(12) else 0
         // update touchEventReceiverWindow's position after CandidatesView's
         if (ball.visibility == VISIBLE && tools.visibility != VISIBLE) {
             touchEventReceiverWindow.show(android.graphics.Rect(ball.left, ball.top, ball.right, ball.bottom))

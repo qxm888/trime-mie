@@ -40,6 +40,9 @@
     <string name="popup_on_key_press">按鍵時彈出顯示字符</string>
     <string name="expand_keypress_area_to_edge">將按鍵範圍擴展至邊緣</string>
     <string name="use_soft_cursor">預編輯區使用插入符號（^）</string>
+    <string name="refresh_theme_config">刷新當前主題</string>
+    <string name="refresh_theme_config_done">主題配置已重新編譯</string>
+    <string name="refresh_theme_config_failed">主題重新編譯失敗，請檢查主題檔案</string>
     <string name="deploy">部署</string>
     <string name="sync_user_data_immediately">立即同步使用者資料</string>
     <string name="reset_success">回廠成功</string>
@@ -496,4 +499,9 @@
     <string name="secondary_kb_empty">還沒有次級鍵盤。可在這裡新建數字、符號等鍵盤，再從主鍵盤按鍵跳轉使用。</string>
     <string name="secondary_kb_name_hint">次級鍵盤名稱</string>
     <string name="secondary_kb_delete_confirm">刪除「%1$s」？指向它的按鍵跳轉將失效。</string>
+    <string name="ball_fan_menu_title">懸浮球扇形菜單</string>
+    <string name="ball_fan_menu_add">添加扇形菜單項</string>
+    <string name="ball_fan_menu_empty">還沒有菜單項。添加後在長按懸浮球時以扇形顯示。</string>
+    <string name="ball_fan_menu_entry">懸浮球扇形菜單…</string>
+    <string name="ball_fan_menu_entry_summary">長按懸浮球彈出的動作，點擊可編輯</string>
 </resources>

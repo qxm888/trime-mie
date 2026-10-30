@@ -32,7 +32,7 @@ android {
         minSdk = 21
         targetSdk = 37
         versionCode = 20261206
-        versionName = "V3.0.8"
+        versionName = "V3.0.8-1"
 
         multiDexEnabled = true
         buildConfigField("String", "BUILDER", "\"${project.builder}\"")

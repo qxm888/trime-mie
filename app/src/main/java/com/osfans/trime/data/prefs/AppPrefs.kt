@@ -483,6 +483,8 @@ class AppPrefs(
 
         val mode = enum(R.string.show_candidates_window, MODE, PopupCandidatesMode.DISABLED)
         val floatingBall = switch(R.string.candidate_floating_ball, "candidate_floating_ball", false, R.string.candidate_floating_ball_summary)
+        /** 悬浮球长按扇形菜单，JSON 数组，元素为 ToolbarOverrides.Entry。 */
+        val ballFanActions = string("ball_fan_actions", "")
         val bottomPagination = switch(R.string.candidate_bottom_pagination, "candidate_bottom_pagination", false)
         val ballOpacity = int(R.string.candidate_ball_opacity, "candidate_ball_opacity", 65, 20, 100, "%", 5) { floatingBall.getValue() }
         val limitLines = switch(R.string.candidate_limit_lines, "candidate_limit_lines", true)

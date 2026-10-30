@@ -105,3 +105,19 @@ Java_com_osfans_trime_core_Rime_startupRimeWithoutMaintenance(
   api->set_notification_handler(notify, nullptr);
   __android_log_print(ANDROID_LOG_INFO, "MieStartup", "Initialized existing Rime data; automatic maintenance disabled");
 }
+
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_osfans_trime_core_Rime_startRimeMaintenance(
+    JNIEnv* env, jclass /*clazz*/, jboolean full_check) {
+  // Only a source-file change should reach here; the front end skips the call
+  // when timestamps are unchanged, unlike librime's directory-mtime detection.
+  static void* library = dlopen("librime_jni.so", RTLD_NOW | RTLD_LOCAL);
+  if (!library) { fail(env, "Cannot open the existing Rime engine"); return JNI_FALSE; }
+  const auto get_api = reinterpret_cast<RimeApi* (*)()>(dlsym(library, "rime_get_api"));
+  const auto api = get_api ? get_api() : nullptr;
+  if (!RIME_PROVIDED(api, start_maintenance)) {
+    fail(env, "Rime engine does not provide the maintenance API");
+    return JNI_FALSE;
+  }
+  return api->start_maintenance(full_check) ? JNI_TRUE : JNI_FALSE;
+}

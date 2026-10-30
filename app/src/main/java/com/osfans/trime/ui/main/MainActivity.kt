@@ -165,6 +165,22 @@ class MainActivity : AppCompatActivity() {
             menu.item(R.string.deploy, R.drawable.ic_baseline_refresh_reversed_24, iconTint = iconTint, showAsAction = false) {
                 viewModel.rime.launchOnReady { it.deploy() }
             },
+            menu.item(R.string.refresh_theme_config, R.drawable.ic_baseline_refresh_reversed_24, iconTint = iconTint, showAsAction = false) {
+                viewModel.rime.launchOnReady { rime ->
+                    val themeId = com.osfans.trime.data.theme.ThemeManager.prefs.selectedTheme.getValue()
+                    val ok = runCatching { rime.deployThemeConfig(themeId) }.getOrDefault(false)
+                    if (ok) {
+                        runCatching { com.osfans.trime.data.theme.ThemeManager.selectTheme(themeId) }
+                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            android.widget.Toast.makeText(this@MainActivity, R.string.refresh_theme_config_done, android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            android.widget.Toast.makeText(this@MainActivity, R.string.refresh_theme_config_failed, android.widget.Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            },
             menu.item(R.string.developer) {
                 navController.navigate(NavigationRoute.Developer)
             },

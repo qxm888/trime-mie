@@ -32,7 +32,12 @@ object DirectExternalStorage {
 
     fun resources(context: Context): File = if (enabled()) {
         check(hasPermission(context)) { "请先授予所有文件访问权限" }
-        File(directory, "mie_resources/${context.packageName}").apply { check(mkdirs() || isDirectory) }
+        File(directory, "mie_resources/${context.packageName}").apply {
+            check(mkdirs() || isDirectory)
+            // 图片/视频/字体素材不应出现在系统相册：资源根目录放屏蔽标记，覆盖全部子目录。
+            val marker = File(this, ".nomedia")
+            if (!marker.exists()) runCatching { marker.createNewFile() }
+        }
     } else context.filesDir
 
     private fun copyMissing(source: File, target: File): Int = MissingFileCopier.copy(source, target)

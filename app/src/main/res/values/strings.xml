@@ -40,6 +40,9 @@
     <string name="popup_on_key_press">Popup on key press</string>
     <string name="expand_keypress_area_to_edge">Expand keypress area to edge</string>
     <string name="use_soft_cursor">Use soft cursor (^) in preedit</string>
+    <string name="refresh_theme_config">Refresh current theme</string>
+    <string name="refresh_theme_config_done">Theme configuration rebuilt</string>
+    <string name="refresh_theme_config_failed">Theme rebuild failed; check the theme file</string>
     <string name="deploy">Deploy</string>
     <string name="sync_user_data_immediately">Sync user data immediately</string>
     <string name="reset_success">Reset Succeeded!</string>
@@ -526,8 +529,13 @@
     <string name="one_hand_right">Right</string>
     <string name="one_hand_both">Both</string>
     <string name="one_hand_keyboard_width">单手模式键盘宽度</string>
-    <string name="candidate_floating_ball">空闲时显示候选悬浮球</string>
+    <string name="candidate_floating_ball">悬浮窗悬浮球</string>
     <string name="candidate_ball_opacity">候选悬浮球不透明度 %</string>
-    <string name="candidate_floating_ball_summary">不受状态栏显示影响；点击显示工具栏，长按打开键盘菜单</string>
+    <string name="candidate_floating_ball_summary">仅在悬浮候选窗存在时显示；单击展开工具栏，双击打开键盘菜单，长按打开扇形菜单</string>
     <string name="candidate_bottom_pagination">翻页按钮放在底部左右两侧（关闭则上方集中）</string>
+    <string name="ball_fan_menu_title">Floating ball fan menu</string>
+    <string name="ball_fan_menu_add">Add fan menu item</string>
+    <string name="ball_fan_menu_empty">No items. Add actions shown when long-pressing the floating ball.</string>
+    <string name="ball_fan_menu_entry">Floating ball fan menu…</string>
+    <string name="ball_fan_menu_entry_summary">Long-press actions around the ball; tap to edit</string>
 </resources>

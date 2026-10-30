@@ -233,12 +233,20 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
             it.registerOnChangeListener(recreateInputViewListener)
         }
         prefs.candidates.registerOnChangeListener(recreateCandidatesViewListener)
-        // ensure theme and color managers are initialized after rime is ready
+        // Theme loading only reads files, so it must not wait for the engine.
+        // A slow or failed Rime start used to leave themeScope null, which made
+        // onCreateInputView return null and the keyboard fail to appear at all.
+        runCatching { ThemeManager.init(resources.configuration) }
+            .onFailure { Timber.e(it, "Could not initialize theme before rime is ready") }
+        ThemeManager.addOnChangedListener(onThemeChangeListener)
+        ColorManager.addOnChangedListener(onColorChangeListener)
+        // Retry once the engine is ready if storage was not available earlier.
         lifecycleScope.launch {
             rime.runOnReady {
-                ThemeManager.init(resources.configuration)
-                ThemeManager.addOnChangedListener(onThemeChangeListener)
-                ColorManager.addOnChangedListener(onColorChangeListener)
+                if (ColorManager.currentScope() == null) {
+                    runCatching { ThemeManager.init(resources.configuration) }
+                        .onFailure { Timber.e(it, "Could not initialize theme after rime became ready") }
+                }
             }
         }
         InputFeedbackManager.init(this)

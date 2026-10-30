@@ -167,6 +167,12 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
             }
             "candidates" -> {
                 preferenceScreen.addPreference(
+                    com.osfans.trime.R.string.ball_fan_menu_entry,
+                    com.osfans.trime.R.string.ball_fan_menu_entry_summary,
+                ) {
+                    startActivity(android.content.Intent(requireContext(), BallFanMenuEditActivity::class.java))
+                }
+                preferenceScreen.addPreference(
                     com.osfans.trime.R.string.floating_candidates_editor,
                     com.osfans.trime.R.string.floating_candidates_editor_summary,
                 ) {

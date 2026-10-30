@@ -205,6 +205,10 @@ class Rime :
         }
     }
 
+    override suspend fun deployThemeConfig(themeId: String): Boolean = withRimeContext {
+        deployRimeConfigFile(themeId, "config_version")
+    }
+
     override suspend fun updateConfig() = withRimeContext {
         exitRime()
         startRime(false)
@@ -496,8 +500,38 @@ class Rime :
             startupRime(sharedDataDir, userDataDir, BuildConfig.BUILD_VERSION_NAME, true)
         } else {
             startupRimeWithoutMaintenance(sharedDataDir, userDataDir, BuildConfig.BUILD_VERSION_NAME)
+            scheduleStartupMaintenance(sharedDataDir, userDataDir)
         }
         com.osfans.trime.util.DiagnosticLog.event("rime", "startup", "manualDeploy=$fullCheck")
+    }
+
+    /**
+     * Restores automatic deployment without librime's directory-mtime false
+     * positives: only a newer source YAML starts maintenance, and the compile
+     * runs on librime's worker thread while input stays usable.
+     */
+    private fun scheduleStartupMaintenance(
+        sharedDataDir: String,
+        userDataDir: String,
+    ) {
+        val needed =
+            runCatching {
+                RimeStartupMaintenance.needsMaintenance(
+                    java.io.File(sharedDataDir),
+                    java.io.File(userDataDir),
+                )
+            }.getOrElse {
+                Timber.w(it, "Could not inspect rime sources for automatic maintenance")
+                false
+            }
+        if (!needed) return
+        val accepted =
+            runCatching { startRimeMaintenance(true) }.getOrElse {
+                Timber.w(it, "Could not schedule automatic maintenance")
+                false
+            }
+        com.osfans.trime.util.DiagnosticLog.event("rime", "auto_maintenance", "accepted=$accepted")
+        Timber.i("Automatic rime maintenance scheduled: accepted=$accepted")
     }
 
     private fun processKeyInner(value: Int, modifiers: Int, isVirtual: Boolean): Boolean {
@@ -763,6 +797,9 @@ class Rime :
             userDir: String,
             versionName: String,
         )
+
+        @JvmStatic
+        private external fun startRimeMaintenance(fullCheck: Boolean): Boolean
 
         @JvmStatic
         external fun exitRime()

@@ -37,6 +37,9 @@
     <string name="popup_on_key_press">按键时弹出显示字符</string>
     <string name="expand_keypress_area_to_edge">将按键范围扩展至边缘</string>
     <string name="use_soft_cursor">预编辑区使用插入符号（^）</string>
+    <string name="refresh_theme_config">刷新当前主题</string>
+    <string name="refresh_theme_config_done">主题配置已重新编译</string>
+    <string name="refresh_theme_config_failed">主题重新编译失败，请检查主题文件</string>
     <string name="deploy">部署</string>
     <string name="sync_user_data_immediately">立即同步用户数据</string>
     <string name="reset_success">重置成功</string>
@@ -524,4 +527,9 @@
     <string name="one_hand_right">右边</string>
     <string name="one_hand_both">两边</string>
     <string name="one_hand_keyboard_width">单手模式键盘宽度</string>
+    <string name="ball_fan_menu_title">悬浮球扇形菜单</string>
+    <string name="ball_fan_menu_add">添加扇形菜单项</string>
+    <string name="ball_fan_menu_empty">还没有菜单项。添加后在长按悬浮球时以扇形显示。</string>
+    <string name="ball_fan_menu_entry">悬浮球扇形菜单…</string>
+    <string name="ball_fan_menu_entry_summary">长按悬浮球弹出的动作，点击可编辑</string>
 </resources>

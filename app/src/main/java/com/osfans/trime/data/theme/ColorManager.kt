@@ -112,8 +112,10 @@ object ColorManager {
      */
     fun setColorScheme(schemeId: String) {
         if (requireScope().theme.isCustom) return
-        // 夜间模式下的显式选择存入夜间槽位，日间选择不受影响。
-        if (isNightMode) prefs.nightModeColor.setValue(schemeId) else prefs.normalModeColor.setValue(schemeId)
+        // 只有开启“跟随系统夜间模式”且当前为夜间时才写入夜间槽位；否则写日间槽位，
+        // 避免系统深色但未跟随时用户的选择被解析器忽略（用户反馈“只有开夜间跟随才能换配色”）。
+        if (prefs.followSystemDayNight.getValue() && isNightMode) prefs.nightModeColor.setValue(schemeId)
+        else prefs.normalModeColor.setValue(schemeId)
         activateScheme(notify = true)
     }
 
