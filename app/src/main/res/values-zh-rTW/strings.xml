@@ -14,6 +14,12 @@
     <string name="qq_group_1">同文 QQ 羣 1</string>
     <string name="qq_group_2">同文 QQ 羣 2</string>
     <string name="rime_qq_group">中州韻 QQ 羣</string>
+    <string name="floating_ball_enabled">懸浮球已開啟</string>
+    <string name="floating_ball_disabled">懸浮球已關閉</string>
+    <string name="stats_enabled_toast">已開始記錄輸入統計</string>
+    <string name="stats_disabled_toast">已停止記錄輸入統計</string>
+    <string name="switched_on">已開啟</string>
+    <string name="switched_off">已關閉</string>
     <string name="upstream_trime_version">基於上游同文版本</string>
     <string name="action_catalog">功能代碼查詢</string>
     <string name="action_catalog_search_hint">按代碼或說明搜尋</string>

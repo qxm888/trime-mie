@@ -59,6 +59,10 @@ data class Theme(
             "__mie_candidates_window" to PresetKey(label = "候选窗口切换", send = "FUNCTION", command = "__mie_toggle_candidates_window"),
             "__mie_floating_keyboard" to PresetKey(label = "悬浮键盘切换", send = "FUNCTION", command = "__mie_toggle_floating_keyboard"),
             "__mie_one_hand" to PresetKey(label = "单手模式", send = "FUNCTION", command = "__mie_toggle_one_hand"),
+            "__mie_floating_ball" to PresetKey(label = "悬浮球开关", send = "FUNCTION", command = "__mie_toggle_floating_ball"),
+            "__mie_input_stats_switch" to PresetKey(label = "统计记录开关", send = "FUNCTION", command = "__mie_toggle_input_stats"),
+            "__mie_key_sound" to PresetKey(label = "按键声音开关", send = "FUNCTION", command = "__mie_toggle_sound"),
+            "__mie_key_vibrate" to PresetKey(label = "按键振动开关", send = "FUNCTION", command = "__mie_toggle_vibrate"),
         )
 
         /**

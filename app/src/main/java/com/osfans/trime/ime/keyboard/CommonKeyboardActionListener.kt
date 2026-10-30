@@ -230,6 +230,37 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
                             com.osfans.trime.ime.candidates.popup.PopupCandidatesMode.ALWAYS_SHOW
                         else com.osfans.trime.ime.candidates.popup.PopupCandidatesMode.DISABLED)
                     }
+                    "__mie_toggle_floating_ball" -> prefs.candidates.floatingBall.run {
+                        setValue(!getValue())
+                        service.lifecycleScope.launch {
+                            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                android.widget.Toast.makeText(service,
+                                    if (getValue()) R.string.floating_ball_enabled else R.string.floating_ball_disabled,
+                                    android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                    "__mie_toggle_input_stats" -> com.osfans.trime.data.prefs.AppPrefs.defaultInstance().general.inputStatsEnabled.run {
+                        setValue(!getValue())
+                        com.osfans.trime.data.stats.InputStats.setEnabled(getValue())
+                        service.lifecycleScope.launch {
+                            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                android.widget.Toast.makeText(service,
+                                    if (getValue()) R.string.stats_enabled_toast else R.string.stats_disabled_toast,
+                                    android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                    "__mie_toggle_sound" -> {
+                        val preference = prefs.keyboard.soundOnKeyPress
+                        preference.setValue(!preference.getValue())
+                        toastSwitched(preference.getValue())
+                    }
+                    "__mie_toggle_vibrate" -> {
+                        val preference = prefs.keyboard.vibrateOnKeyPress
+                        preference.setValue(!preference.getValue())
+                        toastSwitched(preference.getValue())
+                    }
                     else -> handleIntentAction(action.command, arg)
                 }
             }
@@ -332,6 +363,16 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
                 rime.launchOnReady { api ->
                     service.lifecycleScope.launch {
                         api.selectCandidate(index, false)
+                    }
+                }
+            }
+
+            private fun toastSwitched(on: Boolean) {
+                service.lifecycleScope.launch {
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                        android.widget.Toast.makeText(service,
+                            if (on) R.string.switched_on else R.string.switched_off,
+                            android.widget.Toast.LENGTH_SHORT).show()
                     }
                 }
             }

@@ -14,6 +14,12 @@
     <string name="qq_group_1">Trime QQ group 1</string>
     <string name="qq_group_2">Trime QQ group 2</string>
     <string name="rime_qq_group">RIME QQ group</string>
+    <string name="floating_ball_enabled">Floating ball shown</string>
+    <string name="floating_ball_disabled">Floating ball hidden</string>
+    <string name="stats_enabled_toast">Input statistics recording on</string>
+    <string name="stats_disabled_toast">Input statistics recording off</string>
+    <string name="switched_on">Enabled</string>
+    <string name="switched_off">Disabled</string>
     <string name="upstream_trime_version">Upstream Trime version</string>
     <string name="action_catalog">Action code lookup</string>
     <string name="action_catalog_search_hint">Search code or description</string>

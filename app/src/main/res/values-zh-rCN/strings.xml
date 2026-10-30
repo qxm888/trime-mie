@@ -13,6 +13,12 @@
     <string name="qq_group_1">同文 QQ 群 1</string>
     <string name="qq_group_2">同文 QQ 群 2</string>
     <string name="rime_qq_group">中州韵 QQ 群</string>
+    <string name="floating_ball_enabled">悬浮球已开启</string>
+    <string name="floating_ball_disabled">悬浮球已关闭</string>
+    <string name="stats_enabled_toast">已开始记录输入统计</string>
+    <string name="stats_disabled_toast">已停止记录输入统计</string>
+    <string name="switched_on">已开启</string>
+    <string name="switched_off">已关闭</string>
     <string name="upstream_trime_version">基于上游同文版本</string>
     <string name="action_catalog">功能代码查询</string>
     <string name="action_catalog_search_hint">按代码或说明搜索</string>
