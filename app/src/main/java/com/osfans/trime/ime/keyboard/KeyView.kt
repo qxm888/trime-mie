@@ -23,6 +23,7 @@ import android.view.animation.OvershootInterpolator
 import com.mikepenz.iconics.IconicsDrawable
 import com.mikepenz.iconics.utils.sizeDp
 import com.osfans.trime.data.stats.InputStats
+import com.osfans.trime.data.theme.BitmapAssets
 import com.osfans.trime.data.theme.Theme
 import com.osfans.trime.ime.appearance.EffectBitmap
 import com.osfans.trime.ime.appearance.KeyEffectPainter
@@ -45,7 +46,12 @@ class KeyView(
     private val keyboard: Keyboard,
     private val keyboardView: KeyboardView,
     private val keyboardActionListener: KeyboardActionListener,
-) : GestureFrame(context) {
+) : GestureFrame(context), BitmapAssets.Observer {
+
+    override fun onImageReady() {
+        // 异步解码完成（含前景图标）；只重绘当前键。
+        invalidate()
+    }
 
     private val service: TrimeInputMethodService
         get() = keyboardView.service
@@ -56,6 +62,34 @@ class KeyView(
     private val deletedTextBuffer = ArrayDeque<String>()
 
     private var voiceHeld = false
+
+    // ---- 独立前景图标 ----
+    private val iconPath: String
+    private var iconImage: BitmapAssets.Image? = null
+    private var iconGeneration = -1L
+
+    /** 绘制期惰性加载：异步解码完成后经 onImageReady 重绘；主题/部署刷新随 generation 失效。 */
+    private fun loadIcon(): BitmapAssets.Image? {
+        if (iconPath.isEmpty()) return null
+        if (iconGeneration != BitmapAssets.generation) {
+            iconImage = null
+            iconGeneration = BitmapAssets.generation
+        }
+        return iconImage ?: BitmapAssets.request(iconPath, this, pixels = 1_500_000)?.also { iconImage = it }
+    }
+
+    /** 图标可用根目录：.mie/键盘背景（直接外部模式）或 filesDir/custom_kb_bg（应用存储）。 */
+    private fun resolveIconPath(raw: String): String? {
+        if (raw.isBlank()) return null
+        val root = com.osfans.trime.core.data.DirectExternalStorage.resources(context, "custom_kb_bg")
+        val file = if (raw.startsWith("/")) java.io.File(raw) else java.io.File(root, raw)
+        val canonical = runCatching { file.canonicalFile.path }.getOrNull() ?: return null
+        val rootPath = runCatching { root.canonicalFile.path }.getOrNull() ?: return null
+        val filesRoot = java.io.File(context.filesDir, "custom_kb_bg").canonicalFile.path
+        // 禁止越界读取：仅允许咩版自有素材目录内的文件。
+        if (!canonical.startsWith("$rootPath${java.io.File.separator}") && !canonical.startsWith("$filesRoot${java.io.File.separator}")) return null
+        return canonical.takeIf { java.io.File(it).isFile }
+    }
     private fun voiceLongPress(): Boolean {
         val code = key.getCode(KeyBehavior.CLICK)
         return key.longClick?.code == KeyEvent.KEYCODE_VOICE_ASSIST || code == KeyEvent.KEYCODE_VOICE_ASSIST ||
@@ -478,7 +512,12 @@ class KeyView(
             if (it == "enter_labels") keyboardView.labelEnter else it
         }
 
-        if (label.isNotEmpty() && drawText) {
+        // 独立前景图标：加载成功时替代主标签；动态回车标签（搜索/发送/完成）仅在回车键上优先显示。
+        val isEnterKey = key.getLabel() == "enter_labels"
+        val icon = if (isEnterKey && keyboardView.enterActionDynamic) null else loadIcon()
+        if (icon != null) {
+            drawForegroundIcon(canvas, icon)
+        } else if (label.isNotEmpty() && drawText) {
             drawLabel(canvas, label)
         }
 
@@ -491,6 +530,11 @@ class KeyView(
         if (hint.isNotEmpty() && drawText) {
             drawSymbol(canvas, hint, isTop = false)
         }
+    }
+
+    init {
+        // 前景图标：仅在路径合法且文件存在时启用；失败回退文字标签。
+        iconPath = resolveIconPath(key.icon()).orEmpty()
     }
 
     private val surfaceBorderPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
@@ -711,6 +755,29 @@ class KeyView(
             canvas.drawText(label, centerX + sp(key.keyTextOffsetX) * keyboardView.keyTextScale, centerY + adjustmentY + sp(key.keyTextOffsetY) * keyboardView.keyTextScale, textPaint)
         }
     }
+
+    /** 前景图标：等比例缩放、默认居中、可微调；不拉伸变形。 */
+    private fun drawForegroundIcon(
+        canvas: Canvas,
+        image: BitmapAssets.Image,
+    ) {
+        val density = resources.displayMetrics.density
+        val sizeDp = key.iconSize().takeIf { it > 0 } ?: (
+            minOf(width - paddingLeft - paddingRight, height - paddingTop - paddingBottom) / density * 0.55f
+            ).toInt().coerceAtLeast(1)
+        val targetSizePx = sizeDp * density * keyboardView.keyTextScale
+        val scale = minOf(targetSizePx / image.sourceWidth, targetSizePx / image.sourceHeight).coerceAtLeast(0f)
+        val drawW = image.sourceWidth * scale
+        val drawH = image.sourceHeight * scale
+        val contentWidth = width - paddingLeft - paddingRight
+        val contentHeight = height - paddingTop - paddingBottom
+        val centerX = paddingLeft + contentWidth / 2f + sp(key.iconOffsetX()) * keyboardView.keyTextScale
+        val centerY = paddingTop + contentHeight / 2f + sp(key.iconOffsetY()) * keyboardView.keyTextScale
+        val paint = iconPaint.apply { isFilterBitmap = true; isAntiAlias = true; alpha = 255 }
+        canvas.drawBitmap(image.bitmap, null, android.graphics.RectF(centerX - drawW / 2, centerY - drawH / 2, centerX + drawW / 2, centerY + drawH / 2), paint)
+    }
+
+    private val iconPaint = Paint()
 
     private fun drawIcon(
         canvas: Canvas,

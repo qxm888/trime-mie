@@ -32,6 +32,12 @@ class Key(
     val showSymbol: Boolean? get() = keyDef?.showSymbol
     val showHint: Boolean? get() = keyDef?.showHint
 
+    /** 独立前景图标配置。 */
+    fun icon(): String = keyDef?.icon.orEmpty()
+    fun iconSize(): Int = keyDef?.iconSize ?: 0
+    fun iconOffsetX(): Float = keyDef?.iconOffsetX ?: 0f
+    fun iconOffsetY(): Float = keyDef?.iconOffsetY ?: 0f
+
     var importedStyle: com.osfans.trime.data.baiduskin.ImportedKeyStyle? = null
     var index: Int = -1
 

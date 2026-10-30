@@ -86,10 +86,26 @@ class EnterKeyDisplayDelegate(override val di: DI) : DIAware {
         }
     }
 
+    /** 当前编辑器的回车是否带动态动作标签（搜索 / 发送 / 完成 / 自定义 actionLabel 等）。 */
+    var showingActionLabel: Boolean = false
+        private set
+
     fun updateLabelOnEditorInfo(info: EditorInfo) {
         actionLabel = labelFromEditorInfo(info)
+        showingActionLabel = isActionEditor(info)
         if (keyLabel == actionLabel) return
         keyLabel = actionLabel
         broadcaster.onEnterKeyLabelUpdate(keyLabel)
+    }
+
+    private fun isActionEditor(info: EditorInfo): Boolean {
+        if (info.imeOptions and EditorInfo.IME_FLAG_NO_ENTER_ACTION != 0) return false
+        if (!info.actionLabel.isNullOrEmpty()) return true
+        return when (info.imeOptions and EditorInfo.IME_MASK_ACTION) {
+            EditorInfo.IME_ACTION_DONE, EditorInfo.IME_ACTION_GO, EditorInfo.IME_ACTION_NEXT,
+            EditorInfo.IME_ACTION_PREVIOUS, EditorInfo.IME_ACTION_SEARCH, EditorInfo.IME_ACTION_SEND,
+            -> true
+            else -> false
+        }
     }
 }

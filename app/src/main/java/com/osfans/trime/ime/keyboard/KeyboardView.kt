@@ -36,6 +36,8 @@ class KeyboardView(
 
     internal val labelEnter: String
         get() = enterKeyDisplay.keyLabel
+    internal val enterActionDynamic: Boolean
+        get() = enterKeyDisplay.showingActionLabel
     internal val keyTextScale = keyboard.keyTextScale
     internal val keyTextSize = theme.style.keyTextSize
     internal val keyLongTextSize = theme.style.keyLongTextSize.takeIf { it > 0 } ?: keyTextSize

@@ -113,6 +113,21 @@ object KeyAppearanceEditor {
                         setOnClickListener { AppearancePicker.show(context, label, input.text.toString(), name.endsWith("BackColor")) { input.setText(it) } }
                     })
                 }
+                if (name == "icon" && context is androidx.fragment.app.FragmentActivity) {
+                    // 前景图标：从相册选图，复制到 .mie/键盘背景 后填入绝对路径。
+                    val picker = context.activityResultRegistry.register(
+                        "key-icon-${java.util.UUID.randomUUID()}",
+                        androidx.activity.result.contract.ActivityResultContracts.GetContent(),
+                    ) { uri ->
+                        com.osfans.trime.ui.main.SkinPicker.handleImageResult(context, uri) { path ->
+                            if (path != null) input.setText(path)
+                        }
+                    }
+                    body.addView(com.google.android.material.button.MaterialButton(context, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+                        text = "选择前景图标图片…"
+                        setOnClickListener { picker.launch("image/*") }
+                    })
+                }
                 inputs[name] = { input.text?.toString().orEmpty() }
             }
         }

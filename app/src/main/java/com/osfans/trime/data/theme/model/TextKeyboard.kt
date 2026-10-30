@@ -65,6 +65,9 @@ data class TextKeyboard(
         @Transient val showHint: Boolean? = null,
         /** 本行行边距 dp（自定义键盘专用；-1 = 跟随键盘级设置）。 */
         @Transient val rowMargin: Int = -1,
+        /** 独立前景图标：空 = 显示文字标签。 */
+        val icon: String = "", val iconSize: Int = 0,
+        val iconOffsetX: Float = 0f, val iconOffsetY: Float = 0f,
         val keyTextSize: Float = 0f,
         val symbolTextSize: Float = 0f,
         val hintTextSize: Float = 0f,

@@ -25,6 +25,9 @@ object KeyAppearance {
         val popup: List<String> = emptyList(), val sendBindings: Boolean? = null,
         /** 按键级符号 / 注解显示：null 跟随全局开关，true 强制显示，false 强制隐藏。 */
         val showSymbol: Boolean? = null, val showHint: Boolean? = null,
+        /** 独立前景图标：空 = 显示文字标签；相对路径基于 .mie/键盘背景。 */
+        val icon: String = "", val iconSize: Int = 0,
+        val iconOffsetX: Float = 0f, val iconOffsetY: Float = 0f,
     ) {
         fun toTextKey() = TextKey(labelSymbol = labelSymbol, hint = hint,
             keyTextSize = keyTextSize, symbolTextSize = symbolTextSize, hintTextSize = hintTextSize, roundCorner = roundCorner, keyBorder = keyBorder,
@@ -35,7 +38,8 @@ object KeyAppearance {
             keySymbolOffsetX = keySymbolOffsetX, keySymbolOffsetY = keySymbolOffsetY,
             keyHintOffsetX = keyHintOffsetX, keyHintOffsetY = keyHintOffsetY,
             keyPressOffsetX = keyPressOffsetX, keyPressOffsetY = keyPressOffsetY, popup = popup, sendBindings = sendBindings ?: true,
-            showSymbol = showSymbol, showHint = showHint)
+            showSymbol = showSymbol, showHint = showHint,
+            icon = icon, iconSize = iconSize, iconOffsetX = iconOffsetX, iconOffsetY = iconOffsetY)
     }
     val fields = linkedMapOf(
         "labelSymbol" to "符号文字", "hint" to "提示文字",
@@ -52,6 +56,8 @@ object KeyAppearance {
         "keyPressOffsetX" to "按下横向偏移 dp", "keyPressOffsetY" to "按下纵向偏移 dp",
         "popup" to "弹出备选（每行一个）", "sendBindings" to "发送手势绑定",
         "showSymbol" to "符号显示（留空跟随全局）", "showHint" to "注解显示（留空跟随全局）",
+        "icon" to "前景图标（留空显示文字）", "iconSize" to "图标尺寸 dp（0 自动）",
+        "iconOffsetX" to "图标横向偏移 dp", "iconOffsetY" to "图标纵向偏移 dp",
     )
     private val json = Json { encodeDefaults = true }
     fun values(style: Style): JsonObject = json.encodeToJsonElement(Style.serializer(), style).jsonObject
@@ -87,6 +93,9 @@ object KeyAppearance {
                     require(value != null && value.isFinite() && value in -500f..500f) { "${fields[name]}：请输入 -500 至 500 的数字" }
                     if (name == "keyBorder") {
                         require(value % 1f == 0f && value in -1f..32f) { "边框宽度须为 -1 至 32 的整数" }
+                        JsonPrimitive(value.toInt())
+                    } else if (name == "iconSize") {
+                        require(value in 0f..200f) { "图标尺寸须为 0 至 200 dp" }
                         JsonPrimitive(value.toInt())
                     } else {
                         if (name.endsWith("Size")) require(value in 0f..200f) { "字号须为 0 至 200" }
