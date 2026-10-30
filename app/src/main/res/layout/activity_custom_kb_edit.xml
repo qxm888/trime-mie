@@ -43,29 +43,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
             android:paddingTop="8dp"
             android:paddingEnd="12dp">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/cbe_imported_layout"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:visibility="gone" />
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/cbe_keyboard_height"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/custom_kb_keyboard_height" />
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/cbe_row_spacing"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/custom_kb_row_spacing" />
-
+            <!-- Live preview first: every setting below leaves it visible. -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
-                android:layout_marginTop="20dp"
                 android:layout_marginBottom="4dp"
                 android:text="@string/custom_kb_preview"
                 android:textColor="?attr/colorOnSurfaceVariant"
@@ -86,6 +68,108 @@ SPDX-License-Identifier: GPL-3.0-or-later
                     android:orientation="vertical"
                     android:padding="8dp" />
             </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/cbe_imported_layout"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="16dp"
+                android:paddingBottom="6dp"
+                android:text="快速设定"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/cbe_keyboard_height"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/custom_kb_keyboard_height" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/cbe_row_spacing"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/custom_kb_row_spacing" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/cbe_row_margin"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/custom_kb_row_margin" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="16dp"
+                android:paddingBottom="6dp"
+                android:text="外观与功能"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/cbe_global_appearance"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="全局外观 · 按键、状态栏、圆角与描边" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/cbe_key_appearance"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="按键默认外观" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/cbe_all_keys_bg"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="全体按键背景 · 一键设置" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/cbe_keyboard_bg"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="键盘背景图 / 视频" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/cbe_toolbar_edit"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/toolbar_edit" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/cbe_layout_options"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="布局与切换行为" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/cbe_fonts"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="字体与字号（当前布局）" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/cbe_floating_candidates"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="悬浮候选窗编辑" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/cbe_functions"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="自定义功能" />
 
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:text="键盘结构 · 点击编辑，长按拖动" android:textSize="14sp" android:textStyle="bold"

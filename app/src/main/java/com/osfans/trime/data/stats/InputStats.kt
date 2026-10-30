@@ -24,6 +24,7 @@ import com.osfans.trime.util.readAtomicText
 import com.osfans.trime.util.writeAtomicText
 import com.osfans.trime.core.data.DataManager
 import com.osfans.trime.core.data.UserDataManager
+import com.osfans.trime.data.prefs.AppPrefs
 import com.osfans.trime.BuildConfig
 import java.time.DayOfWeek
 import java.time.Instant
@@ -241,7 +242,32 @@ object InputStats {
 
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
 
+    /** 总开关：关闭后不再记录、不写盘；历史数据仍可在统计页查看。 */
+    @Volatile
+    private var enabled = true
+
+    fun isEnabled(): Boolean = enabled
+
+    fun syncEnabled(): Boolean {
+        enabled = runCatching { AppPrefs.defaultInstance().general.inputStatsEnabled.getValue() }.getOrDefault(true)
+        return enabled
+    }
+
+    /** Switch the recorder at runtime, flushing pending data before it stops. */
+    fun setEnabled(on: Boolean) {
+        if (on == enabled) return
+        if (!on) {
+            flush(force = true)
+            saveJob?.cancel()
+            saveJob = null
+            synchronized(lock) { dirty = false }
+        }
+        enabled = on
+        if (on) saveSoon()
+    }
+
     fun init(context: Context) {
+        enabled = runCatching { AppPrefs.defaultInstance().general.inputStatsEnabled.getValue() }.getOrDefault(true)
         synchronized(lock) {
             appContext = com.osfans.trime.util.storageContext(context)
             runCatching {
@@ -266,7 +292,9 @@ object InputStats {
                     }
                 }
             }.onFailure { Timber.w(it, "$TAG: failed to load stats, starting fresh") }
-            store.schemas.values.forEach { normalizePeriods(it) }
+            // A malformed but decodable store must not take app startup down with it.
+            runCatching { store.schemas.values.forEach { normalizePeriods(it) } }
+                .onFailure { Timber.w(it, "$TAG: failed to normalize stats, starting fresh"); store = Store() }
             if (!storeFile().exists() && store.schemas.isNotEmpty()) scheduleSaveLocked()
             if (store.heatVersion < 1) {
                 store.schemas.values.forEach { stats ->
@@ -293,10 +321,11 @@ object InputStats {
     internal fun Stats.snapshot(): Stats = copy(daily = daily.snapshot(), weekly = weekly.snapshot(),
         monthly = monthly.snapshot(), yearly = yearly.snapshot())
 
-    fun saveSoon() { ioScope.launch { flush() } }
+    fun saveSoon() { if (enabled) ioScope.launch { flush() } }
 
     /** One writer preserves ordering. Only the short snapshot capture holds the input lock. */
-    fun flush() = synchronized(saveLock) {
+    fun flush(force: Boolean = false) = synchronized(saveLock) {
+        if (!force && !enabled) return@synchronized
         val checkpoint = synchronized(lock) {
             if (!dirty || appContext == null) return@synchronized null
             val copy = store.copy(schemas = store.schemas.mapValues { it.value.snapshot() }.toMutableMap(),
@@ -418,7 +447,7 @@ object InputStats {
     }
 
     fun recordLayoutGeometry(rows: List<List<HeatKey>>) {
-        if (rows.isEmpty()) return
+        if (!enabled || rows.isEmpty()) return
         synchronized(lock) {
             if (store.layoutGeometry == rows) return
             store.layoutGeometry = rows
@@ -462,6 +491,7 @@ object InputStats {
      * clock adjustments from changing measured typing durations.
      */
     fun onKeyDown(schemaId: String, nowMs: Long = SystemClock.elapsedRealtime()) {
+        if (!enabled) return
         synchronized(lock) {
             if (appContext == null || schemaId.isEmpty()) return
             switchSchema(schemaId)
@@ -513,7 +543,7 @@ object InputStats {
 
     /** Per-key heat (键盘热力): called on every soft-key press. */
     fun onKeyHeat(keyLabel: String) {
-        if (keyLabel.isEmpty()) return
+        if (!enabled || keyLabel.isEmpty()) return
         synchronized(lock) {
             if (appContext == null) return
             val stats = bucket(store.activeId)
@@ -539,7 +569,7 @@ object InputStats {
         schemaName: String,
         nowMs: Long = SystemClock.elapsedRealtime(),
     ) {
-        if (text.isEmpty() || !isAllChinese(text)) return
+        if (!enabled || text.isEmpty() || !isAllChinese(text)) return
         if (schemaId.isEmpty()) return
         if (rawInputBefore != null && rawInputBefore.startsWith("/")) return
         val rawLen = rawInputBefore?.length ?: 0
@@ -607,6 +637,7 @@ object InputStats {
 
     /** Close the current typing session (service destroy) and persist. */
     fun endSession() {
+        if (!enabled) return
         synchronized(lock) {
             if (appContext == null) return
             flushSessionLocked()
@@ -740,6 +771,7 @@ object InputStats {
     }
 
     private fun scheduleSaveLocked() {
+        if (!enabled) return
         dirty = true; revision++
         val now = SystemClock.elapsedRealtime()
         nextSaveAt = now + SAVE_DEBOUNCE_MS

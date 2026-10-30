@@ -135,6 +135,22 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
                 MaterialAlertDialogBuilder(requireContext()).setTitle("选择自定义键盘").setItems(layouts.map { it.name }.toTypedArray()) { _,index -> SurfaceAppearanceEditor.show(requireActivity(),true,layoutId=layouts[index].id) }.show()
             }
         }
+        if (pageId == "tools") {
+            preferenceScreen.addPreference(
+                androidx.preference.SwitchPreferenceCompat(requireContext()).apply {
+                    key = AppPrefs.General.INPUT_STATS_ENABLED
+                    title = getString(com.osfans.trime.R.string.input_stats_enabled)
+                    summary = getString(com.osfans.trime.R.string.input_stats_enabled_summary)
+                    isChecked = prefs.general.inputStatsEnabled.getValue()
+                    setOnPreferenceChangeListener { _, value ->
+                        val on = value as Boolean
+                        prefs.general.inputStatsEnabled.setValue(on)
+                        com.osfans.trime.data.stats.InputStats.setEnabled(on)
+                        true
+                    }
+                },
+            )
+        }
         if (pageId == "theme") preferenceScreen.addPreference("主题键盘字体与字号", "按键、符号、注解、候选和工具栏分别设置") { startActivity(Intent(requireContext(), FontSettingsActivity::class.java)) }
         if (pageId == "layout") preferenceScreen.addPreference("自定义功能", "命名并组合多个动作，供按键和工具栏绑定") { NamedFunctionsEditor.show(requireActivity()) }
         if (pageId == "transfer") preferenceScreen.addPreference("整包备份与恢复", "打包全部设置与键盘资源到 rime/mie，支持一键导入") { startActivity(Intent(requireContext(), FullBackupActivity::class.java)) }

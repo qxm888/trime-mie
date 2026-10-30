@@ -525,6 +525,16 @@ class Keyboard(
         setModifier(KeyEvent.META_SHIFT_ON, false)
     }
 
+    /**
+     * Caps-Lock action for soft keys and named functions. The IME has no real
+     * hardware caps state, so latch the keys' shift state until it is toggled off.
+     */
+    fun toggleCapsLock(): Boolean {
+        val lock = mShiftKey?.isOn != true
+        setShifted(lock, lock)
+        return true
+    }
+
     fun refreshModifier(): Boolean {
         // 这里改为了一次性重置全部修饰键状态并返回TRUE刷新UI，可能有bug
         var result = false

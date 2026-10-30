@@ -99,11 +99,13 @@ class AppPrefs(
             const val ASCII_SWITCH_TIPS = "ascii_switch_tips"
             const val INLINE_SUGGESTIONS = "inline_suggestions"
             const val PREFERRED_VOICE_INPUT = "preferred_voice_input"
+            const val INPUT_STATS_ENABLED = "input_stats_enabled"
         }
 
         val inlinePreeditMode = enum(R.string.inline_preedit_mode, INLINE_PREEDIT_MODE, InlinePreeditMode.DISABLE)
         val asciiSwitchTips = switch(R.string.ascii_switch_tips, ASCII_SWITCH_TIPS, true)
         val inlineSuggestions = switch(R.string.inline_suggestions, INLINE_SUGGESTIONS, true)
+        val inputStatsEnabled = switch(R.string.input_stats_enabled, INPUT_STATS_ENABLED, true, R.string.input_stats_enabled_summary)
 
         val preferredVoiceInput = list(
             R.string.preferred_voice_input,

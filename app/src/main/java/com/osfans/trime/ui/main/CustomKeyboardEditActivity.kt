@@ -78,39 +78,32 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         }
         toolbar.setNavigationOnClickListener { finish() }
         toolbar.title = kb.name
-        toolbar.inflateMenu(R.menu.custom_kb_edit)
-        toolbar.menu.add(0, 2180, 0, "自定义键盘全局外观")
-        toolbar.menu.add(0, 2182, 2, "字体与字号（当前布局）")
-        toolbar.menu.add(0, 2183, 3, "自定义功能")
-        toolbar.menu.add(0, 2184, 4, "悬浮候选窗编辑")
-        toolbar.menu.add(0, 2181, 1, "全体按键背景 · 一键设置")
-        toolbar.setOnMenuItemClickListener { item ->
-            when (item.itemId) {
-                2180 -> SurfaceAppearanceEditor.show(this, true, layoutId = kbId) { refreshAppearancePreview { render() } }
-                2182 -> LayoutTypographyEditor.show(this, kbId)
-                2183 -> NamedFunctionsEditor.show(this)
-                2184 -> FloatingCandidatesEditActivity.start(this,kbId)
-                2181 -> {
-                    val current = CustomKeyboards.get(kbId) ?: return@setOnMenuItemClickListener true
-                    AppearancePicker.show(this, "当前布局全体按键背景", current.allKeysBackground, true) { raw -> mutate { it.allKeysBackground = raw } }
-                }
-                R.id.action_kb_background -> pickKeyboardBackground()
-                R.id.action_kb_toolbar -> ToolbarEditActivity.start(this, kbId)
-                R.id.action_kb_key_appearance -> {
-                    val current = CustomKeyboards.get(kbId) ?: return@setOnMenuItemClickListener true
-                    KeyAppearanceEditor.show(this, "按键默认外观", current.keyAppearance) { style -> mutate { it.keyAppearance = style } }
-                }
-                R.id.action_kb_layout_options -> {
-                    val current = CustomKeyboards.get(kbId) ?: return@setOnMenuItemClickListener true
-                    if (current.importedSkin != null) findViewById<View>(R.id.cbe_imported_layout).performClick()
-                    else KeyboardOptionsEditor.show(this, current.options) { options -> mutate { it.options = options } }
-                }
-            }
-            true
+
+        findViewById<View>(R.id.cbe_global_appearance).setOnClickListener {
+            SurfaceAppearanceEditor.show(this, true, layoutId = kbId) { refreshAppearancePreview { render() } }
         }
+        findViewById<View>(R.id.cbe_key_appearance).setOnClickListener {
+            val current = CustomKeyboards.get(kbId) ?: return@setOnClickListener
+            KeyAppearanceEditor.show(this, "按键默认外观", current.keyAppearance) { style -> mutate { it.keyAppearance = style } }
+        }
+        findViewById<View>(R.id.cbe_all_keys_bg).setOnClickListener {
+            val current = CustomKeyboards.get(kbId) ?: return@setOnClickListener
+            AppearancePicker.show(this, "当前布局全体按键背景", current.allKeysBackground, true) { raw -> mutate { it.allKeysBackground = raw } }
+        }
+        findViewById<View>(R.id.cbe_keyboard_bg).setOnClickListener { pickKeyboardBackground() }
+        findViewById<View>(R.id.cbe_toolbar_edit).setOnClickListener { ToolbarEditActivity.start(this, kbId) }
+        findViewById<View>(R.id.cbe_layout_options).setOnClickListener {
+            val current = CustomKeyboards.get(kbId) ?: return@setOnClickListener
+            if (current.importedSkin != null) findViewById<View>(R.id.cbe_imported_layout).performClick()
+            else KeyboardOptionsEditor.show(this, current.options) { options -> mutate { it.options = options } }
+        }
+        findViewById<View>(R.id.cbe_fonts).setOnClickListener { LayoutTypographyEditor.show(this, kbId) }
+        findViewById<View>(R.id.cbe_floating_candidates).setOnClickListener { FloatingCandidatesEditActivity.start(this, kbId) }
+        findViewById<View>(R.id.cbe_functions).setOnClickListener { NamedFunctionsEditor.show(this) }
 
         findViewById<View>(R.id.cbe_keyboard_height).setOnClickListener { showKeyboardHeightEditor() }
         findViewById<View>(R.id.cbe_row_spacing).setOnClickListener { showRowSpacingEditor() }
+        findViewById<View>(R.id.cbe_row_margin).setOnClickListener { showRowMarginEditor() }
         rowsBox = findViewById(R.id.cbe_rows)
         findViewById<TextView>(R.id.cbe_add_row).setOnClickListener {
             mutate { it.rows.add(CustomKeyboards.CustomRow()) }
@@ -208,6 +201,7 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
             getString(R.string.custom_kb_keyboard_height_value, kb.keyboardHeightDp)
             else getString(R.string.custom_kb_keyboard_height_auto_value, kb.effectivePortraitHeightDp())
         findViewById<TextView>(R.id.cbe_row_spacing).text = getString(R.string.custom_kb_row_spacing_value, kb.rowSpacing)
+        findViewById<TextView>(R.id.cbe_row_margin).text = getString(R.string.custom_kb_row_margin_value, kb.rowMargin)
         rowsBox.removeAllViews()
         if (kb.rows.isEmpty()) {
             kb.rows.add(CustomKeyboards.CustomRow())
@@ -222,6 +216,8 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
     private fun renderPreview(kb: CustomKeyboards.CustomKeyboard) {
         val preview = findViewById<LinearLayout>(R.id.cbe_preview)
         preview.removeAllViews()
+        // 行边距是按键与键盘边缘的距离：背景铺满不动，只有键排布收进两侧。
+        preview.setPadding(dp(8), dp(8), dp(8), dp(8))
         preview.background = kb.backgroundFor(this).drawable(this, resources.displayMetrics.widthPixels)
         val importedPreview = kb.importedSkin?.layout(this)?.preview?.takeIf { it.isNotEmpty() }
         if (importedPreview != null && kb.allKeysBackground.ifBlank { com.osfans.trime.ime.appearance.SurfaceAppearance.current(true,kbId).keys.background }.isEmpty()) {
@@ -248,11 +244,13 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
             toolbarStrip(kb, (toolbarHeight * 0.65f).toInt().coerceAtLeast(1)),
             LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp((toolbarHeight * 0.65f).toInt().coerceAtLeast(1))),
         )
+        val rowMarginPx = dp((kb.rowMargin * 0.65f).toInt())
         kb.rows.forEach { row ->
             val rowView = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
             val rowHeight = dp((row.height * 0.65f * heightScale).toInt().coerceAtLeast(1))
             val gap = dp((kb.rowSpacing * 0.65f * heightScale).toInt())
             rowView.weightSum = 100f
+            rowView.setPadding(rowMarginPx, 0, rowMarginPx, 0)
             com.osfans.trime.data.keymap.ButtonAlignment.slots(row).forEach { (ck, w) ->
                 if (ck == null) { rowView.addView(View(this),LinearLayout.LayoutParams(0,-1,w)); return@forEach }
                 val cell =
@@ -568,6 +566,37 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
                     field.error = getString(R.string.custom_kb_row_spacing_range, limit)
                 } else {
                     mutate { it.rowSpacing = spacing }
+                    dialog.dismiss()
+                }
+            }
+        }
+        dialog.show()
+    }
+
+    private fun showRowMarginEditor() {
+        val kb = CustomKeyboards.get(kbId) ?: return
+        val input = TextInputEditText(this).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            if (android.os.Build.VERSION.SDK_INT >= 26) importantForAutofill = android.view.View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+            setText(kb.rowMargin.toString())
+            selectAll()
+        }
+        val field = TextInputLayout(this).apply {
+            hint = getString(R.string.custom_kb_row_margin_range)
+            helperText = getString(R.string.custom_kb_row_margin_hint)
+            setPadding(dp(24), dp(8), dp(24), 0)
+            addView(input)
+        }
+        val dialog = MaterialAlertDialogBuilder(this).setTitle(R.string.custom_kb_row_margin)
+            .setView(field).setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(android.R.string.ok, null).create()
+        dialog.setOnShowListener {
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val margin = input.text?.toString()?.toIntOrNull()
+                if (margin == null || margin !in 0..48) {
+                    field.error = getString(R.string.custom_kb_row_margin_range)
+                } else {
+                    mutate { it.rowMargin = margin }
                     dialog.dismiss()
                 }
             }

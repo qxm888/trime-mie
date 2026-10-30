@@ -60,7 +60,7 @@ class KeyView(
         val code = key.getCode(KeyBehavior.CLICK)
         return key.longClick?.code == KeyEvent.KEYCODE_VOICE_ASSIST || code == KeyEvent.KEYCODE_VOICE_ASSIST ||
             (code == KeyEvent.KEYCODE_SPACE && key.allowDefaultVoice && !key.hasAction(KeyBehavior.LONG_CLICK) &&
-                key.popup.isEmpty() && service.voiceInput.enabled())
+                key.popup.isEmpty() && com.osfans.trime.ime.voice.VoiceSettings.enabled)
     }
 
     private var keyPressed = false
@@ -262,7 +262,7 @@ class KeyView(
         }
 
         onCancel = {
-            if (voiceHeld) { voiceHeld = false; service.voiceInput.cancel() }
+            if (voiceHeld) { voiceHeld = false; service.cancelVoiceIfActive() }
             deletedTextBuffer.clear()
             setPressedState(false)
             dismissPopupPreview()
@@ -285,7 +285,7 @@ class KeyView(
         pressAnimator?.cancel()
         pressAnimator = null
         clearEffectCaches()
-        if (voiceHeld) { voiceHeld = false; service.voiceInput.cancel() }
+        if (voiceHeld) { voiceHeld = false; service.cancelVoiceIfActive() }
         super.onDetachedFromWindow()
     }
 
@@ -359,6 +359,12 @@ class KeyView(
     }
 
     private fun processKeyAction(action: KeyAction, behavior: KeyBehavior) {
+
+        if (action.code == KeyEvent.KEYCODE_CAPS_LOCK) {
+            keyboard.toggleCapsLock()
+            keyboardView.invalidateAllKeys()
+            return
+        }
 
         if (action.isModifierKey) {
             keyboard.clickModifierKey(

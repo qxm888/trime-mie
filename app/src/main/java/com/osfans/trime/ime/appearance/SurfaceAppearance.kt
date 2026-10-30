@@ -189,6 +189,10 @@ data class SurfaceAppearanceConfig(
 /** Cached preferences: never parse JSON or decode images in individual key draw calls. */
 object SurfaceAppearance {
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
+    /** 主题模式的外观改动没有走 CustomKeyboards 版本，单独递增以触发输入法重建。 */
+    @Volatile
+    var version: Long = 0
+        private set
     private var cacheKey: Pair<String, String>? = null
     private var cached = SurfaceAppearanceConfig()
     private var layoutVersion = -1L
@@ -237,6 +241,7 @@ object SurfaceAppearance {
         return (if (customMode) prefs.customUnifiedBackground else prefs.unifiedBackground).getValue()
     }
     fun save(config: SurfaceAppearanceConfig, customMode: Boolean = isCustomMode(), id: String? = null) {
+        version++
         if (customMode && id != null) {
             com.osfans.trime.data.keymap.CustomKeyboards.mutate(id) { it.surfaceAppearance = config }
             return

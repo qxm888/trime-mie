@@ -85,6 +85,10 @@ class InputStatsActivity : AppCompatActivity() {
         toolbar.setNavigationOnClickListener { finish() }
         toolbar.inflateMenu(R.menu.input_stats)
         toolbar.menu.add(0, 2112, 0, "备份与恢复")
+        toolbar.menu.add(0, 2113, 1, getString(R.string.input_stats_enabled)).apply {
+            isCheckable = true
+            isChecked = InputStats.isEnabled()
+        }
         toolbar.setOnMenuItemClickListener { item ->
             if (item.itemId == 2112) startActivity(Intent(this, PersonalDataActivity::class.java)) else onOptionSelected(item.itemId)
             true
@@ -138,12 +142,26 @@ class InputStatsActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         currentSchema = InputStats.activeSchemaId
-        reload()
+        safeReload()
     }
 
     override fun onPause() {
         super.onPause()
         InputStats.saveSoon()
+    }
+
+    /**
+     * Bad or unexpectedly large statistics must never take the whole app into a
+     * crash loop. Rendering failures close this screen with a readable message.
+     */
+    private fun safeReload() {
+        runCatching { reload() }.onFailure {
+            timber.log.Timber.e(it, "Input statistics rendering failed")
+            if (!isFinishing) {
+                android.widget.Toast.makeText(this, "统计数据无法显示，已保留原文件", android.widget.Toast.LENGTH_LONG).show()
+                finish()
+            }
+        }
     }
 
     private fun reload() {
@@ -165,8 +183,15 @@ class InputStatsActivity : AppCompatActivity() {
                 confirm(getString(R.string.stats_clear_fastest_confirm)) {
                     InputStats.clearFastest(currentSchema)
                 }
+
+            2113 -> {
+                val next = !InputStats.isEnabled()
+                com.osfans.trime.data.prefs.AppPrefs.defaultInstance().general.inputStatsEnabled.setValue(next)
+                InputStats.setEnabled(next)
+                findViewById<MaterialToolbar>(R.id.stats_toolbar).menu.findItem(2113)?.isChecked = next
+            }
         }
-        reload()
+        safeReload()
     }
 
     private fun confirm(message: String, action: () -> Unit) {
@@ -196,7 +221,7 @@ class InputStatsActivity : AppCompatActivity() {
                     setOnClickListener {
                         currentSchema = id
                         InputStats.activeSchemaId = id
-                        reload()
+                        safeReload()
                     }
                 }
             schemaGroup.addView(chip)
@@ -370,7 +395,8 @@ class InputStatsActivity : AppCompatActivity() {
         val snapshot = lastSnapshot ?: return
         val counts = periodOf(snapshot).keyCounts
         // 布局来自输入法实际构建的键盘（recordLayout），与计数同源同形
-        val layout = InputStats.lastLayoutGeometry()
+        // Defensive cap: a malformed layout must not build thousands of views.
+        val layout = InputStats.lastLayoutGeometry().take(16).map { it.take(48) }
         if (layout.isEmpty()) {
             heatGrid.addView(emptyRow())
             return

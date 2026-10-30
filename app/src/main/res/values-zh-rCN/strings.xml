@@ -278,6 +278,8 @@
     <string name="ignore_system_gesture_insets">忽略系统手势边衬区</string>
     <string name="input_stats">输入统计</string>
     <string name="input_stats_summary">输入速度、生涯段位与键盘热力</string>
+    <string name="input_stats_enabled">记录输入统计</string>
+    <string name="input_stats_enabled_summary">关闭后不再统计击键与字数，后台也停止统计写入</string>
     <string name="stats_career_total">累计输入(字)</string>
     <string name="stats_attr_speed">⚡ 迅捷</string>
     <string name="stats_attr_accuracy">🎯 精准</string>
@@ -465,6 +467,10 @@
     <string name="settings_preferences_section">偏好设置</string>
     <string name="clipboard_actions">剪切板操作</string>
     <string name="clipboard_search">搜索</string>
+    <string name="custom_kb_row_margin">行边距</string>
+    <string name="custom_kb_row_margin_value">行边距 · %1$d dp</string>
+    <string name="custom_kb_row_margin_range">边距（0–48 dp）</string>
+    <string name="custom_kb_row_margin_hint">键盘左右两侧留白；0 表示贴边。</string>
     <string name="custom_kb_row_spacing">行间距</string>
     <string name="custom_kb_row_spacing_value">行间距 · %1$d dp</string>
     <string name="custom_kb_row_spacing_range">间距（0–%1$d dp）</string>

@@ -83,6 +83,8 @@ object CustomKeyboards {
         /** Overlay for every key in this layout; empty restores individual backgrounds. */
         var allKeysBackground: String = "",
         var rowSpacing: Int = 4,
+        /** 行左右边距：键盘整体收进屏幕两侧的留白，0–48 dp。 */
+        var rowMargin: Int = 0,
         var keyboardHeightDp: Int = 0,
         var landscapeHeightDp: Int = 0,
         var toolbarHeightDp: Int = 0,
@@ -289,6 +291,7 @@ object CustomKeyboards {
         toolbarAlignment = kb.toolbarAlignment.takeIf { it == "legacy" || it in ButtonAlignment.choices } ?: "legacy",
         toolbarBackground = kb.toolbarBackground?.normalized(CustomBackground.KEYBOARD_COLOR),
         rowSpacing = kb.rowSpacing.coerceIn(0, kb.maxRowSpacing()),
+        rowMargin = kb.rowMargin.coerceIn(0, 48),
         importedHeightPercent = kb.importedHeightPercent.coerceIn(70, 150),
         rows = kb.rows.ifEmpty { listOf(CustomRow()) }.map { row ->
             CustomRow(row.keys.map { key -> key.copy(

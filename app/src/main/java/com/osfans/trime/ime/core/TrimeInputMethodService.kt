@@ -416,15 +416,28 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
             recording, if (recording && level.isFinite()) level.coerceIn(0f,1f) else 0f, phase)
     }
 
-    val builtInVoice by lazy { com.osfans.trime.ime.voice.builtin.BuiltInVoiceController(this) }
+    private val builtInVoiceDelegate = lazy { com.osfans.trime.ime.voice.builtin.BuiltInVoiceController(this) }
+    val builtInVoice by builtInVoiceDelegate
 
     /** 所有语音按键统一使用内置引擎。 */
     val voiceInput: com.osfans.trime.ime.voice.VoiceInput
         get() = builtInVoice
 
+    /**
+     * Cancel an active recording without constructing the controller.
+     * Idle key presses used to initialize it just to call cancel().
+     */
+    fun cancelVoiceIfActive() {
+        if (builtInVoiceDelegate.isInitialized()) builtInVoice.cancel()
+    }
+
+    private fun disposeVoiceIfInitialized() {
+        if (builtInVoiceDelegate.isInitialized()) builtInVoice.dispose()
+    }
+
     override fun onDestroy() {
         com.osfans.trime.data.sync.ClipboardSync.stop()
-        builtInVoice.dispose()
+        disposeVoiceIfInitialized()
         com.osfans.trime.data.stats.InputStats.endSession()
         InputFeedbackManager.destroy()
         inputView?.releaseKeyboard()
@@ -749,7 +762,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         attribute: EditorInfo,
         restarting: Boolean,
     ) {
-        voiceInput.cancel()
+        cancelVoiceIfActive()
         composingText = ""
         Timber.d("onStartInput: restarting=$restarting")
         val isNullType = attribute.inputType and InputType.TYPE_MASK_CLASS == InputType.TYPE_NULL
@@ -787,6 +800,8 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         com.osfans.trime.ime.keyboard.KeyboardWindow.instance?.setVideoActive(true)
         inputView?.setUnifiedVideoActive(true)
         InputFeedbackManager.startInput()
+        // A disabled voice feature must leave no recorder or engine running.
+        if (!com.osfans.trime.ime.voice.VoiceSettings.enabled) cancelVoiceIfActive()
         postRimeJob {
             updateRimeOption(this)
         }
@@ -813,7 +828,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         inputView?.setUnifiedVideoActive(false)
         com.osfans.trime.ime.clipboard.ClipboardSearchBridge.reset()
         hideBottomOverlay()
-        voiceInput.cancel()
+        cancelVoiceIfActive()
         Timber.d("onFinishInputView: finishingInput=$finishingInput")
         decorLocationUpdated = false
         inputView?.dismissCandidateActionMenu()
@@ -996,7 +1011,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         keyCode: Int,
         event: KeyEvent,
     ): Boolean {
-        voiceInput.cancel()
+        cancelVoiceIfActive()
         if (keyCode == KeyEvent.KEYCODE_BACK && com.osfans.trime.ime.clipboard.ClipboardSearchBridge.exit()) return true
         if (inputDeviceManager.evaluateOnKeyDown(event, this)) {
             decorLocationUpdated = false

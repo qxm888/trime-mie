@@ -11,6 +11,7 @@ import android.graphics.Typeface
 import android.os.Bundle
 import android.text.InputType
 import android.view.Gravity
+import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Space
@@ -45,6 +46,7 @@ import kotlinx.coroutines.withContext
  */
 class KeyEditActivity : AppCompatActivity() {
     private lateinit var rowsContainer: LinearLayout
+    private lateinit var previewContainer: LinearLayout
     private lateinit var keyboardInput: MaterialAutoCompleteTextView
 
     private var keyboardIds: List<String> = emptyList()
@@ -73,32 +75,32 @@ class KeyEditActivity : AppCompatActivity() {
             windowInsets
         }
         toolbar.setNavigationOnClickListener { finish() }
-        toolbar.inflateMenu(R.menu.key_edit)
-        toolbar.menu.add(0, 2180, 0, "主题键盘全局外观")
-        toolbar.setOnMenuItemClickListener { item ->
-            when (item.itemId) {
-                2180 -> SurfaceAppearanceEditor.show(this, false) { refreshAppearancePreview { rebuildPreview() } }
-                R.id.action_export_bindings -> exportBindings()
-                R.id.action_import_bindings -> importLauncher.launch(arrayOf("application/json", "text/plain", "*/*"))
-                R.id.action_theme_video -> { returningFromAppearance = true; SettingsPageFragment.launch(this, "background") }
-                R.id.action_reset_all_bindings -> {
-                    MaterialAlertDialogBuilder(this)
-                        .setTitle(R.string.key_editor_reset_all)
-                        .setMessage(R.string.key_editor_reset_all_confirm)
-                        .setPositiveButton(R.string.ok) { _, _ ->
-                            KeyBindingOverrides.resetAll()
-                            KeyBindingOverrides.flush()
-                            rebuildPreview()
-                            Toast.makeText(this, R.string.key_editor_done, Toast.LENGTH_SHORT).show()
-                        }
-                        .setNegativeButton(R.string.cancel, null)
-                        .show()
+        findViewById<View>(R.id.key_edit_global_appearance).setOnClickListener {
+            SurfaceAppearanceEditor.show(this, false) { refreshAppearancePreview { rebuildPreview() } }
+        }
+        findViewById<View>(R.id.key_edit_import).setOnClickListener {
+            importLauncher.launch(arrayOf("application/json", "text/plain", "*/*"))
+        }
+        findViewById<View>(R.id.key_edit_export).setOnClickListener { exportBindings() }
+        findViewById<View>(R.id.key_edit_video).setOnClickListener {
+            returningFromAppearance = true; SettingsPageFragment.launch(this, "background")
+        }
+        findViewById<View>(R.id.key_edit_reset).setOnClickListener {
+            MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.key_editor_reset_all)
+                .setMessage(R.string.key_editor_reset_all_confirm)
+                .setPositiveButton(R.string.ok) { _, _ ->
+                    KeyBindingOverrides.resetAll()
+                    KeyBindingOverrides.flush()
+                    rebuildPreview()
+                    Toast.makeText(this, R.string.key_editor_done, Toast.LENGTH_SHORT).show()
                 }
-            }
-            true
+                .setNegativeButton(R.string.cancel, null)
+                .show()
         }
 
         rowsContainer = findViewById(R.id.key_edit_rows)
+        previewContainer = findViewById(R.id.key_edit_preview)
         keyboardInput = findViewById(R.id.key_edit_keyboard_input)
 
         keyboardIds = theme.presetKeyboards.keys.toList()
@@ -225,6 +227,7 @@ class KeyEditActivity : AppCompatActivity() {
         rowsContainer.removeAllViews()
         val config = resolveConfig(currentKeyboardId) ?: return
         val overrides = KeyBindingOverrides.bindingsFor(currentKeyboardId)
+        renderCompactPreview(config)
 
         val defaultWidth = config.width.takeIf { it > 0f } ?: 10f
         val maxColumns = config.columns.takeIf { it > 0 } ?: 30
@@ -298,6 +301,46 @@ class KeyEditActivity : AppCompatActivity() {
             )
         }
         finishRow()
+    }
+
+    /** 顶部的结构预览：只显示键名与行宽比例，改动后立即刷新。 */
+    private fun renderCompactPreview(config: TextKeyboard) {
+        previewContainer.removeAllViews()
+        val defaultWidth = config.width.takeIf { it > 0f } ?: 10f
+        var row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        var weight = 0f
+        fun flush() {
+            if (row.childCount > 0) {
+                previewContainer.addView(row, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+            }
+            row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+            weight = 0f
+        }
+        config.keys.forEach { key ->
+            val w = key.width.takeIf { it > 0f } ?: defaultWidth
+            if (key.newRow && weight > 0f) flush()
+            weight += w
+            if (key.click.orAbsent == null) {
+                row.addView(Space(this), LinearLayout.LayoutParams(0, dp(28), w))
+            } else {
+                row.addView(
+                    TextView(this).apply {
+                        text = key.label.ifEmpty { "·" }
+                        gravity = Gravity.CENTER
+                        textSize = 12f
+                        maxLines = 1
+                        includeFontPadding = false
+                        setTextColor(ContextCompat.getColor(this@KeyEditActivity, com.osfans.trime.R.color.framework_text_primary))
+                        background = android.graphics.drawable.GradientDrawable().apply {
+                            cornerRadius = dp(6).toFloat()
+                            setColor(0x22808080)
+                        }
+                    },
+                    LinearLayout.LayoutParams(0, dp(28), w).apply { setMargins(dp(1), dp(1), dp(1), dp(1)) },
+                )
+            }
+        }
+        flush()
     }
 
     // ----------------------------------------------------------------

@@ -828,7 +828,33 @@ class InputView(
         val surface = keyboardView as FloatingKeyboardContainer
         val corners = com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom).keyboardCorners
         val resolvedCorners = if (corners.isNotEmpty()) corners else List(4) { if (enabled) keyboardPrefs.floatingKeyboardCornerRadius.getValue().toFloat() else 0f }
+        com.osfans.trime.util.DiagnosticLog.event("keyboard", "corners", "floating=$enabled custom=${theme.isCustom} raw=$corners resolved=$resolvedCorners")
         surface.setCornerRadii(resolvedCorners.map { dp(it) })
+        // Docked keyboards draw their background/toolbar from sibling layers inside this
+        // view; clip the whole input view so the four-corner setting also works when the
+        // keyboard is not floating.
+        if (!enabled && resolvedCorners.any { it > 0f }) {
+            val pixelCorners = resolvedCorners.map { dp(it) }
+            clipToOutline = true
+            outlineProvider = object : android.view.ViewOutlineProvider() {
+                override fun getOutline(view: android.view.View, outline: android.graphics.Outline) {
+                    if (android.os.Build.VERSION.SDK_INT >= 30) {
+                        val path = android.graphics.Path().apply {
+                            addRoundRect(
+                                android.graphics.RectF(0f, 0f, view.width.toFloat(), view.height.toFloat()),
+                                FloatArray(8) { pixelCorners.getOrElse(it / 2) { 0 }.toFloat() },
+                                android.graphics.Path.Direction.CW,
+                            )
+                        }
+                        outline.setPath(path)
+                    } else {
+                        outline.setRoundRect(0, 0, view.width, view.height, pixelCorners.maxOrNull()?.toFloat() ?: 0f)
+                    }
+                }
+            }
+        } else {
+            clipToOutline = false
+        }
         if (enabled) {
             val cardOverride = floatingCardOverride()
             val backColor = resolveFloatingBackColor()

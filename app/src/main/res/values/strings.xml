@@ -279,6 +279,8 @@
     <string name="ignore_system_gesture_insets">Ignore system gesture insets</string>
 <string name="input_stats">Input statistics</string>
     <string name="input_stats_summary">Typing speed, career level and difficult words</string>
+    <string name="input_stats_enabled">Record input statistics</string>
+    <string name="input_stats_enabled_summary">When off, keystrokes and words are no longer counted and no statistics writes run in the background</string>
     <string name="stats_career_total">Lifetime chars</string>
     <string name="stats_attr_speed">⚡ Speed</string>
     <string name="stats_attr_accuracy">🎯 Accuracy</string>
@@ -466,6 +468,10 @@
     <string name="settings_preferences_section">Preferences</string>
     <string name="clipboard_actions">Clipboard actions</string>
     <string name="clipboard_search">Search</string>
+    <string name="custom_kb_row_margin">Row margin</string>
+    <string name="custom_kb_row_margin_value">Row margin · %1$d dp</string>
+    <string name="custom_kb_row_margin_range">Margin (0–48 dp)</string>
+    <string name="custom_kb_row_margin_hint">Empty space on both sides of the key area; 0 means edge to edge.</string>
     <string name="custom_kb_row_spacing">Row spacing</string>
     <string name="custom_kb_row_spacing_value">Row spacing · %1$d dp</string>
     <string name="custom_kb_row_spacing_range">Spacing (0–%1$d dp)</string>

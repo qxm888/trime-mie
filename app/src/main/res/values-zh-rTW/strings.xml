@@ -271,6 +271,8 @@
     <string name="ignore_system_gesture_insets">忽略系統手勢插邊</string>
     <string name="input_stats">輸入統計</string>
     <string name="input_stats_summary">輸入速度、生涯段位與鍵盤熱力</string>
+    <string name="input_stats_enabled">記錄輸入統計</string>
+    <string name="input_stats_enabled_summary">關閉後不再統計擊鍵與字數，背景也停止統計寫入</string>
     <string name="stats_career_total">累計輸入(字)</string>
     <string name="stats_attr_speed">⚡ 迅捷</string>
     <string name="stats_attr_accuracy">🎯 精準</string>
@@ -504,4 +506,8 @@
     <string name="ball_fan_menu_empty">還沒有菜單項。添加後在長按懸浮球時以扇形顯示。</string>
     <string name="ball_fan_menu_entry">懸浮球扇形菜單…</string>
     <string name="ball_fan_menu_entry_summary">長按懸浮球彈出的動作，點擊可編輯</string>
+    <string name="custom_kb_row_margin">行邊距</string>
+    <string name="custom_kb_row_margin_value">行邊距 · %1$d dp</string>
+    <string name="custom_kb_row_margin_range">邊距（0–48 dp）</string>
+    <string name="custom_kb_row_margin_hint">鍵盤左右兩側留白；0 表示貼邊。</string>
 </resources>

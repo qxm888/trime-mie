@@ -122,7 +122,14 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
             }
 
             override fun onAction(action: KeyAction) {
-                if (action.code != KeyEvent.KEYCODE_VOICE_ASSIST && action.command != "__mie_named_function" && !action.command.startsWith("__mie_voice_")) service.voiceInput.cancel()
+                // Named functions and soft keys can bind CAPS_LOCK; Rime has no
+                // caps-state toggle for this, so latch the keyboard's shift state.
+                if (action.code == KeyEvent.KEYCODE_CAPS_LOCK) {
+                    KeyboardWindow.currentKeyboardOrNull?.toggleCapsLock()
+                    KeyboardWindow.invalidateKeyLabels()
+                    return
+                }
+                if (action.code != KeyEvent.KEYCODE_VOICE_ASSIST && action.command != "__mie_named_function" && !action.command.startsWith("__mie_voice_")) service.cancelVoiceIfActive()
                 val text = action.getText(KeyboardWindow.currentKeyboard)
                 val shouldHandle = when {
                     action.commit.isNotEmpty() -> {
@@ -183,9 +190,9 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
                 val arg = expandActiveText(action.option)
 
                 when (action.command) {
-                    "__mie_voice_start" -> service.voiceInput.start()
-                    "__mie_voice_finish" -> service.voiceInput.release()
-                    "__mie_voice_cancel" -> service.voiceInput.cancel()
+                    "__mie_voice_start" -> if (com.osfans.trime.ime.voice.VoiceSettings.enabled) service.voiceInput.start()
+                    "__mie_voice_finish" -> if (com.osfans.trime.ime.voice.VoiceSettings.enabled) service.voiceInput.release()
+                    "__mie_voice_cancel" -> service.cancelVoiceIfActive()
                     "__mie_named_function" -> {
                         runCatching { com.osfans.trime.data.keymap.NamedFunctions.expanded(action.option) }
                             .onSuccess { actions -> service.lifecycleScope.launch {
@@ -402,7 +409,7 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
                 keyEventCode: Int,
                 metaState: Int,
             ) {
-                service.voiceInput.cancel()
+                service.cancelVoiceIfActive()
                 if (keyEventCode == KeyEvent.KEYCODE_BACK && com.osfans.trime.ime.clipboard.ClipboardSearchBridge.exit()) return
                 // An uppercase letter key (e.g. from `{x: A}`) is passed to
                 // rime as the uppercase keysym with Shift, matching what a
@@ -446,7 +453,7 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
             }
 
             override fun onText(input: String) {
-                service.voiceInput.cancel()
+                service.cancelVoiceIfActive()
                 if (input.isEmpty()) return
                 Timber.d("onText: $input")
                 val status = rime.run { statusCached }

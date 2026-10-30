@@ -42,6 +42,7 @@ object CustomKeyboardYaml {
         val exportedHeight: Int = 0,
         val exportedBackground: String = "",
         val exportedRowSpacing: Int = 4,
+        val rowMargin: Int = 0,
         val keyAppearance: Map<String, String> = emptyMap(),
         val options: KeyboardOptions = KeyboardOptions(),
     )
@@ -128,7 +129,7 @@ object CustomKeyboardYaml {
                 "landscape_split_percent" to JsonPrimitive(layout.landscapeSplitPercent), "label_transform" to string(layout.labelTransform.name.lowercase()),
                 "keyboard_back_color" to string(bg),
                 "mie" to json.encodeToJsonElement(KeyboardInfo.serializer(), KeyboardInfo(importedActions=kb.importedActions, toolbarAlignment=kb.toolbarAlignment, rowAlignments=kb.rows.mapIndexed { index,row -> index+1 to row.alignment }.toMap(), surfaceAppearance=kb.surfaceAppearance, unifiedBackground=kb.unifiedBackground, typography=kb.typography, floatingCandidates=kb.floatingCandidates, toolbar=kb.toolbar, toolbarBackground=kb.toolbarBackground,
-                    allKeysBackground = kb.allKeysBackground, importedSkin = kb.importedSkin, importedHeightPercent = kb.importedHeightPercent, keyboardHeightDp = kb.keyboardHeightDp, landscapeHeightDp = kb.landscapeHeightDp, toolbarHeightDp = kb.toolbarHeightDp, secondaryOf = kb.secondaryOf, exportedHeight = portraitHeight, exportedBackground = bg, exportedRowSpacing = kb.rowSpacing, keyAppearance = KeyAppearance.textValues(kb.keyAppearance), options = kb.options)), "keys" to JsonArray(keys))
+                    allKeysBackground = kb.allKeysBackground, importedSkin = kb.importedSkin, importedHeightPercent = kb.importedHeightPercent, keyboardHeightDp = kb.keyboardHeightDp, landscapeHeightDp = kb.landscapeHeightDp, toolbarHeightDp = kb.toolbarHeightDp, secondaryOf = kb.secondaryOf, exportedHeight = portraitHeight, exportedBackground = bg, exportedRowSpacing = kb.rowSpacing, rowMargin = kb.rowMargin, keyAppearance = KeyAppearance.textValues(kb.keyAppearance), options = kb.options)), "keys" to JsonArray(keys))
         }
         val first = layouts.values.first()
         val root = obj("name" to string(if (layouts.size == 1) first.name else "自定义键盘合集"), "config_version" to string("1.0"),
@@ -257,7 +258,9 @@ object CustomKeyboardYaml {
                 landscapeSplitPercent = node.pairs["landscape_split_percent"]?.int ?: info.options.landscapeSplitPercent,
                 uppercaseLabels = node.pairs["label_transform"]?.string?.let { it.equals("uppercase", true) } ?: info.options.uppercaseLabels,
             ).validated()
-            result[id] = CustomKeyboard(name = node.pairs["name"]?.string ?: id, rows = rows, rowSpacing = spacing,
+            val rowMargin = info.rowMargin
+            require(rowMargin in 0..48) { "行边距须为 0–48 dp" }
+            result[id] = CustomKeyboard(name = node.pairs["name"]?.string ?: id, rows = rows, rowSpacing = spacing, rowMargin = rowMargin,
                 importedActions=info.importedActions, toolbarAlignment=info.toolbarAlignment, surfaceAppearance=info.surfaceAppearance, unifiedBackground=info.unifiedBackground, typography=info.typography, floatingCandidates=info.floatingCandidates, background = background(bg), toolbar = info.toolbar.toMutableList(), toolbarBackground = info.toolbarBackground, allKeysBackground = info.allKeysBackground,
                 importedSkin = skin, importedHeightPercent = percent, keyboardHeightDp = heightDp, landscapeHeightDp = heightDpLand, toolbarHeightDp = toolbarHeight, secondaryOf = secondaryOf, keyAppearance = KeyAppearance.parse(info.keyAppearance), options = options)
         }
