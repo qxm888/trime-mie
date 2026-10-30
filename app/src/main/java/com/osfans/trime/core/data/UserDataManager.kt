@@ -114,20 +114,20 @@ object UserDataManager {
         @SuppressLint("UseKtx")
         get() = Uri.parse(externalRimeTreeUri)
 
-    fun useExternalSync(): Boolean = dataStorageMode == DataStorageMode.EXTERNAL_SYNC
+    fun useExternalSync(): Boolean = !TrimeApplication.getInstance().isDirectBootMode && dataStorageMode == DataStorageMode.EXTERNAL_SYNC
 
     fun hasExternalAccess(): Boolean = StorageAccess.persistedPermissions().any {
         it.uri == externalRimeDir && it.read && it.write
     }
 
-    fun isStorageAvailable(): Boolean = when (dataStorageMode) {
+    fun isStorageAvailable(): Boolean = if(TrimeApplication.getInstance().isDirectBootMode) true else when (dataStorageMode) {
         DataStorageMode.DIRECT_EXTERNAL -> DirectExternalStorage.hasPermission(appContext) &&
             AppPrefs.defaultInstance().profile.directExternalReady.getValue() && userDataDir.isDirectory
         DataStorageMode.EXTERNAL_SYNC -> hasExternalAccess()
         DataStorageMode.APP_STORAGE -> true
     }
 
-    fun isStorageChoiceDone(): Boolean = when (dataStorageMode) {
+    fun isStorageChoiceDone(): Boolean = if(TrimeApplication.getInstance().isDirectBootMode) true else when (dataStorageMode) {
         DataStorageMode.APP_STORAGE -> true
         DataStorageMode.DIRECT_EXTERNAL -> isStorageAvailable()
         DataStorageMode.EXTERNAL_SYNC -> externalRimeTreeUri.isNotEmpty()

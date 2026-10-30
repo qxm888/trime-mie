@@ -6,7 +6,6 @@
 package com.osfans.trime.core.data
 
 import android.content.res.AssetManager
-import android.os.Build
 import com.osfans.trime.TrimeApplication
 import com.osfans.trime.util.FileUtils
 import com.osfans.trime.util.appContext
@@ -26,16 +25,6 @@ object DataManager {
     private fun deserializeDataChecksums(raw: String): DataChecksums = json.decodeFromString<DataChecksums>(raw)
 
     private fun serializeDataChecksums(checksums: DataChecksums): String = json.encodeToString(checksums)
-
-    // If Android version supports direct boot, we put the hierarchy in device encrypted storage
-    // instead of credential encrypted storage so that data can be accessed before user unlock
-    private val dataDir: File =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            Timber.d("Using device protected storage")
-            appContext.createDeviceProtectedStorageContext().dataDir
-        } else {
-            File(appContext.applicationInfo.dataDir)
-        }
 
     private fun AssetManager.dataChecksums(): DataChecksums = open(DATA_CHECKSUMS_NAME)
         .bufferedReader()
@@ -68,7 +57,9 @@ object DataManager {
     }
 
     fun sync() = lock.withLock {
-        val destChecksumsFile = File(dataDir, DATA_CHECKSUMS_NAME)
+        // Each resource root has its own checksum. A normal-mode copy must not
+        // suppress seeding a different root before unlock (or during remount).
+        val destChecksumsFile = File(externalFilesDir, DATA_CHECKSUMS_NAME)
         val oldChecksums =
             destChecksumsFile
                 .runCatching { deserializeDataChecksums(bufferedReader().use { it.readText() }) }

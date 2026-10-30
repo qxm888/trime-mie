@@ -39,7 +39,7 @@ object ClipboardSync : ClipboardManager.OnPrimaryClipChangedListener {
     private val client = OkHttpClient.Builder().followRedirects(false).followSslRedirects(false)
         .dns(LocalNetworkAccess.dns { context }).connectTimeout(8, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).writeTimeout(60, TimeUnit.SECONDS).callTimeout(180, TimeUnit.SECONDS).build()
 
-    fun init(ctx: Context) { context = ctx.applicationContext }
+    fun init(ctx: Context) { context = com.osfans.trime.util.storageContext(ctx) }
     fun config() = Config(prefs.getBoolean("enabled",false), prefs.getString("url","").orEmpty(), prefs.getString("user","").orEmpty(), prefs.getString("password","").orEmpty(), prefs.getBoolean("allow_http",false))
     fun validate(c: Config) {
         val url = c.url.trim().toHttpUrl()

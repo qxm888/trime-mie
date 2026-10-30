@@ -69,11 +69,16 @@ class BackgroundSyncWork(
             internalStart(context, ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE)
         }
 
+        @Synchronized
         private fun internalStart(
             context: Context,
             policy: ExistingPeriodicWorkPolicy,
         ) {
-            WorkManager.initialize(context, Configuration.Builder().build())
+            if(!com.osfans.trime.util.BootStorage.canScheduleWork(context)) {
+                Timber.i("Background sync deferred until credential storage is available")
+                return
+            }
+            if(!WorkManager.isInitialized()) WorkManager.initialize(context, Configuration.Builder().build())
             val instance = WorkManager.getInstance(context)
             if (!enable) {
                 instance.cancelUniqueWork(PERIODIC_BACKGROUND_SYNC_KEY)

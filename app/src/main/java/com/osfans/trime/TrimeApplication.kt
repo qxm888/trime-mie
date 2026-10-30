@@ -57,11 +57,11 @@ class TrimeApplication : Application() {
             if (intent.action != Intent.ACTION_USER_UNLOCKED) return
             if (!isDirectBootMode) return
             Timber.d("Device unlocked, app will exit now and restart to normal mode")
-            RimeDaemon.getFirstSessionOrNull()?.also {
-                // try to shutdown rime gracefully
-                RimeDaemon.stopRime()
-            }
-            exitProcess(0)
+            com.osfans.trime.util.DiagnosticLog.event("boot","unlocked_restart")
+            try {
+                RimeDaemon.getFirstSessionOrNull()?.also { RimeDaemon.stopRime() }
+            } catch(error:Exception) { Timber.w(error,"Could not stop locked-boot Rime") }
+            finally { exitProcess(0) }
         }
     }
 
@@ -93,7 +93,7 @@ class TrimeApplication : Application() {
 
     val externalFilesDir: File
         get() = with(directBootAwareContext) {
-            getExternalFilesDir(null) ?: filesDir
+            if (isDirectBootMode) filesDir else getExternalFilesDir(null) ?: filesDir
         }
 
     override fun onCreate() {
@@ -107,37 +107,29 @@ class TrimeApplication : Application() {
         }
         val ctx = directBootAwareContext
 
-        if (!BuildConfig.DEBUG) {
-            Thread.setDefaultUncaughtExceptionHandler { _, e ->
-                val crashTime = System.currentTimeMillis()
-                val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(ctx)
-                val lastCrashTimePrefKey = "last_crash_time"
-                val lastCrashTime = sharedPrefs.getLong(lastCrashTimePrefKey, -1L)
-                sharedPrefs.edit(commit = true) {
-                    putLong(lastCrashTimePrefKey, crashTime)
-                }
-                if (crashTime - lastCrashTime <= 10_000L) {
-                    // continuous crashes within 10 seconds, maybe in a crash loop. just bail
-                    exitProcess(10)
-                }
-                startActivity(
-                    Intent(ctx, LogActivity::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        putExtra(LogActivity.FROM_CRASH, true)
-                        // avoid transaction overflow
-                        val truncated =
-                            e.stackTraceToString().let {
-                                if (it.length > MAX_STACKTRACE_SIZE) {
-                                    it.take(MAX_STACKTRACE_SIZE) + "<truncated>"
-                                } else {
-                                    it
-                                }
-                            }
-                        putExtra(LogActivity.CRASH_STACK_TRACE, truncated)
-                    },
-                )
+        val originalHandler=Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { thread, error ->
+            runCatching { com.osfans.trime.util.CrashJournal.record(ctx,thread,error) }
+            Log.e("MieCrash","Uncaught exception in ${thread.name}",error)
+            if(BuildConfig.DEBUG) {
+                originalHandler?.uncaughtException(thread,error)
                 exitProcess(10)
             }
+            try {
+                val sharedPrefs=PreferenceManager.getDefaultSharedPreferences(ctx)
+                val crashTime=System.currentTimeMillis()
+                val lastCrashTime=sharedPrefs.getLong("last_crash_time",-1L)
+                sharedPrefs.edit(commit=true) { putLong("last_crash_time",crashTime) }
+                // Locked boot must not launch settings activities or recursively crash.
+                if(!isDirectBootMode && !com.osfans.trime.util.BootStorage.locked(this) && crashTime-lastCrashTime>10_000L) {
+                    startActivity(Intent(ctx,LogActivity::class.java).apply {
+                        flags=Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        putExtra(LogActivity.FROM_CRASH,true)
+                        putExtra(LogActivity.CRASH_STACK_TRACE,error.stackTraceToString().take(MAX_STACKTRACE_SIZE))
+                    })
+                }
+            } catch(secondary:Exception) { Log.e("MieCrash","Could not show crash page",secondary) }
+            finally { exitProcess(10) }
         }
         instance = this
         registerActivityLifecycleCallbacks(com.osfans.trime.ui.main.SettingsTestInput.callbacks())
@@ -180,7 +172,7 @@ class TrimeApplication : Application() {
             if(!isDirectBootMode) runCatching { com.osfans.trime.data.backup.FullSettingsBackup.applyPending(ctx) }
                 .onFailure { Timber.e(it,"Pending settings restore could not complete") }
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(ctx)
-            com.osfans.trime.util.DiagnosticLog.event("app", "start", "version=${BuildConfig.VERSION_NAME} api=${Build.VERSION.SDK_INT} abi=${Build.SUPPORTED_ABIS.firstOrNull()}")
+            com.osfans.trime.util.DiagnosticLog.event("app", "start", "version=${BuildConfig.VERSION_NAME} api=${Build.VERSION.SDK_INT} abi=${Build.SUPPORTED_ABIS.firstOrNull()} directBoot=$isDirectBootMode deviceProtected=${com.osfans.trime.util.BootStorage.deviceProtected(ctx)}")
 
             Timber.d("isDirectBootMode=$isDirectBootMode")
 
@@ -224,6 +216,7 @@ class TrimeApplication : Application() {
             com.osfans.trime.util.DiagnosticLog.event("app", "ready")
         } catch (e: Exception) {
             Timber.e(e, "Application initialization failed")
+            runCatching { com.osfans.trime.util.CrashJournal.record(ctx,Thread.currentThread(),e,"initialization") }
             com.osfans.trime.util.DiagnosticLog.event("app", "init_failed", "type=${e.javaClass.simpleName} at=${e.stackTrace.firstOrNull()}")
             return
         }
@@ -244,8 +237,18 @@ class TrimeApplication : Application() {
     }
 
     private fun startWorkManager() {
+        val context=directBootAwareContext
+        if(!com.osfans.trime.util.BootStorage.canScheduleWork(context)) {
+            com.osfans.trime.util.DiagnosticLog.event("boot","work_deferred","locked=$isDirectBootMode")
+            return
+        }
         coroutineScope.launch {
-            BackgroundSyncWork.start(directBootAwareContext)
+            try { BackgroundSyncWork.start(context) }
+            catch(cancelled:kotlinx.coroutines.CancellationException) { throw cancelled }
+            catch(error:Exception) {
+                Timber.e(error,"Background sync scheduling failed; IME remains available")
+                com.osfans.trime.util.DiagnosticLog.event("boot","work_schedule_failed","type=${error.javaClass.simpleName}")
+            }
         }
     }
 

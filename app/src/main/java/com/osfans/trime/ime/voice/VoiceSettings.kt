@@ -7,7 +7,7 @@ import com.osfans.trime.data.theme.ThemeManager
 object VoiceSettings {
     private var context: Context? = null
     private val prefs get() = context!!.getSharedPreferences("voice_settings", Context.MODE_PRIVATE)
-    fun init(ctx: Context) { context = ctx.applicationContext }
+    fun init(ctx: Context) { context = com.osfans.trime.util.storageContext(ctx) }
     val enabled: Boolean get() = context?.let { prefs.getBoolean("enabled", true) } ?: true
     var streaming: Boolean
         get() = context?.let { prefs.getBoolean("streaming", true) } ?: true

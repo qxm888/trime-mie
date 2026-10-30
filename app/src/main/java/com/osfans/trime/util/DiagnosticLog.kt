@@ -25,8 +25,13 @@ object DiagnosticLog {
         }
     }
     fun snapshot(): String = synchronized(lock) {
-        listOf("diagnostics.previous.log", "diagnostics.log").joinToString("\n") { name ->
-            runCatching { File(appContext.filesDir, name).takeIf { it.exists() }?.readText().orEmpty() }.getOrDefault("")
+        val contexts=mutableListOf(appContext)
+        if(android.os.Build.VERSION.SDK_INT>=24) contexts+=appContext.createDeviceProtectedStorageContext()
+        contexts.distinctBy { it.filesDir.absolutePath }.joinToString("\n") { context ->
+            "storage=${if(BootStorage.deviceProtected(context)) "device" else "credential"}\n"+
+                listOf("diagnostics.previous.log","diagnostics.log").joinToString("\n") { name ->
+                    runCatching { File(context.filesDir,name).takeIf { it.isFile }?.inputStream()?.use { it.readBoundedText(256*1024) }.orEmpty() }.getOrDefault("")
+                }
         }
     }
 }

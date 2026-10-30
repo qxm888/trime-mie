@@ -15,7 +15,7 @@ object AsrSettings {
     private val prefs get() = context!!.getSharedPreferences("builtin_asr", Context.MODE_PRIVATE)
 
     fun init(ctx: Context) {
-        context = ctx.applicationContext
+        context = com.osfans.trime.util.storageContext(ctx)
         migrateLegacyIfNeeded()
     }
 

@@ -87,7 +87,7 @@ object KeyBindingOverrides {
 
     fun init(context: Context) {
         synchronized(lock) {
-            appContext = context.applicationContext
+            appContext = com.osfans.trime.util.storageContext(context)
             runCatching {
                 val file = storeFile()
                 file.readAtomicText()?.let { contents ->

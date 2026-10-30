@@ -243,7 +243,7 @@ object InputStats {
 
     fun init(context: Context) {
         synchronized(lock) {
-            appContext = context.applicationContext
+            appContext = com.osfans.trime.util.storageContext(context)
             runCatching {
                 val local = storeFile()
                 val file = if (!local.exists()) rimeFile().takeIf { it.isFile } ?: local else local

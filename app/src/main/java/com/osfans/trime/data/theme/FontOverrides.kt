@@ -17,7 +17,7 @@ object FontOverrides {
     @Volatile private var snapshot: Map<String, Any?> = emptyMap()
     private val prefs get() = context!!.getSharedPreferences("font_overrides", Context.MODE_PRIVATE)
     val version: Long get() = snapshot["version"] as? Long ?: 0
-    fun init(ctx: Context) { context = ctx.applicationContext; snapshot = prefs.all.toMap() }
+    fun init(ctx: Context) { context = com.osfans.trime.util.storageContext(ctx); snapshot = prefs.all.toMap() }
     fun selection(role: String): String = snapshot[role] as? String ?: ""
     fun size(role: String): Float = (snapshot["size.$role"] as? Float ?: 0f).takeIf { it.isFinite() && it in 0f..200f } ?: 0f
     fun setSize(role: String, value: Float) {

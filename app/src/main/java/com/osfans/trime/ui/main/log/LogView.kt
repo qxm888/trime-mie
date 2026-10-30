@@ -98,7 +98,7 @@ constructor(
     }
 
     val currentLog: String
-        get() = logAdapter.fullLogString() + "\n--------- Mie lifecycle diagnostics (no audio or recognized text)\n" + com.osfans.trime.util.DiagnosticLog.snapshot()
+        get() = logAdapter.fullLogString() + "\n--------- Mie lifecycle diagnostics (no audio or recognized text)\n" + com.osfans.trime.util.DiagnosticLog.snapshot() + "\n--------- Saved crash records (may predate this session)\n" + com.osfans.trime.util.CrashJournal.snapshot(context)
 
     fun clear() {
         logAdapter.clear()

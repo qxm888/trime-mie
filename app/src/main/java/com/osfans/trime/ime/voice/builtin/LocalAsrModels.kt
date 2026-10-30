@@ -477,7 +477,7 @@ object LocalAsrModels {
 object AsrContextHolder {
     @Volatile private var appContext: Context? = null
     fun init(context: Context) {
-        appContext = context.applicationContext
+        appContext = com.osfans.trime.util.storageContext(context)
     }
 
     fun get(): Context? = appContext

@@ -16,7 +16,7 @@ import java.io.File
 object DirectExternalStorage {
     val defaultPath: String get() = File(Environment.getExternalStorageDirectory(), "rime").absolutePath
     private val prefs get() = AppPrefs.defaultInstance().profile
-    fun enabled(): Boolean = prefs.dataStorageMode.getValue() == DataStorageMode.DIRECT_EXTERNAL
+    fun enabled(): Boolean = !com.osfans.trime.TrimeApplication.getInstance().isDirectBootMode && prefs.dataStorageMode.getValue() == DataStorageMode.DIRECT_EXTERNAL
     fun hasPermission(context: Context): Boolean = if (Build.VERSION.SDK_INT >= 30) Environment.isExternalStorageManager()
         else ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
     val directory: File get() = File(prefs.directExternalPath.getValue())

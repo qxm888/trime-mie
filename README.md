@@ -6,7 +6,15 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前源码版本：**V3.0.5**，正式 APK 文件名 `trime-mie-v3.0.5.apk`。本版已在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 发布。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
+> 当前源码版本：**V3.0.6**，正式 APK 文件名 `trime-mie-v3.0.6.apk`。本版已在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 发布。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
+
+## V3.0.6 开机初始化修复
+
+- 修复解锁前初始化时丢失设备保护上下文的问题；锁定阶段使用独立的应用内Rime目录和资源校验。
+- 后台同步等待解锁后再启动，避免在直接启动模式初始化WorkManager；调度失败不终止键盘。
+- 崩溃堆栈同步保存到设备保护目录，解锁后的普通日志导出也能查看，保留最近两次。
+
+详见 [V3.0.6 定位与验证边界](docs/v3.0.6/更新说明.md)。隔离检查不代替真实关机开机验证。
 
 ## V3.0.5 主题键盘导入
 
@@ -154,7 +162,7 @@
 
 ## 下载与安装
 
-1. 可在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 下载 `trime-mie-v3.0.5.apk`。
+1. 可在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 下载 `trime-mie-v3.0.6.apk`。
 2. 允许浏览器或文件管理器安装该 APK，安装后在系统设置启用“同文输入法咩版”并选为当前输入法。
 3. 配置 Rime 方案与词库并部署。需要沿用旧目录时，按[使用指南](docs/使用指南.md)切换外部目录。
 
