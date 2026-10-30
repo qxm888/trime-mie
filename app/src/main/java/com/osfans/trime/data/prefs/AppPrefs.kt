@@ -302,6 +302,7 @@ class AppPrefs(
         val unifiedBackground = switch(R.string.keyboard_unified_background, "keyboard_unified_background", false)
         val keyBackground = string("all_keys_background", "")
         val surfaceAppearance = string("keyboard_surface_appearance", "")
+        val themeFloatingCandidates = string("theme_floating_candidates", "")
         val customKeyBackground = string("custom_all_keys_background", "")
         val customSurfaceAppearance = string("custom_keyboard_surface_appearance", "")
         val customUnifiedBackground = switch(R.string.keyboard_unified_background, "custom_keyboard_unified_background", false)

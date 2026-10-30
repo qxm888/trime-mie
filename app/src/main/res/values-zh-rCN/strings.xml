@@ -9,7 +9,7 @@
     <!-- 输入法平台名称  -->
     <string name="app_name_release">同文输入法咩版</string>
     <string name="app_name_debug">同文输入法咩版（调试）</string>
-    <string name="app_name_debug_variant" translatable="false">同文输入法（咩2）</string>
+    <string name="app_name_debug_variant" translatable="false">同文输入法测试版</string>
     <string name="qq_group_1">同文 QQ 群 1</string>
     <string name="qq_group_2">同文 QQ 群 2</string>
     <string name="rime_qq_group">中州韵 QQ 群</string>
@@ -467,6 +467,27 @@
     <string name="custom_kb_row_spacing_range">间距（0–%1$d dp）</string>
     <string name="custom_kb_row_spacing_hint">保持行高不变，0 表示无间距。最大不超过最小行高的一半，且不超过 32dp。</string>
     <string name="import_baidu_skin">导入百度皮肤（.bds）</string>
+    <string name="custom_kb_keyboard_height">键盘高度</string>
+    <string name="custom_kb_keyboard_height_value">键盘高度：%1$d dp</string>
+    <string name="custom_kb_keyboard_height_auto_value">键盘高度 · 自动 %1$d dp</string>
+    <string name="custom_kb_keyboard_height_range">竖屏键盘高度 dp（80–800，留空自动）</string>
+    <string name="custom_kb_keyboard_height_land_range">横屏键盘高度 dp（80–800，留空自动）</string>
+    <string name="custom_kb_keyboard_height_hint">与行高设置一样直接填 dp；各行行高按比例缩放填充。留空 = 按行高之和自动计算。</string>
+    <string name="custom_kb_keyboard_height_reset">自动</string>
+    <string name="custom_kb_crop_title">剪裁键盘背景</string>
+    <string name="custom_kb_crop_hint">拖动剪裁框到想要的位置；剪裁框保持键盘比例，剪出的图正好铺满键盘不变形。右下角圆点可缩放剪裁框。</string>
+    <string name="custom_kb_crop_cancel">取消</string>
+    <string name="custom_kb_crop_original">使用原图</string>
+    <string name="custom_kb_crop_done">剪裁</string>
+    <string name="toolbar_edit_height">状态栏高度</string>
+    <string name="secondary_kb_entry">次级键盘…</string>
+    <string name="floating_candidates_editor">悬浮候选窗编辑</string>
+    <string name="floating_candidates_editor_summary">按当前键盘模式编辑悬浮候选窗样式</string>
+    <string name="secondary_kb_title">次级键盘 · %1$s</string>
+    <string name="secondary_kb_new">新建次级键盘</string>
+    <string name="secondary_kb_empty">还没有次级键盘。可在这里新建数字、符号等键盘，再从主键盘按键跳转使用。</string>
+    <string name="secondary_kb_name_hint">次级键盘名称</string>
+    <string name="secondary_kb_delete_confirm">删除“%1$s”？指向它的按键跳转将失效。</string>
     <string name="custom_kb_imported_height">键盘高度</string>
     <string name="custom_kb_imported_height_value">键盘高度：%1$d%%</string>
     <string name="custom_kb_imported_height_range">高度比例（70–150%）</string>

@@ -166,6 +166,18 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
                 group("播报与气泡", ui.filter { it.key.startsWith("speak_") || it.key == "show_key_popup" })
             }
             "candidates" -> {
+                preferenceScreen.addPreference(
+                    com.osfans.trime.R.string.floating_candidates_editor,
+                    com.osfans.trime.R.string.floating_candidates_editor_summary,
+                ) {
+                    val activeId = com.osfans.trime.data.keymap.CustomKeyboards.resolveId(
+                        com.osfans.trime.ime.keyboard.KeyboardWindow.lastAttachedId,
+                    )
+                    if (com.osfans.trime.data.keymap.CustomKeyboards.mode == com.osfans.trime.data.keymap.CustomKeyboards.MODE_CUSTOM)
+                        com.osfans.trime.ui.main.FloatingCandidatesEditActivity.start(requireContext(), activeId)
+                    else
+                        com.osfans.trime.ui.main.FloatingCandidatesEditActivity.start(requireContext(), "")
+                }
                 group("窗口显示", ui.filter { it.key in listOf("show_candidates_window", "candidates_layout", "candidates_window_position", "candidate_bottom_pagination") })
                 group("候选内容与行数", ui.filter { it.key in listOf("candidate_limit_lines", "candidate_auto_shrink", "candidate_full_display", "candidate_item_max_lines") })
                 group("悬浮球", ui.filter { it.key in listOf("candidate_floating_ball", "candidate_ball_opacity") })

@@ -9,7 +9,7 @@
     <!-- Input Method Platform Tittle  -->
     <string name="app_name_release">同文输入法咩版</string>
     <string name="app_name_debug">同文输入法咩版（调试）</string>
-    <string name="app_name_debug_variant" translatable="false">同文输入法（咩2）</string>
+    <string name="app_name_debug_variant" translatable="false">同文输入法测试版</string>
     <!-- Preference settings -->
     <string name="qq_group_1">Trime QQ group 1</string>
     <string name="qq_group_2">Trime QQ group 2</string>
@@ -468,6 +468,27 @@
     <string name="custom_kb_row_spacing_range">Spacing (0–%1$d dp)</string>
     <string name="custom_kb_row_spacing_hint">Keeps row heights unchanged. Zero removes the gap. The maximum is half the shortest row height, up to 32dp.</string>
     <string name="import_baidu_skin">Import Baidu skin (.bds)</string>
+    <string name="custom_kb_keyboard_height">Keyboard height</string>
+    <string name="custom_kb_keyboard_height_value">Keyboard height: %1$d dp</string>
+    <string name="custom_kb_keyboard_height_auto_value">Keyboard height · auto %1$d dp</string>
+    <string name="custom_kb_keyboard_height_range">Portrait height dp (80–800, empty = auto)</string>
+    <string name="custom_kb_keyboard_height_land_range">Landscape height dp (80–800, empty = auto)</string>
+    <string name="custom_kb_keyboard_height_hint">Row heights scale to fill this height. Empty = sum of row heights (row height setting wins).</string>
+    <string name="custom_kb_keyboard_height_reset">Auto</string>
+    <string name="custom_kb_crop_title">Crop keyboard background</string>
+    <string name="custom_kb_crop_hint">Drag the frame to the region you want; the frame keeps the keyboard\'s proportions, so the crop fills the keyboard exactly.</string>
+    <string name="custom_kb_crop_cancel">Cancel</string>
+    <string name="custom_kb_crop_original">Use original</string>
+    <string name="custom_kb_crop_done">Crop</string>
+    <string name="toolbar_edit_height">Toolbar height</string>
+    <string name="secondary_kb_entry">Secondary keyboards…</string>
+    <string name="floating_candidates_editor">Floating candidates editor</string>
+    <string name="floating_candidates_editor_summary">Edit the floating candidates window for the current keyboard mode</string>
+    <string name="secondary_kb_title">Secondary keyboards · %1$s</string>
+    <string name="secondary_kb_new">New secondary keyboard</string>
+    <string name="secondary_kb_empty">No secondary keyboards yet. Create number/symbol keyboards here and jump to them from the main keyboard.</string>
+    <string name="secondary_kb_name_hint">Secondary keyboard name</string>
+    <string name="secondary_kb_delete_confirm">Delete \'%1$s\'? Jump bindings pointing to it will stop working.</string>
     <string name="custom_kb_imported_height">Keyboard height</string>
     <string name="custom_kb_imported_height_value">Keyboard height: %1$d%%</string>
     <string name="custom_kb_imported_height_range">Height scale (70–150%)</string>

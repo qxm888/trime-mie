@@ -2,7 +2,9 @@
 package com.osfans.trime.ui.main
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.RectF
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
@@ -144,4 +146,94 @@ object SkinPicker {
         }
     }
 
+
+    /**
+     * Real-time crop for keyboard background imports. Shows the picked image with a
+     * keyboard-proportioned, draggable crop frame; [aspect] is keyboard width / height.
+     * onResult receives the cropped file path, the original path for "use as-is",
+     * or null when the user cancels (the temporary import copy is removed).
+     */
+    fun showBackgroundCrop(activity: FragmentActivity, imagePath: String, aspect: Float, onResult: (String?) -> Unit) {
+        val safeAspect = if (aspect > 0.2f && aspect < 20f) aspect else 2f
+        activity.lifecycleScope.launch {
+            val loaded = withContext(Dispatchers.IO) {
+                runCatching {
+                    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                    BitmapFactory.decodeFile(imagePath, bounds)
+                    require(bounds.outWidth > 0 && bounds.outHeight > 0) { "图片无效" }
+                    var sample = 1
+                    while (bounds.outWidth / (sample * 2) >= 1600 || bounds.outHeight / (sample * 2) >= 1600) sample *= 2
+                    val options = BitmapFactory.Options().apply { inSampleSize = sample }
+                    BitmapFactory.decodeFile(imagePath, options) ?: error("图片无效")
+                }
+            }
+            val bitmap = loaded.getOrNull()
+            if (bitmap == null) {
+                Toast.makeText(activity, loaded.exceptionOrNull()?.message ?: "图片无法解码", Toast.LENGTH_LONG).show()
+                onResult(null); return@launch
+            }
+            val view = BackgroundCropView(activity, bitmap, safeAspect)
+            val scroll = ScrollView(activity).apply { addView(view) }
+            val dialog = MaterialAlertDialogBuilder(activity)
+                .setTitle(R.string.custom_kb_crop_title)
+                .setMessage(R.string.custom_kb_crop_hint)
+                .setView(scroll)
+                .setNegativeButton(R.string.custom_kb_crop_cancel) { _, _ -> runCatching { File(imagePath).delete() }; onResult(null) }
+                .setNeutralButton(R.string.custom_kb_crop_original, null)
+                .setPositiveButton(R.string.custom_kb_crop_done, null)
+                .create()
+            dialog.setOnShowListener {
+                dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                    val rect = RectF(view.cropRectInSource())
+                    activity.lifecycleScope.launch {
+                        val result = withContext(Dispatchers.IO) {
+                            runCatching {
+                                val folder = File(com.osfans.trime.core.data.DirectExternalStorage.resources(activity), "custom_kb_bg")
+                                check(folder.mkdirs() || folder.isDirectory)
+                                val file = File(folder, "bg_${UUID.randomUUID()}.jpg")
+                                try {
+                                    cropToFile(imagePath, rect, file)
+                                    file.absolutePath
+                                } catch (error: Throwable) { file.delete(); throw error }
+                            }
+                        }
+                        result.onSuccess { runCatching { File(imagePath).delete() } }
+                        result.onFailure {
+                            Toast.makeText(activity, it.message ?: "剪裁失败", Toast.LENGTH_LONG).show()
+                        }
+                        onResult(result.getOrNull())
+                        dialog.dismiss()
+                    }
+                }
+                dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
+                    onResult(imagePath); dialog.dismiss()
+                }
+            }
+            dialog.setOnCancelListener { runCatching { File(imagePath).delete() }; onResult(null) }
+            dialog.show()
+        }
+    }
+
+    private fun cropToFile(sourcePath: String, rect: RectF, out: File) {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(sourcePath, bounds)
+        require(rect.width() >= 1f && rect.height() >= 1f) { "剪裁区域过小" }
+        var sample = 1
+        while (rect.width() / sample > 2048f * 2 || rect.height() / sample > 2048f * 2) sample *= 2
+        val options = BitmapFactory.Options().apply { inSampleSize = sample }
+        val full = BitmapFactory.decodeFile(sourcePath, options) ?: error("图片无法解码")
+        val left = (rect.left / sample).toInt().coerceIn(0, full.width - 1)
+        val top = (rect.top / sample).toInt().coerceIn(0, full.height - 1)
+        val width = minOf((rect.width() / sample).toInt(), full.width - left).coerceAtLeast(1)
+        val height = minOf((rect.height() / sample).toInt(), full.height - top).coerceAtLeast(1)
+        val cropped = Bitmap.createBitmap(full, left, top, width, height)
+        val scaled = if (cropped.width > 2048) {
+            val target = Bitmap.createScaledBitmap(cropped, 2048, (cropped.height * 2048f / cropped.width).toInt().coerceAtLeast(1), true)
+            if (target != cropped) cropped.recycle()
+            target
+        } else cropped
+        out.outputStream().use { output -> scaled.compress(Bitmap.CompressFormat.JPEG, 92, output) }
+        if (scaled != full) scaled.recycle()
+        full.recycle()
+    }
 }

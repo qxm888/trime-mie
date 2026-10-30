@@ -12,6 +12,8 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceScreen
 import com.osfans.trime.R
 import com.osfans.trime.data.prefs.PreferenceDelegateFragment
+import com.osfans.trime.data.keymap.CustomKeyboards
+import com.osfans.trime.data.theme.ColorManager
 import com.osfans.trime.data.theme.ThemeManager
 import com.osfans.trime.ui.main.settings.ColorPickerDialog
 import com.osfans.trime.ui.main.settings.ThemePickerDialog
@@ -36,12 +38,20 @@ class ThemeSettingsFragment : PreferenceDelegateFragment(ThemeManager.prefs) {
     }
 
     override fun onPreferenceUiCreated(screen: PreferenceScreen) {
+        // 自定义键盘模式使用独立外观：主题/配色跟随布局，不提供全局选择。
+        val standalone = CustomKeyboards.mode == CustomKeyboards.MODE_CUSTOM
         screen.addPreference(
             R.string.theme_diagnostics,
             R.string.theme_diagnostics_summary,
         ) {
             startActivity<ThemeDiagnosticsActivity>()
         }
+        if (standalone) {
+            screen.findPreference<Preference>("selected_theme")?.isVisible = false
+            screen.findPreference<Preference>("normal_mode_color")?.isVisible = false
+        }
+        // 夜间配色的选择通过“配色”在夜间完成（写入夜间槽位），不单独暴露原始偏好行。
+        screen.findPreference<Preference>("night_mode_color")?.isVisible = false
     }
 
     override fun onStop() {

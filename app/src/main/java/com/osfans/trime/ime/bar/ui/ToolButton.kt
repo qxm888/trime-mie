@@ -118,7 +118,7 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
         } else {
             singleStyle = fg.style
         }
-        actionLabel = keyAction.getLabel(KeyboardWindow.currentKeyboard)
+        actionLabel = KeyboardWindow.currentKeyboardOrNull?.let { keyAction.getLabel(it) }.orEmpty()
 
         contentDescription = fg.style.ifBlank { actionLabel }
         val padding = dp(fg.padding)

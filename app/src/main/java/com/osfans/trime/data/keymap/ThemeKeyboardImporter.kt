@@ -154,6 +154,7 @@ class ThemeKeyboardImporter(private val context: Context) {
                 fun percent(value:Int,fallback:Int)=((value.takeIf { it>0 } ?: fallback.takeIf { it>0 } ?: sum)*100f/sum).toInt().coerceIn(50,200)
                 if(config.asciiKeyboard.isNotEmpty() || config.landscapeKeyboard.isNotEmpty()) warnings.add("主题的自动关联键盘不启用；按键中的键盘跳转已转换。")
                 layouts[ids.getValue(keyboard)]=CustomKeyboards.CustomKeyboard(
+                    secondaryOf=if(keyboard==sourceId) "" else ids.getValue(sourceId),
                     name=if(keyboard==sourceId) name.trim() else "${name.trim()} · ${config.name.ifBlank { keyboard }}".take(120),
                     rows=rows,importedActions=macros.filterKeys { it.startsWith(ids.getValue(keyboard)+"_macro_") },background=background,toolbar=toolbar,toolbarBackground=background(raw("candidate_background","back_color")),
                     toolbarAlignment=bar.alignment,rowSpacing=(config.verticalGap.takeIf { it>0 } ?: theme.style.verticalGap).coerceIn(0,32),

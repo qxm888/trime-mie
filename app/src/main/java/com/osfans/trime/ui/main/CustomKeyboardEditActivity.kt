@@ -109,7 +109,7 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
             true
         }
 
-        findViewById<View>(R.id.cbe_imported_height).setOnClickListener { showImportedHeightEditor() }
+        findViewById<View>(R.id.cbe_keyboard_height).setOnClickListener { showKeyboardHeightEditor() }
         findViewById<View>(R.id.cbe_row_spacing).setOnClickListener { showRowSpacingEditor() }
         rowsBox = findViewById(R.id.cbe_rows)
         findViewById<TextView>(R.id.cbe_add_row).setOnClickListener {
@@ -159,8 +159,12 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
             onPickImage = {
                 keyBgImageResult = { path ->
                     if (path != null) {
-                        mutate { k ->
-                            k.background = CustomBackground(CustomBackground.Type.IMAGE, image = path)
+                        val heightDp = kb.effectivePortraitHeightDp().toFloat().coerceAtLeast(24f)
+                        val widthDp = resources.displayMetrics.widthPixels / resources.displayMetrics.density
+                        SkinPicker.showBackgroundCrop(this@CustomKeyboardEditActivity, path, widthDp / heightDp) { cropped ->
+                            if (cropped != null) {
+                                mutate { k -> k.background = CustomBackground(CustomBackground.Type.IMAGE, image = cropped) }
+                            }
                         }
                     }
                 }
@@ -200,10 +204,9 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
                     }.setNegativeButton(android.R.string.cancel, null).show()
             }
         }
-        findViewById<TextView>(R.id.cbe_imported_height).apply {
-            visibility = if (kb.importedSkin != null) View.VISIBLE else View.GONE
-            text = getString(R.string.custom_kb_imported_height_value, kb.importedHeightPercent)
-        }
+        findViewById<TextView>(R.id.cbe_keyboard_height).text = if (kb.keyboardHeightDp > 0)
+            getString(R.string.custom_kb_keyboard_height_value, kb.keyboardHeightDp)
+            else getString(R.string.custom_kb_keyboard_height_auto_value, kb.effectivePortraitHeightDp())
         findViewById<TextView>(R.id.cbe_row_spacing).text = getString(R.string.custom_kb_row_spacing_value, kb.rowSpacing)
         rowsBox.removeAllViews()
         if (kb.rows.isEmpty()) {
@@ -237,10 +240,18 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
             }
             return
         }
+        val rowSum = kb.rows.sumOf { it.height.coerceIn(24, 160) }.coerceAtLeast(24).toFloat()
+        val totalHeight = kb.effectivePortraitHeightDp().toFloat()
+        val toolbarHeight = kb.effectiveToolbarHeightDp().toFloat()
+        val heightScale = (totalHeight - toolbarHeight).coerceAtLeast(rowSum) / rowSum
+        preview.addView(
+            toolbarStrip(kb, (toolbarHeight * 0.65f).toInt().coerceAtLeast(1)),
+            LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp((toolbarHeight * 0.65f).toInt().coerceAtLeast(1))),
+        )
         kb.rows.forEach { row ->
             val rowView = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-            val rowHeight = dp((row.height * 0.65f).toInt())
-            val gap = dp((kb.rowSpacing * 0.65f).toInt())
+            val rowHeight = dp((row.height * 0.65f * heightScale).toInt().coerceAtLeast(1))
+            val gap = dp((kb.rowSpacing * 0.65f * heightScale).toInt())
             rowView.weightSum = 100f
             com.osfans.trime.data.keymap.ButtonAlignment.slots(row).forEach { (ck, w) ->
                 if (ck == null) { rowView.addView(View(this),LinearLayout.LayoutParams(0,-1,w)); return@forEach }
@@ -426,10 +437,82 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
             setStroke(dp(1), android.graphics.Color.parseColor("#E88CAD"))
         }))
 
+    /** 状态栏示意：按当前启用的工具栏按钮绘制，非像素级还原。 */
+    private fun toolbarStrip(kb: CustomKeyboards.CustomKeyboard, heightPx: Int): View {
+        val strip = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(4), 0, dp(4), 0)
+            background = kb.toolbarBackground?.drawable(this@CustomKeyboardEditActivity, dp(80))
+                ?: kb.resolvedBackground().drawable(this@CustomKeyboardEditActivity, dp(80))
+        }
+        val buttons = kb.toolbar.filter { it.enabled }
+        if (buttons.isEmpty()) return strip
+        val weight = 1f / buttons.size
+        buttons.forEach { entry ->
+            val label = entry.icon.ifEmpty { entry.action.removePrefix("__mie_") }
+            strip.addView(
+                TextView(this).apply {
+                    text = label.take(6)
+                    gravity = Gravity.CENTER
+                    textSize = 10f
+                    maxLines = 1
+                    setTextColor(ContextCompat.getColor(this@CustomKeyboardEditActivity, R.color.framework_text_secondary))
+                },
+                LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, weight).apply { setMargins(dp(1), 0, dp(1), 0) },
+            )
+        }
+        return strip
+    }
+
+    private fun showKeyboardHeightEditor() {
+        val kb = CustomKeyboards.get(kbId) ?: return
+        val portrait = TextInputEditText(this).apply {
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER
+            if (android.os.Build.VERSION.SDK_INT >= 26) importantForAutofill = android.view.View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+            if (kb.keyboardHeightDp > 0) setText(kb.keyboardHeightDp.toString())
+        }
+        val landscape = TextInputEditText(this).apply {
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER
+            if (android.os.Build.VERSION.SDK_INT >= 26) importantForAutofill = android.view.View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+            if (kb.landscapeHeightDp > 0) setText(kb.landscapeHeightDp.toString())
+        }
+        val form = android.widget.LinearLayout(this).apply { orientation = android.widget.LinearLayout.VERTICAL }
+        form.addView(com.google.android.material.textfield.TextInputLayout(this).apply {
+            hint = getString(R.string.custom_kb_keyboard_height_range)
+            helperText = getString(R.string.custom_kb_keyboard_height_hint)
+            setPadding(dp(24), dp(8), dp(24), 0); addView(portrait)
+        })
+        form.addView(com.google.android.material.textfield.TextInputLayout(this).apply {
+            hint = getString(R.string.custom_kb_keyboard_height_land_range)
+            setPadding(dp(24), dp(8), dp(24), 0); addView(landscape)
+        })
+        val dialog = MaterialAlertDialogBuilder(this).setTitle(R.string.custom_kb_keyboard_height)
+            .setView(form).setNegativeButton(android.R.string.cancel, null)
+            .setNeutralButton(R.string.custom_kb_keyboard_height_reset) { _, _ ->
+                mutate { it.keyboardHeightDp = 0; it.landscapeHeightDp = 0 }
+            }
+            .setPositiveButton(android.R.string.ok, null).create()
+        dialog.setOnShowListener {
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val p = portrait.text?.toString()?.trim()?.takeIf { it.isNotEmpty() }?.toIntOrNull() ?: 0
+                val l = landscape.text?.toString()?.trim()?.takeIf { it.isNotEmpty() }?.toIntOrNull() ?: 0
+                if (p !in 0..800 || l !in 0..800 || (p in 1..79) || (l in 1..79)) {
+                    portrait.error = getString(R.string.custom_kb_keyboard_height_range)
+                } else {
+                    mutate { it.keyboardHeightDp = p; it.landscapeHeightDp = l }
+                    dialog.dismiss()
+                }
+            }
+        }
+        dialog.show()
+    }
+
     private fun showImportedHeightEditor() {
         val kb = CustomKeyboards.get(kbId)?.takeIf { it.importedSkin != null } ?: return
         val input = TextInputEditText(this).apply {
             inputType = InputType.TYPE_CLASS_NUMBER
+            if (android.os.Build.VERSION.SDK_INT >= 26) importantForAutofill = android.view.View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
             setText(kb.importedHeightPercent.toString())
             selectAll()
         }
@@ -465,6 +548,7 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         val limit = kb.maxRowSpacing()
         val input = TextInputEditText(this).apply {
             inputType = InputType.TYPE_CLASS_NUMBER
+            if (android.os.Build.VERSION.SDK_INT >= 26) importantForAutofill = android.view.View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
             setText(kb.rowSpacing.toString())
             selectAll()
         }
@@ -498,6 +582,7 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         val row = CustomKeyboards.get(kbId)?.rows?.getOrNull(rowIdx) ?: return
         val input = TextInputEditText(this).apply {
             inputType = InputType.TYPE_CLASS_NUMBER
+            if (android.os.Build.VERSION.SDK_INT >= 26) importantForAutofill = android.view.View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
             setText(row.height.toString())
             selectAll()
         }
@@ -666,6 +751,7 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
             TextInputEditText(widthLayout.context).apply {
                 setText((key.width.takeIf { it > 0f } ?: 10f).toString())
                 inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
+                if (android.os.Build.VERSION.SDK_INT >= 26) importantForAutofill = android.view.View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
                 setSingleLine(true)
             }
         widthLayout.addView(widthInput, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))

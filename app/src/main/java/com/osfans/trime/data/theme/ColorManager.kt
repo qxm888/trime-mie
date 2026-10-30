@@ -112,7 +112,8 @@ object ColorManager {
      */
     fun setColorScheme(schemeId: String) {
         if (requireScope().theme.isCustom) return
-        prefs.normalModeColor.setValue(schemeId)
+        // 夜间模式下的显式选择存入夜间槽位，日间选择不受影响。
+        if (isNightMode) prefs.nightModeColor.setValue(schemeId) else prefs.normalModeColor.setValue(schemeId)
         activateScheme(notify = true)
     }
 
@@ -121,6 +122,7 @@ object ColorManager {
     private fun resolveActiveScheme(theme: Theme): ColorScheme = if (theme.isCustom) theme.presetColorSchemes.getValue("default") else ColorSchemeResolver.resolve(
         schemes = theme.presetColorSchemes,
         selectedSchemeId = prefs.normalModeColor.getValue(),
+        nightSchemeId = prefs.nightModeColor.getValue(),
         followSystemDayNight = prefs.followSystemDayNight.getValue(),
         isNightMode = isNightMode,
     )

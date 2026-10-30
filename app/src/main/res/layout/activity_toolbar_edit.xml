@@ -49,6 +49,14 @@ SPDX-License-Identifier: GPL-3.0-or-later
         android:text="工具栏背景 · 纯色 / 透明 / 图片" />
 
     <com.google.android.material.button.MaterialButton
+        android:id="@+id/toolbar_edit_height"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:visibility="gone" />
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/toolbar_edit_alignment"
         style="@style/Widget.Material3.Button.OutlinedButton"
         android:layout_width="match_parent"

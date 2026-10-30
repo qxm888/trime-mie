@@ -84,6 +84,10 @@ class KeyboardWindow(di: DI) :
         val currentKeyboard: Keyboard
             get() = checkNotNull(presentation.visible) { "No keyboard is attached" }.keyboard
 
+        /** 候选视图等组件在键盘尚未挂载时重建的容错读取。 */
+        val currentKeyboardOrNull: Keyboard?
+            get() = presentation.visible?.keyboard
+
         internal fun clearFloating(owner: Any) = presentation.detachFloating(owner)
 
         /** Last attached preset id, so the key editor can preselect it. */

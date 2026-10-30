@@ -6,7 +6,17 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前源码版本：**V3.0.7**，正式 APK 文件名 `trime-mie-v3.0.7.apk`。本版已在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 发布。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
+> 当前源码版本：**V3.0.8**，正式 APK 文件名 `trime-mie-v3.0.8.apk`。本版已在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 发布。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
+
+## V3.0.8 键盘高度、图片剪裁与次级键盘
+
+- 自定义键盘可像行高一样直接设置键盘高度 dp，填的是状态栏加键区的总高度，预览同步显示状态栏。
+- 状态栏编辑可单独设置状态栏高度；导入键盘背景图片支持按键盘比例实时拖动剪裁。
+- 一套键盘可管理数字、符号等次级键盘，主界面只显示主键盘；主题键盘导入的关联布局自动归组。
+- 主题键盘新增悬浮窗美化（背景颜色/透明/图片与边框），并可像自定义键盘一样编辑悬浮候选窗。
+- 修复夜间模式打开配色选择器闪退、夜间配色被明暗链接覆盖、小屏外观页签掉字与候选视图重建崩溃。
+
+详见 [V3.0.8 更新说明](docs/v3.0.8/更新说明.md)与[检查记录](docs/v3.0.8/检查记录.md)。
 
 ## V3.0.7 手动部署
 

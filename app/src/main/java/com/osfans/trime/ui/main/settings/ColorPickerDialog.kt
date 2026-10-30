@@ -28,8 +28,9 @@ object ColorPickerDialog {
                 if (presetSchemes.isEmpty()) {
                     setMessage(R.string.no_color_to_select)
                 } else {
+                    // 用户主题的配色可能没有 name 键；回退到配色 id，避免列表出现 null 项。
                     setSingleChoiceItems(
-                        presetSchemes.map { it.value["name"] }.toTypedArray(),
+                        presetSchemes.map { (key, scheme) -> scheme["name"] ?: key }.toTypedArray(),
                         currentIndex,
                     ) { dialog, which ->
                         scope.launch {

@@ -279,7 +279,7 @@ object ThemeLoader {
     internal fun deployThemeConfigs() {
         val ids = sequenceOf(DataManager.sharedDataDir, DataManager.userDataDir)
             .flatMap { dir -> dir.listFiles { _, name -> name.endsWith("trime.yaml") }.orEmpty().asSequence() }
-            .map { it.nameWithoutExtension }.plus("trime").distinct()
+            .map { it.nameWithoutExtension }.plus("tongwenfeng.trime").distinct()
         for (id in ids) {
             if (!Rime.deployRimeConfigFile(id, CONFIG_VERSION_KEY)) {
                 Timber.w("Theme config '$id' was not rebuilt (unchanged or invalid)")

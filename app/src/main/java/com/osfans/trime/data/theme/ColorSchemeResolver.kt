@@ -31,6 +31,7 @@ internal object ColorSchemeResolver {
         selectedSchemeId: String,
         followSystemDayNight: Boolean,
         isNightMode: Boolean,
+        nightSchemeId: String? = null,
     ): ColorScheme {
         require(schemes.isNotEmpty()) { "The theme defines no color scheme" }
         fun scheme(id: String): ColorScheme? = schemes[id]
@@ -41,6 +42,10 @@ internal object ColorSchemeResolver {
         val defaultScheme = scheme(DEFAULT_SCHEME) ?: schemes.values.first()
         if (!followSystemDayNight) {
             return scheme(selectedSchemeId) ?: defaultScheme
+        }
+        // 夜间模式下用户显式选择的配色优先于方案自带的明暗链接。
+        if (isNightMode && !nightSchemeId.isNullOrEmpty()) {
+            scheme(nightSchemeId)?.let { return it }
         }
         val selected = scheme(selectedSchemeId) ?: return linkedScheme(defaultScheme) ?: defaultScheme
         val lightSchemeId = selected[LIGHT_SCHEME_KEY]

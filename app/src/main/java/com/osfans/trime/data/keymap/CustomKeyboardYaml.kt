@@ -35,6 +35,10 @@ object CustomKeyboardYaml {
         val allKeysBackground: String = "",
         val importedSkin: ImportedSkin? = null,
         val importedHeightPercent: Int = 100,
+        val keyboardHeightDp: Int = 0,
+        val landscapeHeightDp: Int = 0,
+        val toolbarHeightDp: Int = 0,
+        val secondaryOf: String = "",
         val exportedHeight: Int = 0,
         val exportedBackground: String = "",
         val exportedRowSpacing: Int = 4,
@@ -110,8 +114,10 @@ object CustomKeyboardYaml {
 
             }
             val layout = CustomKeyboards.run { kb.toTextKeyboard() }
-            val portraitHeight = if (kb.importedSkin != null) 240 * kb.importedHeightPercent / 100 else layout.keyboardHeight
-            val landHeight = if (kb.importedSkin != null) 180 * kb.importedHeightPercent / 100 else layout.keyboardHeightLand
+            val portraitHeight = if (kb.keyboardHeightDp > 0) kb.keyboardHeightDp
+                else if (kb.importedSkin != null) 240 * kb.importedHeightPercent / 100 else layout.keyboardHeight
+            val landHeight = if (kb.landscapeHeightDp > 0) kb.landscapeHeightDp
+                else if (kb.importedSkin != null) 180 * kb.importedHeightPercent / 100 else layout.keyboardHeightLand
             val bg = background(kb.resolvedBackground())
             keyboardNodes[id] = obj("name" to string(kb.name), "author" to string("同文输入法咩版"),
                 "width" to JsonPrimitive(10), "height" to JsonPrimitive(60), "columns" to JsonPrimitive(-1),
@@ -122,7 +128,7 @@ object CustomKeyboardYaml {
                 "landscape_split_percent" to JsonPrimitive(layout.landscapeSplitPercent), "label_transform" to string(layout.labelTransform.name.lowercase()),
                 "keyboard_back_color" to string(bg),
                 "mie" to json.encodeToJsonElement(KeyboardInfo.serializer(), KeyboardInfo(importedActions=kb.importedActions, toolbarAlignment=kb.toolbarAlignment, rowAlignments=kb.rows.mapIndexed { index,row -> index+1 to row.alignment }.toMap(), surfaceAppearance=kb.surfaceAppearance, unifiedBackground=kb.unifiedBackground, typography=kb.typography, floatingCandidates=kb.floatingCandidates, toolbar=kb.toolbar, toolbarBackground=kb.toolbarBackground,
-                    allKeysBackground = kb.allKeysBackground, importedSkin = kb.importedSkin, importedHeightPercent = kb.importedHeightPercent, exportedHeight = portraitHeight, exportedBackground = bg, exportedRowSpacing = kb.rowSpacing, keyAppearance = KeyAppearance.textValues(kb.keyAppearance), options = kb.options)), "keys" to JsonArray(keys))
+                    allKeysBackground = kb.allKeysBackground, importedSkin = kb.importedSkin, importedHeightPercent = kb.importedHeightPercent, keyboardHeightDp = kb.keyboardHeightDp, landscapeHeightDp = kb.landscapeHeightDp, toolbarHeightDp = kb.toolbarHeightDp, secondaryOf = kb.secondaryOf, exportedHeight = portraitHeight, exportedBackground = bg, exportedRowSpacing = kb.rowSpacing, keyAppearance = KeyAppearance.textValues(kb.keyAppearance), options = kb.options)), "keys" to JsonArray(keys))
         }
         val first = layouts.values.first()
         val root = obj("name" to string(if (layouts.size == 1) first.name else "自定义键盘合集"), "config_version" to string("1.0"),
@@ -222,7 +228,13 @@ object CustomKeyboardYaml {
                 (skin?.variants?.get("light/port") ?: skin?.variants?.values?.firstOrNull())?.keys?.any { original -> rows.flatMap { it.keys }.none { it.skinId == original.id } } == true) skin = null
             val targetHeight = node.pairs["keyboard_height"]?.int ?: info.exportedHeight
             var percent = info.importedHeightPercent
+            var heightDp = info.keyboardHeightDp
+            var heightDpLand = info.landscapeHeightDp
+            val toolbarHeight = info.toolbarHeightDp
+            val secondaryOf = info.secondaryOf
             if (targetHeight != info.exportedHeight && targetHeight > 0) {
+                // A manually edited keyboard_height bakes into row heights; the dp override clears.
+                heightDp = 0; heightDpLand = 0
                 if (skin != null) {
                     percent = (targetHeight * 100f / 240).toInt()
                     require(percent in 70..150) { "百度键盘高度须为168–360dp" }
@@ -232,6 +244,8 @@ object CustomKeyboardYaml {
                     require(rows.all { it.height in 24..160 }) { "总高度使行高超出24–160dp范围" }
                 }
             }
+            if (heightDp > 0) require(heightDp in 80..800) { "键盘高度须为 80–800 dp" }
+            if (heightDpLand > 0) require(heightDpLand in 80..800) { "横屏键盘高度须为 80–800 dp" }
             require(spacing in 0..minOf(32, rows.minOf { it.height } / 2)) { "行距超过允许范围" }
             val options = info.options.copy(
                 horizontalGap = node.pairs["horizontal_gap"]?.int ?: info.options.horizontalGap,
@@ -245,7 +259,7 @@ object CustomKeyboardYaml {
             ).validated()
             result[id] = CustomKeyboard(name = node.pairs["name"]?.string ?: id, rows = rows, rowSpacing = spacing,
                 importedActions=info.importedActions, toolbarAlignment=info.toolbarAlignment, surfaceAppearance=info.surfaceAppearance, unifiedBackground=info.unifiedBackground, typography=info.typography, floatingCandidates=info.floatingCandidates, background = background(bg), toolbar = info.toolbar.toMutableList(), toolbarBackground = info.toolbarBackground, allKeysBackground = info.allKeysBackground,
-                importedSkin = skin, importedHeightPercent = percent, keyAppearance = KeyAppearance.parse(info.keyAppearance), options = options)
+                importedSkin = skin, importedHeightPercent = percent, keyboardHeightDp = heightDp, landscapeHeightDp = heightDpLand, toolbarHeightDp = toolbarHeight, secondaryOf = secondaryOf, keyAppearance = KeyAppearance.parse(info.keyAppearance), options = options)
         }
         require(result.isNotEmpty()) { "未找到可导入的自定义键盘" }
         return result

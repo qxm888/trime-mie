@@ -19,7 +19,7 @@ class ThemePrefs(
         string(
             R.string.selected_theme,
             SELECTED_THEME,
-            "trime",
+            "tongwenfeng.trime",
             R.string.selected_theme_summary,
         )
 
@@ -29,6 +29,14 @@ class ThemePrefs(
             NORMAL_MODE_COLOR,
             "default",
             R.string.normal_mode_color_summary,
+        )
+
+    /** 夜间模式下显式选择的配色；空 = 跟随配色方案的明暗链接。 */
+    val nightModeColor =
+        string(
+            R.string.normal_mode_color,
+            NIGHT_MODE_COLOR,
+            "",
         )
 
     enum class NavbarBackground(
@@ -67,6 +75,7 @@ class ThemePrefs(
     companion object {
         const val SELECTED_THEME = "selected_theme"
         const val NORMAL_MODE_COLOR = "normal_mode_color"
+        const val NIGHT_MODE_COLOR = "night_mode_color"
         const val FOLLOW_SYSTEM_DAY_NIGHT = "follow_system_day_night"
         const val NAVBAR_BACKGROUND = "navbar_background"
     }

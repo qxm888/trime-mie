@@ -46,7 +46,11 @@ object ThemeManager {
     fun getAllThemes(): List<ThemeItem> {
         val sharedThemes = ThemeFilesManager.listThemes(DataManager.sharedDataDir)
         val userThemes = ThemeFilesManager.listThemes(DataManager.userDataDir)
-        return sharedThemes + userThemes
+        // 同一 configId 在内置共享目录与用户目录各有一份时只列一次，内置版本优先；
+        // 旧的 tongwenfeng（預設）主题已移除，不再展示。
+        return (sharedThemes + userThemes)
+            .filterNot { it.configId == DEPRECATED_THEME_ID }
+            .distinctBy { it.configId }
     }
 
     private lateinit var _activeTheme: Theme
@@ -99,6 +103,9 @@ object ThemeManager {
 
     val prefs = AppPrefs.defaultInstance().registerProvider(::ThemePrefs)
 
+    private const val DEFAULT_THEME_ID = "tongwenfeng.trime"
+    private const val DEPRECATED_THEME_ID = "trime"
+
     private data class ResolvedTheme(
         val configId: String,
         val theme: Theme,
@@ -114,11 +121,11 @@ object ThemeManager {
             is ThemeLoader.ThemeLoadResult.Failure -> Timber.w(result.error)
         }
 
-        if (id != "trime") {
-            when (val result = ThemeLoader.loadTheme("trime")) {
+        if (id != DEFAULT_THEME_ID) {
+            when (val result = ThemeLoader.loadTheme(DEFAULT_THEME_ID)) {
                 is ThemeLoader.ThemeLoadResult.Success -> {
-                    Timber.w("Theme '$id' is unavailable, fallback to default theme 'trime'")
-                    return resolvedWithCustomKeyboards("trime", result.theme, result.findings)
+                    Timber.w("Theme '$id' is unavailable, fallback to default theme '$DEFAULT_THEME_ID'")
+                    return resolvedWithCustomKeyboards(DEFAULT_THEME_ID, result.theme, result.findings)
                 }
 
                 is ThemeLoader.ThemeLoadResult.Failure -> Timber.w(result.error)
@@ -142,7 +149,12 @@ object ThemeManager {
     }
 
     private fun evaluateActiveTheme(): Theme {
-        val selectedThemeId = prefs.selectedTheme.getValue()
+        val storedThemeId = prefs.selectedTheme.getValue()
+        val selectedThemeId =
+            if (storedThemeId == DEPRECATED_THEME_ID) {
+                prefs.selectedTheme.setValue(DEFAULT_THEME_ID)
+                DEFAULT_THEME_ID
+            } else storedThemeId
         val resolvedTheme = getThemeById(selectedThemeId)
         val newTheme = resolvedTheme.theme
         if (resolvedTheme.configId != selectedThemeId) {

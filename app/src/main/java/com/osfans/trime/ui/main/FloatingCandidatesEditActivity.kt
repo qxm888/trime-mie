@@ -34,6 +34,7 @@ class FloatingCandidatesEditActivity : PersonalizationActivity() {
     private var id=""
     private var draft=FloatingCandidateStyle()
     private var saved: FloatingCandidateStyle?=null
+    private var themeMode=false
     private var tab=0
     private lateinit var preview: FloatingCandidatesPreview
     private lateinit var drawers:SettingsDrawers
@@ -62,18 +63,33 @@ class FloatingCandidatesEditActivity : PersonalizationActivity() {
     override fun onCreate(state:Bundle?) {
         super.onCreate(state)
         id=intent.getStringExtra("id").orEmpty()
-        val keyboard=CustomKeyboards.get(id) ?: run { finish();return }
-        saved=keyboard.floatingCandidates
+        themeMode=id.isEmpty()
+        val keyboard=if(!themeMode) CustomKeyboards.get(id) ?: run { finish();return } else null
+        if(themeMode) {
+            val raw=com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.themeFloatingCandidates.getValue()
+            saved=runCatching { json.decodeFromString<FloatingCandidateStyle>(raw) }.getOrNull()?.sanitized()
+        } else {
+            saved=keyboard!!.floatingCandidates
+        }
         draft=state?.getString("draft")?.let { runCatching { json.decodeFromString<FloatingCandidateStyle>(it) }.getOrNull() } ?: saved ?: FloatingCandidateStyle()
         tab=state?.getInt("tab") ?: 0;fontRole=state?.getString("fontRole") ?: "candidate"
-        page("悬浮窗编辑")
+        page(if (themeMode) "主题键盘 · 悬浮候选窗编辑" else "悬浮窗编辑")
+        val typography=if (themeMode) {
+            val style=com.osfans.trime.data.theme.ThemeManager.activeTheme.style
+            mapOf(
+                "candidate" to com.osfans.trime.data.keymap.FontSpec(font=style.candidateFont.toList().firstOrNull().orEmpty()),
+                "comment" to com.osfans.trime.data.keymap.FontSpec(font=style.commentFont.toList().firstOrNull().orEmpty()),
+                "label" to com.osfans.trime.data.keymap.FontSpec(font=style.labelFont.toList().firstOrNull().orEmpty()),
+                "text" to com.osfans.trime.data.keymap.FontSpec(font=style.textFont.toList().firstOrNull().orEmpty()),
+            )
+        } else keyboard!!.typography
         val scroll=body.parent as ScrollView
         val root=scroll.parent as LinearLayout
         val toolbar=root.getChildAt(0) as MaterialToolbar
-        toolbar.subtitle=keyboard.name
+        toolbar.subtitle=if (themeMode) "主题键盘" else keyboard!!.name
         toolbar.menu.add("保存").apply { setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS);setOnMenuItemClickListener { save();true } }
         toolbar.setNavigationOnClickListener { leave() }
-        preview=FloatingCandidatesPreview(this,keyboard.typography)
+        preview=FloatingCandidatesPreview(this,typography)
         root.addView(preview,1,LinearLayout.LayoutParams(-1,dp(190)))
         val tabs=TabLayout(this).apply {
             listOf("窗口","候选","文字","辅助").forEach { addTab(newTab().setText(it)) }
@@ -112,8 +128,16 @@ class FloatingCandidatesEditActivity : PersonalizationActivity() {
     }
     private fun changed() { preview.render(draft) }
     private fun save() {
-        val previous=CustomKeyboards.get(id) ?: run { Toast.makeText(this,"布局已被删除",Toast.LENGTH_LONG).show();return }
         val normalized=draft.sanitized()
+        if(themeMode) {
+            val prefs=com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard
+            val previousRaw=prefs.themeFloatingCandidates.getValue()
+            prefs.themeFloatingCandidates.setValue(json.encodeToString(FloatingCandidateStyle.serializer(),normalized))
+            draft=normalized;saved=normalized;ThemeManager.requestCustomizationRefresh()
+            Toast.makeText(this,"已保存，重新拉起键盘后生效",Toast.LENGTH_SHORT).show()
+            return
+        }
+        val previous=CustomKeyboards.get(id) ?: run { Toast.makeText(this,"布局已被删除",Toast.LENGTH_LONG).show();return }
         if(!CustomKeyboards.mutate(id) { it.floatingCandidates=normalized }) return
         if(CustomKeyboards.flush()) {
             draft=normalized;saved=normalized;ThemeManager.requestCustomizationRefresh()
@@ -208,8 +232,15 @@ class FloatingCandidatesEditActivity : PersonalizationActivity() {
         color(box,"底边颜色",read().edgeColor) { write(read().copy(edgeColor=it)) }
     }
     private fun windowPage() {
-        note("只编辑当前自定义键盘的悬浮候选窗。点击右上角保存；翻页箭头和悬浮球仅为预览。")
-        toggle(body,"使用当前布局的悬浮窗外观",draft.enabled) { draft=draft.copy(enabled=it) }
+        note(
+            if (themeMode) "编辑主题键盘的悬浮候选窗。点击右上角保存；翻页箭头和悬浮球仅为预览。"
+            else "只编辑当前自定义键盘的悬浮候选窗。点击右上角保存；翻页箭头和悬浮球仅为预览。",
+        )
+        toggle(
+            body,
+            if (themeMode) "启用悬浮候选窗外观" else "使用当前布局的悬浮窗外观",
+            draft.enabled,
+        ) { draft=draft.copy(enabled=it) }
         val presets=section("快捷风格与恢复")
         listOf("淡粉","通透","磨砂").forEachIndexed { index,title ->
             presets.addView(MaterialButton(this).apply { text=title;setOnClickListener {

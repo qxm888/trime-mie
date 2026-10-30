@@ -83,6 +83,11 @@ object CustomKeyboards {
         /** Overlay for every key in this layout; empty restores individual backgrounds. */
         var allKeysBackground: String = "",
         var rowSpacing: Int = 4,
+        var keyboardHeightDp: Int = 0,
+        var landscapeHeightDp: Int = 0,
+        var toolbarHeightDp: Int = 0,
+        /** 非空 = 某主键盘的次级键盘（跳转用），不出现在主列表。 */
+        var secondaryOf: String = "",
         var surfaceAppearance: com.osfans.trime.ime.appearance.SurfaceAppearanceConfig? = null,
         var unifiedBackground: Boolean? = null,
         var typography: Map<String, FontSpec> = emptyMap(),
@@ -95,11 +100,25 @@ object CustomKeyboards {
     ) {
         fun importedKeyboardHeight(context: Context): Int {
             val landscape = context.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-            val baseDp = if (landscape) 180 else 240
-            val natural = (baseDp * importedHeightPercent.coerceIn(70, 150) / 100f * context.resources.displayMetrics.density).toInt()
+            val density = context.resources.displayMetrics.density
+            val heightPx = if (landscape && landscapeHeightDp > 0) (landscapeHeightDp * density).toInt()
+                else if (!landscape && keyboardHeightDp > 0) (keyboardHeightDp * density).toInt()
+                else (if (landscape) 180 else 240) * importedHeightPercent.coerceIn(70, 150) / 100 * density.toInt()
             // Keep room for the editor and candidate bar on short landscape displays.
-            return if (landscape) minOf(natural, (context.resources.displayMetrics.heightPixels * 0.7f).toInt()) else natural
+            return if (landscape) minOf(heightPx, (context.resources.displayMetrics.heightPixels * 0.7f).toInt()) else heightPx
         }
+
+        /** The height the keyboard actually renders at, in dp, honoring the dp override first. */
+        fun effectiveToolbarHeightDp(): Int =
+            if (toolbarHeightDp > 0) toolbarHeightDp
+            else StandaloneKeyboardTheme.base().style.run { candidateViewHeight + commentHeight }
+
+        fun effectivePortraitHeightDp(): Int = if (keyboardHeightDp > 0) keyboardHeightDp
+            else if (importedSkin != null) 240 * importedHeightPercent / 100
+            else rows.sumOf { it.height.coerceIn(24, 160) }.coerceAtLeast(24) * options.heightPercent / 100
+        fun effectiveLandscapeHeightDp(): Int = if (landscapeHeightDp > 0) landscapeHeightDp
+            else if (importedSkin != null) 180 * importedHeightPercent / 100
+            else rows.sumOf { it.height.coerceIn(24, 160) }.coerceAtLeast(24) * options.landscapeHeightPercent / 100
 
         fun backgroundFor(context: Context): CustomBackground = if (background?.type == CustomBackground.Type.VIDEO) resolvedBackground() else importedSkin?.layout(context)?.background
             ?.let { CustomBackground(CustomBackground.Type.IMAGE, image = it) } ?: resolvedBackground()
@@ -245,12 +264,13 @@ object CustomKeyboards {
         val name: String,
         val rowCount: Int,
         val keyCount: Int,
+        val secondaryOf: String = "",
     )
 
     fun list(): List<Entry> =
         synchronized(lock) {
             store.keyboards.map { (id, kb) ->
-                Entry(id, kb.name, kb.rows.size, kb.rows.sumOf { it.keys.size })
+                Entry(id, kb.name, kb.rows.size, kb.rows.sumOf { it.keys.size }, kb.secondaryOf)
             }.sortedBy { it.id }
         }
 
@@ -299,10 +319,12 @@ object CustomKeyboards {
     }
 
     /** Returns the new keyboard's id. */
-    fun create(name: String): String {
+    fun create(name: String): String = createLocked(name, "")
+
+    private fun createLocked(name: String, secondaryOf: String): String {
         val id = ID_PREFIX + UUID.randomUUID()
         synchronized(lock) {
-            store.keyboards[id] = normalizedCopy(CustomKeyboard(name = name.ifEmpty { "自定义键盘" }, rows = mutableListOf(CustomRow())))
+            store.keyboards[id] = normalizedCopy(CustomKeyboard(name = name.ifEmpty { "自定义键盘" }, rows = mutableListOf(CustomRow()), secondaryOf = secondaryOf))
             store.version++
             dirty = true
             scheduleSaveLocked()
@@ -324,9 +346,19 @@ object CustomKeyboards {
         }
     }
 
+    fun createSecondary(name: String, primaryId: String): String = synchronized(lock) {
+        require(store.keyboards[primaryId] != null) { "主键盘不存在" }
+        val id = createLocked(name, secondaryOf = primaryId)
+        id
+    }
+
+    fun listSecondaries(primaryId: String): List<Entry> = list().filter { it.secondaryOf == primaryId }
+
     fun delete(id: String) {
         synchronized(lock) {
             store.keyboards.remove(id)
+            // 次级键盘属于整套键盘：主键盘删除时一并删除。
+            store.keyboards.keys.filter { store.keyboards[it]?.secondaryOf == id }.forEach { store.keyboards.remove(it) }
             if (store.activeId == id) store.activeId = ""
             store.version++
             dirty = true
@@ -448,8 +480,12 @@ object CustomKeyboards {
         name = name, width = 10f, height = 60f, columns = -1,
         verticalGap = rowSpacing.coerceIn(0, maxRowSpacing()),
         horizontalGap = options.horizontalGap,
-        keyboardHeight = rows.sumOf { it.height.coerceIn(24, 160) }.coerceAtLeast(24) * options.heightPercent / 100,
-        keyboardHeightLand = rows.sumOf { it.height.coerceIn(24, 160) }.coerceAtLeast(24) * options.landscapeHeightPercent / 100,
+        // keyboard_height is the key area only; the toolbar strip sits above it inside the
+        // same surface, so an explicit total keyboard height leaves the toolbar its share.
+        keyboardHeight = if (keyboardHeightDp > 0) (keyboardHeightDp - effectiveToolbarHeightDp()).coerceAtLeast(24)
+            else rows.sumOf { it.height.coerceIn(24, 160) }.coerceAtLeast(24) * options.heightPercent / 100,
+        keyboardHeightLand = if (landscapeHeightDp > 0) (landscapeHeightDp - effectiveToolbarHeightDp()).coerceAtLeast(24)
+            else rows.sumOf { it.height.coerceIn(24, 160) }.coerceAtLeast(24) * options.landscapeHeightPercent / 100,
         asciiMode = if (importedSkin != null) { if (importedSkin?.page == "en_26" || importedSkin?.page == "num_9") 1 else 0 } else options.asciiMode,
         resetAsciiMode = importedSkin != null || options.resetAsciiMode,
         lock = options.lock,

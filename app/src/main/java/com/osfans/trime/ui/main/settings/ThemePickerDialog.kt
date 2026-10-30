@@ -36,7 +36,7 @@ object ThemePickerDialog {
                     setMessage(R.string.no_theme_to_select)
                 } else {
                     setSingleChoiceItems(
-                        allThemes.map { it.name }.toTypedArray(),
+                        allThemes.map { it.name ?: it.configId }.toTypedArray(),
                         selectedIndex,
                     ) { dialog, which ->
                         scope.launch {

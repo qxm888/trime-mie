@@ -155,6 +155,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
             android:exported="false"
             android:label="@string/custom_kb_title"
             android:theme="@style/Theme.TrimeAppTheme" />
+        <activity android:name=".ui.main.SecondaryKeyboardsActivity" android:exported="false" />
 
         <activity
             android:name=".ui.main.ClipEditActivity"

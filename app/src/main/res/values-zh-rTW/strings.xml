@@ -9,7 +9,7 @@
     <!-- 輸入法平臺名稱  -->
     <string name="app_name_release">同文输入法咩版</string>
     <string name="app_name_debug">同文输入法咩版（调试）</string>
-    <string name="app_name_debug_variant" translatable="false">同文輸入法（咩2）</string>
+    <string name="app_name_debug_variant" translatable="false">同文輸入法測試版</string>
     <!-- Preference settings -->
     <string name="qq_group_1">同文 QQ 羣 1</string>
     <string name="qq_group_2">同文 QQ 羣 2</string>
@@ -376,6 +376,13 @@
     <string name="key_editor_key_select_left">向左選取</string>
     <string name="key_editor_key_select_right">向右選取</string>
     <string name="key_editor_back">返回</string>
+    <string name="custom_kb_keyboard_height">鍵盤高度</string>
+    <string name="custom_kb_keyboard_height_value">鍵盤高度：%1$d dp</string>
+    <string name="custom_kb_keyboard_height_auto_value">鍵盤高度 · 自動 %1$d dp</string>
+    <string name="custom_kb_keyboard_height_range">直向鍵盤高度 dp（80–800，留空自動）</string>
+    <string name="custom_kb_keyboard_height_land_range">橫向鍵盤高度 dp（80–800，留空自動）</string>
+    <string name="custom_kb_keyboard_height_hint">與行高設置一樣直接填 dp；各行行高按比例縮放填充。留空 = 按行高之和自動計算。</string>
+    <string name="custom_kb_keyboard_height_reset">自動</string>
     <string name="custom_kb_title">自訂鍵盤</string>
     <string name="custom_kb_mode_title">佈局模式</string>
     <string name="custom_kb_mode_desc">主題佈局與自訂佈局二選一，互不混用、互不衝突。</string>
@@ -475,4 +482,18 @@
     <string name="one_hand_right">右邊</string>
     <string name="one_hand_both">兩邊</string>
     <string name="one_hand_keyboard_width">單手模式鍵盤寬度</string>
+    <string name="custom_kb_crop_title">裁切鍵盤背景</string>
+    <string name="custom_kb_crop_hint">拖動裁切框到想要的位置；裁切框保持鍵盤比例，裁出的圖正好鋪滿鍵盤不變形。右下角圓點可縮放裁切框。</string>
+    <string name="custom_kb_crop_cancel">取消</string>
+    <string name="custom_kb_crop_original">使用原圖</string>
+    <string name="custom_kb_crop_done">裁切</string>
+    <string name="toolbar_edit_height">狀態欄高度</string>
+    <string name="secondary_kb_entry">次級鍵盤…</string>
+    <string name="floating_candidates_editor">懸浮候選窗編輯</string>
+    <string name="floating_candidates_editor_summary">按當前鍵盤模式編輯懸浮候選窗樣式</string>
+    <string name="secondary_kb_title">次級鍵盤 · %1$s</string>
+    <string name="secondary_kb_new">新建次級鍵盤</string>
+    <string name="secondary_kb_empty">還沒有次級鍵盤。可在這裡新建數字、符號等鍵盤，再從主鍵盤按鍵跳轉使用。</string>
+    <string name="secondary_kb_name_hint">次級鍵盤名稱</string>
+    <string name="secondary_kb_delete_confirm">刪除「%1$s」？指向它的按鍵跳轉將失效。</string>
 </resources>

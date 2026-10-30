@@ -277,6 +277,19 @@ object SurfaceAppearanceEditor {
         note(bar, "图片和视频背景会透过磨砂层显示。需要一整块背景时，可同时开启“状态栏与键盘共用背景”。")
         effectsControls(subSection(bar,"整条工具栏特效"),draft.barEffects,includeFeedback=false) { draft=draft.copy(barEffects=it) }
         destination=overallPage
+        if (!customMode) {
+            val floating = drawer("悬浮窗美化 · 背景与边框")
+            backgroundButton(floating, "悬浮窗背景", draft.floatingBackground, true) { draft = draft.copy(floatingBackground = it) }
+            note(floating, "留空跟随主题键背色；选透明或图片后悬浮键盘用自己的背景。边框仅对颜色与透明背景生效，圆角随键盘整体四角。")
+            val borderControls = column().apply { visibility = if (draft.floatingBorderWidth > 0f) View.VISIBLE else View.GONE }
+            val overrideBorder = toggle(floating, "自定义悬浮窗边框", draft.floatingBorderWidth > 0f) {
+                draft = draft.copy(floatingBorderWidth = if (it) (draft.floatingBorderWidth.takeIf { w -> w > 0f } ?: 1f) else 0f)
+                borderControls.visibility = if (it) View.VISIBLE else View.GONE
+            }
+            floating.addView(borderControls)
+            backgroundButton(borderControls, "悬浮窗边框颜色", draft.floatingBorderColor.ifBlank { "#FF888888" }, false) { draft = draft.copy(floatingBorderColor = it) }
+            slider(borderControls, "悬浮窗边框粗细", draft.floatingBorderWidth, 0.5f, 4f, 0.5f, " dp") { draft = draft.copy(floatingBorderWidth = it) }
+        }
         val glass = drawer("磨砂效果 · 强度与叠加")
         slider(glass, "模糊强度", draft.blurRadius.toFloat(), 2f, 32f, 1f, " dp") { draft = draft.copy(blurRadius = it.toInt()) }
         slider(glass, "背景叠加强度", draft.glassOpacity.toFloat(), 0f, 100f, 1f, "%") { draft = draft.copy(glassOpacity = it.toInt()) }
@@ -288,7 +301,13 @@ object SurfaceAppearanceEditor {
             val tabs=com.google.android.material.button.MaterialButtonToggleGroup(context).apply { isSingleSelection=true; isSelectionRequired=true }
             listOf("按键","工具栏","整体").forEachIndexed { index,title ->
                 tabs.addView(MaterialButton(context,null,com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
-                    id=View.generateViewId(); text=title; isAllCaps=false; setOnClickListener { pages.forEachIndexed { i,v -> v.visibility=if(i==index) View.VISIBLE else View.GONE } }
+                    id=View.generateViewId(); text=title; isAllCaps=false
+                    // 小屏三等分时"工具栏"会被默认内缩和内边距挤成"工…"：去掉内缩、收紧内边距并允许自适应字号。
+                    setInsetTop(0); setInsetBottom(0)
+                    minWidth=0; minimumWidth=0
+                    setPadding(dp(2),0,dp(2),0); letterSpacing=0f; maxLines=1
+                    androidx.core.widget.TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(this,10,14,1,android.util.TypedValue.COMPLEX_UNIT_SP)
+                    setOnClickListener { pages.forEachIndexed { i,v -> v.visibility=if(i==index) View.VISIBLE else View.GONE } }
                 },LinearLayout.LayoutParams(0,dp(44),1f))
             }
             tabs.check(tabs.getChildAt(0).id); addView(tabs)

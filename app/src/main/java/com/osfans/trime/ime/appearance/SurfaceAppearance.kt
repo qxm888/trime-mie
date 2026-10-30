@@ -170,11 +170,16 @@ data class SurfaceAppearanceConfig(
     val toolbarEffects: KeyEffects = KeyEffects(),
     val barEffects: KeyEffects = KeyEffects(),
     val retainToolbarBackground: Boolean = false,
+    /** 悬浮窗卡片美化（主题键盘）：背景为空=跟随主题键背色，"#00000000"=透明，/path=图片。 */
+    val floatingBackground: String = "",
+    val floatingBorderColor: String = "",
+    val floatingBorderWidth: Float = 0f,
 ) {
     fun sanitized() = copy(
         keyboardCorners=keyboardCorners.takeIf { it.size==4 }?.map { if(it.isFinite()) it.coerceIn(0f,64f) else 0f }.orEmpty(),
         keys=keys.sanitized(),toolbar=toolbar.sanitized(),bar=bar.sanitized(),effects=effects.sanitized(),toolbarEffects=toolbarEffects.sanitized(),barEffects=barEffects.sanitized(),
-        blurRadius=blurRadius.coerceIn(2,32),glassOpacity=glassOpacity.coerceIn(0,100))
+        blurRadius=blurRadius.coerceIn(2,32),glassOpacity=glassOpacity.coerceIn(0,100),
+        floatingBorderWidth=floatingBorderWidth.coerceIn(0f,8f))
     val effectiveToolbarEffects get() = if (linkToolbar) effects else toolbarEffects
     val effectiveToolbar get() = if (linkToolbar) keys else toolbar
     val effectiveBar get() = bar.copy(background=bar.background.ifBlank { barBackground },blur=bar.blur || barBlur)

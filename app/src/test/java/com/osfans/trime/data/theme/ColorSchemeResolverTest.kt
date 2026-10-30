@@ -134,6 +134,29 @@ class ColorSchemeResolverTest :
                 }
             }
         }
+        Given("an explicit night pick exists") {
+            When("it is a valid scheme id at night") {
+                Then("the night pick is used even when links would choose another") {
+                    // 夜间选了浅色配色也要能保持，不被 dark_scheme 链接拉回深色。
+                    ColorSchemeResolver.resolve(fixtures, "default", true, true, "dawn") shouldBe colorsOf("dawn")
+                }
+            }
+            When("it is empty") {
+                Then("the link-based night resolution applies") {
+                    ColorSchemeResolver.resolve(fixtures, "default", true, true, "") shouldBe colorsOf("steam")
+                }
+            }
+            When("it points to a missing scheme") {
+                Then("the link-based night resolution applies") {
+                    ColorSchemeResolver.resolve(fixtures, "default", true, true, "missing") shouldBe colorsOf("steam")
+                }
+            }
+            When("the mode is day") {
+                Then("the day selection is used, not the night pick") {
+                    ColorSchemeResolver.resolve(fixtures, "default", true, false, "dusk") shouldBe colorsOf("default")
+                }
+            }
+        }
         Given("a theme that defines no color scheme at all") {
             // ThemeLoader refuses such a theme, so reaching this point is a
             // programming error: it says so instead of failing on the empty list.

@@ -34,5 +34,9 @@ object ThemeTestSupport {
     }
 
     /** Decodes a built-in theme source file (app/src/main/assets/shared/). */
-    fun decodeBuiltinTheme(fileName: String): Theme = decodeThemeFile("src/main/assets/shared/$fileName")
+    fun decodeBuiltinTheme(fileName: String): Theme {
+        // "預設" (trime.yaml) 已不再随应用内置，仅保留为测试夹具。
+        val builtin = "src/main/assets/shared/$fileName"
+        return decodeThemeFile(File(builtin).takeIf { it.isFile }?.path ?: "src/test/resources/themes/$fileName")
+    }
 }

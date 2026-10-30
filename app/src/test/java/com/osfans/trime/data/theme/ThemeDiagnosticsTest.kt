@@ -421,14 +421,6 @@ class ThemeDiagnosticsTest :
 
         Given("the shipped themes") {
             // The settings the shipped themes carry but the runtime never reads.
-            val trimeYamlFindings =
-                listOf(
-                    "INFO UNKNOWN_TOP_LEVEL_KEY /android_keys",
-                    "WARNING UNKNOWN_STYLE_KEY style/preview_font",
-                    "WARNING UNKNOWN_STYLE_KEY style/preview_height",
-                    "WARNING UNKNOWN_STYLE_KEY style/preview_offset",
-                    "WARNING UNKNOWN_STYLE_KEY style/preview_text_size",
-                )
             val tongwenfengFindings =
                 listOf(
                     "INFO UNKNOWN_TOP_LEVEL_KEY /height",
@@ -443,7 +435,6 @@ class ThemeDiagnosticsTest :
 
             Then("only the documented findings are reported") {
                 listOf(
-                    "trime.yaml" to trimeYamlFindings,
                     "tongwenfeng.trime.yaml" to tongwenfengFindings,
                 ).forEach { (file, expected) ->
                     val findings = lintBuiltin(file)

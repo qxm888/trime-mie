@@ -49,12 +49,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:visibility="gone" />
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/cbe_imported_height"
+                android:id="@+id/cbe_keyboard_height"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visibility="gone"
-                android:text="@string/custom_kb_imported_height" />
+                android:text="@string/custom_kb_keyboard_height" />
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/cbe_row_spacing"
                 style="@style/Widget.Material3.Button.OutlinedButton"

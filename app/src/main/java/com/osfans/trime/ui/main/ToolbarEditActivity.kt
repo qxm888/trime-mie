@@ -97,6 +97,46 @@ class ToolbarEditActivity : AppCompatActivity() {
             setOnClickListener { pickToolbarBackground() }
         }
 
+        findViewById<com.google.android.material.button.MaterialButton>(R.id.toolbar_edit_height).apply {
+            visibility = if (kbId.isNotEmpty()) View.VISIBLE else View.GONE
+            fun refresh() {
+                val kb = CustomKeyboards.get(kbId)
+                text = if (kb != null) "状态栏高度 · ${kb.effectiveToolbarHeightDp()} dp" else "状态栏高度"
+            }
+            refresh()
+            setOnClickListener {
+                val kb = CustomKeyboards.get(kbId) ?: return@setOnClickListener
+                val input = com.google.android.material.textfield.TextInputEditText(this@ToolbarEditActivity).apply {
+                    inputType = android.text.InputType.TYPE_CLASS_NUMBER
+                    if (android.os.Build.VERSION.SDK_INT >= 26) importantForAutofill = android.view.View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+                    if (kb.toolbarHeightDp > 0) setText(kb.toolbarHeightDp.toString())
+                }
+                val field = com.google.android.material.textfield.TextInputLayout(this@ToolbarEditActivity).apply {
+                    hint = "状态栏高度 dp（24–120，留空默认）"
+                    setPadding(dp(24), dp(8), dp(24), 0); addView(input)
+                }
+                MaterialAlertDialogBuilder(this@ToolbarEditActivity).setTitle("状态栏高度")
+                    .setView(field).setNegativeButton(android.R.string.cancel, null)
+                    .setNeutralButton("默认") { _, _ ->
+                        CustomKeyboards.mutate(kbId) { it.toolbarHeightDp = 0 }
+                        com.osfans.trime.data.theme.ThemeManager.requestCustomizationRefresh(); refresh()
+                    }
+                    .setPositiveButton(android.R.string.ok, null).create().apply {
+                        setOnShowListener {
+                            getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                                val value = input.text?.toString()?.trim()?.takeIf { it.isNotEmpty() }?.toIntOrNull() ?: 0
+                                if (value !in 0..120 || value in 1..23) {
+                                    field.error = "状态栏高度须为 24–120 dp"
+                                } else {
+                                    CustomKeyboards.mutate(kbId) { it.toolbarHeightDp = value }
+                                    com.osfans.trime.data.theme.ThemeManager.requestCustomizationRefresh(); refresh(); dismiss()
+                                }
+                            }
+                        }
+                    }.show()
+            }
+        }
+
         findViewById<com.google.android.material.button.MaterialButton>(R.id.toolbar_edit_alignment).apply {
             visibility = if (kbId.isNotEmpty()) View.VISIBLE else View.GONE
             fun refresh() { text = "按钮排列 · " + (com.osfans.trime.data.keymap.ButtonAlignment.choices[CustomKeyboards.get(kbId)?.toolbarAlignment] ?: "原排列") }

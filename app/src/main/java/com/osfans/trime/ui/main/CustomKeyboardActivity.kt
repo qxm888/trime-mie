@@ -377,7 +377,8 @@ class CustomKeyboardActivity : AppCompatActivity() {
 
     private fun renderList() {
         list.removeAllViews()
-        val entries = CustomKeyboards.list()
+        // 主列表只显示主键盘；次级键盘（跳转用）在主键盘详情的“次级键盘”入口里管理。
+        val entries = CustomKeyboards.list().filter { it.secondaryOf.isEmpty() }
         val isTheme = CustomKeyboards.mode == CustomKeyboards.MODE_THEME
         emptyHint.visibility = if (!isTheme && entries.isEmpty()) View.VISIBLE else View.GONE
 
@@ -450,6 +451,7 @@ class CustomKeyboardActivity : AppCompatActivity() {
                     arrayOf(
                         getString(R.string.custom_kb_use_this),
                         getString(R.string.custom_kb_edit),
+                        getString(R.string.secondary_kb_entry),
                     )
                 MaterialAlertDialogBuilder(this)
                     .setTitle(entry.name)
@@ -461,7 +463,8 @@ class CustomKeyboardActivity : AppCompatActivity() {
                                 refreshTheme()
                             }
 
-                            else -> CustomKeyboardEditActivity.start(this, entry.id)
+                            1 -> CustomKeyboardEditActivity.start(this, entry.id)
+                            else -> SecondaryKeyboardsActivity.start(this, entry.id)
                         }
                     }
                     .show()

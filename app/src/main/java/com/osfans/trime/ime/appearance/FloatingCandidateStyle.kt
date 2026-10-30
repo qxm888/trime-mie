@@ -56,7 +56,21 @@ data class FloatingCandidateStyle(
     companion object {
         val roles = linkedMapOf("candidate" to "候选文字", "comment" to "注释", "label" to "序号", "text" to "编码")
         val colorRoles = roles.keys.flatMap { listOf(it, "highlight.$it") }.toSet() + setOf("arrow", "ball")
+        private val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true; encodeDefaults = true }
+        private var prefsCacheKey: String? = null
+        private var prefsCached: FloatingCandidateStyle? = null
+
         fun current(customMode: Boolean): FloatingCandidateStyle? = if(customMode)
-            SurfaceAppearance.currentLayout()?.floatingCandidates?.takeIf { it.enabled } else null
+            SurfaceAppearance.currentLayout()?.floatingCandidates?.takeIf { it.enabled } else {
+            // 主题键盘：夜间候选窗样式存偏好（编辑器在悬浮候选窗设置页进入）。
+            val raw = com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.themeFloatingCandidates.getValue()
+            if (raw.isBlank()) null else {
+                if (prefsCacheKey != raw) {
+                    prefsCached = runCatching { json.decodeFromString<FloatingCandidateStyle>(raw) }.getOrNull()?.sanitized()
+                    prefsCacheKey = raw
+                }
+                prefsCached?.takeIf { it.enabled }
+            }
+        }
     }
 }

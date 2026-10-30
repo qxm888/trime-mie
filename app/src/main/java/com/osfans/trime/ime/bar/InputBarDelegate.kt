@@ -77,6 +77,14 @@ class InputBarDelegate(override val di: DI) :
 
     val themedHeight = theme.style.run { candidateViewHeight + commentHeight }
 
+    /** 自定义键盘可单独设置状态栏高度；其他键盘用主题默认值。 */
+    fun toolbarHeightPx(): Int {
+        if (!theme.isCustom) return context.dp(themedHeight)
+        val id = com.osfans.trime.data.keymap.CustomKeyboards.resolveId(KeyboardWindow.lastAttachedId)
+        val custom = com.osfans.trime.data.keymap.CustomKeyboards.get(id)?.toolbarHeightDp?.takeIf { it > 0 } ?: themedHeight
+        return context.dp(custom)
+    }
+
     private val prefs = AppPrefs.defaultInstance()
 
     private val hideQuickBar get() = InputBarVisibility.hidden(prefs.keyboard.hideInputBar.getValue(),service.isFloatingEffective(),service.oneHandActive())
@@ -352,6 +360,8 @@ class InputBarDelegate(override val di: DI) :
     }
 
     override fun onWindowAttached(window: BoardWindow) {
+        // 键盘切换后状态栏高度可能随布局变化，同步容器高度。
+        view.layoutParams?.let { params -> params.height = toolbarHeightPx(); view.layoutParams = params }
         if (window is BoardWindow.BarBoardWindow) {
             tabUi.setTitle(window.title)
             window.onCreateBarView()?.let { tabUi.addExternal(it, window.showTitle) }

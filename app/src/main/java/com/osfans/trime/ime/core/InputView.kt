@@ -232,7 +232,9 @@ class InputView(
     private fun updateUnifiedBackground() {
         val enabled = com.osfans.trime.ime.appearance.SurfaceAppearance.unifiedBackground(theme.isCustom)
         val background = keyboardWindow.currentBackground.takeIf { enabled }
-        keyboardBackground.imageDrawable = background?.drawable(context, resources.displayMetrics.widthPixels) ?: scope.drawable("keyboard_background")
+        keyboardBackground.imageDrawable = background?.drawable(context, resources.displayMetrics.widthPixels)
+            ?: floatingCardOverride()
+            ?: scope.drawable("keyboard_background")
         com.osfans.trime.ime.appearance.BackdropBlur.invalidateBackground(keyboardView)
         val path = background?.takeIf { it.type == com.osfans.trime.data.keymap.CustomBackground.Type.VIDEO }?.image
         if (path == unifiedVideoPath && unifiedVideo != null) return
@@ -785,6 +787,36 @@ class InputView(
         else -> fallbackFloatingBackColor()
     }
 
+    /** 主题键盘悬浮窗卡片美化：背景颜色/图片/透明与边框；未设置时回退主题键背色。 */
+    private fun floatingCardOverride(): android.graphics.drawable.Drawable? {
+        val config = com.osfans.trime.ime.appearance.SurfaceAppearance.current(false)
+        val background = config.floatingBackground
+        if (background.isBlank()) return null
+        val density = resources.displayMetrics.density
+        val corners = config.keyboardCorners.takeIf { it.size == 4 }
+            ?: List(4) { keyboardPrefs.floatingKeyboardCornerRadius.getValue().toFloat() }
+        val radii = corners.flatMap { listOf(dp(it), dp(it)) }.toFloatArray()
+        return when {
+            background == "#00000000" -> GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE; cornerRadii = radii; setColor(Color.TRANSPARENT)
+                if (config.floatingBorderWidth > 0f) setStroke(dp(config.floatingBorderWidth.toInt()), android.graphics.Color.parseColor(config.floatingBorderColor.ifBlank { "#FF888888" }))
+            }
+            background.startsWith("/") -> {
+                val bitmap = android.graphics.BitmapFactory.decodeFile(background) ?: return null
+                // 图片背景不支持描边；圆角随悬浮窗四角设置。
+                androidx.core.graphics.drawable.RoundedBitmapDrawableFactory.create(resources, bitmap).apply {
+                    cornerRadius = dp(corners.getOrElse(0) { 0f })
+                    setAntiAlias(true)
+                }
+            }
+            else -> GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE; cornerRadii = radii
+                setColor(android.graphics.Color.parseColor(background))
+                if (config.floatingBorderWidth > 0f) setStroke(dp(config.floatingBorderWidth.toInt()), android.graphics.Color.parseColor(config.floatingBorderColor.ifBlank { "#FF888888" }))
+            }
+        }
+    }
+
     private fun fallbackFloatingBackColor(): Int = if (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES) {
         0xFF1C1B1F.toInt()
     } else {
@@ -794,12 +826,13 @@ class InputView(
     /** Styles the floating card and resize handles; docked mode strips both. */
     private fun configureFloatingSurface(enabled: Boolean) {
         val surface = keyboardView as FloatingKeyboardContainer
-        val backColor = resolveFloatingBackColor()
         val corners = com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom).keyboardCorners
         val resolvedCorners = if (corners.isNotEmpty()) corners else List(4) { if (enabled) keyboardPrefs.floatingKeyboardCornerRadius.getValue().toFloat() else 0f }
         surface.setCornerRadii(resolvedCorners.map { dp(it) })
         if (enabled) {
-            surface.background = GradientDrawable().apply {
+            val cardOverride = floatingCardOverride()
+            val backColor = resolveFloatingBackColor()
+            surface.background = cardOverride ?: GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
                 cornerRadii = resolvedCorners.flatMap { listOf(dp(it), dp(it)) }.toFloatArray()
                 setColor(backColor)
@@ -858,7 +891,7 @@ class InputView(
         // show KeyboardWindow by default
         windowManager.attachWindow(KeyboardWindow)
 
-        keyboardBackground.imageDrawable = scope.drawable("keyboard_background")
+        keyboardBackground.imageDrawable = floatingCardOverride() ?: scope.drawable("keyboard_background")
 
         keyboardView =
             FloatingKeyboardContainer(
@@ -878,7 +911,7 @@ class InputView(
                 )
                 add(
                     inputBar.view,
-                    lParams(matchParent, dp(inputBar.themedHeight)) {
+                    lParams(matchParent, inputBar.toolbarHeightPx()) {
                         topOfParent()
                         centerHorizontally()
                     },
