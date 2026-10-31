@@ -419,8 +419,8 @@ class ThemeDiagnosticsTest :
             }
         }
 
-        Given("the shipped themes") {
-            // The settings the shipped themes carry but the runtime never reads.
+        Given("the theme fixtures") {
+            // 同文风已不再随应用内置，保留为测试夹具；下面列出运行时不会读取的设置。
             val tongwenfengFindings =
                 listOf(
                     "INFO UNKNOWN_TOP_LEVEL_KEY /height",
@@ -429,7 +429,7 @@ class ThemeDiagnosticsTest :
                 )
 
             fun lintBuiltin(file: String): List<ThemeDiagnostics.Finding> {
-                val (theme, node) = ThemeTestSupport.themeAndNode("src/main/assets/shared/$file")
+                val (theme, node) = ThemeTestSupport.themeAndNode("src/test/resources/themes/$file")
                 return ThemeDiagnostics.lint(theme, node, ::parseHex)
             }
 
