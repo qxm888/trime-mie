@@ -275,15 +275,23 @@ object ThemeLoader {
         return yamlMapOf(root.pairs + (PATCH to yamlScalarOf("$patchId:/patch?")))
     }
 
+    /** Theme ids that can be compiled by librime: every `*.trime.yaml` plus the default. */
+    private fun themeIds(): List<String> =
+        sequenceOf(DataManager.sharedDataDir, DataManager.userDataDir)
+            .flatMap { dir -> dir.listFiles { _, name -> name.endsWith("trime.yaml") }.orEmpty().asSequence() }
+            .map { it.nameWithoutExtension }.plus("tongwenfeng.trime").distinct().toList()
+
+    /**
+     * Marks every theme source as changed. Must run **before** rime maintenance so
+     * its timestamp check cannot skip a file whose mtime an editor preserved.
+     */
+    internal fun touchAllThemeSources() {
+        themeIds().forEach(::touchThemeSource)
+    }
+
     /** Invoked exclusively by the explicit Deploy action on the Rime dispatcher. */
     internal fun deployThemeConfigs() {
-        val ids = sequenceOf(DataManager.sharedDataDir, DataManager.userDataDir)
-            .flatMap { dir -> dir.listFiles { _, name -> name.endsWith("trime.yaml") }.orEmpty().asSequence() }
-            .map { it.nameWithoutExtension }.plus("tongwenfeng.trime").distinct()
-        for (id in ids) {
-            // 手动部署必须重建：librime 只比较源文件 mtime，部分编辑方式（同步软件、
-            // 某些文件管理器）不会刷新 mtime，会把改动当成"未修改"跳过。
-            touchThemeSource(id)
+        for (id in themeIds()) {
             if (!Rime.deployRimeConfigFile(id, CONFIG_VERSION_KEY)) {
                 Timber.w("Theme config '$id' was not rebuilt (unchanged or invalid)")
             }

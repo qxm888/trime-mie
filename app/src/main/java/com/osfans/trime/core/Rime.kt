@@ -159,6 +159,9 @@ class Rime :
 
     override suspend fun deploy() = lock.withLock {
         com.osfans.trime.util.DiagnosticLog.event("rime", "manual_deploy", "requested")
+        // 维护只按源文件 mtime 判断是否需要重编译主题；编辑器保留 mtime 时会被跳过，
+        // 所以先标记全部主题源文件，确保手动部署一定重编译。
+        com.osfans.trime.data.theme.ThemeLoader.touchAllThemeSources()
         UserDataManager.sync()
         val deployFinished = CompletableDeferred<Boolean>()
         val deployHandler: (RimeMessage<*>) -> Unit = { message ->

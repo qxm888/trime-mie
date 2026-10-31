@@ -36,6 +36,27 @@ object ThemeManager {
     private val customizationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var customizationRefreshJob: Job? = null
 
+    /**
+     * 兜底：个别进程状态下 librime 的 deploy_config_file 会直接返回失败，
+     * 而完整维护总能重编译主题。这里后台跑一次维护，完成后重建视图。
+     */
+    private fun scheduleMaintenanceFallback(session: com.osfans.trime.daemon.RimeSession) {
+        customizationScope.launch {
+            runCatching {
+                kotlinx.coroutines.withTimeout(180_000L) {
+                    session.runOnReady { deploy() }
+                }
+            }.onSuccess {
+                com.osfans.trime.util.DiagnosticLog.event("theme", "deploy_maintenance", "ok=true")
+                pendingThemeRebuild = false
+                runCatching { refreshActiveTheme() }
+            }.onFailure {
+                Timber.w(it, "Theme maintenance fallback failed")
+                com.osfans.trime.util.DiagnosticLog.event("theme", "deploy_maintenance", "ok=false")
+            }
+        }
+    }
+
     /** Survives editor Activity destruction and coalesces rapid mode/edit changes. */
     fun requestCustomizationRefresh() {
         customizationRefreshJob?.cancel()
@@ -226,17 +247,18 @@ object ThemeManager {
                 val session = com.osfans.trime.daemon.RimeDaemon.getFirstSessionOrNull()
                 com.osfans.trime.util.DiagnosticLog.event("theme", "deploy_check", "id=$configId hasSession=${session != null}")
                 if (session != null) {
-                    runCatching {
+                    val deployed = runCatching {
                         kotlinx.coroutines.withTimeout(30_000L) {
                             session.runOnReady { deployThemeConfig(configId, force = true) }
                         }
                     }.onSuccess { ok ->
-                        if (ok) pendingThemeRebuild = false
                         com.osfans.trime.util.DiagnosticLog.event("theme", "deploy_done", "id=$configId ok=$ok")
                     }.onFailure {
                         Timber.w(it, "Theme deploy check failed for '$configId'")
                         com.osfans.trime.util.DiagnosticLog.event("theme", "deploy_failed", "id=$configId type=${it.javaClass.simpleName}")
-                    }
+                    }.getOrDefault(false)
+                    if (deployed) pendingThemeRebuild = false
+                    else scheduleMaintenanceFallback(session)
                 }
             }
             getThemeById(configId).let { resolved -> resolved.copy(theme = resolved.theme.copy(
