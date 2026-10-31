@@ -1,5 +1,4 @@
-# 同文输入法咩版内置五色键盘（26/9/14/18 键 + 英文 + 数字 + 符号 + 布局/主题入口）
-# 图标使用相对路径（相对 rime 目录下的 .mie/键盘背景），App 会按用户实际数据目录解析。
+# 内置五色键盘·核心（26/9/14/18 + 英文/数字/符号/布局/主题）
 mie:
   format: trime-custom-keyboards-yaml
   version: 1
@@ -1973,6 +1972,408 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_mint
+  custom_mint_num:
+    name: 薄荷绿 · 数字
+    ascii_mode: 1
+    reset_ascii_mode: true
+    keyboard_back_color: '#F7F9F8'
+    vertical_gap: 5
+    horizontal_gap: 5
+    keys:
+    - label: +
+      click: __mie_action:{"commit":"+"}
+      width: 20
+      key_back_color: '#E6F2EA'
+      key_text_color: '#3F5A4E'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 1
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: '1'
+      click: __mie_action:{"commit":"1"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#3F5A4E'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 1
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: '2'
+      click: __mie_action:{"commit":"2"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#3F5A4E'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 1
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: '3'
+      click: __mie_action:{"commit":"3"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#3F5A4E'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 1
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: ''
+      click: BackSpace
+      width: 20
+      key_back_color: '#E6F2EA'
+      key_text_color: '#3F5A4E'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 1
+      icon: icons/mint_delete.png
+      icon_size: 26
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: '-'
+      click: __mie_action:{"commit":"-"}
+      width: 20
+      key_back_color: '#E6F2EA'
+      key_text_color: '#3F5A4E'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: '4'
+      click: __mie_action:{"commit":"4"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#3F5A4E'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: '5'
+      click: __mie_action:{"commit":"5"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#3F5A4E'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: '6'
+      click: __mie_action:{"commit":"6"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#3F5A4E'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: 返回
+      click: Keyboard_custom_mint
+      width: 20
+      key_back_color: '#E6F2EA'
+      key_text_color: '#3F5A4E'
+      key_text_size: '13'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: '*'
+      click: __mie_action:{"commit":"*"}
+      width: 20
+      key_back_color: '#E6F2EA'
+      key_text_color: '#3F5A4E'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: '7'
+      click: __mie_action:{"commit":"7"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#3F5A4E'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: '8'
+      click: __mie_action:{"commit":"8"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#3F5A4E'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: '9'
+      click: __mie_action:{"commit":"9"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#3F5A4E'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: 符号
+      click: Keyboard_custom_mint_symbols
+      width: 20
+      key_back_color: '#E6F2EA'
+      key_text_color: '#3F5A4E'
+      key_text_size: '13'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: /
+      click: __mie_action:{"commit":"/"}
+      width: 20
+      key_back_color: '#E6F2EA'
+      key_text_color: '#3F5A4E'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: .
+      click: __mie_action:{"commit":"."}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#3F5A4E'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: '0'
+      click: __mie_action:{"commit":"0"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#3F5A4E'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: '='
+      click: __mie_action:{"commit":"="}
+      width: 20
+      key_back_color: '#E6F2EA'
+      key_text_color: '#3F5A4E'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: ''
+      click: Return
+      width: 20
+      key_back_color: '#7BC8A4'
+      key_text_color: '#FFFFFF'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 4
+      icon: icons/enter_w.png
+      icon_size: 26
+      round_corner: '6'
+      key_border: '0'
+      key_border_color: '#B8D0C3'
+    mie:
+      rowMargin: 1
+      toolbarAlignment: legacy
+      toolbarHeightDp: 36
+      toolbar:
+      - action: __mie_menu
+        enabled: true
+        icon: icons/tb_menu.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#E6F2EA'
+          roundCorner: '8'
+          keyBorder: '0'
+        primary: true
+      - action: Hide
+        enabled: true
+        icon: icons/tb_hide.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#E6F2EA'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: clipboard
+        enabled: true
+        icon: icons/tb_clipboard.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: Keyboard_custom_mint_en
+        enabled: true
+        icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_floating_keyboard
+        enabled: true
+        icon: icons/tb_onehand.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#E6F2EA'
+          roundCorner: '8'
+          keyBorder: '0'
+        bindings:
+          longClick: __mie_one_hand
+      - action: Keyboard_custom_mint_layouts
+        enabled: true
+        icon: icons/tb_layout.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: Keyboard_custom_mint_themes
+        enabled: true
+        icon: icons/tb_theme.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      keyAppearance:
+        keyBackColor: '#FFFFFF'
+        keyTextColor: '#3F5A4E'
+        roundCorner: '6'
+        keyBorder: '1'
+        keyBorderColor: '#B8D0C3'
+        keyTextSize: '20'
+      surfaceAppearance:
+        keys:
+          background: ''
+          radius: 6.0
+          blur: false
+        toolbar:
+          background: ''
+          borderWidth: 0.0
+          borderColor: ''
+          radius: 8.0
+          blur: false
+        bar:
+          background: '#F7F9F8'
+          borderWidth: 0.0
+          borderColor: ''
+          radius: 0.0
+          blur: false
+        linkToolbar: false
+        effects: &id005
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0.0
+          pressSink: 0.0
+          pressDarken: 6
+          ripple: false
+        toolbarEffects: *id005
+        barEffects: *id005
+      floatingCandidates:
+        enabled: true
+        panel:
+          background: '#FFFFFF'
+          borderWidth: 1.0
+          borderColor: '#B8D0C3'
+          radius: 10.0
+          blur: false
+        normal:
+          radius: 8.0
+        highlighted:
+          background: '#7BC8A4'
+          radius: 8.0
+        pager:
+          background: ''
+          radius: 8.0
+        colors:
+          candidate: '#3F5A4E'
+          highlight.candidate: '#FFFFFF'
+          label: '#3F5A4E'
+          highlight.label: '#FFFFFF'
+          comment: '#993F5A4E'
+          highlight.comment: '#EAF7F0'
+          arrow: '#3F5A4E'
+        elevation: 6
+        itemElevation: 0
+      secondaryOf: custom_mint
   custom_mint_en:
     name: 薄荷绿 · 英文
     ascii_mode: 1
@@ -2493,410 +2894,6 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id005
-          shadow:
-            enabled: false
-          innerShadow:
-            enabled: false
-          gradient:
-            enabled: false
-          borderGradient:
-            enabled: false
-          textShadow:
-            enabled: false
-          gloss: false
-          noise: false
-          edge3d: false
-          pressScale: 0.0
-          pressSink: 0.0
-          pressDarken: 6
-          ripple: false
-        toolbarEffects: *id005
-        barEffects: *id005
-      floatingCandidates:
-        enabled: true
-        panel:
-          background: '#FFFFFF'
-          borderWidth: 1.0
-          borderColor: '#B8D0C3'
-          radius: 10.0
-          blur: false
-        normal:
-          radius: 8.0
-        highlighted:
-          background: '#7BC8A4'
-          radius: 8.0
-        pager:
-          background: ''
-          radius: 8.0
-        colors:
-          candidate: '#3F5A4E'
-          highlight.candidate: '#FFFFFF'
-          label: '#3F5A4E'
-          highlight.label: '#FFFFFF'
-          comment: '#993F5A4E'
-          highlight.comment: '#EAF7F0'
-          arrow: '#3F5A4E'
-        elevation: 6
-        itemElevation: 0
-      rowAlignments:
-        2: center
-      secondaryOf: custom_mint
-  custom_mint_num:
-    name: 薄荷绿 · 数字
-    ascii_mode: 1
-    reset_ascii_mode: true
-    keyboard_back_color: '#F7F9F8'
-    vertical_gap: 5
-    horizontal_gap: 5
-    keys:
-    - label: +
-      click: __mie_action:{"commit":"+"}
-      width: 20
-      key_back_color: '#E6F2EA'
-      key_text_color: '#3F5A4E'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: '1'
-      click: __mie_action:{"commit":"1"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: '2'
-      click: __mie_action:{"commit":"2"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: '3'
-      click: __mie_action:{"commit":"3"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: ''
-      click: BackSpace
-      width: 20
-      key_back_color: '#E6F2EA'
-      key_text_color: '#3F5A4E'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 1
-      icon: icons/mint_delete.png
-      icon_size: 26
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: '-'
-      click: __mie_action:{"commit":"-"}
-      width: 20
-      key_back_color: '#E6F2EA'
-      key_text_color: '#3F5A4E'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: '4'
-      click: __mie_action:{"commit":"4"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: '5'
-      click: __mie_action:{"commit":"5"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: '6'
-      click: __mie_action:{"commit":"6"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 返回
-      click: Keyboard_custom_mint
-      width: 20
-      key_back_color: '#E6F2EA'
-      key_text_color: '#3F5A4E'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: '*'
-      click: __mie_action:{"commit":"*"}
-      width: 20
-      key_back_color: '#E6F2EA'
-      key_text_color: '#3F5A4E'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: '7'
-      click: __mie_action:{"commit":"7"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: '8'
-      click: __mie_action:{"commit":"8"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: '9'
-      click: __mie_action:{"commit":"9"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 符号
-      click: Keyboard_custom_mint_symbols
-      width: 20
-      key_back_color: '#E6F2EA'
-      key_text_color: '#3F5A4E'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: /
-      click: __mie_action:{"commit":"/"}
-      width: 20
-      key_back_color: '#E6F2EA'
-      key_text_color: '#3F5A4E'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: .
-      click: __mie_action:{"commit":"."}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: '0'
-      click: __mie_action:{"commit":"0"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: '='
-      click: __mie_action:{"commit":"="}
-      width: 20
-      key_back_color: '#E6F2EA'
-      key_text_color: '#3F5A4E'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: ''
-      click: Return
-      width: 20
-      key_back_color: '#7BC8A4'
-      key_text_color: '#FFFFFF'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 4
-      icon: icons/enter_w.png
-      icon_size: 26
-      round_corner: '6'
-      key_border: '0'
-      key_border_color: '#B8D0C3'
-    mie:
-      rowMargin: 1
-      toolbarAlignment: legacy
-      toolbarHeightDp: 36
-      toolbar:
-      - action: __mie_menu
-        enabled: true
-        icon: icons/tb_menu.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#E6F2EA'
-          roundCorner: '8'
-          keyBorder: '0'
-        primary: true
-      - action: Hide
-        enabled: true
-        icon: icons/tb_hide.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#E6F2EA'
-          roundCorner: '8'
-          keyBorder: '0'
-      - action: clipboard
-        enabled: true
-        icon: icons/tb_clipboard.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#00000000'
-          roundCorner: '8'
-          keyBorder: '0'
-      - action: Keyboard_custom_mint_en
-        enabled: true
-        icon: icons/tb_lang.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#00000000'
-          roundCorner: '8'
-          keyBorder: '0'
-      - action: __mie_floating_keyboard
-        enabled: true
-        icon: icons/tb_onehand.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#E6F2EA'
-          roundCorner: '8'
-          keyBorder: '0'
-        bindings:
-          longClick: __mie_one_hand
-      - action: Keyboard_custom_mint_layouts
-        enabled: true
-        icon: icons/tb_layout.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#00000000'
-          roundCorner: '8'
-          keyBorder: '0'
-      - action: Keyboard_custom_mint_themes
-        enabled: true
-        icon: icons/tb_theme.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#00000000'
-          roundCorner: '8'
-          keyBorder: '0'
-      keyAppearance:
-        keyBackColor: '#FFFFFF'
-        keyTextColor: '#3F5A4E'
-        roundCorner: '6'
-        keyBorder: '1'
-        keyBorderColor: '#B8D0C3'
-        keyTextSize: '20'
-      surfaceAppearance:
-        keys:
-          background: ''
-          radius: 6.0
-          blur: false
-        toolbar:
-          background: ''
-          borderWidth: 0.0
-          borderColor: ''
-          radius: 8.0
-          blur: false
-        bar:
-          background: '#F7F9F8'
-          borderWidth: 0.0
-          borderColor: ''
-          radius: 0.0
-          blur: false
-        linkToolbar: false
         effects: &id006
           shadow:
             enabled: false
@@ -2943,6 +2940,8 @@ preset_keyboards:
           arrow: '#3F5A4E'
         elevation: 6
         itemElevation: 0
+      rowAlignments:
+        2: center
       secondaryOf: custom_mint
   custom_mint_symbols:
     name: 薄荷绿 · 符号
@@ -4746,13 +4745,13 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_mint
-  custom_mint_layouts:
-    name: 薄荷绿 · 布局
+  custom_mint_themes:
+    name: 薄荷绿 · 主题
     keyboard_back_color: '#F7F9F8'
     vertical_gap: 5
     horizontal_gap: 5
     keys:
-    - label: 选择布局
+    - label: 选择主题（26键主键盘）
       width: 100
       key_back_color: '#00000000'
       key_text_color: '#3F5A4E'
@@ -4763,63 +4762,75 @@ preset_keyboards:
       round_corner: '6'
       key_border: '0'
       key_border_color: '#B8D0C3'
-    - label: 26键 主键盘
+    - label: 薄荷绿键盘（当前）
       click: Keyboard_custom_mint
       width: 100
       key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
       key_text_size: '16'
-      height: 50
+      height: 48
       mie:
         row: 2
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B8D0C3'
-    - label: 9键
-      click: Keyboard_custom_mint_9
+    - label: 樱花粉键盘
+      click: Keyboard_custom_pink
       width: 100
-      key_back_color: '#E6F2EA'
-      key_text_color: '#3F5A4E'
+      key_back_color: '#FCEBED'
+      key_text_color: '#5E4B50'
       key_text_size: '16'
-      height: 50
+      height: 48
       mie:
         row: 3
       round_corner: '6'
       key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 18键
-      click: Keyboard_custom_mint_18
+      key_border_color: '#E3C2C8'
+    - label: 浅天蓝键盘
+      click: Keyboard_custom_blue
       width: 100
-      key_back_color: '#E6F2EA'
-      key_text_color: '#3F5A4E'
+      key_back_color: '#E7F3FC'
+      key_text_color: '#43586B'
       key_text_size: '16'
-      height: 50
+      height: 48
       mie:
         row: 4
       round_corner: '6'
       key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 14键
-      click: Keyboard_custom_mint_14
+      key_border_color: '#B9D4E6'
+    - label: 杏子橙键盘
+      click: Keyboard_custom_orange
       width: 100
-      key_back_color: '#E6F2EA'
-      key_text_color: '#3F5A4E'
+      key_back_color: '#FFF0E2'
+      key_text_color: '#6B564A'
       key_text_size: '16'
-      height: 50
+      height: 48
       mie:
         row: 5
       round_corner: '6'
       key_border: '1'
-      key_border_color: '#B8D0C3'
+      key_border_color: '#E5C7AE'
+    - label: 薰衣紫键盘
+      click: Keyboard_custom_purple
+      width: 100
+      key_back_color: '#F1E9FC'
+      key_text_color: '#574B66'
+      key_text_size: '16'
+      height: 48
+      mie:
+        row: 6
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
     - label: 返回
       click: Keyboard_custom_mint
       width: 100
       key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
       key_text_size: '15'
-      height: 50
+      height: 48
       mie:
-        row: 6
+        row: 7
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B8D0C3'
@@ -4973,13 +4984,13 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_mint
-  custom_mint_themes:
-    name: 薄荷绿 · 主题
+  custom_mint_layouts:
+    name: 薄荷绿 · 布局
     keyboard_back_color: '#F7F9F8'
     vertical_gap: 5
     horizontal_gap: 5
     keys:
-    - label: 选择主题（26键主键盘）
+    - label: 选择布局
       width: 100
       key_back_color: '#00000000'
       key_text_color: '#3F5A4E'
@@ -4990,75 +5001,63 @@ preset_keyboards:
       round_corner: '6'
       key_border: '0'
       key_border_color: '#B8D0C3'
-    - label: 薄荷绿键盘（当前）
+    - label: 26键 主键盘
       click: Keyboard_custom_mint
       width: 100
       key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
       key_text_size: '16'
-      height: 48
+      height: 50
       mie:
         row: 2
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B8D0C3'
-    - label: 樱花粉键盘
-      click: Keyboard_custom_pink
+    - label: 9键
+      click: Keyboard_custom_mint_9
       width: 100
-      key_back_color: '#FCEBED'
-      key_text_color: '#5E4B50'
+      key_back_color: '#E6F2EA'
+      key_text_color: '#3F5A4E'
       key_text_size: '16'
-      height: 48
+      height: 50
       mie:
         row: 3
       round_corner: '6'
       key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 浅天蓝键盘
-      click: Keyboard_custom_blue
+      key_border_color: '#B8D0C3'
+    - label: 18键
+      click: Keyboard_custom_mint_18
       width: 100
-      key_back_color: '#E7F3FC'
-      key_text_color: '#43586B'
+      key_back_color: '#E6F2EA'
+      key_text_color: '#3F5A4E'
       key_text_size: '16'
-      height: 48
+      height: 50
       mie:
         row: 4
       round_corner: '6'
       key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 杏子橙键盘
-      click: Keyboard_custom_orange
+      key_border_color: '#B8D0C3'
+    - label: 14键
+      click: Keyboard_custom_mint_14
       width: 100
-      key_back_color: '#FFF0E2'
-      key_text_color: '#6B564A'
+      key_back_color: '#E6F2EA'
+      key_text_color: '#3F5A4E'
       key_text_size: '16'
-      height: 48
+      height: 50
       mie:
         row: 5
       round_corner: '6'
       key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 薰衣紫键盘
-      click: Keyboard_custom_purple
-      width: 100
-      key_back_color: '#F1E9FC'
-      key_text_color: '#574B66'
-      key_text_size: '16'
-      height: 48
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
+      key_border_color: '#B8D0C3'
     - label: 返回
       click: Keyboard_custom_mint
       width: 100
       key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
       key_text_size: '15'
-      height: 48
+      height: 50
       mie:
-        row: 7
+        row: 6
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B8D0C3'
@@ -7181,6 +7180,408 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_pink
+  custom_pink_num:
+    name: 樱花粉 · 数字
+    ascii_mode: 1
+    reset_ascii_mode: true
+    keyboard_back_color: '#FBF7F8'
+    vertical_gap: 5
+    horizontal_gap: 5
+    keys:
+    - label: +
+      click: __mie_action:{"commit":"+"}
+      width: 20
+      key_back_color: '#FCEBED'
+      key_text_color: '#5E4B50'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 1
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: '1'
+      click: __mie_action:{"commit":"1"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#5E4B50'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 1
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: '2'
+      click: __mie_action:{"commit":"2"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#5E4B50'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 1
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: '3'
+      click: __mie_action:{"commit":"3"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#5E4B50'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 1
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: ''
+      click: BackSpace
+      width: 20
+      key_back_color: '#FCEBED'
+      key_text_color: '#5E4B50'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 1
+      icon: icons/pink_delete.png
+      icon_size: 26
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: '-'
+      click: __mie_action:{"commit":"-"}
+      width: 20
+      key_back_color: '#FCEBED'
+      key_text_color: '#5E4B50'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: '4'
+      click: __mie_action:{"commit":"4"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#5E4B50'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: '5'
+      click: __mie_action:{"commit":"5"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#5E4B50'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: '6'
+      click: __mie_action:{"commit":"6"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#5E4B50'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: 返回
+      click: Keyboard_custom_pink
+      width: 20
+      key_back_color: '#FCEBED'
+      key_text_color: '#5E4B50'
+      key_text_size: '13'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: '*'
+      click: __mie_action:{"commit":"*"}
+      width: 20
+      key_back_color: '#FCEBED'
+      key_text_color: '#5E4B50'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: '7'
+      click: __mie_action:{"commit":"7"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#5E4B50'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: '8'
+      click: __mie_action:{"commit":"8"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#5E4B50'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: '9'
+      click: __mie_action:{"commit":"9"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#5E4B50'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: 符号
+      click: Keyboard_custom_pink_symbols
+      width: 20
+      key_back_color: '#FCEBED'
+      key_text_color: '#5E4B50'
+      key_text_size: '13'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: /
+      click: __mie_action:{"commit":"/"}
+      width: 20
+      key_back_color: '#FCEBED'
+      key_text_color: '#5E4B50'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: .
+      click: __mie_action:{"commit":"."}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#5E4B50'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: '0'
+      click: __mie_action:{"commit":"0"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#5E4B50'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: '='
+      click: __mie_action:{"commit":"="}
+      width: 20
+      key_back_color: '#FCEBED'
+      key_text_color: '#5E4B50'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: ''
+      click: Return
+      width: 20
+      key_back_color: '#F4AEB8'
+      key_text_color: '#FFFFFF'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 4
+      icon: icons/enter_w.png
+      icon_size: 26
+      round_corner: '6'
+      key_border: '0'
+      key_border_color: '#E3C2C8'
+    mie:
+      rowMargin: 1
+      toolbarAlignment: legacy
+      toolbarHeightDp: 36
+      toolbar:
+      - action: __mie_menu
+        enabled: true
+        icon: icons/tb_menu.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#FCEBED'
+          roundCorner: '8'
+          keyBorder: '0'
+        primary: true
+      - action: Hide
+        enabled: true
+        icon: icons/tb_hide.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#FCEBED'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: clipboard
+        enabled: true
+        icon: icons/tb_clipboard.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: Keyboard_custom_pink_en
+        enabled: true
+        icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_floating_keyboard
+        enabled: true
+        icon: icons/tb_onehand.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#FCEBED'
+          roundCorner: '8'
+          keyBorder: '0'
+        bindings:
+          longClick: __mie_one_hand
+      - action: Keyboard_custom_pink_layouts
+        enabled: true
+        icon: icons/tb_layout.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: Keyboard_custom_pink_themes
+        enabled: true
+        icon: icons/tb_theme.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      keyAppearance:
+        keyBackColor: '#FFFFFF'
+        keyTextColor: '#5E4B50'
+        roundCorner: '6'
+        keyBorder: '1'
+        keyBorderColor: '#E3C2C8'
+        keyTextSize: '20'
+      surfaceAppearance:
+        keys:
+          background: ''
+          radius: 6.0
+          blur: false
+        toolbar:
+          background: ''
+          borderWidth: 0.0
+          borderColor: ''
+          radius: 8.0
+          blur: false
+        bar:
+          background: '#FBF7F8'
+          borderWidth: 0.0
+          borderColor: ''
+          radius: 0.0
+          blur: false
+        linkToolbar: false
+        effects: &id016
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0.0
+          pressSink: 0.0
+          pressDarken: 6
+          ripple: false
+        toolbarEffects: *id016
+        barEffects: *id016
+      floatingCandidates:
+        enabled: true
+        panel:
+          background: '#FFFFFF'
+          borderWidth: 1.0
+          borderColor: '#E3C2C8'
+          radius: 10.0
+          blur: false
+        normal:
+          radius: 8.0
+        highlighted:
+          background: '#F4AEB8'
+          radius: 8.0
+        pager:
+          background: ''
+          radius: 8.0
+        colors:
+          candidate: '#5E4B50'
+          highlight.candidate: '#FFFFFF'
+          label: '#5E4B50'
+          highlight.label: '#FFFFFF'
+          comment: '#995E4B50'
+          highlight.comment: '#EAF7F0'
+          arrow: '#5E4B50'
+        elevation: 6
+        itemElevation: 0
+      secondaryOf: custom_pink
   custom_pink_en:
     name: 樱花粉 · 英文
     ascii_mode: 1
@@ -7701,410 +8102,6 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id016
-          shadow:
-            enabled: false
-          innerShadow:
-            enabled: false
-          gradient:
-            enabled: false
-          borderGradient:
-            enabled: false
-          textShadow:
-            enabled: false
-          gloss: false
-          noise: false
-          edge3d: false
-          pressScale: 0.0
-          pressSink: 0.0
-          pressDarken: 6
-          ripple: false
-        toolbarEffects: *id016
-        barEffects: *id016
-      floatingCandidates:
-        enabled: true
-        panel:
-          background: '#FFFFFF'
-          borderWidth: 1.0
-          borderColor: '#E3C2C8'
-          radius: 10.0
-          blur: false
-        normal:
-          radius: 8.0
-        highlighted:
-          background: '#F4AEB8'
-          radius: 8.0
-        pager:
-          background: ''
-          radius: 8.0
-        colors:
-          candidate: '#5E4B50'
-          highlight.candidate: '#FFFFFF'
-          label: '#5E4B50'
-          highlight.label: '#FFFFFF'
-          comment: '#995E4B50'
-          highlight.comment: '#EAF7F0'
-          arrow: '#5E4B50'
-        elevation: 6
-        itemElevation: 0
-      rowAlignments:
-        2: center
-      secondaryOf: custom_pink
-  custom_pink_num:
-    name: 樱花粉 · 数字
-    ascii_mode: 1
-    reset_ascii_mode: true
-    keyboard_back_color: '#FBF7F8'
-    vertical_gap: 5
-    horizontal_gap: 5
-    keys:
-    - label: +
-      click: __mie_action:{"commit":"+"}
-      width: 20
-      key_back_color: '#FCEBED'
-      key_text_color: '#5E4B50'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: '1'
-      click: __mie_action:{"commit":"1"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: '2'
-      click: __mie_action:{"commit":"2"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: '3'
-      click: __mie_action:{"commit":"3"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: ''
-      click: BackSpace
-      width: 20
-      key_back_color: '#FCEBED'
-      key_text_color: '#5E4B50'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 1
-      icon: icons/pink_delete.png
-      icon_size: 26
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: '-'
-      click: __mie_action:{"commit":"-"}
-      width: 20
-      key_back_color: '#FCEBED'
-      key_text_color: '#5E4B50'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: '4'
-      click: __mie_action:{"commit":"4"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: '5'
-      click: __mie_action:{"commit":"5"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: '6'
-      click: __mie_action:{"commit":"6"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 返回
-      click: Keyboard_custom_pink
-      width: 20
-      key_back_color: '#FCEBED'
-      key_text_color: '#5E4B50'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: '*'
-      click: __mie_action:{"commit":"*"}
-      width: 20
-      key_back_color: '#FCEBED'
-      key_text_color: '#5E4B50'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: '7'
-      click: __mie_action:{"commit":"7"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: '8'
-      click: __mie_action:{"commit":"8"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: '9'
-      click: __mie_action:{"commit":"9"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 符号
-      click: Keyboard_custom_pink_symbols
-      width: 20
-      key_back_color: '#FCEBED'
-      key_text_color: '#5E4B50'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: /
-      click: __mie_action:{"commit":"/"}
-      width: 20
-      key_back_color: '#FCEBED'
-      key_text_color: '#5E4B50'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: .
-      click: __mie_action:{"commit":"."}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: '0'
-      click: __mie_action:{"commit":"0"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: '='
-      click: __mie_action:{"commit":"="}
-      width: 20
-      key_back_color: '#FCEBED'
-      key_text_color: '#5E4B50'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: ''
-      click: Return
-      width: 20
-      key_back_color: '#F4AEB8'
-      key_text_color: '#FFFFFF'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 4
-      icon: icons/enter_w.png
-      icon_size: 26
-      round_corner: '6'
-      key_border: '0'
-      key_border_color: '#E3C2C8'
-    mie:
-      rowMargin: 1
-      toolbarAlignment: legacy
-      toolbarHeightDp: 36
-      toolbar:
-      - action: __mie_menu
-        enabled: true
-        icon: icons/tb_menu.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#FCEBED'
-          roundCorner: '8'
-          keyBorder: '0'
-        primary: true
-      - action: Hide
-        enabled: true
-        icon: icons/tb_hide.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#FCEBED'
-          roundCorner: '8'
-          keyBorder: '0'
-      - action: clipboard
-        enabled: true
-        icon: icons/tb_clipboard.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#00000000'
-          roundCorner: '8'
-          keyBorder: '0'
-      - action: Keyboard_custom_pink_en
-        enabled: true
-        icon: icons/tb_lang.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#00000000'
-          roundCorner: '8'
-          keyBorder: '0'
-      - action: __mie_floating_keyboard
-        enabled: true
-        icon: icons/tb_onehand.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#FCEBED'
-          roundCorner: '8'
-          keyBorder: '0'
-        bindings:
-          longClick: __mie_one_hand
-      - action: Keyboard_custom_pink_layouts
-        enabled: true
-        icon: icons/tb_layout.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#00000000'
-          roundCorner: '8'
-          keyBorder: '0'
-      - action: Keyboard_custom_pink_themes
-        enabled: true
-        icon: icons/tb_theme.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#00000000'
-          roundCorner: '8'
-          keyBorder: '0'
-      keyAppearance:
-        keyBackColor: '#FFFFFF'
-        keyTextColor: '#5E4B50'
-        roundCorner: '6'
-        keyBorder: '1'
-        keyBorderColor: '#E3C2C8'
-        keyTextSize: '20'
-      surfaceAppearance:
-        keys:
-          background: ''
-          radius: 6.0
-          blur: false
-        toolbar:
-          background: ''
-          borderWidth: 0.0
-          borderColor: ''
-          radius: 8.0
-          blur: false
-        bar:
-          background: '#FBF7F8'
-          borderWidth: 0.0
-          borderColor: ''
-          radius: 0.0
-          blur: false
-        linkToolbar: false
         effects: &id017
           shadow:
             enabled: false
@@ -8151,6 +8148,8 @@ preset_keyboards:
           arrow: '#5E4B50'
         elevation: 6
         itemElevation: 0
+      rowAlignments:
+        2: center
       secondaryOf: custom_pink
   custom_pink_symbols:
     name: 樱花粉 · 符号
@@ -9954,13 +9953,13 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_pink
-  custom_pink_layouts:
-    name: 樱花粉 · 布局
+  custom_pink_themes:
+    name: 樱花粉 · 主题
     keyboard_back_color: '#FBF7F8'
     vertical_gap: 5
     horizontal_gap: 5
     keys:
-    - label: 选择布局
+    - label: 选择主题（26键主键盘）
       width: 100
       key_back_color: '#00000000'
       key_text_color: '#5E4B50'
@@ -9971,63 +9970,75 @@ preset_keyboards:
       round_corner: '6'
       key_border: '0'
       key_border_color: '#E3C2C8'
-    - label: 26键 主键盘
+    - label: 薄荷绿键盘
+      click: Keyboard_custom_mint
+      width: 100
+      key_back_color: '#E6F2EA'
+      key_text_color: '#3F5A4E'
+      key_text_size: '16'
+      height: 48
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: 樱花粉键盘（当前）
       click: Keyboard_custom_pink
       width: 100
       key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
       key_text_size: '16'
-      height: 50
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 9键
-      click: Keyboard_custom_pink_9
-      width: 100
-      key_back_color: '#FCEBED'
-      key_text_color: '#5E4B50'
-      key_text_size: '16'
-      height: 50
+      height: 48
       mie:
         row: 3
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E3C2C8'
-    - label: 18键
-      click: Keyboard_custom_pink_18
+    - label: 浅天蓝键盘
+      click: Keyboard_custom_blue
       width: 100
-      key_back_color: '#FCEBED'
-      key_text_color: '#5E4B50'
+      key_back_color: '#E7F3FC'
+      key_text_color: '#43586B'
       key_text_size: '16'
-      height: 50
+      height: 48
       mie:
         row: 4
       round_corner: '6'
       key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 14键
-      click: Keyboard_custom_pink_14
+      key_border_color: '#B9D4E6'
+    - label: 杏子橙键盘
+      click: Keyboard_custom_orange
       width: 100
-      key_back_color: '#FCEBED'
-      key_text_color: '#5E4B50'
+      key_back_color: '#FFF0E2'
+      key_text_color: '#6B564A'
       key_text_size: '16'
-      height: 50
+      height: 48
       mie:
         row: 5
       round_corner: '6'
       key_border: '1'
-      key_border_color: '#E3C2C8'
+      key_border_color: '#E5C7AE'
+    - label: 薰衣紫键盘
+      click: Keyboard_custom_purple
+      width: 100
+      key_back_color: '#F1E9FC'
+      key_text_color: '#574B66'
+      key_text_size: '16'
+      height: 48
+      mie:
+        row: 6
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
     - label: 返回
       click: Keyboard_custom_pink
       width: 100
       key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
       key_text_size: '15'
-      height: 50
+      height: 48
       mie:
-        row: 6
+        row: 7
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E3C2C8'
@@ -10181,13 +10192,13 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_pink
-  custom_pink_themes:
-    name: 樱花粉 · 主题
+  custom_pink_layouts:
+    name: 樱花粉 · 布局
     keyboard_back_color: '#FBF7F8'
     vertical_gap: 5
     horizontal_gap: 5
     keys:
-    - label: 选择主题（26键主键盘）
+    - label: 选择布局
       width: 100
       key_back_color: '#00000000'
       key_text_color: '#5E4B50'
@@ -10198,75 +10209,63 @@ preset_keyboards:
       round_corner: '6'
       key_border: '0'
       key_border_color: '#E3C2C8'
-    - label: 薄荷绿键盘
-      click: Keyboard_custom_mint
-      width: 100
-      key_back_color: '#E6F2EA'
-      key_text_color: '#3F5A4E'
-      key_text_size: '16'
-      height: 48
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 樱花粉键盘（当前）
+    - label: 26键 主键盘
       click: Keyboard_custom_pink
       width: 100
       key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
       key_text_size: '16'
-      height: 48
+      height: 50
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: 9键
+      click: Keyboard_custom_pink_9
+      width: 100
+      key_back_color: '#FCEBED'
+      key_text_color: '#5E4B50'
+      key_text_size: '16'
+      height: 50
       mie:
         row: 3
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E3C2C8'
-    - label: 浅天蓝键盘
-      click: Keyboard_custom_blue
+    - label: 18键
+      click: Keyboard_custom_pink_18
       width: 100
-      key_back_color: '#E7F3FC'
-      key_text_color: '#43586B'
+      key_back_color: '#FCEBED'
+      key_text_color: '#5E4B50'
       key_text_size: '16'
-      height: 48
+      height: 50
       mie:
         row: 4
       round_corner: '6'
       key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 杏子橙键盘
-      click: Keyboard_custom_orange
+      key_border_color: '#E3C2C8'
+    - label: 14键
+      click: Keyboard_custom_pink_14
       width: 100
-      key_back_color: '#FFF0E2'
-      key_text_color: '#6B564A'
+      key_back_color: '#FCEBED'
+      key_text_color: '#5E4B50'
       key_text_size: '16'
-      height: 48
+      height: 50
       mie:
         row: 5
       round_corner: '6'
       key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 薰衣紫键盘
-      click: Keyboard_custom_purple
-      width: 100
-      key_back_color: '#F1E9FC'
-      key_text_color: '#574B66'
-      key_text_size: '16'
-      height: 48
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
+      key_border_color: '#E3C2C8'
     - label: 返回
       click: Keyboard_custom_pink
       width: 100
       key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
       key_text_size: '15'
-      height: 48
+      height: 50
       mie:
-        row: 7
+        row: 6
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E3C2C8'
@@ -12389,6 +12388,408 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_blue
+  custom_blue_num:
+    name: 浅天蓝 · 数字
+    ascii_mode: 1
+    reset_ascii_mode: true
+    keyboard_back_color: '#F7F9FB'
+    vertical_gap: 5
+    horizontal_gap: 5
+    keys:
+    - label: +
+      click: __mie_action:{"commit":"+"}
+      width: 20
+      key_back_color: '#E7F3FC'
+      key_text_color: '#43586B'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 1
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: '1'
+      click: __mie_action:{"commit":"1"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#43586B'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 1
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: '2'
+      click: __mie_action:{"commit":"2"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#43586B'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 1
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: '3'
+      click: __mie_action:{"commit":"3"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#43586B'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 1
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: ''
+      click: BackSpace
+      width: 20
+      key_back_color: '#E7F3FC'
+      key_text_color: '#43586B'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 1
+      icon: icons/blue_delete.png
+      icon_size: 26
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: '-'
+      click: __mie_action:{"commit":"-"}
+      width: 20
+      key_back_color: '#E7F3FC'
+      key_text_color: '#43586B'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: '4'
+      click: __mie_action:{"commit":"4"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#43586B'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: '5'
+      click: __mie_action:{"commit":"5"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#43586B'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: '6'
+      click: __mie_action:{"commit":"6"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#43586B'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: 返回
+      click: Keyboard_custom_blue
+      width: 20
+      key_back_color: '#E7F3FC'
+      key_text_color: '#43586B'
+      key_text_size: '13'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: '*'
+      click: __mie_action:{"commit":"*"}
+      width: 20
+      key_back_color: '#E7F3FC'
+      key_text_color: '#43586B'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: '7'
+      click: __mie_action:{"commit":"7"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#43586B'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: '8'
+      click: __mie_action:{"commit":"8"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#43586B'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: '9'
+      click: __mie_action:{"commit":"9"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#43586B'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: 符号
+      click: Keyboard_custom_blue_symbols
+      width: 20
+      key_back_color: '#E7F3FC'
+      key_text_color: '#43586B'
+      key_text_size: '13'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: /
+      click: __mie_action:{"commit":"/"}
+      width: 20
+      key_back_color: '#E7F3FC'
+      key_text_color: '#43586B'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: .
+      click: __mie_action:{"commit":"."}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#43586B'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: '0'
+      click: __mie_action:{"commit":"0"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#43586B'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: '='
+      click: __mie_action:{"commit":"="}
+      width: 20
+      key_back_color: '#E7F3FC'
+      key_text_color: '#43586B'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: ''
+      click: Return
+      width: 20
+      key_back_color: '#96CBF4'
+      key_text_color: '#FFFFFF'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 4
+      icon: icons/enter_w.png
+      icon_size: 26
+      round_corner: '6'
+      key_border: '0'
+      key_border_color: '#B9D4E6'
+    mie:
+      rowMargin: 1
+      toolbarAlignment: legacy
+      toolbarHeightDp: 36
+      toolbar:
+      - action: __mie_menu
+        enabled: true
+        icon: icons/tb_menu.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#E7F3FC'
+          roundCorner: '8'
+          keyBorder: '0'
+        primary: true
+      - action: Hide
+        enabled: true
+        icon: icons/tb_hide.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#E7F3FC'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: clipboard
+        enabled: true
+        icon: icons/tb_clipboard.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: Keyboard_custom_blue_en
+        enabled: true
+        icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_floating_keyboard
+        enabled: true
+        icon: icons/tb_onehand.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#E7F3FC'
+          roundCorner: '8'
+          keyBorder: '0'
+        bindings:
+          longClick: __mie_one_hand
+      - action: Keyboard_custom_blue_layouts
+        enabled: true
+        icon: icons/tb_layout.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: Keyboard_custom_blue_themes
+        enabled: true
+        icon: icons/tb_theme.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      keyAppearance:
+        keyBackColor: '#FFFFFF'
+        keyTextColor: '#43586B'
+        roundCorner: '6'
+        keyBorder: '1'
+        keyBorderColor: '#B9D4E6'
+        keyTextSize: '20'
+      surfaceAppearance:
+        keys:
+          background: ''
+          radius: 6.0
+          blur: false
+        toolbar:
+          background: ''
+          borderWidth: 0.0
+          borderColor: ''
+          radius: 8.0
+          blur: false
+        bar:
+          background: '#F7F9FB'
+          borderWidth: 0.0
+          borderColor: ''
+          radius: 0.0
+          blur: false
+        linkToolbar: false
+        effects: &id027
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0.0
+          pressSink: 0.0
+          pressDarken: 6
+          ripple: false
+        toolbarEffects: *id027
+        barEffects: *id027
+      floatingCandidates:
+        enabled: true
+        panel:
+          background: '#FFFFFF'
+          borderWidth: 1.0
+          borderColor: '#B9D4E6'
+          radius: 10.0
+          blur: false
+        normal:
+          radius: 8.0
+        highlighted:
+          background: '#96CBF4'
+          radius: 8.0
+        pager:
+          background: ''
+          radius: 8.0
+        colors:
+          candidate: '#43586B'
+          highlight.candidate: '#FFFFFF'
+          label: '#43586B'
+          highlight.label: '#FFFFFF'
+          comment: '#9943586B'
+          highlight.comment: '#EAF7F0'
+          arrow: '#43586B'
+        elevation: 6
+        itemElevation: 0
+      secondaryOf: custom_blue
   custom_blue_en:
     name: 浅天蓝 · 英文
     ascii_mode: 1
@@ -12909,410 +13310,6 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id027
-          shadow:
-            enabled: false
-          innerShadow:
-            enabled: false
-          gradient:
-            enabled: false
-          borderGradient:
-            enabled: false
-          textShadow:
-            enabled: false
-          gloss: false
-          noise: false
-          edge3d: false
-          pressScale: 0.0
-          pressSink: 0.0
-          pressDarken: 6
-          ripple: false
-        toolbarEffects: *id027
-        barEffects: *id027
-      floatingCandidates:
-        enabled: true
-        panel:
-          background: '#FFFFFF'
-          borderWidth: 1.0
-          borderColor: '#B9D4E6'
-          radius: 10.0
-          blur: false
-        normal:
-          radius: 8.0
-        highlighted:
-          background: '#96CBF4'
-          radius: 8.0
-        pager:
-          background: ''
-          radius: 8.0
-        colors:
-          candidate: '#43586B'
-          highlight.candidate: '#FFFFFF'
-          label: '#43586B'
-          highlight.label: '#FFFFFF'
-          comment: '#9943586B'
-          highlight.comment: '#EAF7F0'
-          arrow: '#43586B'
-        elevation: 6
-        itemElevation: 0
-      rowAlignments:
-        2: center
-      secondaryOf: custom_blue
-  custom_blue_num:
-    name: 浅天蓝 · 数字
-    ascii_mode: 1
-    reset_ascii_mode: true
-    keyboard_back_color: '#F7F9FB'
-    vertical_gap: 5
-    horizontal_gap: 5
-    keys:
-    - label: +
-      click: __mie_action:{"commit":"+"}
-      width: 20
-      key_back_color: '#E7F3FC'
-      key_text_color: '#43586B'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: '1'
-      click: __mie_action:{"commit":"1"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: '2'
-      click: __mie_action:{"commit":"2"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: '3'
-      click: __mie_action:{"commit":"3"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: ''
-      click: BackSpace
-      width: 20
-      key_back_color: '#E7F3FC'
-      key_text_color: '#43586B'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 1
-      icon: icons/blue_delete.png
-      icon_size: 26
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: '-'
-      click: __mie_action:{"commit":"-"}
-      width: 20
-      key_back_color: '#E7F3FC'
-      key_text_color: '#43586B'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: '4'
-      click: __mie_action:{"commit":"4"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: '5'
-      click: __mie_action:{"commit":"5"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: '6'
-      click: __mie_action:{"commit":"6"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 返回
-      click: Keyboard_custom_blue
-      width: 20
-      key_back_color: '#E7F3FC'
-      key_text_color: '#43586B'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: '*'
-      click: __mie_action:{"commit":"*"}
-      width: 20
-      key_back_color: '#E7F3FC'
-      key_text_color: '#43586B'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: '7'
-      click: __mie_action:{"commit":"7"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: '8'
-      click: __mie_action:{"commit":"8"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: '9'
-      click: __mie_action:{"commit":"9"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 符号
-      click: Keyboard_custom_blue_symbols
-      width: 20
-      key_back_color: '#E7F3FC'
-      key_text_color: '#43586B'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: /
-      click: __mie_action:{"commit":"/"}
-      width: 20
-      key_back_color: '#E7F3FC'
-      key_text_color: '#43586B'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: .
-      click: __mie_action:{"commit":"."}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: '0'
-      click: __mie_action:{"commit":"0"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: '='
-      click: __mie_action:{"commit":"="}
-      width: 20
-      key_back_color: '#E7F3FC'
-      key_text_color: '#43586B'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: ''
-      click: Return
-      width: 20
-      key_back_color: '#96CBF4'
-      key_text_color: '#FFFFFF'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 4
-      icon: icons/enter_w.png
-      icon_size: 26
-      round_corner: '6'
-      key_border: '0'
-      key_border_color: '#B9D4E6'
-    mie:
-      rowMargin: 1
-      toolbarAlignment: legacy
-      toolbarHeightDp: 36
-      toolbar:
-      - action: __mie_menu
-        enabled: true
-        icon: icons/tb_menu.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#E7F3FC'
-          roundCorner: '8'
-          keyBorder: '0'
-        primary: true
-      - action: Hide
-        enabled: true
-        icon: icons/tb_hide.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#E7F3FC'
-          roundCorner: '8'
-          keyBorder: '0'
-      - action: clipboard
-        enabled: true
-        icon: icons/tb_clipboard.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#00000000'
-          roundCorner: '8'
-          keyBorder: '0'
-      - action: Keyboard_custom_blue_en
-        enabled: true
-        icon: icons/tb_lang.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#00000000'
-          roundCorner: '8'
-          keyBorder: '0'
-      - action: __mie_floating_keyboard
-        enabled: true
-        icon: icons/tb_onehand.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#E7F3FC'
-          roundCorner: '8'
-          keyBorder: '0'
-        bindings:
-          longClick: __mie_one_hand
-      - action: Keyboard_custom_blue_layouts
-        enabled: true
-        icon: icons/tb_layout.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#00000000'
-          roundCorner: '8'
-          keyBorder: '0'
-      - action: Keyboard_custom_blue_themes
-        enabled: true
-        icon: icons/tb_theme.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#00000000'
-          roundCorner: '8'
-          keyBorder: '0'
-      keyAppearance:
-        keyBackColor: '#FFFFFF'
-        keyTextColor: '#43586B'
-        roundCorner: '6'
-        keyBorder: '1'
-        keyBorderColor: '#B9D4E6'
-        keyTextSize: '20'
-      surfaceAppearance:
-        keys:
-          background: ''
-          radius: 6.0
-          blur: false
-        toolbar:
-          background: ''
-          borderWidth: 0.0
-          borderColor: ''
-          radius: 8.0
-          blur: false
-        bar:
-          background: '#F7F9FB'
-          borderWidth: 0.0
-          borderColor: ''
-          radius: 0.0
-          blur: false
-        linkToolbar: false
         effects: &id028
           shadow:
             enabled: false
@@ -13359,6 +13356,8 @@ preset_keyboards:
           arrow: '#43586B'
         elevation: 6
         itemElevation: 0
+      rowAlignments:
+        2: center
       secondaryOf: custom_blue
   custom_blue_symbols:
     name: 浅天蓝 · 符号
@@ -15162,13 +15161,13 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_blue
-  custom_blue_layouts:
-    name: 浅天蓝 · 布局
+  custom_blue_themes:
+    name: 浅天蓝 · 主题
     keyboard_back_color: '#F7F9FB'
     vertical_gap: 5
     horizontal_gap: 5
     keys:
-    - label: 选择布局
+    - label: 选择主题（26键主键盘）
       width: 100
       key_back_color: '#00000000'
       key_text_color: '#43586B'
@@ -15179,63 +15178,75 @@ preset_keyboards:
       round_corner: '6'
       key_border: '0'
       key_border_color: '#B9D4E6'
-    - label: 26键 主键盘
+    - label: 薄荷绿键盘
+      click: Keyboard_custom_mint
+      width: 100
+      key_back_color: '#E6F2EA'
+      key_text_color: '#3F5A4E'
+      key_text_size: '16'
+      height: 48
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: 樱花粉键盘
+      click: Keyboard_custom_pink
+      width: 100
+      key_back_color: '#FCEBED'
+      key_text_color: '#5E4B50'
+      key_text_size: '16'
+      height: 48
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: 浅天蓝键盘（当前）
       click: Keyboard_custom_blue
       width: 100
       key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
       key_text_size: '16'
-      height: 50
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 9键
-      click: Keyboard_custom_blue_9
-      width: 100
-      key_back_color: '#E7F3FC'
-      key_text_color: '#43586B'
-      key_text_size: '16'
-      height: 50
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 18键
-      click: Keyboard_custom_blue_18
-      width: 100
-      key_back_color: '#E7F3FC'
-      key_text_color: '#43586B'
-      key_text_size: '16'
-      height: 50
+      height: 48
       mie:
         row: 4
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B9D4E6'
-    - label: 14键
-      click: Keyboard_custom_blue_14
+    - label: 杏子橙键盘
+      click: Keyboard_custom_orange
       width: 100
-      key_back_color: '#E7F3FC'
-      key_text_color: '#43586B'
+      key_back_color: '#FFF0E2'
+      key_text_color: '#6B564A'
       key_text_size: '16'
-      height: 50
+      height: 48
       mie:
         row: 5
       round_corner: '6'
       key_border: '1'
-      key_border_color: '#B9D4E6'
+      key_border_color: '#E5C7AE'
+    - label: 薰衣紫键盘
+      click: Keyboard_custom_purple
+      width: 100
+      key_back_color: '#F1E9FC'
+      key_text_color: '#574B66'
+      key_text_size: '16'
+      height: 48
+      mie:
+        row: 6
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
     - label: 返回
       click: Keyboard_custom_blue
       width: 100
       key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
       key_text_size: '15'
-      height: 50
+      height: 48
       mie:
-        row: 6
+        row: 7
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B9D4E6'
@@ -15389,13 +15400,13 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_blue
-  custom_blue_themes:
-    name: 浅天蓝 · 主题
+  custom_blue_layouts:
+    name: 浅天蓝 · 布局
     keyboard_back_color: '#F7F9FB'
     vertical_gap: 5
     horizontal_gap: 5
     keys:
-    - label: 选择主题（26键主键盘）
+    - label: 选择布局
       width: 100
       key_back_color: '#00000000'
       key_text_color: '#43586B'
@@ -15406,75 +15417,63 @@ preset_keyboards:
       round_corner: '6'
       key_border: '0'
       key_border_color: '#B9D4E6'
-    - label: 薄荷绿键盘
-      click: Keyboard_custom_mint
-      width: 100
-      key_back_color: '#E6F2EA'
-      key_text_color: '#3F5A4E'
-      key_text_size: '16'
-      height: 48
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 樱花粉键盘
-      click: Keyboard_custom_pink
-      width: 100
-      key_back_color: '#FCEBED'
-      key_text_color: '#5E4B50'
-      key_text_size: '16'
-      height: 48
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 浅天蓝键盘（当前）
+    - label: 26键 主键盘
       click: Keyboard_custom_blue
       width: 100
       key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
       key_text_size: '16'
-      height: 48
+      height: 50
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: 9键
+      click: Keyboard_custom_blue_9
+      width: 100
+      key_back_color: '#E7F3FC'
+      key_text_color: '#43586B'
+      key_text_size: '16'
+      height: 50
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: 18键
+      click: Keyboard_custom_blue_18
+      width: 100
+      key_back_color: '#E7F3FC'
+      key_text_color: '#43586B'
+      key_text_size: '16'
+      height: 50
       mie:
         row: 4
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B9D4E6'
-    - label: 杏子橙键盘
-      click: Keyboard_custom_orange
+    - label: 14键
+      click: Keyboard_custom_blue_14
       width: 100
-      key_back_color: '#FFF0E2'
-      key_text_color: '#6B564A'
+      key_back_color: '#E7F3FC'
+      key_text_color: '#43586B'
       key_text_size: '16'
-      height: 48
+      height: 50
       mie:
         row: 5
       round_corner: '6'
       key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 薰衣紫键盘
-      click: Keyboard_custom_purple
-      width: 100
-      key_back_color: '#F1E9FC'
-      key_text_color: '#574B66'
-      key_text_size: '16'
-      height: 48
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
+      key_border_color: '#B9D4E6'
     - label: 返回
       click: Keyboard_custom_blue
       width: 100
       key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
       key_text_size: '15'
-      height: 48
+      height: 50
       mie:
-        row: 7
+        row: 6
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B9D4E6'
@@ -17597,6 +17596,408 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_orange
+  custom_orange_num:
+    name: 杏子橙 · 数字
+    ascii_mode: 1
+    reset_ascii_mode: true
+    keyboard_back_color: '#FBF8F5'
+    vertical_gap: 5
+    horizontal_gap: 5
+    keys:
+    - label: +
+      click: __mie_action:{"commit":"+"}
+      width: 20
+      key_back_color: '#FFF0E2'
+      key_text_color: '#6B564A'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 1
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: '1'
+      click: __mie_action:{"commit":"1"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#6B564A'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 1
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: '2'
+      click: __mie_action:{"commit":"2"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#6B564A'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 1
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: '3'
+      click: __mie_action:{"commit":"3"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#6B564A'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 1
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: ''
+      click: BackSpace
+      width: 20
+      key_back_color: '#FFF0E2'
+      key_text_color: '#6B564A'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 1
+      icon: icons/orange_delete.png
+      icon_size: 26
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: '-'
+      click: __mie_action:{"commit":"-"}
+      width: 20
+      key_back_color: '#FFF0E2'
+      key_text_color: '#6B564A'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: '4'
+      click: __mie_action:{"commit":"4"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#6B564A'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: '5'
+      click: __mie_action:{"commit":"5"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#6B564A'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: '6'
+      click: __mie_action:{"commit":"6"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#6B564A'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: 返回
+      click: Keyboard_custom_orange
+      width: 20
+      key_back_color: '#FFF0E2'
+      key_text_color: '#6B564A'
+      key_text_size: '13'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: '*'
+      click: __mie_action:{"commit":"*"}
+      width: 20
+      key_back_color: '#FFF0E2'
+      key_text_color: '#6B564A'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: '7'
+      click: __mie_action:{"commit":"7"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#6B564A'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: '8'
+      click: __mie_action:{"commit":"8"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#6B564A'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: '9'
+      click: __mie_action:{"commit":"9"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#6B564A'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: 符号
+      click: Keyboard_custom_orange_symbols
+      width: 20
+      key_back_color: '#FFF0E2'
+      key_text_color: '#6B564A'
+      key_text_size: '13'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: /
+      click: __mie_action:{"commit":"/"}
+      width: 20
+      key_back_color: '#FFF0E2'
+      key_text_color: '#6B564A'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: .
+      click: __mie_action:{"commit":"."}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#6B564A'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: '0'
+      click: __mie_action:{"commit":"0"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#6B564A'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: '='
+      click: __mie_action:{"commit":"="}
+      width: 20
+      key_back_color: '#FFF0E2'
+      key_text_color: '#6B564A'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: ''
+      click: Return
+      width: 20
+      key_back_color: '#F7BD99'
+      key_text_color: '#FFFFFF'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 4
+      icon: icons/enter_w.png
+      icon_size: 26
+      round_corner: '6'
+      key_border: '0'
+      key_border_color: '#E5C7AE'
+    mie:
+      rowMargin: 1
+      toolbarAlignment: legacy
+      toolbarHeightDp: 36
+      toolbar:
+      - action: __mie_menu
+        enabled: true
+        icon: icons/tb_menu.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#FFF0E2'
+          roundCorner: '8'
+          keyBorder: '0'
+        primary: true
+      - action: Hide
+        enabled: true
+        icon: icons/tb_hide.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#FFF0E2'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: clipboard
+        enabled: true
+        icon: icons/tb_clipboard.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: Keyboard_custom_orange_en
+        enabled: true
+        icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_floating_keyboard
+        enabled: true
+        icon: icons/tb_onehand.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#FFF0E2'
+          roundCorner: '8'
+          keyBorder: '0'
+        bindings:
+          longClick: __mie_one_hand
+      - action: Keyboard_custom_orange_layouts
+        enabled: true
+        icon: icons/tb_layout.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: Keyboard_custom_orange_themes
+        enabled: true
+        icon: icons/tb_theme.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      keyAppearance:
+        keyBackColor: '#FFFFFF'
+        keyTextColor: '#6B564A'
+        roundCorner: '6'
+        keyBorder: '1'
+        keyBorderColor: '#E5C7AE'
+        keyTextSize: '20'
+      surfaceAppearance:
+        keys:
+          background: ''
+          radius: 6.0
+          blur: false
+        toolbar:
+          background: ''
+          borderWidth: 0.0
+          borderColor: ''
+          radius: 8.0
+          blur: false
+        bar:
+          background: '#FBF8F5'
+          borderWidth: 0.0
+          borderColor: ''
+          radius: 0.0
+          blur: false
+        linkToolbar: false
+        effects: &id038
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0.0
+          pressSink: 0.0
+          pressDarken: 6
+          ripple: false
+        toolbarEffects: *id038
+        barEffects: *id038
+      floatingCandidates:
+        enabled: true
+        panel:
+          background: '#FFFFFF'
+          borderWidth: 1.0
+          borderColor: '#E5C7AE'
+          radius: 10.0
+          blur: false
+        normal:
+          radius: 8.0
+        highlighted:
+          background: '#F7BD99'
+          radius: 8.0
+        pager:
+          background: ''
+          radius: 8.0
+        colors:
+          candidate: '#6B564A'
+          highlight.candidate: '#FFFFFF'
+          label: '#6B564A'
+          highlight.label: '#FFFFFF'
+          comment: '#996B564A'
+          highlight.comment: '#EAF7F0'
+          arrow: '#6B564A'
+        elevation: 6
+        itemElevation: 0
+      secondaryOf: custom_orange
   custom_orange_en:
     name: 杏子橙 · 英文
     ascii_mode: 1
@@ -18117,410 +18518,6 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id038
-          shadow:
-            enabled: false
-          innerShadow:
-            enabled: false
-          gradient:
-            enabled: false
-          borderGradient:
-            enabled: false
-          textShadow:
-            enabled: false
-          gloss: false
-          noise: false
-          edge3d: false
-          pressScale: 0.0
-          pressSink: 0.0
-          pressDarken: 6
-          ripple: false
-        toolbarEffects: *id038
-        barEffects: *id038
-      floatingCandidates:
-        enabled: true
-        panel:
-          background: '#FFFFFF'
-          borderWidth: 1.0
-          borderColor: '#E5C7AE'
-          radius: 10.0
-          blur: false
-        normal:
-          radius: 8.0
-        highlighted:
-          background: '#F7BD99'
-          radius: 8.0
-        pager:
-          background: ''
-          radius: 8.0
-        colors:
-          candidate: '#6B564A'
-          highlight.candidate: '#FFFFFF'
-          label: '#6B564A'
-          highlight.label: '#FFFFFF'
-          comment: '#996B564A'
-          highlight.comment: '#EAF7F0'
-          arrow: '#6B564A'
-        elevation: 6
-        itemElevation: 0
-      rowAlignments:
-        2: center
-      secondaryOf: custom_orange
-  custom_orange_num:
-    name: 杏子橙 · 数字
-    ascii_mode: 1
-    reset_ascii_mode: true
-    keyboard_back_color: '#FBF8F5'
-    vertical_gap: 5
-    horizontal_gap: 5
-    keys:
-    - label: +
-      click: __mie_action:{"commit":"+"}
-      width: 20
-      key_back_color: '#FFF0E2'
-      key_text_color: '#6B564A'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: '1'
-      click: __mie_action:{"commit":"1"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: '2'
-      click: __mie_action:{"commit":"2"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: '3'
-      click: __mie_action:{"commit":"3"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: ''
-      click: BackSpace
-      width: 20
-      key_back_color: '#FFF0E2'
-      key_text_color: '#6B564A'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 1
-      icon: icons/orange_delete.png
-      icon_size: 26
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: '-'
-      click: __mie_action:{"commit":"-"}
-      width: 20
-      key_back_color: '#FFF0E2'
-      key_text_color: '#6B564A'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: '4'
-      click: __mie_action:{"commit":"4"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: '5'
-      click: __mie_action:{"commit":"5"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: '6'
-      click: __mie_action:{"commit":"6"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 返回
-      click: Keyboard_custom_orange
-      width: 20
-      key_back_color: '#FFF0E2'
-      key_text_color: '#6B564A'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: '*'
-      click: __mie_action:{"commit":"*"}
-      width: 20
-      key_back_color: '#FFF0E2'
-      key_text_color: '#6B564A'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: '7'
-      click: __mie_action:{"commit":"7"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: '8'
-      click: __mie_action:{"commit":"8"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: '9'
-      click: __mie_action:{"commit":"9"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 符号
-      click: Keyboard_custom_orange_symbols
-      width: 20
-      key_back_color: '#FFF0E2'
-      key_text_color: '#6B564A'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: /
-      click: __mie_action:{"commit":"/"}
-      width: 20
-      key_back_color: '#FFF0E2'
-      key_text_color: '#6B564A'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: .
-      click: __mie_action:{"commit":"."}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: '0'
-      click: __mie_action:{"commit":"0"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: '='
-      click: __mie_action:{"commit":"="}
-      width: 20
-      key_back_color: '#FFF0E2'
-      key_text_color: '#6B564A'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: ''
-      click: Return
-      width: 20
-      key_back_color: '#F7BD99'
-      key_text_color: '#FFFFFF'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 4
-      icon: icons/enter_w.png
-      icon_size: 26
-      round_corner: '6'
-      key_border: '0'
-      key_border_color: '#E5C7AE'
-    mie:
-      rowMargin: 1
-      toolbarAlignment: legacy
-      toolbarHeightDp: 36
-      toolbar:
-      - action: __mie_menu
-        enabled: true
-        icon: icons/tb_menu.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#FFF0E2'
-          roundCorner: '8'
-          keyBorder: '0'
-        primary: true
-      - action: Hide
-        enabled: true
-        icon: icons/tb_hide.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#FFF0E2'
-          roundCorner: '8'
-          keyBorder: '0'
-      - action: clipboard
-        enabled: true
-        icon: icons/tb_clipboard.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#00000000'
-          roundCorner: '8'
-          keyBorder: '0'
-      - action: Keyboard_custom_orange_en
-        enabled: true
-        icon: icons/tb_lang.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#00000000'
-          roundCorner: '8'
-          keyBorder: '0'
-      - action: __mie_floating_keyboard
-        enabled: true
-        icon: icons/tb_onehand.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#FFF0E2'
-          roundCorner: '8'
-          keyBorder: '0'
-        bindings:
-          longClick: __mie_one_hand
-      - action: Keyboard_custom_orange_layouts
-        enabled: true
-        icon: icons/tb_layout.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#00000000'
-          roundCorner: '8'
-          keyBorder: '0'
-      - action: Keyboard_custom_orange_themes
-        enabled: true
-        icon: icons/tb_theme.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#00000000'
-          roundCorner: '8'
-          keyBorder: '0'
-      keyAppearance:
-        keyBackColor: '#FFFFFF'
-        keyTextColor: '#6B564A'
-        roundCorner: '6'
-        keyBorder: '1'
-        keyBorderColor: '#E5C7AE'
-        keyTextSize: '20'
-      surfaceAppearance:
-        keys:
-          background: ''
-          radius: 6.0
-          blur: false
-        toolbar:
-          background: ''
-          borderWidth: 0.0
-          borderColor: ''
-          radius: 8.0
-          blur: false
-        bar:
-          background: '#FBF8F5'
-          borderWidth: 0.0
-          borderColor: ''
-          radius: 0.0
-          blur: false
-        linkToolbar: false
         effects: &id039
           shadow:
             enabled: false
@@ -18567,6 +18564,8 @@ preset_keyboards:
           arrow: '#6B564A'
         elevation: 6
         itemElevation: 0
+      rowAlignments:
+        2: center
       secondaryOf: custom_orange
   custom_orange_symbols:
     name: 杏子橙 · 符号
@@ -20370,13 +20369,13 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_orange
-  custom_orange_layouts:
-    name: 杏子橙 · 布局
+  custom_orange_themes:
+    name: 杏子橙 · 主题
     keyboard_back_color: '#FBF8F5'
     vertical_gap: 5
     horizontal_gap: 5
     keys:
-    - label: 选择布局
+    - label: 选择主题（26键主键盘）
       width: 100
       key_back_color: '#00000000'
       key_text_color: '#6B564A'
@@ -20387,63 +20386,75 @@ preset_keyboards:
       round_corner: '6'
       key_border: '0'
       key_border_color: '#E5C7AE'
-    - label: 26键 主键盘
+    - label: 薄荷绿键盘
+      click: Keyboard_custom_mint
+      width: 100
+      key_back_color: '#E6F2EA'
+      key_text_color: '#3F5A4E'
+      key_text_size: '16'
+      height: 48
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: 樱花粉键盘
+      click: Keyboard_custom_pink
+      width: 100
+      key_back_color: '#FCEBED'
+      key_text_color: '#5E4B50'
+      key_text_size: '16'
+      height: 48
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: 浅天蓝键盘
+      click: Keyboard_custom_blue
+      width: 100
+      key_back_color: '#E7F3FC'
+      key_text_color: '#43586B'
+      key_text_size: '16'
+      height: 48
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: 杏子橙键盘（当前）
       click: Keyboard_custom_orange
       width: 100
       key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
       key_text_size: '16'
-      height: 50
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 9键
-      click: Keyboard_custom_orange_9
-      width: 100
-      key_back_color: '#FFF0E2'
-      key_text_color: '#6B564A'
-      key_text_size: '16'
-      height: 50
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 18键
-      click: Keyboard_custom_orange_18
-      width: 100
-      key_back_color: '#FFF0E2'
-      key_text_color: '#6B564A'
-      key_text_size: '16'
-      height: 50
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 14键
-      click: Keyboard_custom_orange_14
-      width: 100
-      key_back_color: '#FFF0E2'
-      key_text_color: '#6B564A'
-      key_text_size: '16'
-      height: 50
+      height: 48
       mie:
         row: 5
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E5C7AE'
+    - label: 薰衣紫键盘
+      click: Keyboard_custom_purple
+      width: 100
+      key_back_color: '#F1E9FC'
+      key_text_color: '#574B66'
+      key_text_size: '16'
+      height: 48
+      mie:
+        row: 6
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
     - label: 返回
       click: Keyboard_custom_orange
       width: 100
       key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
       key_text_size: '15'
-      height: 50
+      height: 48
       mie:
-        row: 6
+        row: 7
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E5C7AE'
@@ -20597,13 +20608,13 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_orange
-  custom_orange_themes:
-    name: 杏子橙 · 主题
+  custom_orange_layouts:
+    name: 杏子橙 · 布局
     keyboard_back_color: '#FBF8F5'
     vertical_gap: 5
     horizontal_gap: 5
     keys:
-    - label: 选择主题（26键主键盘）
+    - label: 选择布局
       width: 100
       key_back_color: '#00000000'
       key_text_color: '#6B564A'
@@ -20614,75 +20625,63 @@ preset_keyboards:
       round_corner: '6'
       key_border: '0'
       key_border_color: '#E5C7AE'
-    - label: 薄荷绿键盘
-      click: Keyboard_custom_mint
-      width: 100
-      key_back_color: '#E6F2EA'
-      key_text_color: '#3F5A4E'
-      key_text_size: '16'
-      height: 48
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 樱花粉键盘
-      click: Keyboard_custom_pink
-      width: 100
-      key_back_color: '#FCEBED'
-      key_text_color: '#5E4B50'
-      key_text_size: '16'
-      height: 48
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 浅天蓝键盘
-      click: Keyboard_custom_blue
-      width: 100
-      key_back_color: '#E7F3FC'
-      key_text_color: '#43586B'
-      key_text_size: '16'
-      height: 48
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 杏子橙键盘（当前）
+    - label: 26键 主键盘
       click: Keyboard_custom_orange
       width: 100
       key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
       key_text_size: '16'
-      height: 48
+      height: 50
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: 9键
+      click: Keyboard_custom_orange_9
+      width: 100
+      key_back_color: '#FFF0E2'
+      key_text_color: '#6B564A'
+      key_text_size: '16'
+      height: 50
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: 18键
+      click: Keyboard_custom_orange_18
+      width: 100
+      key_back_color: '#FFF0E2'
+      key_text_color: '#6B564A'
+      key_text_size: '16'
+      height: 50
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: 14键
+      click: Keyboard_custom_orange_14
+      width: 100
+      key_back_color: '#FFF0E2'
+      key_text_color: '#6B564A'
+      key_text_size: '16'
+      height: 50
       mie:
         row: 5
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E5C7AE'
-    - label: 薰衣紫键盘
-      click: Keyboard_custom_purple
-      width: 100
-      key_back_color: '#F1E9FC'
-      key_text_color: '#574B66'
-      key_text_size: '16'
-      height: 48
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
     - label: 返回
       click: Keyboard_custom_orange
       width: 100
       key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
       key_text_size: '15'
-      height: 48
+      height: 50
       mie:
-        row: 7
+        row: 6
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E5C7AE'
@@ -22805,6 +22804,408 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_purple
+  custom_purple_num:
+    name: 薰衣紫 · 数字
+    ascii_mode: 1
+    reset_ascii_mode: true
+    keyboard_back_color: '#F9F7FC'
+    vertical_gap: 5
+    horizontal_gap: 5
+    keys:
+    - label: +
+      click: __mie_action:{"commit":"+"}
+      width: 20
+      key_back_color: '#F1E9FC'
+      key_text_color: '#574B66'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 1
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
+    - label: '1'
+      click: __mie_action:{"commit":"1"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#574B66'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 1
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
+    - label: '2'
+      click: __mie_action:{"commit":"2"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#574B66'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 1
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
+    - label: '3'
+      click: __mie_action:{"commit":"3"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#574B66'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 1
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
+    - label: ''
+      click: BackSpace
+      width: 20
+      key_back_color: '#F1E9FC'
+      key_text_color: '#574B66'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 1
+      icon: icons/purple_delete.png
+      icon_size: 26
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
+    - label: '-'
+      click: __mie_action:{"commit":"-"}
+      width: 20
+      key_back_color: '#F1E9FC'
+      key_text_color: '#574B66'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
+    - label: '4'
+      click: __mie_action:{"commit":"4"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#574B66'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
+    - label: '5'
+      click: __mie_action:{"commit":"5"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#574B66'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
+    - label: '6'
+      click: __mie_action:{"commit":"6"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#574B66'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
+    - label: 返回
+      click: Keyboard_custom_purple
+      width: 20
+      key_back_color: '#F1E9FC'
+      key_text_color: '#574B66'
+      key_text_size: '13'
+      height: 52
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
+    - label: '*'
+      click: __mie_action:{"commit":"*"}
+      width: 20
+      key_back_color: '#F1E9FC'
+      key_text_color: '#574B66'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
+    - label: '7'
+      click: __mie_action:{"commit":"7"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#574B66'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
+    - label: '8'
+      click: __mie_action:{"commit":"8"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#574B66'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
+    - label: '9'
+      click: __mie_action:{"commit":"9"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#574B66'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
+    - label: 符号
+      click: Keyboard_custom_purple_symbols
+      width: 20
+      key_back_color: '#F1E9FC'
+      key_text_color: '#574B66'
+      key_text_size: '13'
+      height: 52
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
+    - label: /
+      click: __mie_action:{"commit":"/"}
+      width: 20
+      key_back_color: '#F1E9FC'
+      key_text_color: '#574B66'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
+    - label: .
+      click: __mie_action:{"commit":"."}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#574B66'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
+    - label: '0'
+      click: __mie_action:{"commit":"0"}
+      width: 20
+      key_back_color: '#FFFFFF'
+      key_text_color: '#574B66'
+      key_text_size: '22'
+      height: 52
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
+    - label: '='
+      click: __mie_action:{"commit":"="}
+      width: 20
+      key_back_color: '#F1E9FC'
+      key_text_color: '#574B66'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
+    - label: ''
+      click: Return
+      width: 20
+      key_back_color: '#C9A6ED'
+      key_text_color: '#FFFFFF'
+      key_text_size: '20'
+      height: 52
+      mie:
+        row: 4
+      icon: icons/enter_w.png
+      icon_size: 26
+      round_corner: '6'
+      key_border: '0'
+      key_border_color: '#D3BFE6'
+    mie:
+      rowMargin: 1
+      toolbarAlignment: legacy
+      toolbarHeightDp: 36
+      toolbar:
+      - action: __mie_menu
+        enabled: true
+        icon: icons/tb_menu.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#F1E9FC'
+          roundCorner: '8'
+          keyBorder: '0'
+        primary: true
+      - action: Hide
+        enabled: true
+        icon: icons/tb_hide.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#F1E9FC'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: clipboard
+        enabled: true
+        icon: icons/tb_clipboard.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: Keyboard_custom_purple_en
+        enabled: true
+        icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_floating_keyboard
+        enabled: true
+        icon: icons/tb_onehand.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#F1E9FC'
+          roundCorner: '8'
+          keyBorder: '0'
+        bindings:
+          longClick: __mie_one_hand
+      - action: Keyboard_custom_purple_layouts
+        enabled: true
+        icon: icons/tb_layout.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: Keyboard_custom_purple_themes
+        enabled: true
+        icon: icons/tb_theme.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      keyAppearance:
+        keyBackColor: '#FFFFFF'
+        keyTextColor: '#574B66'
+        roundCorner: '6'
+        keyBorder: '1'
+        keyBorderColor: '#D3BFE6'
+        keyTextSize: '20'
+      surfaceAppearance:
+        keys:
+          background: ''
+          radius: 6.0
+          blur: false
+        toolbar:
+          background: ''
+          borderWidth: 0.0
+          borderColor: ''
+          radius: 8.0
+          blur: false
+        bar:
+          background: '#F9F7FC'
+          borderWidth: 0.0
+          borderColor: ''
+          radius: 0.0
+          blur: false
+        linkToolbar: false
+        effects: &id049
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0.0
+          pressSink: 0.0
+          pressDarken: 6
+          ripple: false
+        toolbarEffects: *id049
+        barEffects: *id049
+      floatingCandidates:
+        enabled: true
+        panel:
+          background: '#FFFFFF'
+          borderWidth: 1.0
+          borderColor: '#D3BFE6'
+          radius: 10.0
+          blur: false
+        normal:
+          radius: 8.0
+        highlighted:
+          background: '#C9A6ED'
+          radius: 8.0
+        pager:
+          background: ''
+          radius: 8.0
+        colors:
+          candidate: '#574B66'
+          highlight.candidate: '#FFFFFF'
+          label: '#574B66'
+          highlight.label: '#FFFFFF'
+          comment: '#99574B66'
+          highlight.comment: '#EAF7F0'
+          arrow: '#574B66'
+        elevation: 6
+        itemElevation: 0
+      secondaryOf: custom_purple
   custom_purple_en:
     name: 薰衣紫 · 英文
     ascii_mode: 1
@@ -23325,410 +23726,6 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id049
-          shadow:
-            enabled: false
-          innerShadow:
-            enabled: false
-          gradient:
-            enabled: false
-          borderGradient:
-            enabled: false
-          textShadow:
-            enabled: false
-          gloss: false
-          noise: false
-          edge3d: false
-          pressScale: 0.0
-          pressSink: 0.0
-          pressDarken: 6
-          ripple: false
-        toolbarEffects: *id049
-        barEffects: *id049
-      floatingCandidates:
-        enabled: true
-        panel:
-          background: '#FFFFFF'
-          borderWidth: 1.0
-          borderColor: '#D3BFE6'
-          radius: 10.0
-          blur: false
-        normal:
-          radius: 8.0
-        highlighted:
-          background: '#C9A6ED'
-          radius: 8.0
-        pager:
-          background: ''
-          radius: 8.0
-        colors:
-          candidate: '#574B66'
-          highlight.candidate: '#FFFFFF'
-          label: '#574B66'
-          highlight.label: '#FFFFFF'
-          comment: '#99574B66'
-          highlight.comment: '#EAF7F0'
-          arrow: '#574B66'
-        elevation: 6
-        itemElevation: 0
-      rowAlignments:
-        2: center
-      secondaryOf: custom_purple
-  custom_purple_num:
-    name: 薰衣紫 · 数字
-    ascii_mode: 1
-    reset_ascii_mode: true
-    keyboard_back_color: '#F9F7FC'
-    vertical_gap: 5
-    horizontal_gap: 5
-    keys:
-    - label: +
-      click: __mie_action:{"commit":"+"}
-      width: 20
-      key_back_color: '#F1E9FC'
-      key_text_color: '#574B66'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: '1'
-      click: __mie_action:{"commit":"1"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: '2'
-      click: __mie_action:{"commit":"2"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: '3'
-      click: __mie_action:{"commit":"3"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: ''
-      click: BackSpace
-      width: 20
-      key_back_color: '#F1E9FC'
-      key_text_color: '#574B66'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 1
-      icon: icons/purple_delete.png
-      icon_size: 26
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: '-'
-      click: __mie_action:{"commit":"-"}
-      width: 20
-      key_back_color: '#F1E9FC'
-      key_text_color: '#574B66'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: '4'
-      click: __mie_action:{"commit":"4"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: '5'
-      click: __mie_action:{"commit":"5"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: '6'
-      click: __mie_action:{"commit":"6"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 返回
-      click: Keyboard_custom_purple
-      width: 20
-      key_back_color: '#F1E9FC'
-      key_text_color: '#574B66'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: '*'
-      click: __mie_action:{"commit":"*"}
-      width: 20
-      key_back_color: '#F1E9FC'
-      key_text_color: '#574B66'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: '7'
-      click: __mie_action:{"commit":"7"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: '8'
-      click: __mie_action:{"commit":"8"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: '9'
-      click: __mie_action:{"commit":"9"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 符号
-      click: Keyboard_custom_purple_symbols
-      width: 20
-      key_back_color: '#F1E9FC'
-      key_text_color: '#574B66'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: /
-      click: __mie_action:{"commit":"/"}
-      width: 20
-      key_back_color: '#F1E9FC'
-      key_text_color: '#574B66'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: .
-      click: __mie_action:{"commit":"."}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: '0'
-      click: __mie_action:{"commit":"0"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '22'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: '='
-      click: __mie_action:{"commit":"="}
-      width: 20
-      key_back_color: '#F1E9FC'
-      key_text_color: '#574B66'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: ''
-      click: Return
-      width: 20
-      key_back_color: '#C9A6ED'
-      key_text_color: '#FFFFFF'
-      key_text_size: '20'
-      height: 52
-      mie:
-        row: 4
-      icon: icons/enter_w.png
-      icon_size: 26
-      round_corner: '6'
-      key_border: '0'
-      key_border_color: '#D3BFE6'
-    mie:
-      rowMargin: 1
-      toolbarAlignment: legacy
-      toolbarHeightDp: 36
-      toolbar:
-      - action: __mie_menu
-        enabled: true
-        icon: icons/tb_menu.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#F1E9FC'
-          roundCorner: '8'
-          keyBorder: '0'
-        primary: true
-      - action: Hide
-        enabled: true
-        icon: icons/tb_hide.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#F1E9FC'
-          roundCorner: '8'
-          keyBorder: '0'
-      - action: clipboard
-        enabled: true
-        icon: icons/tb_clipboard.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#00000000'
-          roundCorner: '8'
-          keyBorder: '0'
-      - action: Keyboard_custom_purple_en
-        enabled: true
-        icon: icons/tb_lang.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#00000000'
-          roundCorner: '8'
-          keyBorder: '0'
-      - action: __mie_floating_keyboard
-        enabled: true
-        icon: icons/tb_onehand.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#F1E9FC'
-          roundCorner: '8'
-          keyBorder: '0'
-        bindings:
-          longClick: __mie_one_hand
-      - action: Keyboard_custom_purple_layouts
-        enabled: true
-        icon: icons/tb_layout.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#00000000'
-          roundCorner: '8'
-          keyBorder: '0'
-      - action: Keyboard_custom_purple_themes
-        enabled: true
-        icon: icons/tb_theme.png
-        iconSize: 18
-        width: 34
-        height: 34
-        appearance:
-          keyBackColor: '#00000000'
-          roundCorner: '8'
-          keyBorder: '0'
-      keyAppearance:
-        keyBackColor: '#FFFFFF'
-        keyTextColor: '#574B66'
-        roundCorner: '6'
-        keyBorder: '1'
-        keyBorderColor: '#D3BFE6'
-        keyTextSize: '20'
-      surfaceAppearance:
-        keys:
-          background: ''
-          radius: 6.0
-          blur: false
-        toolbar:
-          background: ''
-          borderWidth: 0.0
-          borderColor: ''
-          radius: 8.0
-          blur: false
-        bar:
-          background: '#F9F7FC'
-          borderWidth: 0.0
-          borderColor: ''
-          radius: 0.0
-          blur: false
-        linkToolbar: false
         effects: &id050
           shadow:
             enabled: false
@@ -23775,6 +23772,8 @@ preset_keyboards:
           arrow: '#574B66'
         elevation: 6
         itemElevation: 0
+      rowAlignments:
+        2: center
       secondaryOf: custom_purple
   custom_purple_symbols:
     name: 薰衣紫 · 符号
@@ -25578,13 +25577,13 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_purple
-  custom_purple_layouts:
-    name: 薰衣紫 · 布局
+  custom_purple_themes:
+    name: 薰衣紫 · 主题
     keyboard_back_color: '#F9F7FC'
     vertical_gap: 5
     horizontal_gap: 5
     keys:
-    - label: 选择布局
+    - label: 选择主题（26键主键盘）
       width: 100
       key_back_color: '#00000000'
       key_text_color: '#574B66'
@@ -25595,51 +25594,63 @@ preset_keyboards:
       round_corner: '6'
       key_border: '0'
       key_border_color: '#D3BFE6'
-    - label: 26键 主键盘
+    - label: 薄荷绿键盘
+      click: Keyboard_custom_mint
+      width: 100
+      key_back_color: '#E6F2EA'
+      key_text_color: '#3F5A4E'
+      key_text_size: '16'
+      height: 48
+      mie:
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B8D0C3'
+    - label: 樱花粉键盘
+      click: Keyboard_custom_pink
+      width: 100
+      key_back_color: '#FCEBED'
+      key_text_color: '#5E4B50'
+      key_text_size: '16'
+      height: 48
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E3C2C8'
+    - label: 浅天蓝键盘
+      click: Keyboard_custom_blue
+      width: 100
+      key_back_color: '#E7F3FC'
+      key_text_color: '#43586B'
+      key_text_size: '16'
+      height: 48
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#B9D4E6'
+    - label: 杏子橙键盘
+      click: Keyboard_custom_orange
+      width: 100
+      key_back_color: '#FFF0E2'
+      key_text_color: '#6B564A'
+      key_text_size: '16'
+      height: 48
+      mie:
+        row: 5
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#E5C7AE'
+    - label: 薰衣紫键盘（当前）
       click: Keyboard_custom_purple
       width: 100
       key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
       key_text_size: '16'
-      height: 50
+      height: 48
       mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 9键
-      click: Keyboard_custom_purple_9
-      width: 100
-      key_back_color: '#F1E9FC'
-      key_text_color: '#574B66'
-      key_text_size: '16'
-      height: 50
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 18键
-      click: Keyboard_custom_purple_18
-      width: 100
-      key_back_color: '#F1E9FC'
-      key_text_color: '#574B66'
-      key_text_size: '16'
-      height: 50
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 14键
-      click: Keyboard_custom_purple_14
-      width: 100
-      key_back_color: '#F1E9FC'
-      key_text_color: '#574B66'
-      key_text_size: '16'
-      height: 50
-      mie:
-        row: 5
+        row: 6
       round_corner: '6'
       key_border: '1'
       key_border_color: '#D3BFE6'
@@ -25649,9 +25660,9 @@ preset_keyboards:
       key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
       key_text_size: '15'
-      height: 50
+      height: 48
       mie:
-        row: 6
+        row: 7
       round_corner: '6'
       key_border: '1'
       key_border_color: '#D3BFE6'
@@ -25805,13 +25816,13 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_purple
-  custom_purple_themes:
-    name: 薰衣紫 · 主题
+  custom_purple_layouts:
+    name: 薰衣紫 · 布局
     keyboard_back_color: '#F9F7FC'
     vertical_gap: 5
     horizontal_gap: 5
     keys:
-    - label: 选择主题（26键主键盘）
+    - label: 选择布局
       width: 100
       key_back_color: '#00000000'
       key_text_color: '#574B66'
@@ -25822,63 +25833,51 @@ preset_keyboards:
       round_corner: '6'
       key_border: '0'
       key_border_color: '#D3BFE6'
-    - label: 薄荷绿键盘
-      click: Keyboard_custom_mint
-      width: 100
-      key_back_color: '#E6F2EA'
-      key_text_color: '#3F5A4E'
-      key_text_size: '16'
-      height: 48
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 樱花粉键盘
-      click: Keyboard_custom_pink
-      width: 100
-      key_back_color: '#FCEBED'
-      key_text_color: '#5E4B50'
-      key_text_size: '16'
-      height: 48
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 浅天蓝键盘
-      click: Keyboard_custom_blue
-      width: 100
-      key_back_color: '#E7F3FC'
-      key_text_color: '#43586B'
-      key_text_size: '16'
-      height: 48
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 杏子橙键盘
-      click: Keyboard_custom_orange
-      width: 100
-      key_back_color: '#FFF0E2'
-      key_text_color: '#6B564A'
-      key_text_size: '16'
-      height: 48
-      mie:
-        row: 5
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 薰衣紫键盘（当前）
+    - label: 26键 主键盘
       click: Keyboard_custom_purple
       width: 100
       key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
       key_text_size: '16'
-      height: 48
+      height: 50
       mie:
-        row: 6
+        row: 2
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
+    - label: 9键
+      click: Keyboard_custom_purple_9
+      width: 100
+      key_back_color: '#F1E9FC'
+      key_text_color: '#574B66'
+      key_text_size: '16'
+      height: 50
+      mie:
+        row: 3
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
+    - label: 18键
+      click: Keyboard_custom_purple_18
+      width: 100
+      key_back_color: '#F1E9FC'
+      key_text_color: '#574B66'
+      key_text_size: '16'
+      height: 50
+      mie:
+        row: 4
+      round_corner: '6'
+      key_border: '1'
+      key_border_color: '#D3BFE6'
+    - label: 14键
+      click: Keyboard_custom_purple_14
+      width: 100
+      key_back_color: '#F1E9FC'
+      key_text_color: '#574B66'
+      key_text_size: '16'
+      height: 50
+      mie:
+        row: 5
       round_corner: '6'
       key_border: '1'
       key_border_color: '#D3BFE6'
@@ -25888,9 +25887,9 @@ preset_keyboards:
       key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
       key_text_size: '15'
-      height: 48
+      height: 50
       mie:
-        row: 7
+        row: 6
       round_corner: '6'
       key_border: '1'
       key_border_color: '#D3BFE6'

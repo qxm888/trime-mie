@@ -44,7 +44,7 @@ object CustomKeyboards {
     const val BUILTIN_DEFAULT_ID = "custom_pink"
 
     /** 内置五色键盘的版本；改过内置 YAML 后 +1，升级时自动刷新内置 id。 */
-    private const val BUILTIN_VERSION = 3
+    private const val BUILTIN_VERSION = 4
 
     @Serializable
     data class CustomKey(
@@ -160,6 +160,8 @@ object CustomKeyboards {
         var builtinVersion: Int = 0,
         /** 是否已经把内置键盘提供给这个库（升级老用户也会补一次）。 */
         var builtinsOffered: Boolean = false,
+        /** 扩展内置键盘（表情/符号分类页）已补齐的版本。 */
+        var builtinExtrasVersion: Int = 0,
     )
 
     private val lock = Any()
@@ -172,7 +174,8 @@ object CustomKeyboards {
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var saveJob: Job? = null
 
-    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
+    // 只写非默认值：内置五色 300 套键盘的存档从 13.5MB 降到 2MB 级，启动解析更快。
+    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = false }
 
     /** Bumped on every change so cached keyboards can detect staleness. */
     val version: Long
@@ -264,17 +267,39 @@ object CustomKeyboards {
         }
     }
 
+    private fun decodeBuiltin(context: android.content.Context, resId: Int): Map<String, CustomKeyboard>? =
+        runCatching {
+            context.resources.openRawResource(resId)
+                .bufferedReader().use { CustomKeyboardYaml.decode(it.readText()) }
+        }.onFailure { Timber.w(it, "CustomKeyboards: builtin asset %d decode failed", resId) }.getOrNull()
+
+    /** 扩展内置键盘（表情/符号分类页）放后台补，避免首次启动主线程卡住。 */
+    private fun seedBuiltinExtrasInBackground(context: android.content.Context) {
+        if (synchronized(lock) { store.builtinExtrasVersion >= BUILTIN_VERSION }) return
+        ioScope.launch {
+            val extras = decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_extra) ?: return@launch
+            synchronized(lock) {
+                var added = 0
+                extras.forEach { (id, keyboard) ->
+                    if (!store.keyboards.containsKey(id)) {
+                        store.keyboards[id] = normalizedCopy(keyboard)
+                        added++
+                    }
+                }
+                store.builtinExtrasVersion = BUILTIN_VERSION
+                store.version++
+                dirty = true
+                scheduleSaveLocked()
+                Timber.i("CustomKeyboards: added %d builtin extras", added)
+            }
+        }
+    }
+
     /** 内置五色键盘：首次安装时写入并默认使用樱花粉。 */
     private fun seedBuiltinKeyboardsLocked() {
         val context = appContext ?: return
-        val layouts = runCatching {
-            context.resources.openRawResource(com.osfans.trime.R.raw.mie_builtin_keyboards)
-                .bufferedReader().use { CustomKeyboardYaml.decode(it.readText()) }
-        }.getOrElse {
-            Timber.w(it, "CustomKeyboards: builtin seed skipped")
-            return
-        }
-        if (layouts.isEmpty()) return
+        val layouts = decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_keyboards)
+        if (layouts.isNullOrEmpty()) return
         layouts.forEach { (id, keyboard) -> store.keyboards[id] = normalizedCopy(keyboard) }
         store.mode = MODE_CUSTOM
         store.activeId = BUILTIN_DEFAULT_ID.takeIf { layouts.containsKey(it) } ?: layouts.keys.first()
@@ -283,6 +308,7 @@ object CustomKeyboards {
         store.version++
         dirty = true
         scheduleSaveLocked()
+        seedBuiltinExtrasInBackground(context)
     }
 
     /**
@@ -292,14 +318,8 @@ object CustomKeyboards {
     private fun offerBuiltinKeyboardsLocked() {
         if (store.builtinsOffered) return
         val context = appContext ?: return
-        val layouts = runCatching {
-            context.resources.openRawResource(com.osfans.trime.R.raw.mie_builtin_keyboards)
-                .bufferedReader().use { CustomKeyboardYaml.decode(it.readText()) }
-        }.getOrElse {
-            Timber.w(it, "CustomKeyboards: builtin offer skipped")
-            return
-        }
-        if (layouts.isEmpty()) return
+        val layouts = decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_keyboards)
+        if (layouts.isNullOrEmpty()) return
         var added = 0
         layouts.forEach { (id, keyboard) ->
             if (!store.keyboards.containsKey(id)) {
@@ -315,6 +335,7 @@ object CustomKeyboards {
             scheduleSaveLocked()
             Timber.i("CustomKeyboards: offered %d builtin keyboards", added)
         }
+        seedBuiltinExtrasInBackground(context)
     }
 
     /**
@@ -324,21 +345,17 @@ object CustomKeyboards {
     private fun refreshBuiltinKeyboardsLocked() {
         if (store.builtinVersion >= BUILTIN_VERSION) return
         val context = appContext ?: return
-        val layouts = runCatching {
-            context.resources.openRawResource(com.osfans.trime.R.raw.mie_builtin_keyboards)
-                .bufferedReader().use { CustomKeyboardYaml.decode(it.readText()) }
-        }.getOrElse {
-            Timber.w(it, "CustomKeyboards: builtin refresh skipped")
-            return
-        }
-        if (layouts.isEmpty()) return
+        val layouts = decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_keyboards)
+        if (layouts.isNullOrEmpty()) return
         // 只在已经内置过这套键盘的库里刷新，不把模板强塞进用户自建的列表。
         if (store.keyboards.keys.none { it in layouts.keys }) return
+        // 整体刷新：替换已有内置 id，并补齐新版本新增的内置 id（如符号/表情分类页）。
         layouts.forEach { (id, keyboard) -> store.keyboards[id] = normalizedCopy(keyboard) }
         store.builtinVersion = BUILTIN_VERSION
         store.version++
         dirty = true
         scheduleSaveLocked()
+        seedBuiltinExtrasInBackground(context)
     }
 
     /** 内置键盘的图标解压到素材目录（.mie/键盘背景/icons），已存在的不覆盖。 */
