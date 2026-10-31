@@ -1,0 +1,1720 @@
+# 同文输入法咩版自定义键盘 —— GPT 薄荷绿设计（五色方案）
+# 导入：设置 → 键盘 → 布局管理与按键编辑 → 右上菜单 → 导入自定义布局
+# 图标：icons/ 文件夹需复制到  icons/  下（与本文件同发布）
+# 工具栏图标使用绝对路径；若 rime 目录不在默认位置，
+# 请用 gen_kb_yaml.py <你的rime>/.mie/键盘背景/icons 重新生成。
+# 工具栏动作：功能菜单 / 符号键盘 / 剪贴板 / 中英切换 / 悬浮键盘开关
+mie:
+  format: "trime-custom-keyboards-yaml"
+  version: 1
+preset_keyboards:
+  custom_mint:
+    name: "薄荷绿键盘"
+    keyboard_back_color: "#F0F4EF"
+    vertical_gap: 6
+    horizontal_gap: 6
+    mie:
+      toolbarAlignment: "legacy"
+      rowMargin: 2
+      keyAppearance:
+        keyBackColor: "#FFFFFF"
+        keyTextColor: "#455B50"
+        roundCorner: 14
+        keyBorder: 0
+      surfaceAppearance:
+        keys:
+          background: ""
+          borderWidth: 0
+          borderColor: ""
+          radius: 14
+          blur: false
+        toolbar:
+          background: ""
+          borderWidth: 0
+          borderColor: ""
+          radius: 12
+          blur: false
+        bar:
+          background: "#F0F4EF"
+          borderWidth: 0
+          borderColor: ""
+          radius: 0
+          blur: false
+        linkToolbar: false
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+        barEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+      toolbar:
+      - action: "menu_keyboard"
+        enabled: true
+        icon: "icons/tb_switch.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#E2F2E7"
+          roundCorner: 12
+          keyBorder: 0
+      - action: "liquid_keyboard"
+        enabled: true
+        icon: "icons/tb_symbols.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#E2F2E7"
+          roundCorner: 12
+          keyBorder: 0
+      - action: "clipboard_window"
+        enabled: true
+        icon: "icons/tb_clipboard.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#E2F2E7"
+          roundCorner: 12
+          keyBorder: 0
+      - action: "Mode_switch"
+        enabled: true
+        icon: "icons/tb_lang.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#E2F2E7"
+          roundCorner: 12
+          keyBorder: 0
+      - action: "__mie_toggle_floating_keyboard"
+        enabled: true
+        icon: "icons/tb_float.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#E2F2E7"
+          roundCorner: 12
+          keyBorder: 0
+    keys:
+      - label: "q"
+        width: 10
+        height: 60
+        click: "q"
+        mie:
+          row: 1
+      - label: "w"
+        width: 10
+        height: 60
+        click: "w"
+        mie:
+          row: 1
+      - label: "e"
+        width: 10
+        height: 60
+        click: "e"
+        mie:
+          row: 1
+      - label: "r"
+        width: 10
+        height: 60
+        click: "r"
+        mie:
+          row: 1
+      - label: "t"
+        width: 10
+        height: 60
+        click: "t"
+        mie:
+          row: 1
+      - label: "y"
+        width: 10
+        height: 60
+        click: "y"
+        mie:
+          row: 1
+      - label: "u"
+        width: 10
+        height: 60
+        click: "u"
+        mie:
+          row: 1
+      - label: "i"
+        width: 10
+        height: 60
+        click: "i"
+        mie:
+          row: 1
+      - label: "o"
+        width: 10
+        height: 60
+        click: "o"
+        mie:
+          row: 1
+      - label: "p"
+        width: 10
+        height: 60
+        click: "p"
+        mie:
+          row: 1
+      - label: "a"
+        width: 11.111111
+        height: 60
+        click: "a"
+        mie:
+          row: 2
+      - label: "s"
+        width: 11.111111
+        height: 60
+        click: "s"
+        mie:
+          row: 2
+      - label: "d"
+        width: 11.111111
+        height: 60
+        click: "d"
+        mie:
+          row: 2
+      - label: "f"
+        width: 11.111111
+        height: 60
+        click: "f"
+        mie:
+          row: 2
+      - label: "g"
+        width: 11.111111
+        height: 60
+        click: "g"
+        mie:
+          row: 2
+      - label: "h"
+        width: 11.111111
+        height: 60
+        click: "h"
+        mie:
+          row: 2
+      - label: "j"
+        width: 11.111111
+        height: 60
+        click: "j"
+        mie:
+          row: 2
+      - label: "k"
+        width: 11.111111
+        height: 60
+        click: "k"
+        mie:
+          row: 2
+      - label: "l"
+        width: 11.111111
+        height: 60
+        click: "l"
+        mie:
+          row: 2
+      - label: ""
+        width: 15
+        height: 60
+        click: "Shift_L"
+        key_back_color: "#E2F2E7"
+        icon: "icons/mint_shift.png"
+        icon_size: 28
+        key_on_back_color: "#72C99B"
+        key_on_text_color: "#FFFFFF"
+        mie:
+          row: 3
+      - label: "z"
+        width: 10
+        height: 60
+        click: "z"
+        mie:
+          row: 3
+      - label: "x"
+        width: 10
+        height: 60
+        click: "x"
+        mie:
+          row: 3
+      - label: "c"
+        width: 10
+        height: 60
+        click: "c"
+        mie:
+          row: 3
+      - label: "v"
+        width: 10
+        height: 60
+        click: "v"
+        mie:
+          row: 3
+      - label: "b"
+        width: 10
+        height: 60
+        click: "b"
+        mie:
+          row: 3
+      - label: "n"
+        width: 10
+        height: 60
+        click: "n"
+        mie:
+          row: 3
+      - label: "m"
+        width: 10
+        height: 60
+        click: "m"
+        mie:
+          row: 3
+      - label: ""
+        width: 15
+        height: 60
+        click: "BackSpace"
+        key_back_color: "#E2F2E7"
+        icon: "icons/mint_delete.png"
+        icon_size: 28
+        mie:
+          row: 3
+      - label: "123"
+        width: 15
+        height: 60
+        click: "liquid_keyboard"
+        key_back_color: "#E2F2E7"
+        mie:
+          row: 4
+      - label: ","
+        width: 5
+        height: 60
+        click: ","
+        key_back_color: "#E2F2E7"
+        mie:
+          row: 4
+      - label: "空格"
+        width: 60
+        height: 60
+        click: "space"
+        mie:
+          row: 4
+      - label: "。"
+        width: 5
+        height: 60
+        click: "。"
+        mie:
+          row: 4
+      - label: ""
+        width: 15
+        height: 60
+        click: "Return"
+        key_back_color: "#72C99B"
+        icon: "icons/enter_w.png"
+        icon_size: 28
+        key_text_color: "#FFFFFF"
+        mie:
+          row: 4
+
+  custom_pink:
+    name: "樱花粉键盘"
+    keyboard_back_color: "#FCF5F6"
+    vertical_gap: 6
+    horizontal_gap: 6
+    mie:
+      toolbarAlignment: "legacy"
+      rowMargin: 2
+      keyAppearance:
+        keyBackColor: "#FFFFFF"
+        keyTextColor: "#68565B"
+        roundCorner: 14
+        keyBorder: 0
+      surfaceAppearance:
+        keys:
+          background: ""
+          borderWidth: 0
+          borderColor: ""
+          radius: 14
+          blur: false
+        toolbar:
+          background: ""
+          borderWidth: 0
+          borderColor: ""
+          radius: 12
+          blur: false
+        bar:
+          background: "#FCF5F6"
+          borderWidth: 0
+          borderColor: ""
+          radius: 0
+          blur: false
+        linkToolbar: false
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+        barEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+      toolbar:
+      - action: "menu_keyboard"
+        enabled: true
+        icon: "icons/tb_switch.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#FCEBED"
+          roundCorner: 12
+          keyBorder: 0
+      - action: "liquid_keyboard"
+        enabled: true
+        icon: "icons/tb_symbols.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#FCEBED"
+          roundCorner: 12
+          keyBorder: 0
+      - action: "clipboard_window"
+        enabled: true
+        icon: "icons/tb_clipboard.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#FCEBED"
+          roundCorner: 12
+          keyBorder: 0
+      - action: "Mode_switch"
+        enabled: true
+        icon: "icons/tb_lang.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#FCEBED"
+          roundCorner: 12
+          keyBorder: 0
+      - action: "__mie_toggle_floating_keyboard"
+        enabled: true
+        icon: "icons/tb_float.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#FCEBED"
+          roundCorner: 12
+          keyBorder: 0
+    keys:
+      - label: "q"
+        width: 10
+        height: 60
+        click: "q"
+        mie:
+          row: 1
+      - label: "w"
+        width: 10
+        height: 60
+        click: "w"
+        mie:
+          row: 1
+      - label: "e"
+        width: 10
+        height: 60
+        click: "e"
+        mie:
+          row: 1
+      - label: "r"
+        width: 10
+        height: 60
+        click: "r"
+        mie:
+          row: 1
+      - label: "t"
+        width: 10
+        height: 60
+        click: "t"
+        mie:
+          row: 1
+      - label: "y"
+        width: 10
+        height: 60
+        click: "y"
+        mie:
+          row: 1
+      - label: "u"
+        width: 10
+        height: 60
+        click: "u"
+        mie:
+          row: 1
+      - label: "i"
+        width: 10
+        height: 60
+        click: "i"
+        mie:
+          row: 1
+      - label: "o"
+        width: 10
+        height: 60
+        click: "o"
+        mie:
+          row: 1
+      - label: "p"
+        width: 10
+        height: 60
+        click: "p"
+        mie:
+          row: 1
+      - label: "a"
+        width: 11.111111
+        height: 60
+        click: "a"
+        mie:
+          row: 2
+      - label: "s"
+        width: 11.111111
+        height: 60
+        click: "s"
+        mie:
+          row: 2
+      - label: "d"
+        width: 11.111111
+        height: 60
+        click: "d"
+        mie:
+          row: 2
+      - label: "f"
+        width: 11.111111
+        height: 60
+        click: "f"
+        mie:
+          row: 2
+      - label: "g"
+        width: 11.111111
+        height: 60
+        click: "g"
+        mie:
+          row: 2
+      - label: "h"
+        width: 11.111111
+        height: 60
+        click: "h"
+        mie:
+          row: 2
+      - label: "j"
+        width: 11.111111
+        height: 60
+        click: "j"
+        mie:
+          row: 2
+      - label: "k"
+        width: 11.111111
+        height: 60
+        click: "k"
+        mie:
+          row: 2
+      - label: "l"
+        width: 11.111111
+        height: 60
+        click: "l"
+        mie:
+          row: 2
+      - label: ""
+        width: 15
+        height: 60
+        click: "Shift_L"
+        key_back_color: "#FCEBED"
+        icon: "icons/pink_shift.png"
+        icon_size: 28
+        key_on_back_color: "#F4AEB8"
+        key_on_text_color: "#FFFFFF"
+        mie:
+          row: 3
+      - label: "z"
+        width: 10
+        height: 60
+        click: "z"
+        mie:
+          row: 3
+      - label: "x"
+        width: 10
+        height: 60
+        click: "x"
+        mie:
+          row: 3
+      - label: "c"
+        width: 10
+        height: 60
+        click: "c"
+        mie:
+          row: 3
+      - label: "v"
+        width: 10
+        height: 60
+        click: "v"
+        mie:
+          row: 3
+      - label: "b"
+        width: 10
+        height: 60
+        click: "b"
+        mie:
+          row: 3
+      - label: "n"
+        width: 10
+        height: 60
+        click: "n"
+        mie:
+          row: 3
+      - label: "m"
+        width: 10
+        height: 60
+        click: "m"
+        mie:
+          row: 3
+      - label: ""
+        width: 15
+        height: 60
+        click: "BackSpace"
+        key_back_color: "#FCEBED"
+        icon: "icons/pink_delete.png"
+        icon_size: 28
+        mie:
+          row: 3
+      - label: "123"
+        width: 15
+        height: 60
+        click: "liquid_keyboard"
+        key_back_color: "#FCEBED"
+        mie:
+          row: 4
+      - label: ","
+        width: 5
+        height: 60
+        click: ","
+        key_back_color: "#FCEBED"
+        mie:
+          row: 4
+      - label: "空格"
+        width: 60
+        height: 60
+        click: "space"
+        mie:
+          row: 4
+      - label: "。"
+        width: 5
+        height: 60
+        click: "。"
+        mie:
+          row: 4
+      - label: ""
+        width: 15
+        height: 60
+        click: "Return"
+        key_back_color: "#F4AEB8"
+        icon: "icons/enter_w.png"
+        icon_size: 28
+        key_text_color: "#FFFFFF"
+        mie:
+          row: 4
+
+  custom_blue:
+    name: "浅天蓝键盘"
+    keyboard_back_color: "#F0F6FB"
+    vertical_gap: 6
+    horizontal_gap: 6
+    mie:
+      toolbarAlignment: "legacy"
+      rowMargin: 2
+      keyAppearance:
+        keyBackColor: "#FFFFFF"
+        keyTextColor: "#4D6275"
+        roundCorner: 14
+        keyBorder: 0
+      surfaceAppearance:
+        keys:
+          background: ""
+          borderWidth: 0
+          borderColor: ""
+          radius: 14
+          blur: false
+        toolbar:
+          background: ""
+          borderWidth: 0
+          borderColor: ""
+          radius: 12
+          blur: false
+        bar:
+          background: "#F0F6FB"
+          borderWidth: 0
+          borderColor: ""
+          radius: 0
+          blur: false
+        linkToolbar: false
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+        barEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+      toolbar:
+      - action: "menu_keyboard"
+        enabled: true
+        icon: "icons/tb_switch.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#E7F3FC"
+          roundCorner: 12
+          keyBorder: 0
+      - action: "liquid_keyboard"
+        enabled: true
+        icon: "icons/tb_symbols.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#E7F3FC"
+          roundCorner: 12
+          keyBorder: 0
+      - action: "clipboard_window"
+        enabled: true
+        icon: "icons/tb_clipboard.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#E7F3FC"
+          roundCorner: 12
+          keyBorder: 0
+      - action: "Mode_switch"
+        enabled: true
+        icon: "icons/tb_lang.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#E7F3FC"
+          roundCorner: 12
+          keyBorder: 0
+      - action: "__mie_toggle_floating_keyboard"
+        enabled: true
+        icon: "icons/tb_float.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#E7F3FC"
+          roundCorner: 12
+          keyBorder: 0
+    keys:
+      - label: "q"
+        width: 10
+        height: 60
+        click: "q"
+        mie:
+          row: 1
+      - label: "w"
+        width: 10
+        height: 60
+        click: "w"
+        mie:
+          row: 1
+      - label: "e"
+        width: 10
+        height: 60
+        click: "e"
+        mie:
+          row: 1
+      - label: "r"
+        width: 10
+        height: 60
+        click: "r"
+        mie:
+          row: 1
+      - label: "t"
+        width: 10
+        height: 60
+        click: "t"
+        mie:
+          row: 1
+      - label: "y"
+        width: 10
+        height: 60
+        click: "y"
+        mie:
+          row: 1
+      - label: "u"
+        width: 10
+        height: 60
+        click: "u"
+        mie:
+          row: 1
+      - label: "i"
+        width: 10
+        height: 60
+        click: "i"
+        mie:
+          row: 1
+      - label: "o"
+        width: 10
+        height: 60
+        click: "o"
+        mie:
+          row: 1
+      - label: "p"
+        width: 10
+        height: 60
+        click: "p"
+        mie:
+          row: 1
+      - label: "a"
+        width: 11.111111
+        height: 60
+        click: "a"
+        mie:
+          row: 2
+      - label: "s"
+        width: 11.111111
+        height: 60
+        click: "s"
+        mie:
+          row: 2
+      - label: "d"
+        width: 11.111111
+        height: 60
+        click: "d"
+        mie:
+          row: 2
+      - label: "f"
+        width: 11.111111
+        height: 60
+        click: "f"
+        mie:
+          row: 2
+      - label: "g"
+        width: 11.111111
+        height: 60
+        click: "g"
+        mie:
+          row: 2
+      - label: "h"
+        width: 11.111111
+        height: 60
+        click: "h"
+        mie:
+          row: 2
+      - label: "j"
+        width: 11.111111
+        height: 60
+        click: "j"
+        mie:
+          row: 2
+      - label: "k"
+        width: 11.111111
+        height: 60
+        click: "k"
+        mie:
+          row: 2
+      - label: "l"
+        width: 11.111111
+        height: 60
+        click: "l"
+        mie:
+          row: 2
+      - label: ""
+        width: 15
+        height: 60
+        click: "Shift_L"
+        key_back_color: "#E7F3FC"
+        icon: "icons/blue_shift.png"
+        icon_size: 28
+        key_on_back_color: "#96CBF4"
+        key_on_text_color: "#FFFFFF"
+        mie:
+          row: 3
+      - label: "z"
+        width: 10
+        height: 60
+        click: "z"
+        mie:
+          row: 3
+      - label: "x"
+        width: 10
+        height: 60
+        click: "x"
+        mie:
+          row: 3
+      - label: "c"
+        width: 10
+        height: 60
+        click: "c"
+        mie:
+          row: 3
+      - label: "v"
+        width: 10
+        height: 60
+        click: "v"
+        mie:
+          row: 3
+      - label: "b"
+        width: 10
+        height: 60
+        click: "b"
+        mie:
+          row: 3
+      - label: "n"
+        width: 10
+        height: 60
+        click: "n"
+        mie:
+          row: 3
+      - label: "m"
+        width: 10
+        height: 60
+        click: "m"
+        mie:
+          row: 3
+      - label: ""
+        width: 15
+        height: 60
+        click: "BackSpace"
+        key_back_color: "#E7F3FC"
+        icon: "icons/blue_delete.png"
+        icon_size: 28
+        mie:
+          row: 3
+      - label: "123"
+        width: 15
+        height: 60
+        click: "liquid_keyboard"
+        key_back_color: "#E7F3FC"
+        mie:
+          row: 4
+      - label: ","
+        width: 5
+        height: 60
+        click: ","
+        key_back_color: "#E7F3FC"
+        mie:
+          row: 4
+      - label: "空格"
+        width: 60
+        height: 60
+        click: "space"
+        mie:
+          row: 4
+      - label: "。"
+        width: 5
+        height: 60
+        click: "。"
+        mie:
+          row: 4
+      - label: ""
+        width: 15
+        height: 60
+        click: "Return"
+        key_back_color: "#96CBF4"
+        icon: "icons/enter_w.png"
+        icon_size: 28
+        key_text_color: "#FFFFFF"
+        mie:
+          row: 4
+
+  custom_orange:
+    name: "杏子橙键盘"
+    keyboard_back_color: "#FCF7F0"
+    vertical_gap: 6
+    horizontal_gap: 6
+    mie:
+      toolbarAlignment: "legacy"
+      rowMargin: 2
+      keyAppearance:
+        keyBackColor: "#FFFFFF"
+        keyTextColor: "#725C4F"
+        roundCorner: 14
+        keyBorder: 0
+      surfaceAppearance:
+        keys:
+          background: ""
+          borderWidth: 0
+          borderColor: ""
+          radius: 14
+          blur: false
+        toolbar:
+          background: ""
+          borderWidth: 0
+          borderColor: ""
+          radius: 12
+          blur: false
+        bar:
+          background: "#FCF7F0"
+          borderWidth: 0
+          borderColor: ""
+          radius: 0
+          blur: false
+        linkToolbar: false
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+        barEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+      toolbar:
+      - action: "menu_keyboard"
+        enabled: true
+        icon: "icons/tb_switch.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#FFF0E2"
+          roundCorner: 12
+          keyBorder: 0
+      - action: "liquid_keyboard"
+        enabled: true
+        icon: "icons/tb_symbols.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#FFF0E2"
+          roundCorner: 12
+          keyBorder: 0
+      - action: "clipboard_window"
+        enabled: true
+        icon: "icons/tb_clipboard.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#FFF0E2"
+          roundCorner: 12
+          keyBorder: 0
+      - action: "Mode_switch"
+        enabled: true
+        icon: "icons/tb_lang.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#FFF0E2"
+          roundCorner: 12
+          keyBorder: 0
+      - action: "__mie_toggle_floating_keyboard"
+        enabled: true
+        icon: "icons/tb_float.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#FFF0E2"
+          roundCorner: 12
+          keyBorder: 0
+    keys:
+      - label: "q"
+        width: 10
+        height: 60
+        click: "q"
+        mie:
+          row: 1
+      - label: "w"
+        width: 10
+        height: 60
+        click: "w"
+        mie:
+          row: 1
+      - label: "e"
+        width: 10
+        height: 60
+        click: "e"
+        mie:
+          row: 1
+      - label: "r"
+        width: 10
+        height: 60
+        click: "r"
+        mie:
+          row: 1
+      - label: "t"
+        width: 10
+        height: 60
+        click: "t"
+        mie:
+          row: 1
+      - label: "y"
+        width: 10
+        height: 60
+        click: "y"
+        mie:
+          row: 1
+      - label: "u"
+        width: 10
+        height: 60
+        click: "u"
+        mie:
+          row: 1
+      - label: "i"
+        width: 10
+        height: 60
+        click: "i"
+        mie:
+          row: 1
+      - label: "o"
+        width: 10
+        height: 60
+        click: "o"
+        mie:
+          row: 1
+      - label: "p"
+        width: 10
+        height: 60
+        click: "p"
+        mie:
+          row: 1
+      - label: "a"
+        width: 11.111111
+        height: 60
+        click: "a"
+        mie:
+          row: 2
+      - label: "s"
+        width: 11.111111
+        height: 60
+        click: "s"
+        mie:
+          row: 2
+      - label: "d"
+        width: 11.111111
+        height: 60
+        click: "d"
+        mie:
+          row: 2
+      - label: "f"
+        width: 11.111111
+        height: 60
+        click: "f"
+        mie:
+          row: 2
+      - label: "g"
+        width: 11.111111
+        height: 60
+        click: "g"
+        mie:
+          row: 2
+      - label: "h"
+        width: 11.111111
+        height: 60
+        click: "h"
+        mie:
+          row: 2
+      - label: "j"
+        width: 11.111111
+        height: 60
+        click: "j"
+        mie:
+          row: 2
+      - label: "k"
+        width: 11.111111
+        height: 60
+        click: "k"
+        mie:
+          row: 2
+      - label: "l"
+        width: 11.111111
+        height: 60
+        click: "l"
+        mie:
+          row: 2
+      - label: ""
+        width: 15
+        height: 60
+        click: "Shift_L"
+        key_back_color: "#FFF0E2"
+        icon: "icons/orange_shift.png"
+        icon_size: 28
+        key_on_back_color: "#F7BD99"
+        key_on_text_color: "#FFFFFF"
+        mie:
+          row: 3
+      - label: "z"
+        width: 10
+        height: 60
+        click: "z"
+        mie:
+          row: 3
+      - label: "x"
+        width: 10
+        height: 60
+        click: "x"
+        mie:
+          row: 3
+      - label: "c"
+        width: 10
+        height: 60
+        click: "c"
+        mie:
+          row: 3
+      - label: "v"
+        width: 10
+        height: 60
+        click: "v"
+        mie:
+          row: 3
+      - label: "b"
+        width: 10
+        height: 60
+        click: "b"
+        mie:
+          row: 3
+      - label: "n"
+        width: 10
+        height: 60
+        click: "n"
+        mie:
+          row: 3
+      - label: "m"
+        width: 10
+        height: 60
+        click: "m"
+        mie:
+          row: 3
+      - label: ""
+        width: 15
+        height: 60
+        click: "BackSpace"
+        key_back_color: "#FFF0E2"
+        icon: "icons/orange_delete.png"
+        icon_size: 28
+        mie:
+          row: 3
+      - label: "123"
+        width: 15
+        height: 60
+        click: "liquid_keyboard"
+        key_back_color: "#FFF0E2"
+        mie:
+          row: 4
+      - label: ","
+        width: 5
+        height: 60
+        click: ","
+        key_back_color: "#FFF0E2"
+        mie:
+          row: 4
+      - label: "空格"
+        width: 60
+        height: 60
+        click: "space"
+        mie:
+          row: 4
+      - label: "。"
+        width: 5
+        height: 60
+        click: "。"
+        mie:
+          row: 4
+      - label: ""
+        width: 15
+        height: 60
+        click: "Return"
+        key_back_color: "#F7BD99"
+        icon: "icons/enter_w.png"
+        icon_size: 28
+        key_text_color: "#FFFFFF"
+        mie:
+          row: 4
+
+  custom_purple:
+    name: "薰衣紫键盘"
+    keyboard_back_color: "#F7F3FC"
+    vertical_gap: 6
+    horizontal_gap: 6
+    mie:
+      toolbarAlignment: "legacy"
+      rowMargin: 2
+      keyAppearance:
+        keyBackColor: "#FFFFFF"
+        keyTextColor: "#61566F"
+        roundCorner: 14
+        keyBorder: 0
+      surfaceAppearance:
+        keys:
+          background: ""
+          borderWidth: 0
+          borderColor: ""
+          radius: 14
+          blur: false
+        toolbar:
+          background: ""
+          borderWidth: 0
+          borderColor: ""
+          radius: 12
+          blur: false
+        bar:
+          background: "#F7F3FC"
+          borderWidth: 0
+          borderColor: ""
+          radius: 0
+          blur: false
+        linkToolbar: false
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+        barEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+      toolbar:
+      - action: "menu_keyboard"
+        enabled: true
+        icon: "icons/tb_switch.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#F1E9FC"
+          roundCorner: 12
+          keyBorder: 0
+      - action: "liquid_keyboard"
+        enabled: true
+        icon: "icons/tb_symbols.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#F1E9FC"
+          roundCorner: 12
+          keyBorder: 0
+      - action: "clipboard_window"
+        enabled: true
+        icon: "icons/tb_clipboard.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#F1E9FC"
+          roundCorner: 12
+          keyBorder: 0
+      - action: "Mode_switch"
+        enabled: true
+        icon: "icons/tb_lang.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#F1E9FC"
+          roundCorner: 12
+          keyBorder: 0
+      - action: "__mie_toggle_floating_keyboard"
+        enabled: true
+        icon: "icons/tb_float.png"
+        iconSize: 30
+        appearance:
+          keyBackColor: "#F1E9FC"
+          roundCorner: 12
+          keyBorder: 0
+    keys:
+      - label: "q"
+        width: 10
+        height: 60
+        click: "q"
+        mie:
+          row: 1
+      - label: "w"
+        width: 10
+        height: 60
+        click: "w"
+        mie:
+          row: 1
+      - label: "e"
+        width: 10
+        height: 60
+        click: "e"
+        mie:
+          row: 1
+      - label: "r"
+        width: 10
+        height: 60
+        click: "r"
+        mie:
+          row: 1
+      - label: "t"
+        width: 10
+        height: 60
+        click: "t"
+        mie:
+          row: 1
+      - label: "y"
+        width: 10
+        height: 60
+        click: "y"
+        mie:
+          row: 1
+      - label: "u"
+        width: 10
+        height: 60
+        click: "u"
+        mie:
+          row: 1
+      - label: "i"
+        width: 10
+        height: 60
+        click: "i"
+        mie:
+          row: 1
+      - label: "o"
+        width: 10
+        height: 60
+        click: "o"
+        mie:
+          row: 1
+      - label: "p"
+        width: 10
+        height: 60
+        click: "p"
+        mie:
+          row: 1
+      - label: "a"
+        width: 11.111111
+        height: 60
+        click: "a"
+        mie:
+          row: 2
+      - label: "s"
+        width: 11.111111
+        height: 60
+        click: "s"
+        mie:
+          row: 2
+      - label: "d"
+        width: 11.111111
+        height: 60
+        click: "d"
+        mie:
+          row: 2
+      - label: "f"
+        width: 11.111111
+        height: 60
+        click: "f"
+        mie:
+          row: 2
+      - label: "g"
+        width: 11.111111
+        height: 60
+        click: "g"
+        mie:
+          row: 2
+      - label: "h"
+        width: 11.111111
+        height: 60
+        click: "h"
+        mie:
+          row: 2
+      - label: "j"
+        width: 11.111111
+        height: 60
+        click: "j"
+        mie:
+          row: 2
+      - label: "k"
+        width: 11.111111
+        height: 60
+        click: "k"
+        mie:
+          row: 2
+      - label: "l"
+        width: 11.111111
+        height: 60
+        click: "l"
+        mie:
+          row: 2
+      - label: ""
+        width: 15
+        height: 60
+        click: "Shift_L"
+        key_back_color: "#F1E9FC"
+        icon: "icons/purple_shift.png"
+        icon_size: 28
+        key_on_back_color: "#C9A6ED"
+        key_on_text_color: "#FFFFFF"
+        mie:
+          row: 3
+      - label: "z"
+        width: 10
+        height: 60
+        click: "z"
+        mie:
+          row: 3
+      - label: "x"
+        width: 10
+        height: 60
+        click: "x"
+        mie:
+          row: 3
+      - label: "c"
+        width: 10
+        height: 60
+        click: "c"
+        mie:
+          row: 3
+      - label: "v"
+        width: 10
+        height: 60
+        click: "v"
+        mie:
+          row: 3
+      - label: "b"
+        width: 10
+        height: 60
+        click: "b"
+        mie:
+          row: 3
+      - label: "n"
+        width: 10
+        height: 60
+        click: "n"
+        mie:
+          row: 3
+      - label: "m"
+        width: 10
+        height: 60
+        click: "m"
+        mie:
+          row: 3
+      - label: ""
+        width: 15
+        height: 60
+        click: "BackSpace"
+        key_back_color: "#F1E9FC"
+        icon: "icons/purple_delete.png"
+        icon_size: 28
+        mie:
+          row: 3
+      - label: "123"
+        width: 15
+        height: 60
+        click: "liquid_keyboard"
+        key_back_color: "#F1E9FC"
+        mie:
+          row: 4
+      - label: ","
+        width: 5
+        height: 60
+        click: ","
+        key_back_color: "#F1E9FC"
+        mie:
+          row: 4
+      - label: "空格"
+        width: 60
+        height: 60
+        click: "space"
+        mie:
+          row: 4
+      - label: "。"
+        width: 5
+        height: 60
+        click: "。"
+        mie:
+          row: 4
+      - label: ""
+        width: 15
+        height: 60
+        click: "Return"
+        key_back_color: "#C9A6ED"
+        icon: "icons/enter_w.png"
+        icon_size: 28
+        key_text_color: "#FFFFFF"
+        mie:
+          row: 4
+

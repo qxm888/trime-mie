@@ -368,7 +368,13 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
         var useLocalImage = false
         val drawable = if (IMAGE_PATTERN.matches(style)) {
             useLocalImage = true
-            if (java.io.File(style).isAbsolute) Drawable.createFromPath(style) else scope.drawable(style)
+            when {
+                java.io.File(style).isAbsolute -> android.graphics.drawable.Drawable.createFromPath(style)
+                // 相对路径优先按咩版素材目录（.mie/键盘背景）解析，主题/应用资源兜底。
+                else -> com.osfans.trime.data.keymap.CustomKeyAssets.resolve(context, style)
+                    ?.let { android.graphics.drawable.Drawable.createFromPath(it) }
+                    ?: scope.drawable(style)
+            }
         } else if (style.startsWith("ic@")) {
             val icon = "cmd_${style.substring(3)}"
             IconicsDrawable(context, icon).apply {

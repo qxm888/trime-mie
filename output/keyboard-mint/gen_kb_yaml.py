@@ -8,7 +8,9 @@
 """
 import sys
 
-TB_BASE = sys.argv[1] if len(sys.argv) > 1 else "/storage/emulated/0/rime/.mie/键盘背景/icons"
+# 默认输出相对路径（相对 .mie/键盘背景），换机/换目录都能用；
+# 需要绝对路径时传入目录，例如 python3 gen_kb_yaml.py /storage/emulated/0/rime/.mie/键盘背景/icons
+TB_BASE = sys.argv[1] if len(sys.argv) > 1 else "icons"
 
 PALETTES = [
     ("mint",   "薄荷绿", "#F0F4EF", "#E2F2E7", "#72C99B", "#455B50"),

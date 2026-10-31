@@ -113,7 +113,7 @@ class InputView(
         get() = isFloatingKeyboardEnabled && oneHandEnabled
 
     val isInputBarHidden: Boolean
-        get() = com.osfans.trime.ime.bar.InputBarVisibility.hidden(keyboardPrefs.hideInputBar.getValue(),isFloatingKeyboardEnabled,isOneHandMode)
+        get() = com.osfans.trime.ime.bar.InputBarVisibility.hidden(keyboardPrefs.hideInputBar.getValue(), isFloatingKeyboardEnabled)
 
     /**
      * 宽/高档位偏好镜像（双指缩放松手落盘时更新）。

@@ -40,6 +40,8 @@ object CustomKeyboards {
     const val ID_PREFIX = "custom_"
     const val MODE_THEME = "theme"
     const val MODE_CUSTOM = "custom"
+    /** 内置五色键盘中默认使用的方案：樱花粉。 */
+    const val BUILTIN_DEFAULT_ID = "custom_pink"
 
     @Serializable
     data class CustomKey(
@@ -234,7 +236,11 @@ object CustomKeyboards {
             appContext = com.osfans.trime.util.storageContext(context)
             runCatching {
                 val file = storeFile()
-                file.readAtomicText()?.let { contents ->
+                val contents = file.readAtomicText()
+                if (contents == null) {
+                    // 全新安装：内置五色键盘（默认樱花粉），并切到自定义布局模式。
+                    seedBuiltinKeyboardsLocked()
+                } else {
                     store = json.decodeFromString(Store.serializer(), contents)
                     store.keyboards.replaceAll { _, keyboard -> normalizedCopy(keyboard) }
                     if (store.mode !in setOf(MODE_THEME, MODE_CUSTOM)) store.mode = MODE_THEME
@@ -244,7 +250,54 @@ object CustomKeyboards {
                     scheduleSaveLocked()
                 }
             }.onFailure { Timber.w(it, "CustomKeyboards: load failed, starting fresh") }
+            // 内置图标每次启动补齐（素材目录可能此时才可用），已存在的不覆盖。
+            runCatching { ensureBuiltinIcons(context) }.onFailure { Timber.w(it, "CustomKeyboards: builtin icons failed") }
         }
+    }
+
+    /** 内置五色键盘：首次安装时写入并默认使用樱花粉。 */
+    private fun seedBuiltinKeyboardsLocked() {
+        val context = appContext ?: return
+        val layouts = runCatching {
+            context.resources.openRawResource(com.osfans.trime.R.raw.mie_builtin_keyboards)
+                .bufferedReader().use { CustomKeyboardYaml.decode(it.readText()) }
+        }.getOrElse {
+            Timber.w(it, "CustomKeyboards: builtin seed skipped")
+            return
+        }
+        if (layouts.isEmpty()) return
+        layouts.forEach { (id, keyboard) -> store.keyboards[id] = normalizedCopy(keyboard) }
+        store.mode = MODE_CUSTOM
+        store.activeId = BUILTIN_DEFAULT_ID.takeIf { layouts.containsKey(it) } ?: layouts.keys.first()
+        store.version++
+        dirty = true
+        scheduleSaveLocked()
+    }
+
+    /** 内置键盘的图标解压到素材目录（.mie/键盘背景/icons），已存在的不覆盖。 */
+    private fun ensureBuiltinIcons(context: Context) {
+        val dir = File(com.osfans.trime.core.data.MieUserDirectory.assetFolder(context, "custom_kb_bg"), "icons")
+        val marker = File(dir, ".builtin_v1")
+        if (marker.isFile) return
+        if (!dir.isDirectory && !dir.mkdirs()) return
+        runCatching {
+            context.resources.openRawResource(com.osfans.trime.R.raw.mie_builtin_icons).use { input ->
+                java.util.zip.ZipInputStream(input.buffered()).use { zip ->
+                    while (true) {
+                        val entry = zip.nextEntry ?: break
+                        if (!entry.isDirectory) {
+                            val name = entry.name.substringAfterLast('/')
+                            if (name.isNotEmpty()) {
+                                val out = File(dir, name)
+                                if (!out.exists()) out.outputStream().use { zip.copyTo(it) }
+                            }
+                        }
+                        zip.closeEntry()
+                    }
+                }
+            }
+            marker.createNewFile()
+        }.onFailure { Timber.w(it, "CustomKeyboards: could not unpack builtin icons") }
     }
 
     fun shutdown() {

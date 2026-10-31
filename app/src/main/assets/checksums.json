@@ -1,5 +1,5 @@
 {
-    "sha256": "94eafa6b6a25f2fad8f3022da8a968f1fe28573f8df45ff7300f0b6082d07796",
+    "sha256": "f71124286d3c99a148688b4a944ee2bd6d94141b0a5d023e1431928dbc05b511",
     "files": {
         "licenses": "",
         "licenses/Apache-2.0.txt": "6c11db5f4f0d8521559233b532c635692b6525bde771139723dc1ee489fac393",
@@ -13,7 +13,6 @@
         "shared/default.yaml": "dd55653a991f9418eb425ee2112666f82e3e753c5ce3ed5702dd243041a45382",
         "shared/key_bindings.yaml": "5c484257cccbab899bc874dfeb9257ce7190c99fee3abc33321767c8dac56af9",
         "shared/punctuation.yaml": "d6f89592149098f0a2d0ed3e5c83f49adb6226cdf1d967b0bc0d293f4e5c496a",
-        "shared/symbols.yaml": "f12ee3a61bb9739c29fe6ba12890c5c9c50ca38f63ce9c85e1a16e223ae0b04f",
-        "shared/tongwenfeng.trime.yaml": "01e33c34ab057f47d54c41a578182e3562e07f607421a2a57d012405b252d196"
+        "shared/symbols.yaml": "f12ee3a61bb9739c29fe6ba12890c5c9c50ca38f63ce9c85e1a16e223ae0b04f"
     }
 }

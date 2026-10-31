@@ -77,11 +77,19 @@ class SwitchOptionWindow(di: DI) :
             SwitchOptionEntry.Static(context.getString(R.string.one_hand_mode),
                 R.drawable.ic_mode_one_hand_24, SwitchOptionEntry.Static.Type.OneHandMode),
             SwitchOptionEntry.Static("悬浮候选栏", R.drawable.ic_baseline_list_alt_24, SwitchOptionEntry.Static.Type.CandidatesWindow),
+            SwitchOptionEntry.Static("浮动球", R.drawable.ic_baseline_star_24, SwitchOptionEntry.Static.Type.FloatingBall),
             SwitchOptionEntry.Static("隐藏状态栏", R.drawable.ic_baseline_keyboard_24, SwitchOptionEntry.Static.Type.HideInputBar),
         )
     }
 
     var popupMenu: PopupMenu? = null
+
+    private val windowManager: com.osfans.trime.ime.window.BoardWindowManager by instance()
+
+    /** 切换开关后回到键盘，让用户直接看到效果而不是停留在菜单页。 */
+    private fun returnToKeyboard() {
+        windowManager.attachWindow(com.osfans.trime.ime.keyboard.KeyboardWindow)
+    }
 
     private val saveOptions by lazy {
         RimeConfig.openConfig("default").use {
@@ -136,8 +144,40 @@ class SwitchOptionWindow(di: DI) :
                         SwitchOptionEntry.Static.Type.InputStats -> InputStatsActivity.start(context)
                         SwitchOptionEntry.Static.Type.FloatingKeyboard -> service.toggleFloatingKeyboard()
                         SwitchOptionEntry.Static.Type.OneHandMode -> service.toggleOneHandMode()
-                        SwitchOptionEntry.Static.Type.CandidatesWindow -> service.toggleCandidatesWindow()
-                        SwitchOptionEntry.Static.Type.HideInputBar -> service.toggleInputBar()
+                        SwitchOptionEntry.Static.Type.CandidatesWindow -> {
+                            service.toggleCandidatesWindow()
+                            Toast.makeText(
+                                context,
+                                if (com.osfans.trime.data.prefs.AppPrefs.defaultInstance().candidates.mode.getValue() ==
+                                    com.osfans.trime.ime.candidates.popup.PopupCandidatesMode.DISABLED
+                                ) "候选栏已关闭" else "候选栏已开启",
+                                Toast.LENGTH_SHORT,
+                            ).show()
+                            returnToKeyboard()
+                        }
+                        SwitchOptionEntry.Static.Type.FloatingBall -> {
+                            com.osfans.trime.data.prefs.AppPrefs.defaultInstance().candidates.floatingBall.run { setValue(!getValue()) }
+                            Toast.makeText(
+                                context,
+                                if (com.osfans.trime.data.prefs.AppPrefs.defaultInstance().candidates.floatingBall.getValue()) "浮动球已开启" else "浮动球已关闭",
+                                Toast.LENGTH_SHORT,
+                            ).show()
+                            returnToKeyboard()
+                        }
+                        SwitchOptionEntry.Static.Type.HideInputBar -> {
+                            service.toggleInputBar()
+                            val hidden = service.inputBarHiddenForDisplay()
+                            Toast.makeText(
+                                context,
+                                when {
+                                    hidden -> "状态栏已隐藏"
+                                    com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.hideInputBar.getValue() -> "停靠模式不隐藏状态栏，切换到悬浮键盘后生效"
+                                    else -> "状态栏已显示"
+                                },
+                                Toast.LENGTH_SHORT,
+                            ).show()
+                            returnToKeyboard()
+                        }
 
                         SwitchOptionEntry.Static.Type.ThemeList -> showDialog { r ->
                             ThemePickerDialog.build(service.lifecycleScope, context) {

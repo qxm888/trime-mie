@@ -87,7 +87,7 @@ class InputBarDelegate(override val di: DI) :
 
     private val prefs = AppPrefs.defaultInstance()
 
-    private val hideQuickBar get() = InputBarVisibility.hidden(prefs.keyboard.hideInputBar.getValue(),service.isFloatingEffective(),service.oneHandActive())
+    private val hideQuickBar get() = InputBarVisibility.hidden(prefs.keyboard.hideInputBar.getValue(), service.isFloatingEffective())
 
     private val clipboardSuggestion by prefs.clipboard.clipboardSuggestion
 

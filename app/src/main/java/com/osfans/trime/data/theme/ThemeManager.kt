@@ -173,7 +173,9 @@ object ThemeManager {
         }
 
         Timber.w(lastFailure, "No valid theme available")
-        error("No valid theme available")
+        // 不再内置同文风主题：没有可用主题时用独立键盘外观兜底，避免整页设置/键盘崩溃。
+        val standalone = com.osfans.trime.data.keymap.StandaloneKeyboardTheme.base()
+        return ResolvedTheme("", standalone, null)
     }
 
     private fun evaluateActiveTheme(): Theme {
@@ -240,7 +242,7 @@ object ThemeManager {
         val request = themeRequestRevision.incrementAndGet()
         val resolvedTheme = withContext(Dispatchers.IO) {
             FontOverrides.invalidate()
-            if (recompileTheme && CustomKeyboards.mode != CustomKeyboards.MODE_CUSTOM) {
+            if (recompileTheme && configId.isNotBlank() && CustomKeyboards.mode != CustomKeyboards.MODE_CUSTOM) {
                 // 先标记源文件已修改：不依赖引擎是否就绪，之后任何一次部署都会重编译。
                 ThemeLoader.touchThemeSource(configId)
                 pendingThemeRebuild = true

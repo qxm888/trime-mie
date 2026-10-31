@@ -38,11 +38,12 @@ class Mie303Runner : Instrumentation() {
             // Application initialization runs on the main thread before queued callbacks.
             main { check(com.osfans.trime.data.prefs.AppPrefs.defaultInstance() != null) }
             main { }
-            check(com.osfans.trime.ime.bar.InputBarVisibility.hidden(true,false))
-            check(!com.osfans.trime.ime.bar.InputBarVisibility.hidden(true,true))
-            check(com.osfans.trime.ime.bar.InputBarVisibility.hidden(true,true,true))
+            // 硬性规则：只有悬浮模式能隐藏状态栏，停靠模式一律显示。
+            check(!com.osfans.trime.ime.bar.InputBarVisibility.hidden(true,false))
+            check(com.osfans.trime.ime.bar.InputBarVisibility.hidden(true,true))
             check(!com.osfans.trime.ime.bar.InputBarVisibility.hidden(false,false))
-            pass("hidden preference restored in docked mode; floating temporarily shows bar; one-hand policy remains separate")
+            check(!com.osfans.trime.ime.bar.InputBarVisibility.hidden(false,true))
+            pass("docked mode always shows the status bar; only floating mode can hide it")
             reorder();localAddresses();touchProxy();createdWords()
             val bitmap=Bitmap.createBitmap(160,80,Bitmap.Config.ARGB_8888)
             Canvas(bitmap).apply { drawColor(0xFFF4D3DC.toInt());drawRect(80f,0f,160f,80f,Paint().apply { color=0xFFD2E6EB.toInt() }) }

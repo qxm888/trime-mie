@@ -397,6 +397,16 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
             com.osfans.trime.ime.candidates.popup.PopupCandidatesMode.ALWAYS_SHOW else com.osfans.trime.ime.candidates.popup.PopupCandidatesMode.DISABLED) }
     }
     fun toggleInputBar() { prefs.keyboard.hideInputBar.run { setValue(!getValue()) } }
+
+    /**
+     * 状态栏此刻是否真的隐藏：硬性规则——只有悬浮窗模式（含单手/横屏自动悬浮）可以隐藏，
+     * 停靠的候选栏模式永远显示状态栏。
+     */
+    fun inputBarHiddenForDisplay(): Boolean =
+        com.osfans.trime.ime.bar.InputBarVisibility.hidden(
+            prefs.keyboard.hideInputBar.getValue(),
+            com.osfans.trime.ime.keyboard.KeyboardPrefs.run { this@TrimeInputMethodService.isFloatingEffective() },
+        )
     fun openKeyboardMenu() {
         showWindow(true)
         inputView?.post { inputView?.showKeyboardMenu() }

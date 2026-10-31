@@ -79,17 +79,8 @@ class KeyView(
     }
 
     /** 图标可用根目录：.mie/键盘背景（直接外部模式）或 filesDir/custom_kb_bg（应用存储）。 */
-    private fun resolveIconPath(raw: String): String? {
-        if (raw.isBlank()) return null
-        val root = com.osfans.trime.core.data.DirectExternalStorage.resources(context, "custom_kb_bg")
-        val file = if (raw.startsWith("/")) java.io.File(raw) else java.io.File(root, raw)
-        val canonical = runCatching { file.canonicalFile.path }.getOrNull() ?: return null
-        val rootPath = runCatching { root.canonicalFile.path }.getOrNull() ?: return null
-        val filesRoot = java.io.File(context.filesDir, "custom_kb_bg").canonicalFile.path
-        // 禁止越界读取：仅允许咩版自有素材目录内的文件。
-        if (!canonical.startsWith("$rootPath${java.io.File.separator}") && !canonical.startsWith("$filesRoot${java.io.File.separator}")) return null
-        return canonical.takeIf { java.io.File(it).isFile }
-    }
+    private fun resolveIconPath(raw: String): String? =
+        com.osfans.trime.data.keymap.CustomKeyAssets.resolve(context, raw)
     private fun voiceLongPress(): Boolean {
         val code = key.getCode(KeyBehavior.CLICK)
         return key.longClick?.code == KeyEvent.KEYCODE_VOICE_ASSIST || code == KeyEvent.KEYCODE_VOICE_ASSIST ||

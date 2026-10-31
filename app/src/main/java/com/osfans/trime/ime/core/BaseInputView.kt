@@ -99,19 +99,19 @@ abstract class BaseInputView(
                         isEnabled = false
                     }
                     onFullDisplay?.let { full -> menu.add("完整显示").setOnMenuItemClickListener { full(); true } }
-                    listOf("固定到第1位" to "pin1", "固定到第2位" to "pin2", "固定到第3位" to "pin3", "上移一位" to "up", "下移一位" to "down").forEach { (label, action) ->
+                    listOf("调至首位" to "pin1", "调至次位" to "pin2", "调至三位" to "pin3", "上移一位" to "up", "下移一位" to "down").forEach { (label, action) ->
                         menu.add(label).setOnMenuItemClickListener { adjust(action); true }
                     }
-                    menu.add("造词…").setOnMenuItemClickListener {
+                    menu.add("造词编码").setOnMenuItemClickListener {
                         context.startActivity(android.content.Intent(context, com.osfans.trime.ui.main.WordCreationActivity::class.java)
                             .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
                             .putExtra("schema", contextSchema).putExtra("word", text).putExtra("code", contextCode)
                             .putExtra("alphabet", rime.run { schemaCached.alphabet }))
                         true
                     }
-                    menu.add("忘记这个候选 · Control+Delete").setOnMenuItemClickListener { adjust("forget"); true }
-                    menu.add("删除这个候选").setOnMenuItemClickListener { adjust("delete"); true }
-                    menu.add("恢复此编码默认候选").setOnMenuItemClickListener { adjust("reset"); true }
+                    menu.add("忘记候选").setOnMenuItemClickListener { adjust("forget"); true }
+                    menu.add("删除候选").setOnMenuItemClickListener { adjust("delete"); true }
+                    menu.add("恢复默认").setOnMenuItemClickListener { adjust("reset"); true }
                     setOnDismissListener {
                         candidateActionMenu = null
                     }
