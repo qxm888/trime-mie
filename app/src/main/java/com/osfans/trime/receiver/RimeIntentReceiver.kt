@@ -23,12 +23,13 @@ class RimeIntentReceiver : BroadcastReceiver() {
         when (intent.action) {
             ACTION_DEPLOY -> {
                 Timber.i("try to start maintenance ...")
-                rime.launchOnReady { it.deploy() }
+                // 部署失败只记录日志，不能让异常在协程里冒泡导致进程崩溃。
+                rime.launchOnReady { runCatching { it.deploy() }.onFailure { e -> Timber.w(e, "Deploy failed") } }
             }
 
             ACTION_SYNC_USER_DATA -> {
                 Timber.i("try to sync rime user data ...")
-                rime.launchOnReady { it.syncUserData() }
+                rime.launchOnReady { runCatching { it.syncUserData() }.onFailure { e -> Timber.w(e, "Sync failed") } }
             }
 
             else -> {}

@@ -255,6 +255,8 @@ class Keyboard(
             var currentRowHeight = rowHeightScaled[0]
             // 当前行行边距（自定义键盘 rowMargin；-1 表示尚未遇到行首键）。
             var currentRowMargin = -1
+            // 已计入 xPos 的行首左边距，用于区分"行内尚无内容"与"仅有边距"。
+            var rowInset = 0
 
             // indicates whether the split gap has been inserted in the current row
             var splitInserted = false
@@ -277,8 +279,9 @@ class Keyboard(
                 var widthPx = (keyWidthWeight * oneWeightWidthPx).toInt()
 
                 // wrap to next row if limits are exceeded
-                if ((textKey.newRow && xPos > 0) || column >= maxColumns || xPos + widthPx > allowedWidth) {
+                if ((textKey.newRow && xPos > rowInset) || column >= maxColumns || xPos + widthPx > allowedWidth) {
                     xPos = 0
+                    rowInset = 0
                     yPos += currentRowHeight
                     row++
                     column = 0
@@ -288,9 +291,15 @@ class Keyboard(
                     currentRowMargin = rowMarginOf(textKey)
                 }
 
-                // 行边距：本行按键在 (allowedWidth - 2*margin) 内按权重排布并整体右移 margin。
+                // 行边距：本行按键在 (allowedWidth - 2*margin) 内按权重排布，两侧各留 margin。
                 val rowContentWidth = allowedWidth - 2 * currentRowMargin
-                if (currentRowMargin > 0) widthPx = (keyWidthWeight * rowContentWidth / MAX_TOTAL_WEIGHT).toInt()
+                if (currentRowMargin > 0) {
+                    widthPx = (keyWidthWeight * rowContentWidth / MAX_TOTAL_WEIGHT).toInt()
+                    if (xPos == 0) {
+                        xPos = currentRowMargin
+                        rowInset = currentRowMargin
+                    }
+                }
 
                 rowWeightAccumulo += keyWidthWeight
 

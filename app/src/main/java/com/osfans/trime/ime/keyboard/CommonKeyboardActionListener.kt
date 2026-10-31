@@ -329,12 +329,12 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
                 when (arg) {
                     "DEPLOY" -> {
                         Timber.i("try to start maintenance via command ...")
-                        rime.launchOnReady { api -> api.deploy() }
+                        rime.launchOnReady { api -> runCatching { api.deploy() }.onFailure { e -> Timber.w(e, "Deploy failed") } }
                     }
 
                     "SYNC_USER_DATA" -> {
                         Timber.i("try to sync rime user data via command ...")
-                        rime.launchOnReady { api -> api.syncUserData() }
+                        rime.launchOnReady { api -> runCatching { api.syncUserData() }.onFailure { e -> Timber.w(e, "Sync failed") } }
                     }
 
                     "UPDATE_CONFIG" -> {

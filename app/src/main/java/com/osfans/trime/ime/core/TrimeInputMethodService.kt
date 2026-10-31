@@ -249,6 +249,9 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
                 }
             }
         }
+        // 自愈：设置里改过主题源文件但当时引擎未就绪时，产物仍是旧的。
+        // 键盘再次弹出时补一次重编译，保证用户改完主题后能看到效果。
+        schedulePendingThemeRebuild()
         InputFeedbackManager.init(this)
         registerReceiver()
         super.onCreate()
@@ -350,6 +353,27 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
                 }
 
             else -> {}
+        }
+    }
+
+    /** 主题产物待重建时补编译一次；成功后重建视图让新主题立即显示。 */
+    private fun schedulePendingThemeRebuild() {
+        if (!ThemeManager.pendingThemeRebuild) return
+        lifecycleScope.launch {
+            runCatching {
+                kotlinx.coroutines.withTimeout(20_000L) {
+                    rime.runOnReady { deployThemeConfig(ThemeManager.prefs.selectedTheme.getValue()) }
+                }
+            }.onSuccess { ok ->
+                if (ok) {
+                    ThemeManager.pendingThemeRebuild = false
+                    com.osfans.trime.util.DiagnosticLog.event("theme", "deploy_healed", "ok=true")
+                    // 重编译完成后重建视图，让新主题立即生效。
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                        ThemeManager.requestCustomizationRefresh()
+                    }
+                }
+            }.onFailure { Timber.w(it, "Pending theme rebuild failed") }
         }
     }
 
@@ -795,6 +819,8 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         restarting: Boolean,
     ) {
         Timber.d("onStartInputView: restarting=$restarting")
+        // 待重建的主题在这一刻补齐（切换主题时引擎不可用的情况）。
+        schedulePendingThemeRebuild()
         com.osfans.trime.data.sync.ClipboardSync.setWindowVisible(true)
         val began = android.os.SystemClock.elapsedRealtime()
         inputView?.post { com.osfans.trime.util.DiagnosticLog.event("keyboard", "shown", "ms=${android.os.SystemClock.elapsedRealtime() - began} restarting=$restarting") }

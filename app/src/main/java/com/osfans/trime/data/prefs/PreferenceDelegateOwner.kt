@@ -43,7 +43,7 @@ abstract class PreferenceDelegateOwner(
         key: String,
         defaultValue: T,
         serializer: PreferenceDelegate.Serializer<T>,
-    ) = PreferenceDelegate.SerializableDelegate(sharedPreferences, key, defaultValue, serializer)
+    ) = PreferenceDelegate.SerializableDelegate(sharedPreferences, key, defaultValue, serializer).apply { register() }
 
     protected inline fun <reified T : Enum<T>> enum(
         key: String,

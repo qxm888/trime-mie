@@ -26,6 +26,13 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 object ThemeManager {
+    /**
+     * 主题源文件已改动、但编译产物尚未重建（引擎当时不可用）。
+     * 输入法进程在键盘再次弹出时补一次重编译，保证用户改完主题后总能看到效果。
+     */
+    @Volatile
+    var pendingThemeRebuild: Boolean = false
+
     private val customizationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var customizationRefreshJob: Job? = null
 
@@ -201,14 +208,37 @@ object ThemeManager {
     /**
      * Switches to theme [configId], falling back when it is unavailable.
      * Loading runs on [Dispatchers.IO]; state changes and listener callbacks run on the main thread.
+     * @param recompileTheme rebuild librime's compiled artifact first. Needed when the user
+     *   edits theme YAML by hand: such themes can only be read back from the artifact, and
+     *   librime skips a rebuild when a file edit preserves the source mtime.
      * @return the config id actually in effect; differs from [configId] when a fallback was used.
      */
     private val resourceRevision = java.util.concurrent.atomic.AtomicLong()
     private val themeRequestRevision = java.util.concurrent.atomic.AtomicLong()
-    suspend fun selectTheme(configId: String): String {
+    suspend fun selectTheme(configId: String, recompileTheme: Boolean = false): String {
         val request = themeRequestRevision.incrementAndGet()
         val resolvedTheme = withContext(Dispatchers.IO) {
             FontOverrides.invalidate()
+            if (recompileTheme && CustomKeyboards.mode != CustomKeyboards.MODE_CUSTOM) {
+                // 先标记源文件已修改：不依赖引擎是否就绪，之后任何一次部署都会重编译。
+                ThemeLoader.touchThemeSource(configId)
+                pendingThemeRebuild = true
+                val session = com.osfans.trime.daemon.RimeDaemon.getFirstSessionOrNull()
+                com.osfans.trime.util.DiagnosticLog.event("theme", "deploy_check", "id=$configId hasSession=${session != null}")
+                if (session != null) {
+                    runCatching {
+                        kotlinx.coroutines.withTimeout(30_000L) {
+                            session.runOnReady { deployThemeConfig(configId, force = true) }
+                        }
+                    }.onSuccess { ok ->
+                        if (ok) pendingThemeRebuild = false
+                        com.osfans.trime.util.DiagnosticLog.event("theme", "deploy_done", "id=$configId ok=$ok")
+                    }.onFailure {
+                        Timber.w(it, "Theme deploy check failed for '$configId'")
+                        com.osfans.trime.util.DiagnosticLog.event("theme", "deploy_failed", "id=$configId type=${it.javaClass.simpleName}")
+                    }
+                }
+            }
             getThemeById(configId).let { resolved -> resolved.copy(theme = resolved.theme.copy(
                 customizationVersion = resolved.theme.customizationVersion + resourceRevision.incrementAndGet())) }
                 .also { it.theme.fonts.preload() }

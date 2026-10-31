@@ -28,8 +28,8 @@ interface RimeApi {
 
     suspend fun updateConfig()
 
-    /** 只重新编译指定主题的配置，不运行方案维护/部署。 */
-    suspend fun deployThemeConfig(themeId: String): Boolean
+    /** 只重新编译指定主题的配置，不运行方案维护/部署。force 时先标记源文件为已修改，确保产物重建。 */
+    suspend fun deployThemeConfig(themeId: String, force: Boolean = false): Boolean
 
     suspend fun syncUserData(): Boolean
 

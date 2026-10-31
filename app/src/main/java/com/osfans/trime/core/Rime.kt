@@ -205,7 +205,8 @@ class Rime :
         }
     }
 
-    override suspend fun deployThemeConfig(themeId: String): Boolean = withRimeContext {
+    override suspend fun deployThemeConfig(themeId: String, force: Boolean): Boolean = withRimeContext {
+        if (force) com.osfans.trime.data.theme.ThemeLoader.touchThemeSource(themeId)
         deployRimeConfigFile(themeId, "config_version")
     }
 

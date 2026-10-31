@@ -864,12 +864,14 @@ class KeyView(
             val lineHeight = fontMetrics.descent - fontMetrics.ascent
             val totalHeight = lineHeight * lines.size
 
-            // 按键上方符号的水平对齐：left / center / right（自定义键盘可设，默认居中）。
+            // 按键上方符号的水平对齐：left / center / right（按键级覆盖优先于键盘级，默认居中）。
             val contentWidth = width - paddingLeft - paddingRight
             val textWidth = lines.maxOf { symbolPaint.measureText(it) }
-            val centerX = when (keyboard.symbolAlign) {
-                "left" -> paddingLeft + textWidth / 2f
-                "right" -> paddingLeft + contentWidth - textWidth / 2f
+            // 靠左 / 靠右时与键缘保持 4dp 间距，避免符号贴边。
+            val edgeInset = dpf(4f)
+            val centerX = when (key.symbolAlign.ifBlank { keyboard.symbolAlign }) {
+                "left" -> paddingLeft + edgeInset + textWidth / 2f
+                "right" -> paddingLeft + contentWidth - edgeInset - textWidth / 2f
                 else -> contentWidth / 2f + paddingLeft
             } + sp(offsetX) * keyboardView.keyTextScale
             val startY = if (isTop) {

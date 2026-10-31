@@ -281,10 +281,28 @@ object ThemeLoader {
             .flatMap { dir -> dir.listFiles { _, name -> name.endsWith("trime.yaml") }.orEmpty().asSequence() }
             .map { it.nameWithoutExtension }.plus("tongwenfeng.trime").distinct()
         for (id in ids) {
+            // 手动部署必须重建：librime 只比较源文件 mtime，部分编辑方式（同步软件、
+            // 某些文件管理器）不会刷新 mtime，会把改动当成"未修改"跳过。
+            touchThemeSource(id)
             if (!Rime.deployRimeConfigFile(id, CONFIG_VERSION_KEY)) {
                 Timber.w("Theme config '$id' was not rebuilt (unchanged or invalid)")
             }
         }
+    }
+
+    /**
+     * Source file of [themeId] in the data dirs, or null. librime compiles
+     * theme sources the app cannot parse faithfully, so its artifact can be the
+     * only readable copy of a theme.
+     */
+    internal fun themeSourceFile(themeId: String): File? =
+        findSourceFile(themeId, listOf(DataManager.userDataDir, DataManager.sharedDataDir))
+
+    /** Marks the source as changed so librime's artifact timestamp check rebuilds it. */
+    internal fun touchThemeSource(themeId: String) {
+        runCatching {
+            themeSourceFile(themeId)?.setLastModified(System.currentTimeMillis())
+        }.onFailure { Timber.w(it, "Could not touch theme source '$themeId'") }
     }
 
     /** Reads existing artifacts without compiling or deploying any files. */

@@ -163,12 +163,21 @@ class MainActivity : AppCompatActivity() {
         val iconTint = ContextCompat.getColor(this, R.color.toolbarForegroundColor)
         val optionMenuItems = listOf(
             menu.item(R.string.deploy, R.drawable.ic_baseline_refresh_reversed_24, iconTint = iconTint, showAsAction = false) {
-                viewModel.rime.launchOnReady { it.deploy() }
+                // 部署失败（引擎被占用、维护出错）只提示，不能让异常冒泡闪退。
+                viewModel.rime.launchOnReady { rime ->
+                    val ok = runCatching { rime.deploy() }.isSuccess
+                    if (!ok) kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                        android.widget.Toast.makeText(this@MainActivity, R.string.refresh_theme_config_failed, android.widget.Toast.LENGTH_LONG).show()
+                    }
+                }
             },
             menu.item(R.string.refresh_theme_config, R.drawable.ic_baseline_refresh_reversed_24, iconTint = iconTint, showAsAction = false) {
                 viewModel.rime.launchOnReady { rime ->
                     val themeId = com.osfans.trime.data.theme.ThemeManager.prefs.selectedTheme.getValue()
-                    val ok = runCatching { rime.deployThemeConfig(themeId) }.getOrDefault(false)
+                    // 引擎未就绪时 launchOnReady 会一直挂起，加超时保证用户能看到结果。
+                    val ok = runCatching {
+                        kotlinx.coroutines.withTimeout(30_000L) { rime.deployThemeConfig(themeId, force = true) }
+                    }.getOrDefault(false)
                     if (ok) {
                         runCatching { com.osfans.trime.data.theme.ThemeManager.selectTheme(themeId) }
                         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {

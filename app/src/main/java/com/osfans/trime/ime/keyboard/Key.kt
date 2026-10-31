@@ -32,6 +32,9 @@ class Key(
     val showSymbol: Boolean? get() = keyDef?.showSymbol
     val showHint: Boolean? get() = keyDef?.showHint
 
+    /** 按键级符号对齐覆盖；空 = 跟随键盘级设置。 */
+    val symbolAlign: String get() = keyDef?.symbolAlign.orEmpty()
+
     /** 独立前景图标配置。 */
     fun icon(): String = keyDef?.icon.orEmpty()
     fun iconSize(): Int = keyDef?.iconSize ?: 0

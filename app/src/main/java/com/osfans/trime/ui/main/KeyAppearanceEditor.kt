@@ -84,6 +84,15 @@ object KeyAppearanceEditor {
                 }
                 body.addView(TextInputLayout(context).apply { hint = label; setPadding(24, 4, 24, 4); addView(input) })
                 inputs[name] = { when (input.text.toString()) { "显示" -> "true"; "隐藏" -> "false"; else -> "" } }
+            } else if (name == "symbolAlign") {
+                val input = com.google.android.material.textfield.MaterialAutoCompleteTextView(context).apply {
+                    inputType = android.text.InputType.TYPE_NULL
+                    setSimpleItems(arrayOf("跟随全局", "靠左", "居中", "靠右"))
+                    setText(when (value.jsonPrimitive.content) { "left" -> "靠左"; "center" -> "居中"; "right" -> "靠右"; else -> "跟随全局" }, false)
+                    setOnClickListener { showDropDown() }
+                }
+                body.addView(TextInputLayout(context).apply { hint = label; setPadding(24, 4, 24, 4); addView(input) })
+                inputs[name] = { when (input.text.toString()) { "靠左" -> "left"; "居中" -> "center"; "靠右" -> "right"; else -> "" } }
             } else if (name == "sendBindings") {
                 val input = com.google.android.material.textfield.MaterialAutoCompleteTextView(context).apply {
                     inputType = android.text.InputType.TYPE_NULL

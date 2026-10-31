@@ -63,6 +63,8 @@ data class TextKeyboard(
         /** 按键级符号 / 注解显示覆盖：null 跟随全局开关。 */
         @Transient val showSymbol: Boolean? = null,
         @Transient val showHint: Boolean? = null,
+        /** 按键级符号对齐覆盖：空 = 跟随键盘级设置（left / center / right）。 */
+        @Transient val symbolAlign: String = "",
         /** 本行行边距 dp（自定义键盘专用；-1 = 跟随键盘级设置）。 */
         @Transient val rowMargin: Int = -1,
         /** 独立前景图标：空 = 显示文字标签。 */

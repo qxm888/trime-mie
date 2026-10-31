@@ -350,20 +350,25 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         val rowControls = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
         card.addView(rowControls)
         rowControls.addView(com.google.android.material.button.MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
-            text = "行高 ${row.height} dp"
+            textSize = 12f
+            maxLines = 1
+            text = "行高${row.height}"
             contentDescription = "调整第${rowIdx + 1}行高度，当前${row.height}dp"
             setOnClickListener { showRowHeightEditor(rowIdx) }
         }, LinearLayout.LayoutParams(0, dp(48), 1f))
 
         rowControls.addView(com.google.android.material.button.MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
-            text = "行边距 · " + (row.margin?.let { "$it dp" } ?: "跟随")
+            textSize = 12f
+            maxLines = 1
+            text = "边距" + (row.margin?.let { "$it" } ?: "跟随")
             contentDescription = "调整第${rowIdx + 1}行边距"
             setOnClickListener { showRowMarginEditor(rowIdx) }
         }, LinearLayout.LayoutParams(0, dp(48), 1f))
 
         rowControls.addView(com.google.android.material.button.MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
-            textSize = 14f
-            text = "排列 · " + com.osfans.trime.data.keymap.ButtonAlignment.choices[com.osfans.trime.data.keymap.ButtonAlignment.normalized(row.alignment)]
+            textSize = 12f
+            maxLines = 1
+            text = "排列" + com.osfans.trime.data.keymap.ButtonAlignment.choices[com.osfans.trime.data.keymap.ButtonAlignment.normalized(row.alignment)]
             setOnClickListener {
                 val choices = com.osfans.trime.data.keymap.ButtonAlignment.choices
                 MaterialAlertDialogBuilder(this@CustomKeyboardEditActivity).setTitle("第${rowIdx + 1}行按钮排列")

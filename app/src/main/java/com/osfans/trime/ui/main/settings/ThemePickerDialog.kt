@@ -43,7 +43,8 @@ object ThemePickerDialog {
                             afterConfirm?.invoke()
                             val newItem = allThemes[which]
                             UserDataManager.sync()
-                            val resolvedThemeId = ThemeManager.selectTheme(newItem.configId)
+                            // 用户手动切换主题时重编译一次，让主题源文件的改动立即生效。
+                            val resolvedThemeId = ThemeManager.selectTheme(newItem.configId, recompileTheme = true)
                             dialog.dismiss()
                             if (resolvedThemeId != newItem.configId) {
                                 // Chosen theme unavailable: report the one actually in effect.
