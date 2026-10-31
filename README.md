@@ -6,14 +6,14 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前源码版本：**V3.1.5**，正式 APK 文件名 `trime-mie-v3.1.5.apk`。本版已在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 发布。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
+> 当前源码版本：**V3.1.6**，正式 APK 文件名 `trime-mie-v3.1.6.apk`。本版已在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 发布。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
 
-## V3.1.5 内置符号键盘补全
+## V3.1.6 功能菜单美化
 
-- 内置五色键盘补全符号/表情分类页，共 300 套（每色 60 套）；升级后自动补齐。
-- 首次启动核心键盘同步播种、扩展键盘后台补齐，冷启动不再卡顿；存档压缩到 3.4MB，常驻启动约 0.64 秒。
+- 功能菜单图块跟随当前键盘强调色（淡底 + 圆角），图标与文字使用键面文字色，整页底色用键盘背景色。
+- 图块与标签间距收紧，配合字体缩放自适应高度，大字号下不裁切。
 
-详见 [V3.1.5 更新说明](docs/v3.1.5/更新说明.md)，更早的版本记录见 [CHANGELOG.md](CHANGELOG.md)。
+详见 [V3.1.6 更新说明](docs/v3.1.6/更新说明.md)，更早的版本记录见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 功能一览
 

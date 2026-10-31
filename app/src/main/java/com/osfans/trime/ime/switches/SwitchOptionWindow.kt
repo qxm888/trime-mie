@@ -227,6 +227,13 @@ class SwitchOptionWindow(di: DI) :
             }
             itemAnimator = null
             adapter = this@SwitchOptionWindow.adapter
+            // 菜单底色跟随当前自定义键盘配色，避免一片灰白。
+            com.osfans.trime.data.keymap.CustomKeyboards.activePalette()?.background
+                ?.takeIf { it.isNotBlank() }
+                ?.let { runCatching { android.graphics.Color.parseColor(it) }.getOrNull() }
+                ?.let { background = android.graphics.drawable.ColorDrawable(it) }
+            setPadding(dp(8), dp(8), dp(8), dp(8))
+            clipToPadding = false
         }
     }
 

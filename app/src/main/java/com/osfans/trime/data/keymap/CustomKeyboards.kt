@@ -666,6 +666,23 @@ object CustomKeyboards {
         base.copy(presetKeyboards = merged, presetKeys = base.presetKeys + store.keyboards.values.flatMap { it.importedActions.entries }.associate { it.key to it.value } + switches, presetColorSchemes = colors, customizationVersion = store.version)
     }
 
+    /** 当前自定义键盘的配色（背景/文字/回车强调色），供菜单与候选栏美化使用。 */
+    data class Palette(val background: String, val text: String, val accent: String)
+
+    fun activePalette(): Palette? {
+        if (store.mode != MODE_CUSTOM) return null
+        val kb = synchronized(lock) { store.keyboards[effectiveActiveId()] } ?: return null
+        val background = kb.resolvedBackground()
+            .takeIf { it.type == CustomBackground.Type.COLOR }?.color.orEmpty()
+        val text = kb.keyAppearance.keyTextColor.takeIf { it.isNotBlank() }.orEmpty()
+        val accent = kb.rows.asSequence()
+            .flatMap { it.keys.asSequence() }
+            .firstOrNull { it.bindings["click"] == "Return" }
+            ?.resolvedBackground()?.takeIf { it.type == CustomBackground.Type.COLOR }?.color.orEmpty()
+        if (background.isEmpty() && text.isEmpty() && accent.isEmpty()) return null
+        return Palette(background, text, accent)
+    }
+
     /** Flat runtime index includes row-end and empty-row spacers. */
     fun customKeyAt(id: String, flatIndex: Int): CustomKey? = get(id)?.generatedKeys()?.getOrNull(flatIndex)?.first
 

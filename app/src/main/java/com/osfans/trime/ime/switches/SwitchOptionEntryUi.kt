@@ -42,15 +42,37 @@ class SwitchOptionEntryUi(
 ) : Ui {
     private val theme: Theme get() = scope.theme
 
+    /** 自定义键盘模式下跟随当前键盘配色（浅色强调底、键面文字色）。 */
+    private val palette get() = com.osfans.trime.data.keymap.CustomKeyboards.activePalette()
+
+    private fun parseColor(hex: String): Int? =
+        runCatching { android.graphics.Color.parseColor(hex) }.getOrNull()
+
+    private fun accentColor(): Int? = palette?.let { p -> parseColor(p.accent) ?: parseColor(p.text) }
+
+    private fun menuTextColor(): Int = palette?.let { parseColor(it.text) } ?: scope.colors.keyTextColor
+
+    private fun tileBackground(): android.graphics.drawable.Drawable? {
+        val accent = accentColor()
+        return if (accent != null) {
+            android.graphics.drawable.GradientDrawable().apply {
+                cornerRadius = ctx.dp(16).toFloat()
+                // 强调色的 13% 淡底：比纯白光板更有主题感，又不会盖过图标。
+                setColor((accent and 0x00FFFFFF) or (0x22 shl 24))
+            }
+        } else {
+            scope.decorDrawable(
+                "key_back_color",
+                "key_border_color",
+                ctx.dp(theme.style.keyBorder),
+                ctx.dp(theme.style.roundCorner),
+            )
+        }
+    }
+
     val bkg =
         frameLayout {
-            background =
-                scope.decorDrawable(
-                    "key_back_color",
-                    "key_border_color",
-                    dp(theme.style.keyBorder),
-                    dp(theme.style.roundCorner),
-                )
+            background = tileBackground()
         }
 
     val icon =
@@ -76,7 +98,7 @@ class SwitchOptionEntryUi(
             gravity = gravityCenter
             maxLines = 2
             ellipsize = android.text.TextUtils.TruncateAt.END
-            setTextColor(scope.colors.keyTextColor)
+            setTextColor(menuTextColor())
         }
 
     override val root =
@@ -106,7 +128,7 @@ class SwitchOptionEntryUi(
                     add(
                         label,
                         lParams(0, wrapContent) {
-                            below(bkg, dp(6))
+                            below(bkg, dp(4))
                             centerHorizontally()
                         },
                     )
@@ -124,14 +146,8 @@ class SwitchOptionEntryUi(
 
     /** Restyles the row after a scheme switch; the icon/text-icon colors are live. */
     fun refreshColors() {
-        bkg.background =
-            scope.decorDrawable(
-                "key_back_color",
-                "key_border_color",
-                ctx.dp(theme.style.keyBorder),
-                ctx.dp(theme.style.roundCorner),
-            )
-        label.setTextColor(scope.colors.keyTextColor)
+        bkg.background = tileBackground()
+        label.setTextColor(menuTextColor())
     }
 
     fun setEntry(entry: SwitchOptionEntry) {
@@ -140,13 +156,13 @@ class SwitchOptionEntryUi(
             textIcon.visibility = View.GONE
             icon.imageDrawable = ctx.drawable(entry.icon)!!.apply {
                 mutate()
-                setTint(scope.colors.keyTextColor)
+                setTint(menuTextColor())
             }
         } else {
             icon.visibility = View.GONE
             textIcon.visibility = View.VISIBLE
             textIcon.text = getFirstCharacter(entry.label)
-            textIcon.setTextColor(scope.colors.keyTextColor)
+            textIcon.setTextColor(menuTextColor())
         }
         label.text = entry.label
     }
