@@ -158,6 +158,8 @@ object CustomKeyboards {
         val keyboards: MutableMap<String, CustomKeyboard> = mutableMapOf(),
         /** 内置五色键盘的版本：升级时只刷新内置 id，用户自建键盘不动。 */
         var builtinVersion: Int = 0,
+        /** 是否已经把内置键盘提供给这个库（升级老用户也会补一次）。 */
+        var builtinsOffered: Boolean = false,
     )
 
     private val lock = Any()
@@ -253,6 +255,7 @@ object CustomKeyboards {
                     store.version++
                     dirty = true
                     scheduleSaveLocked()
+                    offerBuiltinKeyboardsLocked()
                     refreshBuiltinKeyboardsLocked()
                 }
             }.onFailure { Timber.w(it, "CustomKeyboards: load failed, starting fresh") }
@@ -276,9 +279,42 @@ object CustomKeyboards {
         store.mode = MODE_CUSTOM
         store.activeId = BUILTIN_DEFAULT_ID.takeIf { layouts.containsKey(it) } ?: layouts.keys.first()
         store.builtinVersion = BUILTIN_VERSION
+        store.builtinsOffered = true
         store.version++
         dirty = true
         scheduleSaveLocked()
+    }
+
+    /**
+     * 老用户升级时补上内置五色键盘：只插入库里还没有的内置 id，
+     * 不覆盖已有键盘、不改当前布局模式和已选键盘。
+     */
+    private fun offerBuiltinKeyboardsLocked() {
+        if (store.builtinsOffered) return
+        val context = appContext ?: return
+        val layouts = runCatching {
+            context.resources.openRawResource(com.osfans.trime.R.raw.mie_builtin_keyboards)
+                .bufferedReader().use { CustomKeyboardYaml.decode(it.readText()) }
+        }.getOrElse {
+            Timber.w(it, "CustomKeyboards: builtin offer skipped")
+            return
+        }
+        if (layouts.isEmpty()) return
+        var added = 0
+        layouts.forEach { (id, keyboard) ->
+            if (!store.keyboards.containsKey(id)) {
+                store.keyboards[id] = normalizedCopy(keyboard)
+                added++
+            }
+        }
+        store.builtinsOffered = true
+        if (store.builtinVersion < BUILTIN_VERSION) store.builtinVersion = BUILTIN_VERSION
+        if (added > 0) {
+            store.version++
+            dirty = true
+            scheduleSaveLocked()
+            Timber.i("CustomKeyboards: offered %d builtin keyboards", added)
+        }
     }
 
     /**
