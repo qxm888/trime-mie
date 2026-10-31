@@ -24,6 +24,9 @@ class MintKeyboardYamlTest : FunSpec({
         shift.appearance.iconSize shouldBe 28
         shift.background!!.type shouldBe com.osfans.trime.data.keymap.CustomBackground.Type.COLOR
         shift.bindings["click"] shouldBe "Shift_L"
+        // 锁定大写的按键级颜色（回车绿 + 白色图标）
+        shift.appearance.keyOnBackColor shouldBe "#72C99B"
+        shift.appearance.keyOnTextColor shouldBe "#FFFFFF"
         val enter = mint.rows[3].keys.last()
         enter.appearance.icon shouldBe "icons/enter_w.png"
         enter.background!!.color shouldBe "#72C99B"
@@ -37,5 +40,22 @@ class MintKeyboardYamlTest : FunSpec({
         mint.keyAppearance.roundCorner shouldBe 14f
         // 其他方案
         layouts.getValue("custom_purple").rows[3].keys.last().background!!.color shouldBe "#C9A6ED"
+    }
+
+    test("locked-state colors reach the key definition and survive export") {
+        val layouts = CustomKeyboardYaml.decode(yml)
+        val mint = layouts.getValue("custom_mint")
+        val shift = mint.rows[2].keys.first()
+        // 外观合并到按键定义（运行时读取的就是这个 TextKey）
+        val textKey = KeyAppearance.merge(mint.keyAppearance, shift.appearance).toTextKey()
+        textKey.keyOnBackColor shouldBe "#72C99B"
+        textKey.keyOnTextColor shouldBe "#FFFFFF"
+        // 导出用的文本映射与解析（YAML 导出/编辑器保存走同一条链路）
+        val exported = KeyAppearance.textValues(shift.appearance)
+        exported["keyOnBackColor"] shouldBe "#72C99B"
+        exported["keyOnTextColor"] shouldBe "#FFFFFF"
+        val parsed = KeyAppearance.parse(exported)
+        parsed.keyOnBackColor shouldBe "#72C99B"
+        parsed.keyOnTextColor shouldBe "#FFFFFF"
     }
 })

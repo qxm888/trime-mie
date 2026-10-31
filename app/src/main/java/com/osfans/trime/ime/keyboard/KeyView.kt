@@ -773,7 +773,12 @@ class KeyView(
         val contentHeight = height - paddingTop - paddingBottom
         val centerX = paddingLeft + contentWidth / 2f + sp(key.iconOffsetX()) * keyboardView.keyTextScale
         val centerY = paddingTop + contentHeight / 2f + sp(key.iconOffsetY()) * keyboardView.keyTextScale
-        val paint = iconPaint.apply { isFilterBitmap = true; isAntiAlias = true; alpha = 255 }
+        // 锁大写等锁定态下按按键级文字色给图标着色（例如 Shift 变深绿底、白色箭头）。
+        val tint = key.lockedTextColor()
+        val paint = iconPaint.apply {
+            isFilterBitmap = true; isAntiAlias = true; alpha = 255
+            colorFilter = tint?.let { android.graphics.PorterDuffColorFilter(it, android.graphics.PorterDuff.Mode.SRC_IN) }
+        }
         canvas.drawBitmap(image.bitmap, null, android.graphics.RectF(centerX - drawW / 2, centerY - drawH / 2, centerX + drawW / 2, centerY + drawH / 2), paint)
     }
 

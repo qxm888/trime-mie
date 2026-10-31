@@ -1,8 +1,8 @@
 # 同文输入法咩版自定义键盘 —— GPT 薄荷绿设计（五色方案）
 # 导入：设置 → 键盘 → 布局管理与按键编辑 → 右上菜单 → 导入自定义布局
-# 图标：icons/ 文件夹需复制到  rime/.mie/键盘背景/  下（与本文件同发布）
-# 工具栏图标使用绝对路径；若 rime 目录不在 /storage/emulated/0/rime，
-# 请用 gen_kb_yaml.py 重新生成或手动替换各 toolbar 图标路径。
+# 图标：icons/ 文件夹需复制到  /storage/emulated/0/rime/.mie/键盘背景/icons/  下（与本文件同发布）
+# 工具栏图标使用绝对路径；若 rime 目录不在默认位置，
+# 请用 gen_kb_yaml.py <你的rime>/.mie/键盘背景/icons 重新生成。
 # 工具栏动作：功能菜单 / 符号键盘 / 剪贴板 / 中英切换 / 悬浮键盘开关
 mie:
   format: "trime-custom-keyboards-yaml"
@@ -21,6 +21,80 @@ preset_keyboards:
         keyTextColor: "#455B50"
         roundCorner: 14
         keyBorder: 0
+      surfaceAppearance:
+        keys:
+          background: ""
+          borderWidth: 0
+          borderColor: ""
+          radius: 14
+          blur: false
+        toolbar:
+          background: ""
+          borderWidth: 0
+          borderColor: ""
+          radius: 12
+          blur: false
+        bar:
+          background: "#F0F4EF"
+          borderWidth: 0
+          borderColor: ""
+          radius: 0
+          blur: false
+        linkToolbar: false
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+        barEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
       toolbar:
       - action: "menu_keyboard"
         enabled: true
@@ -184,7 +258,8 @@ preset_keyboards:
         key_back_color: "#E2F2E7"
         icon: "icons/mint_shift.png"
         icon_size: 28
-        label_symbol: ⇧
+        key_on_back_color: "#72C99B"
+        key_on_text_color: "#FFFFFF"
         mie:
           row: 3
       - label: "z"
@@ -236,7 +311,6 @@ preset_keyboards:
         key_back_color: "#E2F2E7"
         icon: "icons/mint_delete.png"
         icon_size: 28
-        label_symbol: ⌫
         mie:
           row: 3
       - label: "123"
@@ -272,8 +346,7 @@ preset_keyboards:
         key_back_color: "#72C99B"
         icon: "icons/enter_w.png"
         icon_size: 28
-        key_text_color: #FFFFFF
-        label_symbol: ⏎
+        key_text_color: "#FFFFFF"
         mie:
           row: 4
 
@@ -290,6 +363,80 @@ preset_keyboards:
         keyTextColor: "#68565B"
         roundCorner: 14
         keyBorder: 0
+      surfaceAppearance:
+        keys:
+          background: ""
+          borderWidth: 0
+          borderColor: ""
+          radius: 14
+          blur: false
+        toolbar:
+          background: ""
+          borderWidth: 0
+          borderColor: ""
+          radius: 12
+          blur: false
+        bar:
+          background: "#FCF5F6"
+          borderWidth: 0
+          borderColor: ""
+          radius: 0
+          blur: false
+        linkToolbar: false
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+        barEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
       toolbar:
       - action: "menu_keyboard"
         enabled: true
@@ -453,7 +600,8 @@ preset_keyboards:
         key_back_color: "#FCEBED"
         icon: "icons/pink_shift.png"
         icon_size: 28
-        label_symbol: ⇧
+        key_on_back_color: "#F4AEB8"
+        key_on_text_color: "#FFFFFF"
         mie:
           row: 3
       - label: "z"
@@ -505,7 +653,6 @@ preset_keyboards:
         key_back_color: "#FCEBED"
         icon: "icons/pink_delete.png"
         icon_size: 28
-        label_symbol: ⌫
         mie:
           row: 3
       - label: "123"
@@ -541,8 +688,7 @@ preset_keyboards:
         key_back_color: "#F4AEB8"
         icon: "icons/enter_w.png"
         icon_size: 28
-        key_text_color: #FFFFFF
-        label_symbol: ⏎
+        key_text_color: "#FFFFFF"
         mie:
           row: 4
 
@@ -559,6 +705,80 @@ preset_keyboards:
         keyTextColor: "#4D6275"
         roundCorner: 14
         keyBorder: 0
+      surfaceAppearance:
+        keys:
+          background: ""
+          borderWidth: 0
+          borderColor: ""
+          radius: 14
+          blur: false
+        toolbar:
+          background: ""
+          borderWidth: 0
+          borderColor: ""
+          radius: 12
+          blur: false
+        bar:
+          background: "#F0F6FB"
+          borderWidth: 0
+          borderColor: ""
+          radius: 0
+          blur: false
+        linkToolbar: false
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+        barEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
       toolbar:
       - action: "menu_keyboard"
         enabled: true
@@ -722,7 +942,8 @@ preset_keyboards:
         key_back_color: "#E7F3FC"
         icon: "icons/blue_shift.png"
         icon_size: 28
-        label_symbol: ⇧
+        key_on_back_color: "#96CBF4"
+        key_on_text_color: "#FFFFFF"
         mie:
           row: 3
       - label: "z"
@@ -774,7 +995,6 @@ preset_keyboards:
         key_back_color: "#E7F3FC"
         icon: "icons/blue_delete.png"
         icon_size: 28
-        label_symbol: ⌫
         mie:
           row: 3
       - label: "123"
@@ -810,8 +1030,7 @@ preset_keyboards:
         key_back_color: "#96CBF4"
         icon: "icons/enter_w.png"
         icon_size: 28
-        key_text_color: #FFFFFF
-        label_symbol: ⏎
+        key_text_color: "#FFFFFF"
         mie:
           row: 4
 
@@ -828,6 +1047,80 @@ preset_keyboards:
         keyTextColor: "#725C4F"
         roundCorner: 14
         keyBorder: 0
+      surfaceAppearance:
+        keys:
+          background: ""
+          borderWidth: 0
+          borderColor: ""
+          radius: 14
+          blur: false
+        toolbar:
+          background: ""
+          borderWidth: 0
+          borderColor: ""
+          radius: 12
+          blur: false
+        bar:
+          background: "#FCF7F0"
+          borderWidth: 0
+          borderColor: ""
+          radius: 0
+          blur: false
+        linkToolbar: false
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+        barEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
       toolbar:
       - action: "menu_keyboard"
         enabled: true
@@ -991,7 +1284,8 @@ preset_keyboards:
         key_back_color: "#FFF0E2"
         icon: "icons/orange_shift.png"
         icon_size: 28
-        label_symbol: ⇧
+        key_on_back_color: "#F7BD99"
+        key_on_text_color: "#FFFFFF"
         mie:
           row: 3
       - label: "z"
@@ -1043,7 +1337,6 @@ preset_keyboards:
         key_back_color: "#FFF0E2"
         icon: "icons/orange_delete.png"
         icon_size: 28
-        label_symbol: ⌫
         mie:
           row: 3
       - label: "123"
@@ -1079,8 +1372,7 @@ preset_keyboards:
         key_back_color: "#F7BD99"
         icon: "icons/enter_w.png"
         icon_size: 28
-        key_text_color: #FFFFFF
-        label_symbol: ⏎
+        key_text_color: "#FFFFFF"
         mie:
           row: 4
 
@@ -1097,6 +1389,80 @@ preset_keyboards:
         keyTextColor: "#61566F"
         roundCorner: 14
         keyBorder: 0
+      surfaceAppearance:
+        keys:
+          background: ""
+          borderWidth: 0
+          borderColor: ""
+          radius: 14
+          blur: false
+        toolbar:
+          background: ""
+          borderWidth: 0
+          borderColor: ""
+          radius: 12
+          blur: false
+        bar:
+          background: "#F7F3FC"
+          borderWidth: 0
+          borderColor: ""
+          radius: 0
+          blur: false
+        linkToolbar: false
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
+        barEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 0
+          pressSink: 0
+          pressDarken: 8
+          ripple: false
       toolbar:
       - action: "menu_keyboard"
         enabled: true
@@ -1260,7 +1626,8 @@ preset_keyboards:
         key_back_color: "#F1E9FC"
         icon: "icons/purple_shift.png"
         icon_size: 28
-        label_symbol: ⇧
+        key_on_back_color: "#C9A6ED"
+        key_on_text_color: "#FFFFFF"
         mie:
           row: 3
       - label: "z"
@@ -1312,7 +1679,6 @@ preset_keyboards:
         key_back_color: "#F1E9FC"
         icon: "icons/purple_delete.png"
         icon_size: 28
-        label_symbol: ⌫
         mie:
           row: 3
       - label: "123"
@@ -1348,8 +1714,7 @@ preset_keyboards:
         key_back_color: "#C9A6ED"
         icon: "icons/enter_w.png"
         icon_size: 28
-        key_text_color: #FFFFFF
-        label_symbol: ⏎
+        key_text_color: "#FFFFFF"
         mie:
           row: 4
 

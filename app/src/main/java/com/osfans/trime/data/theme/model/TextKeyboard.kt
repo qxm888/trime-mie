@@ -89,6 +89,10 @@ data class TextKeyboard(
         val hilitedKeyBackColor: String = "",
         val hilitedKeyBorderColor: String = "",
         val hilitedKeySymbolColor: String = "",
+        /** 锁定态（长按大写、双击 Shift 锁定等）按键级颜色：空 = 跟随色板 on_* 颜色。 */
+        val keyOnTextColor: String = "",
+        val keyOnBackColor: String = "",
+        val keyOnBorderColor: String = "",
         @Serializable(with = LenientStringListSerializer::class)
         val popup: List<String> = emptyList(),
         // behaviors

@@ -163,6 +163,13 @@ class Key(
     private val keyBackground by schemeColor { getDrawable({ keyBackColor }, "key_back_color") }
     private val offKeyBackground by schemeColor { ColorManager.getDrawable("off_key_back_color") ?: keyBackground }
     private val onKeyBackground by schemeColor { ColorManager.getDrawable("on_key_back_color") ?: keyBackground }
+    /**
+     * 按键级锁定态背景（长按大写 / 双击 Shift 锁定时使用）。
+     * 自定义键盘只有一份色板，按键级字段让每个键各自上色；空 = 跟随色板 on_* 颜色。
+     */
+    private val perKeyOnBackground by schemeColor {
+        keyDef?.keyOnBackColor.orEmpty().takeIf { it.isNotBlank() }?.let { ColorManager.getDrawable(it) }
+    }
     private val hlKeyBackground by schemeColor { getDrawable({ hilitedKeyBackColor }, "hilited_key_back_color") }
     private val hlOffKeyBackground by schemeColor { ColorManager.getDrawable("hilited_off_key_back_color") ?: hlKeyBackground }
     private val hlOnKeyBackground by schemeColor { ColorManager.getDrawable("hilited_on_key_back_color") ?: hlKeyBackground }
@@ -359,7 +366,13 @@ class Key(
     fun getBackgroundDrawable(): Drawable? = wholeKeyBackground ?: customBgDrawable ?: when (appearanceType) {
         // Locked modifiers use the YAML on-state skin; normal per-key colours must not mask it.
         // Fully custom/imported skins still win through customBgDrawable above.
-        2 -> if (isPressed) hlOnKeyBackground else onKeyBackground
+        2 -> when {
+            // 锁定态有按键级颜色就用它（长按大写 → 例如回车绿）。
+            isOn && perKeyOnBackground != null -> perKeyOnBackground
+            // 自定义键盘只有一份色板：不想让单击一次性 Shift 变色时保持按键自身背景。
+            theme.isCustom -> keyBackground
+            else -> if (isPressed) hlOnKeyBackground else onKeyBackground
+        }
 
         1 -> {
             if (isPressed) {
@@ -417,16 +430,30 @@ class Key(
         }
     }
 
-    fun getBorderColor(): Int = when (appearanceType) {
-        2 -> if (isPressed) hlOnKeyBorderColor else onKeyBorderColor
-        1 -> if (isPressed) hlOffKeyBorderColor else getColor(keyDef?.keyBorderColor ?: "", offKeyBorderColor)
-        else -> if (isPressed) hlKeyBorderColor else keyBorderColor
+    /** 锁定态（isOn）按键级颜色；空或非法返回 null，由色板颜色兜底。 */
+    private fun onStateColor(raw: String): Int? =
+        raw.takeIf { it.isNotBlank() }?.let { runCatching { ColorManager.getColor(it) }.getOrNull() }
+
+    /** 锁定态按键级文字色；供图标着色使用，未设置返回 null。 */
+    fun lockedTextColor(): Int? = if (isOn && appearanceType == 2) onStateColor(keyDef?.keyOnTextColor.orEmpty()) else null
+
+    fun getBorderColor(): Int {
+        if (isOn && appearanceType == 2) onStateColor(keyDef?.keyOnBorderColor.orEmpty())?.let { return it }
+        return when (appearanceType) {
+            2 -> if (isPressed) hlOnKeyBorderColor else onKeyBorderColor
+            1 -> if (isPressed) hlOffKeyBorderColor else getColor(keyDef?.keyBorderColor ?: "", offKeyBorderColor)
+            else -> if (isPressed) hlKeyBorderColor else keyBorderColor
+        }
     }
 
-    fun getTextColor(): Int = if (theme.isCustom) keyTextColor else when (appearanceType) {
-        2 -> if (isPressed) hlOnKeyTextColor else onKeyTextColor
-        1 -> if (isPressed) hlOffKeyTextColor else getColor(keyDef?.keyTextColor ?: "", offKeyTextColor)
-        else -> if (isPressed) hlKeyTextColor else keyTextColor
+    fun getTextColor(): Int {
+        // 锁定态优先按键级颜色：自定义键盘原先整个跳过 on 态文字色。
+        if (isOn && appearanceType == 2) onStateColor(keyDef?.keyOnTextColor.orEmpty())?.let { return it }
+        return if (theme.isCustom) keyTextColor else when (appearanceType) {
+            2 -> if (isPressed) hlOnKeyTextColor else onKeyTextColor
+            1 -> if (isPressed) hlOffKeyTextColor else getColor(keyDef?.keyTextColor ?: "", offKeyTextColor)
+            else -> if (isPressed) hlKeyTextColor else keyTextColor
+        }
     }
 
     fun getSymbolColor(): Int = when (appearanceType) {

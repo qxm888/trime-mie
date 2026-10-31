@@ -61,6 +61,7 @@ object KeyAppearanceEditor {
             "shape" to drawers.section("圆角与边框"),
             "normal" to drawers.section("常态颜色与背景"),
             "pressed" to drawers.section("按下颜色与背景"),
+            "on" to drawers.section("锁定态颜色（长按大写等）"),
             "offset" to drawers.section("位置偏移"),
             "action" to drawers.section("弹出备选与手势绑定"),
         )
@@ -69,6 +70,7 @@ object KeyAppearanceEditor {
                 name == "popup" || name == "sendBindings" -> "action"
                 name.contains("Offset") -> "offset"
                 name.startsWith("hilited") -> "pressed"
+                name.startsWith("keyOn") -> "on"
                 name.endsWith("Color") -> "normal"
                 name == "roundCorner" || name == "keyBorder" -> "shape"
                 else -> "text"
