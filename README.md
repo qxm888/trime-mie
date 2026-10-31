@@ -6,16 +6,14 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前源码版本：**V3.1.3**，正式 APK 文件名 `trime-mie-v3.1.3.apk`。本版已在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 发布。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
+> 当前源码版本：**V3.1.4**，正式 APK 文件名 `trime-mie-v3.1.4.apk`。本版已在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 发布。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
 
-## V3.1.3 主键盘判定与 9 键确定键
+## V3.1.4 工具栏图标相对路径
 
-- 修复选中 9/14/18 键后再选 26 键无法成为默认键盘：主键盘判定改为「lock 或自定义顶层键盘」，26 键选中即为默认。
-- 9 键右下角改为“确定”（上“确”下“定”两格，均为确认），替代原来的换行键。
-- 内置五色键盘升级后会补齐到老用户的列表里（只补缺失项，不覆盖自建键盘、不改当前模式）；需要切到“自定义布局”使用，9/14/18 键在 26 键工具栏的“布局”里。
-- 候选栏跟随键盘配色并加大间距；功能菜单在大字号下不再裁切；状态栏隐藏与悬浮球改为按“悬浮候选窗模式”判定。
+- 修复内置五色键盘工具栏图标不显示：图标路径改为相对 `<数据目录>/.mie/键盘背景`，随用户选择的目录自适应；升级时自动刷新旧内置键盘的绝对路径。
+- 导入的自定义键盘 YAML 同样支持 `icon: icons/xxx.png` 相对写法。
 
-详见 [V3.1.3 更新说明](docs/v3.1.3/更新说明.md)，更早的版本记录见 [CHANGELOG.md](CHANGELOG.md)。
+详见 [V3.1.4 更新说明](docs/v3.1.4/更新说明.md)，更早的版本记录见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 功能一览
 

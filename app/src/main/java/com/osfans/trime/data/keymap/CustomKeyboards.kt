@@ -44,7 +44,7 @@ object CustomKeyboards {
     const val BUILTIN_DEFAULT_ID = "custom_pink"
 
     /** 内置五色键盘的版本；改过内置 YAML 后 +1，升级时自动刷新内置 id。 */
-    private const val BUILTIN_VERSION = 2
+    private const val BUILTIN_VERSION = 3
 
     @Serializable
     data class CustomKey(
@@ -345,7 +345,8 @@ object CustomKeyboards {
     private fun ensureBuiltinIcons(context: Context) {
         val dir = File(com.osfans.trime.core.data.MieUserDirectory.assetFolder(context, "custom_kb_bg"), "icons")
         val marker = File(dir, ".builtin_v1")
-        if (marker.isFile) return
+        // 标记存在但关键图标缺失（例如早期解压失败）时重新解压一次。
+        if (marker.isFile && File(dir, "tb_menu.png").isFile && File(dir, "mint_shift.png").isFile) return
         if (!dir.isDirectory && !dir.mkdirs()) return
         runCatching {
             context.resources.openRawResource(com.osfans.trime.R.raw.mie_builtin_icons).use { input ->

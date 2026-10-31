@@ -18,7 +18,9 @@ import yaml
 
 HERE = Path(__file__).resolve().parent
 OUT = HERE / "薄荷绿键盘-五色方案-v11.yaml"
-TB = (Path("/storage/emulated/0/rime-mie/.mie/键盘背景/icons") if len(__import__("sys").argv) < 2
+# 工具栏图标默认用相对路径（相对 rime 目录下的 .mie/键盘背景），
+# 由 App 按用户实际选择的数据目录解析；需要绝对路径时传目录参数。
+TB = (Path("icons") if len(__import__("sys").argv) < 2
       else Path(__import__("sys").argv[1]))
 TB = str(TB).rstrip("/")
 
