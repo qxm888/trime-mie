@@ -6,18 +6,15 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前源码版本：**V3.1.1**，正式 APK 文件名 `trime-mie-v3.1.1.apk`。本版已在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 发布。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
+> 当前源码版本：**V3.1.2**，正式 APK 文件名 `trime-mie-v3.1.2.apk`。本版已在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 发布。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
 
-## V3.1.1 主题刷新与稳定性修复
+## V3.1.2 按键级锁定态颜色
 
-- 修复开启悬浮球后切换“候选栏模式”不生效：候选窗与悬浮球现在随模式即时刷新。
-- 修复修改主题后不生效：切换主题、刷新当前主题、手动部署都会强制重新编译；编辑器保留文件修改时间也能生效，编译不可用时自动改走完整部署并在键盘下次弹出时补齐。
-- 部署失败不再导致应用闪退，改为失败提示。
-- 按键上方符号靠左/靠右增加 4dp 留白，并支持每个按键单独设置符号对齐（优先于键盘级设置）。
-- 自定义键盘行边距改为左右两侧同时收进；行编辑器“行高 / 边距 / 排列”按钮不再折行截断。
-- 剪贴板同步只在键盘可见时轮询服务器，键盘收起不再后台请求。
+- 自定义键盘每个按键新增锁定态颜色：`key_on_text_color` / `key_on_back_color` / `key_on_border_color`，外观编辑器里是“锁定态颜色（长按大写等）”分组。
+- 长按大写、双击 Shift 锁定、Caps Lock 时按键换色，单击一次性 Shift 不变色；设置锁定文字色后前景图标也按该颜色着色。
+- 薄荷绿五色方案：Shift 锁大写时变为各方案的回车强调色 + 白色箭头。
 
-详见 [V3.1.1 更新说明](docs/v3.1.1/更新说明.md)，更早的版本记录见 [CHANGELOG.md](CHANGELOG.md)。
+详见 [V3.1.2 更新说明](docs/v3.1.2/更新说明.md)，更早的版本记录见 [CHANGELOG.md](CHANGELOG.md)。
 
 
 ## 功能一览
