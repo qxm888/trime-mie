@@ -617,8 +617,33 @@ object CustomKeyboards {
         val imported = store.keyboards[first]?.importedSkin
         val dark = appContext?.resources?.configuration?.uiMode?.and(android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
         val text = if (imported != null && dark) "#FFF3F3F3" else "#FF202020"
-        val colors = if (imported == null) base.presetColorSchemes else base.presetColorSchemes.mapValues { (_, scheme) ->
-            scheme + listOf("candidate_text_color", "comment_text_color", "text_color", "label_color", "hilited_candidate_text_color").associateWith { text }
+        // 候选栏跟随当前键盘配色：底色用键盘背景、文字用键面文字色、选中项用回车强调色。
+        val active = store.keyboards[effectiveActiveId()] ?: store.keyboards.values.firstOrNull()
+        val paletteBackground = active?.resolvedBackground()?.takeIf {
+            it.type == com.osfans.trime.data.keymap.CustomBackground.Type.COLOR
+        }?.color
+        val paletteText = active?.keyAppearance?.keyTextColor?.takeIf { it.isNotBlank() }
+        val paletteAccent = active?.rows?.asSequence()
+            ?.flatMap { it.keys.asSequence() }
+            ?.firstOrNull { it.bindings["click"] == "Return" }
+            ?.resolvedBackground()?.takeIf {
+                it.type == com.osfans.trime.data.keymap.CustomBackground.Type.COLOR
+            }?.color
+        val candidateColors = buildMap {
+            paletteBackground?.let { put("text_back_color", it) }
+            paletteText?.let {
+                listOf("candidate_text_color", "comment_text_color", "text_color", "label_color").forEach { key -> put(key, it) }
+            }
+            paletteAccent?.let { put("hilited_candidate_back_color", it) }
+            put("hilited_candidate_text_color", "#FFFFFFFF")
+            put("candidate_separator_color", "#00000000")
+        }
+        val colors = if (imported == null) {
+            base.presetColorSchemes.mapValues { (_, scheme) -> scheme + candidateColors }
+        } else {
+            base.presetColorSchemes.mapValues { (_, scheme) ->
+                scheme + listOf("candidate_text_color", "comment_text_color", "text_color", "label_color", "hilited_candidate_text_color").associateWith { text }
+            }
         }
         base.copy(presetKeyboards = merged, presetKeys = base.presetKeys + store.keyboards.values.flatMap { it.importedActions.entries }.associate { it.key to it.value } + switches, presetColorSchemes = colors, customizationVersion = store.version)
     }

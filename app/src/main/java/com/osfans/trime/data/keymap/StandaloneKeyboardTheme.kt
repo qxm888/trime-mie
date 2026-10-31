@@ -50,7 +50,10 @@ object StandaloneKeyboardTheme {
                 keyboardHeight = 240, keyboardHeightLand = 180, keyHeight = 60, keyWidth = 10f,
                 horizontalGap = 4, verticalGap = 4, roundCorner = 6f,
                 keyTextSize = 22f, keyLongTextSize = 14f, symbolTextSize = 11f,
-                candidateTextSize = 18f, candidateViewHeight = 32, commentHeight = 12,
+                candidateTextSize = 18f, candidateViewHeight = 34, commentHeight = 12,
+                // 候选栏留白：候选词之间不再挤在一起。
+                candidatePadding = 10, candidateSpacing = 8f,
+                candidateBorderRound = 12f,
             ),
             presetKeys = presets,
             presetColorSchemes = mapOf("default" to colors),

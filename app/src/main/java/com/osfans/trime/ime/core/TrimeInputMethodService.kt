@@ -147,13 +147,26 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
             }
             syncFloatingRatio(key)
             themeScope?.let { replaceInputView(it) }
-            if (key == prefs.keyboard.hideInputBar.key) candidatesView?.refreshVisibility()
+            if (key == prefs.keyboard.hideInputBar.key) {
+                if (prefs.keyboard.hideInputBar.getValue() &&
+                    com.osfans.trime.ime.bar.InputBarVisibility.candidatesFloating()
+                ) {
+                    prefs.candidates.floatingBall.setValue(true)
+                }
+                candidatesView?.refreshVisibility()
+            }
             inputDeviceManager.refreshPolicy()
         }
 
     @Keep
     private val recreateCandidatesViewListener =
-        PreferenceDelegateProvider.OnChangeListener {
+        PreferenceDelegateProvider.OnChangeListener { key ->
+            // 候选栏模式（悬浮候选窗关闭）不许用悬浮球；悬浮窗模式隐藏状态栏时自动打开悬浮球。
+            if (key == prefs.candidates.mode.key) {
+                if (!com.osfans.trime.ime.bar.InputBarVisibility.candidatesFloating()) {
+                    prefs.candidates.floatingBall.setValue(false)
+                }
+            }
             themeScope?.let { replaceCandidateView(it) }
             inputDeviceManager.refreshPolicy()
         }
@@ -396,17 +409,23 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         prefs.candidates.mode.run { setValue(if (getValue() == com.osfans.trime.ime.candidates.popup.PopupCandidatesMode.DISABLED)
             com.osfans.trime.ime.candidates.popup.PopupCandidatesMode.ALWAYS_SHOW else com.osfans.trime.ime.candidates.popup.PopupCandidatesMode.DISABLED) }
     }
-    fun toggleInputBar() { prefs.keyboard.hideInputBar.run { setValue(!getValue()) } }
+    fun toggleInputBar() {
+        val hide = !prefs.keyboard.hideInputBar.getValue()
+        prefs.keyboard.hideInputBar.setValue(hide)
+        if (hide) {
+            // 悬浮窗模式下隐藏状态栏时自动打开悬浮球，保证菜单入口还在。
+            if (com.osfans.trime.ime.bar.InputBarVisibility.candidatesFloating()) {
+                prefs.candidates.floatingBall.setValue(true)
+            }
+        }
+    }
 
     /**
-     * 状态栏此刻是否真的隐藏：硬性规则——只有悬浮窗模式（含单手/横屏自动悬浮）可以隐藏，
-     * 停靠的候选栏模式永远显示状态栏。
+     * 状态栏此刻是否真的隐藏：硬性规则——候选栏模式不能隐藏，
+     * 悬浮候选窗模式可以隐藏（与悬浮键盘无关）。
      */
     fun inputBarHiddenForDisplay(): Boolean =
-        com.osfans.trime.ime.bar.InputBarVisibility.hidden(
-            prefs.keyboard.hideInputBar.getValue(),
-            com.osfans.trime.ime.keyboard.KeyboardPrefs.run { this@TrimeInputMethodService.isFloatingEffective() },
-        )
+        com.osfans.trime.ime.bar.InputBarVisibility.hidden(prefs.keyboard.hideInputBar.getValue())
     fun openKeyboardMenu() {
         showWindow(true)
         inputView?.post { inputView?.showKeyboardMenu() }

@@ -114,7 +114,11 @@ class SwitchOptionEntryUi(
 
             init {
                 add(content, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
-                layoutParams = ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, dp(96))
+                // 高度跟随系统字体缩放：大字号下两行标签也不会被裁掉。
+                val scaled = ctx.resources.displayMetrics.scaledDensity
+                val labelBlock = (12f * scaled * 1.3f * 2).toInt()
+                val height = (dp(4 + 48 + 6) + labelBlock + dp(6)).coerceAtMost(dp(160))
+                layoutParams = ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, height)
             }
         }
 

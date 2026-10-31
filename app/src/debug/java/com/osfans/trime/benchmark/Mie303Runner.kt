@@ -38,12 +38,22 @@ class Mie303Runner : Instrumentation() {
             // Application initialization runs on the main thread before queued callbacks.
             main { check(com.osfans.trime.data.prefs.AppPrefs.defaultInstance() != null) }
             main { }
-            // 硬性规则：只有悬浮模式能隐藏状态栏，停靠模式一律显示。
-            check(!com.osfans.trime.ime.bar.InputBarVisibility.hidden(true,false))
-            check(com.osfans.trime.ime.bar.InputBarVisibility.hidden(true,true))
-            check(!com.osfans.trime.ime.bar.InputBarVisibility.hidden(false,false))
-            check(!com.osfans.trime.ime.bar.InputBarVisibility.hidden(false,true))
-            pass("docked mode always shows the status bar; only floating mode can hide it")
+            // 硬性规则：候选栏模式不能隐藏状态栏；悬浮候选窗模式才允许隐藏。
+            val prevMode = com.osfans.trime.data.prefs.AppPrefs.defaultInstance().candidates.mode.getValue()
+            main {
+                com.osfans.trime.data.prefs.AppPrefs.defaultInstance().candidates.mode.setValue(
+                    com.osfans.trime.ime.candidates.popup.PopupCandidatesMode.DISABLED)
+            }
+            check(!com.osfans.trime.ime.bar.InputBarVisibility.hidden(true))
+            check(!com.osfans.trime.ime.bar.InputBarVisibility.hidden(false))
+            main {
+                com.osfans.trime.data.prefs.AppPrefs.defaultInstance().candidates.mode.setValue(
+                    com.osfans.trime.ime.candidates.popup.PopupCandidatesMode.ALWAYS_SHOW)
+            }
+            check(com.osfans.trime.ime.bar.InputBarVisibility.hidden(true))
+            check(!com.osfans.trime.ime.bar.InputBarVisibility.hidden(false))
+            main { com.osfans.trime.data.prefs.AppPrefs.defaultInstance().candidates.mode.setValue(prevMode) }
+            pass("docked candidate bar always shows the status bar; floating candidate window may hide it")
             reorder();localAddresses();touchProxy();createdWords()
             val bitmap=Bitmap.createBitmap(160,80,Bitmap.Config.ARGB_8888)
             Canvas(bitmap).apply { drawColor(0xFFF4D3DC.toInt());drawRect(80f,0f,160f,80f,Paint().apply { color=0xFFD2E6EB.toInt() }) }
