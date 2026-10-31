@@ -44,7 +44,7 @@ object CustomKeyboards {
     const val BUILTIN_DEFAULT_ID = "custom_pink"
 
     /** 内置五色键盘的版本；改过内置 YAML 后 +1，升级时自动刷新内置 id。 */
-    private const val BUILTIN_VERSION = 4
+    private const val BUILTIN_VERSION = 5
 
     @Serializable
     data class CustomKey(
