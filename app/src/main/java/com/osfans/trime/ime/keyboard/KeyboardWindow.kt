@@ -124,6 +124,8 @@ class KeyboardWindow(di: DI) :
     private var lastKeyboardId = ""
     private var lastLockKeyboardId = ""
     private var tempAsciiMode: Boolean? = null
+    /** 自动切到 ascii_keyboard 时的 (来源键盘, 英文键盘)；切回中文时恢复来源。 */
+    private var asciiKeyboardPair: Pair<String, String>? = null
     private val cachedKeyboards = mutableMapOf<String, Pair<Keyboard, KeyboardView>>()
     private val activeKeyboard: Keyboard? get() = cachedKeyboards[currentKeyboardId]?.first
     private val currentKeyboardView: KeyboardView? get() = cachedKeyboards[currentKeyboardId]?.second
@@ -338,6 +340,14 @@ class KeyboardWindow(di: DI) :
 
     fun switchKeyboard(to: String) {
         val target = evalKeyboard(to)
+        // 选中“主键盘”（lock=true）后把它记为当前自定义键盘：返回主键盘 / 下次启动都回到它。
+        if (theme.isCustom) {
+            val resolved = CustomKeyboards.resolveId(target)
+            if (CustomKeyboards.get(resolved)?.options?.lock == true && CustomKeyboards.activeId != resolved) {
+                CustomKeyboards.activeId = resolved
+            }
+        }
+        asciiKeyboardPair?.let { (_, english) -> if (target != english) asciiKeyboardPair = null }
         ContextCompat.getMainExecutor(service).execute {
             if (cachedKeyboards.containsKey(target)) {
                 val cached = cachedKeyboards[target]?.first
@@ -472,9 +482,25 @@ class KeyboardWindow(di: DI) :
                 }
             }
 
-            option == "ascii_mode" && !value.value -> {
-                // 回到中文时，释放 Shift 锁定
-                visibleKeyboard?.resetShift()
+            option == "ascii_mode" -> {
+                if (value.value) {
+                    // 当前键盘声明了 ascii_keyboard（如 9 键 → 英文 26 键），切英文时自动过去。
+                    val english = visibleKeyboard?.asciiKeyboard.orEmpty()
+                    if (english.isNotEmpty()) {
+                        val target = evalKeyboard(english)
+                        if (target.isNotEmpty() && target != currentKeyboardId) {
+                            asciiKeyboardPair = currentKeyboardId to target
+                            switchKeyboard(target)
+                        }
+                    }
+                } else {
+                    // 回到中文时释放 Shift 锁定，并把自动切过去的英文键盘换回来。
+                    visibleKeyboard?.resetShift()
+                    asciiKeyboardPair?.let { (origin, english) ->
+                        asciiKeyboardPair = null
+                        if (currentKeyboardId == english) switchKeyboard(origin)
+                    }
+                }
             }
         }
         visibleKeyboardView?.invalidateAllKeys()

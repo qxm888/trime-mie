@@ -606,6 +606,7 @@ object CustomKeyboards {
             else rows.sumOf { it.height.coerceIn(24, 160) }.coerceAtLeast(24) * options.heightPercent / 100,
         keyboardHeightLand = if (landscapeHeightDp > 0) (landscapeHeightDp - effectiveToolbarHeightDp()).coerceAtLeast(24)
             else rows.sumOf { it.height.coerceIn(24, 160) }.coerceAtLeast(24) * options.landscapeHeightPercent / 100,
+        asciiKeyboard = options.asciiKeyboard.let { it.takeIf { id -> id.isNotEmpty() && store.keyboards.containsKey(id) }.orEmpty() },
         asciiMode = if (importedSkin != null) { if (importedSkin?.page == "en_26" || importedSkin?.page == "num_9") 1 else 0 } else options.asciiMode,
         resetAsciiMode = importedSkin != null || options.resetAsciiMode,
         lock = options.lock,
