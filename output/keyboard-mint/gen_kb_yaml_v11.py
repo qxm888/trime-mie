@@ -318,11 +318,12 @@ def kb_9(tag: str) -> dict:
                         swipe_up=letters[2], swipe_down=letters[3] if len(letters) > 3 else None, pal=pal))
     # 第 3 行右下：符号（强调色）；第 4 行右下：确定（强调色）
     keys.append(key("符号", f"Keyboard_custom_{tag}_symbols", 3, w=15, kind="enter", size="15", pal=pal))
-    keys.append(key("！", "!", 4, w=16, h=44, size="18", pal=pal))
-    keys.append(key("123", f"Keyboard_custom_{tag}_num", 4, w=12, h=44, kind="fn", size="14", pal=pal))
-    keys.append(key("空格", "space", 4, w=47, h=44, kind="normal", size="14", pal=pal))
-    keys.append(key("中/英", "Mode_switch", 4, w=12, h=44, kind="fn", size="12", pal=pal))
-    keys.append(key("确定", "Return", 4, w=13, h=44, kind="enter", size="15", pal=pal))
+    # 第 4 行与上面三行同高
+    keys.append(key("！", "!", 4, w=16, size="18", pal=pal))
+    keys.append(key("123", f"Keyboard_custom_{tag}_num", 4, w=12, kind="fn", size="14", pal=pal))
+    keys.append(key("空格", "space", 4, w=47, kind="normal", size="14", pal=pal))
+    keys.append(key("中/英", "Mode_switch", 4, w=12, kind="fn", size="12", pal=pal))
+    keys.append(key("确定", "Return", 4, w=13, kind="enter", size="15", pal=pal))
     return keyboard(f"custom_{tag}_9", f"{pal['name']} · 9键", tag, keys,
                     ascii_mode=0, reset_ascii=True, secondary=f"custom_{tag}",
                     ascii_kb=f"custom_{tag}_en", lock=True)

@@ -6,14 +6,14 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前源码版本：**V3.1.7**，正式 APK 文件名 `trime-mie-v3.1.7.apk`。本版已在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 发布。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
+> 当前源码版本：**V3.1.8**，正式 APK 文件名 `trime-mie-v3.1.8.apk`。本版已在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 发布。预编译 Rime 库的完整来源记录仍待补齐，详见 [原生依赖说明](NATIVE_BUILD.md)。
 
-## V3.1.7 9 键布局调整
+## V3.1.8 9 键行高统一
 
-- 9 键第 3 行右下改为「符号」，第 4 行为「！/ 123 / 空格 / 中英 / 确定」，确定占右下整格。
-- 功能菜单页跟随键盘配色美化（图块淡色底 + 圆角、整页底色用键盘背景色）。
+- 9 键最下一行行高改为与其它三行一致（52dp）。
+- 第 3 行右下「符号」、第 4 行右下「确定」，均使用键盘强调色。
 
-详见 [V3.1.7 更新说明](docs/v3.1.7/更新说明.md)，更早的版本记录见 [CHANGELOG.md](CHANGELOG.md)。
+详见 [V3.1.8 更新说明](docs/v3.1.8/更新说明.md)，更早的版本记录见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 功能一览
 

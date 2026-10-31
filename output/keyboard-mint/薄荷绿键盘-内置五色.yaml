@@ -806,7 +806,7 @@ preset_keyboards:
       key_back_color: '#FFFFFF'
       key_text_color: '#3F5A4E'
       key_text_size: '18'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -818,7 +818,7 @@ preset_keyboards:
       key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
       key_text_size: '14'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -830,7 +830,7 @@ preset_keyboards:
       key_back_color: '#FFFFFF'
       key_text_color: '#3F5A4E'
       key_text_size: '14'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -842,7 +842,7 @@ preset_keyboards:
       key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
       key_text_size: '12'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -854,7 +854,7 @@ preset_keyboards:
       key_back_color: '#7BC8A4'
       key_text_color: '#FFFFFF'
       key_text_size: '15'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -6002,7 +6002,7 @@ preset_keyboards:
       key_back_color: '#FFFFFF'
       key_text_color: '#5E4B50'
       key_text_size: '18'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -6014,7 +6014,7 @@ preset_keyboards:
       key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
       key_text_size: '14'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -6026,7 +6026,7 @@ preset_keyboards:
       key_back_color: '#FFFFFF'
       key_text_color: '#5E4B50'
       key_text_size: '14'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -6038,7 +6038,7 @@ preset_keyboards:
       key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
       key_text_size: '12'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -6050,7 +6050,7 @@ preset_keyboards:
       key_back_color: '#F4AEB8'
       key_text_color: '#FFFFFF'
       key_text_size: '15'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -11198,7 +11198,7 @@ preset_keyboards:
       key_back_color: '#FFFFFF'
       key_text_color: '#43586B'
       key_text_size: '18'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -11210,7 +11210,7 @@ preset_keyboards:
       key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
       key_text_size: '14'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -11222,7 +11222,7 @@ preset_keyboards:
       key_back_color: '#FFFFFF'
       key_text_color: '#43586B'
       key_text_size: '14'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -11234,7 +11234,7 @@ preset_keyboards:
       key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
       key_text_size: '12'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -11246,7 +11246,7 @@ preset_keyboards:
       key_back_color: '#96CBF4'
       key_text_color: '#FFFFFF'
       key_text_size: '15'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -16394,7 +16394,7 @@ preset_keyboards:
       key_back_color: '#FFFFFF'
       key_text_color: '#6B564A'
       key_text_size: '18'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -16406,7 +16406,7 @@ preset_keyboards:
       key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
       key_text_size: '14'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -16418,7 +16418,7 @@ preset_keyboards:
       key_back_color: '#FFFFFF'
       key_text_color: '#6B564A'
       key_text_size: '14'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -16430,7 +16430,7 @@ preset_keyboards:
       key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
       key_text_size: '12'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -16442,7 +16442,7 @@ preset_keyboards:
       key_back_color: '#F7BD99'
       key_text_color: '#FFFFFF'
       key_text_size: '15'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -21590,7 +21590,7 @@ preset_keyboards:
       key_back_color: '#FFFFFF'
       key_text_color: '#574B66'
       key_text_size: '18'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -21602,7 +21602,7 @@ preset_keyboards:
       key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
       key_text_size: '14'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -21614,7 +21614,7 @@ preset_keyboards:
       key_back_color: '#FFFFFF'
       key_text_color: '#574B66'
       key_text_size: '14'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -21626,7 +21626,7 @@ preset_keyboards:
       key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
       key_text_size: '12'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
@@ -21638,7 +21638,7 @@ preset_keyboards:
       key_back_color: '#C9A6ED'
       key_text_color: '#FFFFFF'
       key_text_size: '15'
-      height: 44
+      height: 52
       mie:
         row: 4
       round_corner: '6'
