@@ -43,6 +43,9 @@ object CustomKeyboards {
     /** 内置五色键盘中默认使用的方案：樱花粉。 */
     const val BUILTIN_DEFAULT_ID = "custom_pink"
 
+    /** 内置五色键盘的版本；改过内置 YAML 后 +1，升级时自动刷新内置 id。 */
+    private const val BUILTIN_VERSION = 2
+
     @Serializable
     data class CustomKey(
         val label: String = "",
@@ -153,6 +156,8 @@ object CustomKeyboards {
         var mode: String = MODE_THEME,
         var activeId: String = "",
         val keyboards: MutableMap<String, CustomKeyboard> = mutableMapOf(),
+        /** 内置五色键盘的版本：升级时只刷新内置 id，用户自建键盘不动。 */
+        var builtinVersion: Int = 0,
     )
 
     private val lock = Any()
@@ -248,6 +253,7 @@ object CustomKeyboards {
                     store.version++
                     dirty = true
                     scheduleSaveLocked()
+                    refreshBuiltinKeyboardsLocked()
                 }
             }.onFailure { Timber.w(it, "CustomKeyboards: load failed, starting fresh") }
             // 内置图标每次启动补齐（素材目录可能此时才可用），已存在的不覆盖。
@@ -269,6 +275,31 @@ object CustomKeyboards {
         layouts.forEach { (id, keyboard) -> store.keyboards[id] = normalizedCopy(keyboard) }
         store.mode = MODE_CUSTOM
         store.activeId = BUILTIN_DEFAULT_ID.takeIf { layouts.containsKey(it) } ?: layouts.keys.first()
+        store.builtinVersion = BUILTIN_VERSION
+        store.version++
+        dirty = true
+        scheduleSaveLocked()
+    }
+
+    /**
+     * 升级时刷新内置五色键盘：只替换内置 id（custom_<色>_*），用户自建键盘保持不变。
+     * 内置键盘是模板，用户对模板的改动会在升级时被覆盖。
+     */
+    private fun refreshBuiltinKeyboardsLocked() {
+        if (store.builtinVersion >= BUILTIN_VERSION) return
+        val context = appContext ?: return
+        val layouts = runCatching {
+            context.resources.openRawResource(com.osfans.trime.R.raw.mie_builtin_keyboards)
+                .bufferedReader().use { CustomKeyboardYaml.decode(it.readText()) }
+        }.getOrElse {
+            Timber.w(it, "CustomKeyboards: builtin refresh skipped")
+            return
+        }
+        if (layouts.isEmpty()) return
+        // 只在已经内置过这套键盘的库里刷新，不把模板强塞进用户自建的列表。
+        if (store.keyboards.keys.none { it in layouts.keys }) return
+        layouts.forEach { (id, keyboard) -> store.keyboards[id] = normalizedCopy(keyboard) }
+        store.builtinVersion = BUILTIN_VERSION
         store.version++
         dirty = true
         scheduleSaveLocked()

@@ -10,6 +10,7 @@ preset_keyboards:
     ascii_mode: 0
     reset_ascii_mode: true
     ascii_keyboard: custom_mint_en
+    lock: true
     keyboard_back_color: '#F7F9F8'
     vertical_gap: 5
     horizontal_gap: 5
@@ -788,7 +789,7 @@ preset_keyboards:
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B8D0C3'
-    - label: 换行
+    - label: 确
       click: Return
       width: 15
       key_back_color: '#7BC8A4'
@@ -838,7 +839,7 @@ preset_keyboards:
       key_border_color: '#B8D0C3'
     - label: 空格
       click: space
-      width: 34
+      width: 33
       key_back_color: '#FFFFFF'
       key_text_color: '#3F5A4E'
       key_text_size: '14'
@@ -860,11 +861,12 @@ preset_keyboards:
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B8D0C3'
-    - label: ''
-      width: 14
-      key_back_color: '#00000000'
-      key_text_color: '#3F5A4E'
-      key_text_size: '20'
+    - label: 定
+      click: Return
+      width: 15
+      key_back_color: '#7BC8A4'
+      key_text_color: '#FFFFFF'
+      key_text_size: '15'
       height: 44
       mie:
         row: 4
@@ -5216,6 +5218,7 @@ preset_keyboards:
     ascii_mode: 0
     reset_ascii_mode: true
     ascii_keyboard: custom_pink_en
+    lock: true
     keyboard_back_color: '#FBF7F8'
     vertical_gap: 5
     horizontal_gap: 5
@@ -5994,7 +5997,7 @@ preset_keyboards:
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E3C2C8'
-    - label: 换行
+    - label: 确
       click: Return
       width: 15
       key_back_color: '#F4AEB8'
@@ -6044,7 +6047,7 @@ preset_keyboards:
       key_border_color: '#E3C2C8'
     - label: 空格
       click: space
-      width: 34
+      width: 33
       key_back_color: '#FFFFFF'
       key_text_color: '#5E4B50'
       key_text_size: '14'
@@ -6066,11 +6069,12 @@ preset_keyboards:
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E3C2C8'
-    - label: ''
-      width: 14
-      key_back_color: '#00000000'
-      key_text_color: '#5E4B50'
-      key_text_size: '20'
+    - label: 定
+      click: Return
+      width: 15
+      key_back_color: '#F4AEB8'
+      key_text_color: '#FFFFFF'
+      key_text_size: '15'
       height: 44
       mie:
         row: 4
@@ -10422,6 +10426,7 @@ preset_keyboards:
     ascii_mode: 0
     reset_ascii_mode: true
     ascii_keyboard: custom_blue_en
+    lock: true
     keyboard_back_color: '#F7F9FB'
     vertical_gap: 5
     horizontal_gap: 5
@@ -11200,7 +11205,7 @@ preset_keyboards:
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B9D4E6'
-    - label: 换行
+    - label: 确
       click: Return
       width: 15
       key_back_color: '#96CBF4'
@@ -11250,7 +11255,7 @@ preset_keyboards:
       key_border_color: '#B9D4E6'
     - label: 空格
       click: space
-      width: 34
+      width: 33
       key_back_color: '#FFFFFF'
       key_text_color: '#43586B'
       key_text_size: '14'
@@ -11272,11 +11277,12 @@ preset_keyboards:
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B9D4E6'
-    - label: ''
-      width: 14
-      key_back_color: '#00000000'
-      key_text_color: '#43586B'
-      key_text_size: '20'
+    - label: 定
+      click: Return
+      width: 15
+      key_back_color: '#96CBF4'
+      key_text_color: '#FFFFFF'
+      key_text_size: '15'
       height: 44
       mie:
         row: 4
@@ -15628,6 +15634,7 @@ preset_keyboards:
     ascii_mode: 0
     reset_ascii_mode: true
     ascii_keyboard: custom_orange_en
+    lock: true
     keyboard_back_color: '#FBF8F5'
     vertical_gap: 5
     horizontal_gap: 5
@@ -16406,7 +16413,7 @@ preset_keyboards:
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E5C7AE'
-    - label: 换行
+    - label: 确
       click: Return
       width: 15
       key_back_color: '#F7BD99'
@@ -16456,7 +16463,7 @@ preset_keyboards:
       key_border_color: '#E5C7AE'
     - label: 空格
       click: space
-      width: 34
+      width: 33
       key_back_color: '#FFFFFF'
       key_text_color: '#6B564A'
       key_text_size: '14'
@@ -16478,11 +16485,12 @@ preset_keyboards:
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E5C7AE'
-    - label: ''
-      width: 14
-      key_back_color: '#00000000'
-      key_text_color: '#6B564A'
-      key_text_size: '20'
+    - label: 定
+      click: Return
+      width: 15
+      key_back_color: '#F7BD99'
+      key_text_color: '#FFFFFF'
+      key_text_size: '15'
       height: 44
       mie:
         row: 4
@@ -20834,6 +20842,7 @@ preset_keyboards:
     ascii_mode: 0
     reset_ascii_mode: true
     ascii_keyboard: custom_purple_en
+    lock: true
     keyboard_back_color: '#F9F7FC'
     vertical_gap: 5
     horizontal_gap: 5
@@ -21612,7 +21621,7 @@ preset_keyboards:
       round_corner: '6'
       key_border: '1'
       key_border_color: '#D3BFE6'
-    - label: 换行
+    - label: 确
       click: Return
       width: 15
       key_back_color: '#C9A6ED'
@@ -21662,7 +21671,7 @@ preset_keyboards:
       key_border_color: '#D3BFE6'
     - label: 空格
       click: space
-      width: 34
+      width: 33
       key_back_color: '#FFFFFF'
       key_text_color: '#574B66'
       key_text_size: '14'
@@ -21684,11 +21693,12 @@ preset_keyboards:
       round_corner: '6'
       key_border: '1'
       key_border_color: '#D3BFE6'
-    - label: ''
-      width: 14
-      key_back_color: '#00000000'
-      key_text_color: '#574B66'
-      key_text_size: '20'
+    - label: 定
+      click: Return
+      width: 15
+      key_back_color: '#C9A6ED'
+      key_text_color: '#FFFFFF'
+      key_text_size: '15'
       height: 44
       mie:
         row: 4

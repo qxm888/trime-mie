@@ -292,7 +292,7 @@ def kb_main(tag: str) -> dict:
     keys += bottom_main(tag, 4, pal)
     return keyboard(f"custom_{tag}", f"{pal['name']}键盘", tag, keys, transform="uppercase",
                     ascii_mode=0, reset_ascii=True, ascii_kb=f"custom_{tag}_en",
-                    row_align={2: "center"})
+                    row_align={2: "center"}, lock=True)
 
 
 # ----------------------------------------------------------------- 9 / 14 / 18
@@ -314,13 +314,14 @@ def kb_9(tag: str) -> dict:
     for lbl, letters in (("PQRS", ("p", "q", "r", "s")), ("TUV", ("t", "u", "v")), ("WXYZ", ("w", "x", "y", "z"))):
         keys.append(key(lbl, letters[0], 3, w=23, size="18", long=letters[1],
                         swipe_up=letters[2], swipe_down=letters[3] if len(letters) > 3 else None, pal=pal))
-    keys.append(key("换行", "Return", 3, w=15, kind="enter", size="15", pal=pal))
+    # 右下角“确定”分两格显示：上“确”下“定”，两键都是确定（Return）
+    keys.append(key("确", "Return", 3, w=15, kind="enter", size="15", pal=pal))
     keys.append(key("！", "!", 4, w=16, h=44, size="18", pal=pal))
     keys.append(key("符号", f"Keyboard_custom_{tag}_symbols", 4, w=12, h=44, kind="fn", size="13", pal=pal))
     keys.append(key("123", f"Keyboard_custom_{tag}_num", 4, w=12, h=44, kind="fn", size="14", pal=pal))
-    keys.append(key("空格", "space", 4, w=34, h=44, kind="normal", size="14", pal=pal))
+    keys.append(key("空格", "space", 4, w=33, h=44, kind="normal", size="14", pal=pal))
     keys.append(key("中/英", "Mode_switch", 4, w=12, h=44, kind="fn", size="12", pal=pal))
-    keys.append(key("", None, 4, w=14, h=44, kind="ghost", pal=pal))
+    keys.append(key("定", "Return", 4, w=15, h=44, kind="enter", size="15", pal=pal))
     return keyboard(f"custom_{tag}_9", f"{pal['name']} · 9键", tag, keys,
                     ascii_mode=0, reset_ascii=True, secondary=f"custom_{tag}",
                     ascii_kb=f"custom_{tag}_en", lock=True)

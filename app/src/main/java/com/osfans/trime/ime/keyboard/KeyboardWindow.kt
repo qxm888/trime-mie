@@ -126,6 +126,16 @@ class KeyboardWindow(di: DI) :
     private var tempAsciiMode: Boolean? = null
     /** 自动切到 ascii_keyboard 时的 (来源键盘, 英文键盘)；切回中文时恢复来源。 */
     private var asciiKeyboardPair: Pair<String, String>? = null
+    /** 最近一次选中的自定义主键盘（26/9/14/18 键等）。 */
+    private var lastMainKeyboardId = ""
+
+    /** 主键盘：显式 lock 的键盘，或自定义键盘里的顶层键盘（未归为次级）。 */
+    private fun isMainKeyboard(id: String): Boolean {
+        if (!theme.isCustom) return false
+        val resolved = CustomKeyboards.resolveId(id)
+        val keyboard = CustomKeyboards.get(resolved) ?: return false
+        return keyboard.options.lock || keyboard.secondaryOf.isBlank()
+    }
     private val cachedKeyboards = mutableMapOf<String, Pair<Keyboard, KeyboardView>>()
     private val activeKeyboard: Keyboard? get() = cachedKeyboards[currentKeyboardId]?.first
     private val currentKeyboardView: KeyboardView? get() = cachedKeyboards[currentKeyboardId]?.second
@@ -329,7 +339,7 @@ class KeyboardWindow(di: DI) :
             current = currentKeyboardId,
             resolvedCurrent = if (theme.isCustom) CustomKeyboards.resolveId(currentKeyboardId) else currentKeyboardId,
             last = lastKeyboardId,
-            locked = lastLockKeyboardId,
+            locked = lastMainKeyboardId.ifEmpty { lastLockKeyboardId },
             ascii = activeKeyboard?.asciiKeyboard,
             currentIsLocked = activeKeyboard?.isLock == true,
             schema = rime.run { statusCached }.schemaId,
@@ -340,12 +350,11 @@ class KeyboardWindow(di: DI) :
 
     fun switchKeyboard(to: String) {
         val target = evalKeyboard(to)
-        // 选中“主键盘”（lock=true）后把它记为当前自定义键盘：返回主键盘 / 下次启动都回到它。
-        if (theme.isCustom) {
+        // 选中主键盘后把它记为当前自定义键盘：返回主键盘 / 下次启动都回到它。
+        if (isMainKeyboard(target)) {
             val resolved = CustomKeyboards.resolveId(target)
-            if (CustomKeyboards.get(resolved)?.options?.lock == true && CustomKeyboards.activeId != resolved) {
-                CustomKeyboards.activeId = resolved
-            }
+            lastMainKeyboardId = resolved
+            if (CustomKeyboards.activeId != resolved) CustomKeyboards.activeId = resolved
         }
         asciiKeyboardPair?.let { (_, english) -> if (target != english) asciiKeyboardPair = null }
         ContextCompat.getMainExecutor(service).execute {
