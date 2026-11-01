@@ -31,6 +31,10 @@ abstract class SwitchOptionAdapter : BaseQuickAdapter<SwitchOptionEntry, SwitchO
         item ?: return
         holder.ui.refreshColors()
         holder.ui.setEntry(item)
+        val enabled = item !is SwitchOptionEntry.Static || item.type != SwitchOptionEntry.Static.Type.FloatingBall ||
+            com.osfans.trime.ime.bar.InputBarVisibility.candidatesFloating()
+        holder.ui.root.isEnabled = enabled
+        holder.ui.root.alpha = if (enabled) 1f else .4f
         holder.ui.root.setOnClickListener {
             onItemClick(it, item)
         }

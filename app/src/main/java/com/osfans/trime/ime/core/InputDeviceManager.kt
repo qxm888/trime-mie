@@ -23,9 +23,10 @@ class InputDeviceManager(
     private val candidatesViewMode by AppPrefs.defaultInstance().candidates.mode
 
     private val alwaysShowCandidatesView: Boolean
-        get() = candidatesViewMode == PopupCandidatesMode.ALWAYS_SHOW ||
+        get() = candidatesViewMode != PopupCandidatesMode.DISABLED && (
+            candidatesViewMode == PopupCandidatesMode.ALWAYS_SHOW ||
             (inputView?.isInputBarHidden ?: AppPrefs.defaultInstance().keyboard.hideInputBar.getValue()) ||
-            AppPrefs.defaultInstance().candidates.floatingBall.getValue()
+            AppPrefs.defaultInstance().candidates.floatingBall.getValue())
 
     private fun setupInputViewCallback(isVirtual: Boolean) {
         val iv = inputView ?: return

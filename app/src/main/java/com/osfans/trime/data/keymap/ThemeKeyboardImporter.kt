@@ -204,9 +204,11 @@ class ThemeKeyboardImporter(private val context: Context) {
         return FontOverrides.roles.keys.associateWith { role ->
             val override=if(includeAppOverrides) FontOverrides.selection(role) else ""
             val names=files[role]?.toList().orEmpty()
-            if(names.size>1) warnings.add("多字体回退链使用首个可用字体，缺字由系统回退。")
-            val font=if(override.startsWith("system:")) override else if(override.isNotEmpty()) assets.copy(File(override)) else
-                names.map { File(DataManager.userDataDir,"fonts/$it") }.firstOrNull { it.isFile }?.let(assets::copy).orEmpty()
+            val selected = if (override.isNotEmpty()) FontOverrides.decode(override) else
+                names.map { File(DataManager.userDataDir,"fonts/$it") }.filter { it.isFile }.map { it.path }
+            val font = FontOverrides.encode(selected.map { path ->
+                if (path.startsWith("system:")) path else assets.copy(File(path))
+            })
             FontSpec(font,FontOverrides.size(role).takeIf { includeAppOverrides && it>0 } ?: sizes[role] ?: 0f)
         }
     }

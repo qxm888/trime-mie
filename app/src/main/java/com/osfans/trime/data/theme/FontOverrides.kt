@@ -36,14 +36,31 @@ object FontOverrides {
     fun folder(): File = com.osfans.trime.core.data.DirectExternalStorage.resources(context!!, "custom_fonts")
     fun choices(): List<String> = listOf("", "system:sans-serif", "system:serif", "system:monospace") +
         folder().listFiles().orEmpty().filter { it.isFile }.sortedBy { it.name }.map { it.absolutePath }
-    fun name(value: String): String = when(value) {
-        "" -> "跟随当前主题"
+    const val MAX_CHAIN = 32
+    /** Legacy single paths remain valid; multiple selections use a JSON array. */
+    fun decode(value: String): List<String> {
+        val paths = if (value.startsWith("[")) runCatching {
+            val array = org.json.JSONArray(value)
+            (0 until minOf(array.length(), MAX_CHAIN)).map { array.getString(it) }
+        }.getOrDefault(emptyList()) else listOf(value)
+        val unique = paths.filter { it.isNotBlank() }.distinct().take(MAX_CHAIN)
+        // Android's CustomFallbackBuilder has one system fallback after files.
+        return unique.filterNot { it.startsWith("system:") } + unique.lastOrNull { it.startsWith("system:") }.let { listOfNotNull(it) }
+    }
+    fun encode(paths: List<String>): String {
+        val normalized = paths.filter { it.isNotBlank() }.distinct().take(MAX_CHAIN)
+        return when (normalized.size) { 0 -> ""; 1 -> normalized.first(); else -> org.json.JSONArray(normalized).toString() }
+    }
+    private fun singleName(value: String): String = when(value) {
         "system:sans-serif" -> "系统无衬线"
         "system:serif" -> "系统衬线"
         "system:monospace" -> "系统等宽"
         else -> File(value).name
     }
-    fun invalidate() { synchronized(cache) { cacheGeneration++;cache.clear(); failed.clear() } }
+    fun name(value: String): String = decode(value).takeIf { it.isNotEmpty() }
+        ?.joinToString(" → ", transform = ::singleName) ?: "跟随当前主题"
+    private val families = mutableMapOf<String, android.graphics.fonts.FontFamily>()
+    fun invalidate() { synchronized(cache) { cacheGeneration++;cache.clear(); failed.clear(); families.clear() } }
     fun typeface(role: String): Typeface? {
         return fromSelection(selection(role))
     }
@@ -57,14 +74,35 @@ object FontOverrides {
         // Typeface construction can map a large font. Do not hold the shared cache
         // monitor while unrelated, already-cached fonts are needed by the IME UI.
         val loaded=runCatching {
-            if(value.startsWith("system:")) Typeface.create(value.removePrefix("system:"),Typeface.NORMAL)
-            else Typeface.createFromFile(value)
+            val fonts = decode(value)
+            val files = fonts.filterNot { it.startsWith("system:") }
+            val system = fonts.lastOrNull { it.startsWith("system:") }?.removePrefix("system:")
+            if (files.isEmpty()) system?.let { Typeface.create(it, Typeface.NORMAL) }
+            else if (android.os.Build.VERSION.SDK_INT >= 29 && fonts.size > 1) {
+                val available = files.mapNotNull { path ->
+                    synchronized(cache) { families[path] } ?: runCatching {
+                        android.graphics.fonts.FontFamily.Builder(android.graphics.fonts.Font.Builder(File(path)).build()).build()
+                    }.onFailure { timber.log.Timber.w("Unavailable fallback font skipped") }.getOrNull()?.also {
+                        synchronized(cache) { if (generation == cacheGeneration) families[path] = it }
+                    }
+                }
+                if (available.isEmpty()) system?.let { Typeface.create(it, Typeface.NORMAL) }
+                else Typeface.CustomFallbackBuilder(available.first()).apply {
+                    available.drop(1).forEach { addCustomFallback(it) }
+                    setSystemFallback(system ?: "sans-serif")
+                }.build()
+            } else {
+                files.firstNotNullOfOrNull { path ->
+                    runCatching { Typeface.createFromFile(path) }.getOrNull()
+                } ?: system?.let { Typeface.create(it, Typeface.NORMAL) }
+            }
         }
         return synchronized(cache) {
             if(generation!=cacheGeneration) return@synchronized loaded.getOrNull()
-            cache[value] ?: loaded.onFailure {
-                failed.add(value);timber.log.Timber.w("Invalid font skipped (cached)")
-            }.getOrNull()?.also { cache[value]=it }
+            cache[value] ?: loaded.getOrNull().also { result ->
+                if (result == null) { failed.add(value); timber.log.Timber.w("Invalid font skipped (cached)") }
+                else cache[value] = result
+            }
         }
     }
 }

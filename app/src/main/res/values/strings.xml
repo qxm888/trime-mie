@@ -548,7 +548,7 @@
     <string name="one_hand_keyboard_width">单手模式键盘宽度</string>
     <string name="candidate_floating_ball">悬浮窗悬浮球</string>
     <string name="candidate_ball_opacity">候选悬浮球不透明度 %</string>
-    <string name="candidate_floating_ball_summary">仅在悬浮候选窗存在时显示；单击展开工具栏，双击打开键盘菜单，长按打开扇形菜单</string>
+    <string name="candidate_floating_ball_summary">仅悬浮窗输入可开启，隐藏工具栏时自动开启；单击展开工具栏，双击打开键盘菜单，长按打开扇形菜单</string>
     <string name="candidate_bottom_pagination">翻页按钮放在底部左右两侧（关闭则上方集中）</string>
     <string name="ball_fan_menu_title">Floating ball fan menu</string>
     <string name="ball_fan_menu_add">Add fan menu item</string>

@@ -22,6 +22,7 @@
     <instrumentation android:name="dev.codex.trime.smoke.OptimizationRunner" android:targetPackage="${applicationId}" />
     <instrumentation android:name="com.osfans.trime.benchmark.InteractionRunner" android:targetPackage="${applicationId}" />
     <instrumentation android:name="com.osfans.trime.benchmark.VoiceLoadRunner" android:targetPackage="${applicationId}" />
+    <instrumentation android:name="com.osfans.trime.benchmark.Mie319Runner" android:targetPackage="${applicationId}" />
     <application>
         <activity android:name="com.osfans.trime.benchmark.Mie302FixtureActivity" android:exported="false" />
         <activity android:name="com.osfans.trime.benchmark.CandidateViewportActivity" android:exported="false" android:configChanges="orientation|screenSize|keyboardHidden" />

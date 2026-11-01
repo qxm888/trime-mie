@@ -78,6 +78,7 @@ object ThemeLoader {
              * could not run at all.
              */
             val findings: List<ThemeDiagnostics.Finding>? = null,
+            val fromCompiled: Boolean = false,
         ) : ThemeLoadResult
 
         data class Failure(
@@ -119,6 +120,8 @@ object ThemeLoader {
             fallBack(themeId, e, "has unresolved references (%s)")
         } catch (e: Exception) {
             fallBack(themeId, e, "cannot be decoded from its source (%s)")
+        } finally {
+            ThemeSourceState.remember(themeId, sources.requested)
         }
     }
 
@@ -193,9 +196,9 @@ object ThemeLoader {
         sources: SourceLoader = SourceLoader(),
     ): YamlNode? {
         val node = sources.load(themeId, file) ?: return null
-        return runCatching {
-            ThemeDslExpander.expand(themeId, node) { id -> sources.load(id, null) }
-        }.getOrNull()
+        return try {
+            runCatching { ThemeDslExpander.expand(themeId, node) { id -> sources.load(id, null) } }.getOrNull()
+        } finally { ThemeSourceState.remember(themeId, sources.requested) }
     }
 
     /**
@@ -210,6 +213,7 @@ object ThemeLoader {
         private val findSource: (String) -> File? = ::findSourceFile,
     ) {
         private val cache = HashMap<String, YamlNode?>()
+        val requested = linkedSetOf<String>()
 
         /**
          * @param file source file of [resourceId] when it is already known.
@@ -217,6 +221,7 @@ object ThemeLoader {
          *   wins over the id lookup cache.
          */
         fun load(resourceId: String, file: File?): YamlNode? {
+            requested.add(resourceId)
             if (file != null) return readAndPatch(resourceId, file)
             if (cache.containsKey(resourceId)) return cache[resourceId]
             val result = findSource(resourceId)?.let { readAndPatch(resourceId, it) }
@@ -275,28 +280,43 @@ object ThemeLoader {
         return yamlMapOf(root.pairs + (PATCH to yamlScalarOf("$patchId:/patch?")))
     }
 
-    /** Theme ids that can be compiled by librime: every `*.trime.yaml` plus the default. */
+    /** Theme ids that can be compiled by librime: every existing `*trime.yaml`. */
     private fun themeIds(): List<String> =
         sequenceOf(DataManager.sharedDataDir, DataManager.userDataDir)
             .flatMap { dir -> dir.listFiles { _, name -> name.endsWith("trime.yaml") }.orEmpty().asSequence() }
-            .map { it.nameWithoutExtension }.plus("tongwenfeng.trime").distinct().toList()
+            .map { it.nameWithoutExtension }.distinct().toList()
 
-    /**
-     * Marks every theme source as changed. Must run **before** rime maintenance so
-     * its timestamp check cannot skip a file whose mtime an editor preserved.
-     */
-    internal fun touchAllThemeSources() {
-        themeIds().forEach(::touchThemeSource)
-    }
-
-    /** Invoked exclusively by the explicit Deploy action on the Rime dispatcher. */
-    internal fun deployThemeConfigs() {
-        for (id in themeIds()) {
-            if (!Rime.deployRimeConfigFile(id, CONFIG_VERSION_KEY)) {
-                Timber.w("Theme config '$id' was not rebuilt (unchanged or invalid)")
-            }
+    /** Only managed build artifacts are replaced; rollback preserves the last working theme. */
+    internal fun compileThemeConfig(themeId: String, compile: (String) -> Boolean): Boolean {
+        require(themeId.isNotBlank() && themeId == File(themeId).name && themeId !in setOf(".", "..") && '\\' !in themeId)
+        val folder = DataManager.stagingDir
+        check(folder.mkdirs() || folder.isDirectory)
+        val target = File(folder, "$themeId.yaml")
+        require(target.canonicalFile.parentFile == folder.canonicalFile) { "主题产物路径越界" }
+        val previous = File(folder, ".${target.name}.mie-previous-${java.util.UUID.randomUUID()}")
+        val hadPrevious = target.isFile
+        if (hadPrevious) check(target.renameTo(previous)) { "无法保留上次主题编译结果" }
+        return try {
+            check(compile(themeId) && target.isFile) { "没有生成新的主题编译结果" }
+            val mapping = ThemeYaml.parser.parseToYamlNode(target.readText()).mapping ?: error("主题结果不是映射")
+            val decoded = decodeAndReport(themeId, mapping)
+            check(decoded is ThemeLoadResult.Success) { "主题编译结果无法使用" }
+            val dependencies = mapping.pairs["__build_info"]?.mapping?.pairs?.get("timestamps")?.mapping?.pairs?.keys.orEmpty()
+            ThemeSourceState.compiled(themeId, dependencies)
+            previous.delete()
+            true
+        } catch (error: Exception) {
+            target.delete()
+            if (hadPrevious) check(previous.renameTo(target)) { "无法恢复上次主题编译结果" }
+            Timber.e(error, "Theme config refresh failed; previous artifact retained")
+            com.osfans.trime.util.DiagnosticLog.event("theme", "config_failed", "type=${error.javaClass.simpleName}")
+            false
         }
     }
+
+    /** Invoked exclusively by explicit full deployment, after native maintenance. */
+    internal fun deployThemeConfigs(compile: (String) -> Boolean): List<String> =
+        themeIds().filterNot { compileThemeConfig(it, compile) }
 
     /**
      * Source file of [themeId] in the data dirs, or null. librime compiles
@@ -305,13 +325,6 @@ object ThemeLoader {
      */
     internal fun themeSourceFile(themeId: String): File? =
         findSourceFile(themeId, listOf(DataManager.userDataDir, DataManager.sharedDataDir))
-
-    /** Marks the source as changed so librime's artifact timestamp check rebuilds it. */
-    internal fun touchThemeSource(themeId: String) {
-        runCatching {
-            themeSourceFile(themeId)?.setLastModified(System.currentTimeMillis())
-        }.onFailure { Timber.w(it, "Could not touch theme source '$themeId'") }
-    }
 
     /** Reads existing artifacts without compiling or deploying any files. */
     private fun loadDeployedTheme(themeId: String): ThemeLoadResult {
@@ -344,8 +357,13 @@ object ThemeLoader {
             ThemeLoadError.InvalidStructure(themeId, "YAML root is not a mapping"),
         )
 
+        ThemeSourceState.remember(themeId,
+            mapping.pairs["__build_info"]?.mapping?.pairs?.get("timestamps")?.mapping?.pairs?.keys.orEmpty())
+
         return try {
-            decodeAndReport(themeId, mapping)
+            decodeAndReport(themeId, mapping).let { result ->
+                if (result is ThemeLoadResult.Success) result.copy(fromCompiled = true) else result
+            }
         } catch (e: Exception) {
             ThemeLoadResult.Failure(
                 themeId,

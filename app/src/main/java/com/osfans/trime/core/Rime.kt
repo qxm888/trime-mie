@@ -159,9 +159,6 @@ class Rime :
 
     override suspend fun deploy() = lock.withLock {
         com.osfans.trime.util.DiagnosticLog.event("rime", "manual_deploy", "requested")
-        // 维护只按源文件 mtime 判断是否需要重编译主题；编辑器保留 mtime 时会被跳过，
-        // 所以先标记全部主题源文件，确保手动部署一定重编译。
-        com.osfans.trime.data.theme.ThemeLoader.touchAllThemeSources()
         UserDataManager.sync()
         val deployFinished = CompletableDeferred<Boolean>()
         val deployHandler: (RimeMessage<*>) -> Unit = { message ->
@@ -192,13 +189,16 @@ class Rime :
                     }
                 }
             check(success) { "Rime deploy failed" }
-            withRimeContext {
-                // The native maintenance has loaded the deployment plugins and
-                // finished writing shared artifacts. Compile themes sequentially.
-                com.osfans.trime.data.theme.ThemeLoader.deployThemeConfigs()
+            val failedThemes = withRimeContext {
+                com.osfans.trime.data.theme.ThemeLoader.deployThemeConfigs(::forceDeployThemeConfig)
             }
             withContext(Dispatchers.Main) {
+                com.osfans.trime.data.theme.FontOverrides.invalidate()
                 com.osfans.trime.data.theme.ThemeManager.requestCustomizationRefresh()
+            }
+            check(com.osfans.trime.data.keymap.CustomKeyboards.mode != com.osfans.trime.data.keymap.CustomKeyboards.MODE_THEME ||
+                com.osfans.trime.data.theme.ThemeManager.prefs.selectedTheme.getValue() !in failedThemes) {
+                "当前主题编译失败，已保留上次可用配置"
             }
             com.osfans.trime.util.appContext.getSharedPreferences("settings_restore_result", android.content.Context.MODE_PRIVATE)
                 .edit().remove("deploy").commit()
@@ -208,9 +208,13 @@ class Rime :
         }
     }
 
-    override suspend fun deployThemeConfig(themeId: String, force: Boolean): Boolean = withRimeContext {
-        if (force) com.osfans.trime.data.theme.ThemeLoader.touchThemeSource(themeId)
-        deployRimeConfigFile(themeId, "config_version")
+    override suspend fun deployThemeConfig(themeId: String, force: Boolean): Boolean = lock.withLock {
+        withRimeContext {
+            if (!force && !com.osfans.trime.data.theme.ThemeSourceState.needsCompile(themeId)) return@withRimeContext true
+            com.osfans.trime.data.theme.ThemeLoader.compileThemeConfig(themeId, ::forceDeployThemeConfig).also {
+                if (it) com.osfans.trime.data.theme.FontOverrides.invalidate()
+            }
+        }
     }
 
     override suspend fun updateConfig() = withRimeContext {
@@ -504,38 +508,8 @@ class Rime :
             startupRime(sharedDataDir, userDataDir, BuildConfig.BUILD_VERSION_NAME, true)
         } else {
             startupRimeWithoutMaintenance(sharedDataDir, userDataDir, BuildConfig.BUILD_VERSION_NAME)
-            scheduleStartupMaintenance(sharedDataDir, userDataDir)
         }
         com.osfans.trime.util.DiagnosticLog.event("rime", "startup", "manualDeploy=$fullCheck")
-    }
-
-    /**
-     * Restores automatic deployment without librime's directory-mtime false
-     * positives: only a newer source YAML starts maintenance, and the compile
-     * runs on librime's worker thread while input stays usable.
-     */
-    private fun scheduleStartupMaintenance(
-        sharedDataDir: String,
-        userDataDir: String,
-    ) {
-        val needed =
-            runCatching {
-                RimeStartupMaintenance.needsMaintenance(
-                    java.io.File(sharedDataDir),
-                    java.io.File(userDataDir),
-                )
-            }.getOrElse {
-                Timber.w(it, "Could not inspect rime sources for automatic maintenance")
-                false
-            }
-        if (!needed) return
-        val accepted =
-            runCatching { startRimeMaintenance(true) }.getOrElse {
-                Timber.w(it, "Could not schedule automatic maintenance")
-                false
-            }
-        com.osfans.trime.util.DiagnosticLog.event("rime", "auto_maintenance", "accepted=$accepted")
-        Timber.i("Automatic rime maintenance scheduled: accepted=$accepted")
     }
 
     private fun processKeyInner(value: Int, modifiers: Int, isVirtual: Boolean): Boolean {
@@ -803,7 +777,7 @@ class Rime :
         )
 
         @JvmStatic
-        private external fun startRimeMaintenance(fullCheck: Boolean): Boolean
+        private external fun forceDeployThemeConfig(themeId: String): Boolean
 
         @JvmStatic
         external fun exitRime()

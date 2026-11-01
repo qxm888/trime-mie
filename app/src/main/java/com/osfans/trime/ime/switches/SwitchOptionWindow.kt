@@ -150,16 +150,16 @@ class SwitchOptionWindow(di: DI) :
                                 context,
                                 if (com.osfans.trime.data.prefs.AppPrefs.defaultInstance().candidates.mode.getValue() ==
                                     com.osfans.trime.ime.candidates.popup.PopupCandidatesMode.DISABLED
-                                ) "候选栏已关闭" else "候选栏已开启",
+                                ) "已切换到候选栏输入" else "已切换到悬浮窗输入",
                                 Toast.LENGTH_SHORT,
                             ).show()
                             returnToKeyboard()
                         }
                         SwitchOptionEntry.Static.Type.FloatingBall -> {
-                            com.osfans.trime.data.prefs.AppPrefs.defaultInstance().candidates.floatingBall.run { setValue(!getValue()) }
+                            val allowed = service.toggleFloatingBall()
                             Toast.makeText(
                                 context,
-                                if (com.osfans.trime.data.prefs.AppPrefs.defaultInstance().candidates.floatingBall.getValue()) "浮动球已开启" else "浮动球已关闭",
+                                if (!allowed) "请先切换到悬浮窗输入" else if (com.osfans.trime.data.prefs.AppPrefs.defaultInstance().candidates.floatingBall.getValue()) "悬浮球已开启" else "悬浮球已关闭",
                                 Toast.LENGTH_SHORT,
                             ).show()
                             returnToKeyboard()
@@ -171,7 +171,7 @@ class SwitchOptionWindow(di: DI) :
                                 context,
                                 when {
                                     hidden -> "状态栏已隐藏"
-                                    com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.hideInputBar.getValue() -> "停靠模式不隐藏状态栏，切换到悬浮键盘后生效"
+                                    com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.hideInputBar.getValue() -> "悬浮键盘临时保持状态栏显示"
                                     else -> "状态栏已显示"
                                 },
                                 Toast.LENGTH_SHORT,
@@ -179,10 +179,10 @@ class SwitchOptionWindow(di: DI) :
                             returnToKeyboard()
                         }
 
-                        SwitchOptionEntry.Static.Type.ThemeList -> showDialog { r ->
-                            ThemePickerDialog.build(service.lifecycleScope, context) {
-                                r.commitComposition()
-                            }
+                        SwitchOptionEntry.Static.Type.ThemeList -> service.lifecycleScope.launch {
+                            service.showDialog(ThemePickerDialog.build(service.lifecycleScope, context) {
+                                rime.runOnReady { commitComposition() }
+                            })
                         }
                     }
 

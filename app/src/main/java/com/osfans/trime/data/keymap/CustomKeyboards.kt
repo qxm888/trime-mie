@@ -44,7 +44,7 @@ object CustomKeyboards {
     const val BUILTIN_DEFAULT_ID = "custom_pink"
 
     /** 内置五色键盘的版本；改过内置 YAML 后 +1，升级时自动刷新内置 id。 */
-    private const val BUILTIN_VERSION = 6
+    private const val BUILTIN_VERSION = 7
 
     @Serializable
     data class CustomKey(
@@ -328,7 +328,6 @@ object CustomKeyboards {
             }
         }
         store.builtinsOffered = true
-        if (store.builtinVersion < BUILTIN_VERSION) store.builtinVersion = BUILTIN_VERSION
         if (added > 0) {
             store.version++
             dirty = true
@@ -340,7 +339,8 @@ object CustomKeyboards {
 
     /**
      * 升级时刷新内置五色键盘：只替换内置 id（custom_<色>_*），用户自建键盘保持不变。
-     * 内置键盘是模板，用户对模板的改动会在升级时被覆盖。
+     * V7 在 V6 基础上仅增加七列页面和选择入口，保留已有布局的用户编辑。
+     * 较早版本沿用其原有整套模板升级规则。
      */
     private fun refreshBuiltinKeyboardsLocked() {
         if (store.builtinVersion >= BUILTIN_VERSION) return
@@ -349,8 +349,14 @@ object CustomKeyboards {
         if (layouts.isNullOrEmpty()) return
         // 只在已经内置过这套键盘的库里刷新，不把模板强塞进用户自建的列表。
         if (store.keyboards.keys.none { it in layouts.keys }) return
-        // 整体刷新：替换已有内置 id，并补齐新版本新增的内置 id（如符号/表情分类页）。
-        layouts.forEach { (id, keyboard) -> store.keyboards[id] = normalizedCopy(keyboard) }
+        layouts.forEach { (id, keyboard) ->
+            val existing = store.keyboards[id]
+            if (store.builtinVersion >= 6 && existing != null) {
+                // V7 adds pages and chooser entries. Keep each existing layout's
+                // fonts, toolbar, appearance and user-edited keys.
+                if (id.endsWith("_layouts")) store.keyboards[id] = existing.copy(rows = normalizedCopy(keyboard).rows)
+            } else store.keyboards[id] = normalizedCopy(keyboard)
+        }
         store.builtinVersion = BUILTIN_VERSION
         store.version++
         dirty = true

@@ -70,10 +70,10 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
     }
 
     private fun showThemePicker() {
-        showDialog { api ->
-            ThemePickerDialog.build(service.lifecycleScope, context) {
-                api.commitComposition()
-            }
+        service.lifecycleScope.launch {
+            service.showDialog(ThemePickerDialog.build(service.lifecycleScope, context) {
+                rime.runOnReady { commitComposition() }
+            })
         }
     }
 
@@ -230,14 +230,13 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
                             com.osfans.trime.ime.candidates.popup.PopupCandidatesMode.ALWAYS_SHOW
                         else com.osfans.trime.ime.candidates.popup.PopupCandidatesMode.DISABLED)
                     }
-                    "__mie_toggle_floating_ball" -> prefs.candidates.floatingBall.run {
-                        setValue(!getValue())
+                    "__mie_toggle_floating_ball" -> {
+                        val allowed = service.toggleFloatingBall()
                         service.lifecycleScope.launch {
-                            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                                android.widget.Toast.makeText(service,
-                                    if (getValue()) R.string.floating_ball_enabled else R.string.floating_ball_disabled,
-                                    android.widget.Toast.LENGTH_SHORT).show()
-                            }
+                            android.widget.Toast.makeText(service,
+                                if (!allowed) "请先切换到悬浮窗输入"
+                                else if (prefs.candidates.floatingBall.getValue()) "悬浮球已开启" else "悬浮球已关闭",
+                                android.widget.Toast.LENGTH_SHORT).show()
                         }
                     }
                     "__mie_toggle_input_stats" -> com.osfans.trime.data.prefs.AppPrefs.defaultInstance().general.inputStatsEnabled.run {

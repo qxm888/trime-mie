@@ -231,8 +231,12 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
         findPreference<Preference>("custom_sound_effect_name")?.setOnPreferenceClickListener {
             lifecycleScope.launch { SoundEffectPickerDialog.build(lifecycleScope, requireContext()).show() }; true
         }
+        findPreference<Preference>("show_candidates_window")?.apply {
+            title = "候选输入方式"
+            if (this is androidx.preference.ListPreference) entries = arrayOf("悬浮窗 · 跟随系统", "悬浮窗 · 按输入设备", "悬浮窗输入", "候选栏输入")
+        }
         findPreference<Preference>("hide_input_bar")?.summary = "悬浮键盘临时显示，回到普通键盘恢复此设置；不修改开关值。"
-        findPreference<Preference>("candidate_floating_ball")?.summary = "独立开关，不受状态栏显示影响；点击悬浮球显示工具栏，长按展开键盘菜单。"
+        findPreference<Preference>("candidate_floating_ball")?.summary = "仅悬浮窗输入可开启；隐藏工具栏时自动开启。候选栏输入时关闭并禁用。"
     }
     private fun open(id: String, key: String = "") {
         view?.let { current ->
@@ -264,8 +268,9 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
     }
     private fun updateDependencies() {
         allUi.forEach { findPreference<Preference>(it.key)?.isEnabled = it.isEnabled() }
-        findPreference<Preference>("candidate_floating_ball")?.isEnabled = true
-        findPreference<Preference>("candidate_ball_opacity")?.isEnabled = prefs.candidates.floatingBall.getValue()
+        val floating = com.osfans.trime.ime.bar.InputBarVisibility.candidatesFloating()
+        findPreference<Preference>("candidate_floating_ball")?.isEnabled = floating
+        findPreference<Preference>("candidate_ball_opacity")?.isEnabled = floating && prefs.candidates.floatingBall.getValue()
     }
     private fun applySideEffect(key: String) {
         when (key) {

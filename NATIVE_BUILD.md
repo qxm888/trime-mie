@@ -45,3 +45,7 @@ ZIP 用户请按锁定清单取得对应仓库和提交，再递归初始化各�
 ## V3.0.7 启动桥
 
 原预编译引擎哈希及来源边界不变。新增`app/src/main/native-startup/`从源码编译`libtrime_startup.so`，动态取得原引擎公开的`rime_get_api`；普通启动只初始化与注册任务，不触发维护。桥的C API头文件及BSD许可保存在vendor/，来源提交有记录。预编译模式使用NDK28.0.13004108、CMake3.22.1（可通过原有ndkVersion属性覆盖NDK），完整引擎源码模式也包含该目标。桥未替换JNI、不修改API函数表或原引擎机器码。
+
+## V3.1.9 主题配置刷新桥
+
+沿用同一原 Rime JNI 库。独立桥新增当前主题配置强制刷新：通过公共 `config_open/config_clear/config_close` 临时清除内存中 `__build_info`，调用 `deploy_config_file`，使用空版本比较键保留用户编辑文件。前端先保留旧生成文件，检查新产物后提交，失败恢复旧产物。这个入口不调用 `start_maintenance`，不部署方案或词典。普通引擎启动的自动完整维护回退已移除。

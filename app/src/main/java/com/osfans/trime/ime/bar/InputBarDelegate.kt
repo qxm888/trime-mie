@@ -277,7 +277,8 @@ class InputBarDelegate(override val di: DI) :
             return
         }
         val index = state.ordinal
-        view.visibility = if (!hideQuickBar || state == QuickBarStateMachine.State.Tab) View.VISIBLE else View.GONE
+        val keepCandidates = state == QuickBarStateMachine.State.Candidate && !InputBarVisibility.candidatesFloating()
+        view.visibility = if (!hideQuickBar || keepCandidates || state == QuickBarStateMachine.State.Tab) View.VISIBLE else View.GONE
         if (view.displayedChild == index) return
         val new = view.getChildAt(index)
         if (new != tabUi.root) {

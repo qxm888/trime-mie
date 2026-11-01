@@ -28,7 +28,7 @@ interface RimeApi {
 
     suspend fun updateConfig()
 
-    /** 只重新编译指定主题的配置，不运行方案维护/部署。force 时先标记源文件为已修改，确保产物重建。 */
+    /** 只重新编译指定主题的配置，不运行方案维护/部署。force 时只清除原生配置缓存中的构建标记，检查新产物；不改写源文件。 */
     suspend fun deployThemeConfig(themeId: String, force: Boolean = false): Boolean
 
     suspend fun syncUserData(): Boolean

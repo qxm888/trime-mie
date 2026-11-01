@@ -26,36 +26,8 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 object ThemeManager {
-    /**
-     * 主题源文件已改动、但编译产物尚未重建（引擎当时不可用）。
-     * 输入法进程在键盘再次弹出时补一次重编译，保证用户改完主题后总能看到效果。
-     */
-    @Volatile
-    var pendingThemeRebuild: Boolean = false
-
     private val customizationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var customizationRefreshJob: Job? = null
-
-    /**
-     * 兜底：个别进程状态下 librime 的 deploy_config_file 会直接返回失败，
-     * 而完整维护总能重编译主题。这里后台跑一次维护，完成后重建视图。
-     */
-    private fun scheduleMaintenanceFallback(session: com.osfans.trime.daemon.RimeSession) {
-        customizationScope.launch {
-            runCatching {
-                kotlinx.coroutines.withTimeout(180_000L) {
-                    session.runOnReady { deploy() }
-                }
-            }.onSuccess {
-                com.osfans.trime.util.DiagnosticLog.event("theme", "deploy_maintenance", "ok=true")
-                pendingThemeRebuild = false
-                runCatching { refreshActiveTheme() }
-            }.onFailure {
-                Timber.w(it, "Theme maintenance fallback failed")
-                com.osfans.trime.util.DiagnosticLog.event("theme", "deploy_maintenance", "ok=false")
-            }
-        }
-    }
 
     /** Survives editor Activity destruction and coalesces rapid mode/edit changes. */
     fun requestCustomizationRefresh() {
@@ -140,17 +112,47 @@ object ThemeManager {
         val findings: List<ThemeDiagnostics.Finding>?,
     )
 
+    private val themeCache = object : androidx.collection.LruCache<String, Pair<String, ThemeLoader.ThemeLoadResult>>(8) {}
+
+    private fun loadTheme(id: String): ThemeLoader.ThemeLoadResult {
+        val stamp = ThemeSourceState.fingerprint(id)
+        synchronized(themeCache) { themeCache[id]?.takeIf { it.first == stamp }?.let { return it.second } }
+        val result = ThemeLoader.loadTheme(id)
+        synchronized(themeCache) { themeCache.put(id, ThemeSourceState.fingerprint(id) to result) }
+        return result
+    }
+
+    /** Source-readable themes need no native work. Complex DSL compiles only
+     * this changed config; never escalate a theme selection to full maintenance. */
+    private suspend fun refreshChangedConfig(id: String) {
+        val loaded = loadTheme(id)
+        if (loaded is ThemeLoader.ThemeLoadResult.Success && !loaded.fromCompiled) return
+        if (ThemeLoader.themeSourceFile(id) == null || !ThemeSourceState.needsCompile(id)) return
+        val owner = "theme-refresh-$id"
+        val existing = com.osfans.trime.daemon.RimeDaemon.getFirstSessionOrNull()
+        val session = existing ?: com.osfans.trime.daemon.RimeDaemon.createSession(owner)
+        try {
+            val ok = kotlinx.coroutines.withTimeout(30_000L) {
+                session.runOnReady { deployThemeConfig(id, force = true) }
+            }
+            check(ok) { "主题配置刷新失败，已保留上次可用结果" }
+            synchronized(themeCache) { themeCache.remove(id) }
+        } finally {
+            if (existing == null) com.osfans.trime.daemon.RimeDaemon.destroySession(owner)
+        }
+    }
+
     private fun getThemeById(id: String): ResolvedTheme {
         if (CustomKeyboards.mode == CustomKeyboards.MODE_CUSTOM) {
             return ResolvedTheme(id, CustomKeyboards.standaloneTheme().let { it.copy(customizationVersion = it.customizationVersion + com.osfans.trime.data.keymap.NamedFunctions.version + FontOverrides.version + com.osfans.trime.ime.voice.VoiceSettings.version) }, null)
         }
-        when (val result = ThemeLoader.loadTheme(id)) {
+        when (val result = loadTheme(id)) {
             is ThemeLoader.ThemeLoadResult.Success -> return resolvedWithCustomKeyboards(id, result.theme, result.findings)
             is ThemeLoader.ThemeLoadResult.Failure -> Timber.w(result.error)
         }
 
         if (id != DEFAULT_THEME_ID) {
-            when (val result = ThemeLoader.loadTheme(DEFAULT_THEME_ID)) {
+            when (val result = loadTheme(DEFAULT_THEME_ID)) {
                 is ThemeLoader.ThemeLoadResult.Success -> {
                     Timber.w("Theme '$id' is unavailable, fallback to default theme '$DEFAULT_THEME_ID'")
                     return resolvedWithCustomKeyboards(DEFAULT_THEME_ID, result.theme, result.findings)
@@ -162,7 +164,7 @@ object ThemeManager {
 
         var lastFailure: ThemeLoader.ThemeLoadError? = null
         for (fallbackId in getAllThemes().map { it.configId }.distinct()) {
-            when (val result = ThemeLoader.loadTheme(fallbackId)) {
+            when (val result = loadTheme(fallbackId)) {
                 is ThemeLoader.ThemeLoadResult.Success -> {
                     Timber.w("Theme '$id' is unavailable, fallback to available theme '$fallbackId'")
                     return resolvedWithCustomKeyboards(fallbackId, result.theme, result.findings)
@@ -226,46 +228,31 @@ object ThemeManager {
      * Reloads the active theme — needed after custom keyboards or the layout
      * mode changed, so the injected presets and the UI tree are rebuilt.
      */
-    suspend fun refreshActiveTheme(): String = selectTheme(prefs.selectedTheme.getValue())
+    suspend fun refreshActiveTheme(): String = selectTheme(prefs.selectedTheme.getValue(), forceReload = true)
 
     /**
      * Switches to theme [configId], falling back when it is unavailable.
      * Loading runs on [Dispatchers.IO]; state changes and listener callbacks run on the main thread.
-     * @param recompileTheme rebuild librime's compiled artifact first. Needed when the user
-     *   edits theme YAML by hand: such themes can only be read back from the artifact, and
-     *   librime skips a rebuild when a file edit preserves the source mtime.
      * @return the config id actually in effect; differs from [configId] when a fallback was used.
      */
     private val resourceRevision = java.util.concurrent.atomic.AtomicLong()
     private val themeRequestRevision = java.util.concurrent.atomic.AtomicLong()
-    suspend fun selectTheme(configId: String, recompileTheme: Boolean = false): String {
+    suspend fun selectTheme(configId: String, forceReload: Boolean = false): String {
         val request = themeRequestRevision.incrementAndGet()
         val resolvedTheme = withContext(Dispatchers.IO) {
-            FontOverrides.invalidate()
-            if (recompileTheme && configId.isNotBlank() && CustomKeyboards.mode != CustomKeyboards.MODE_CUSTOM) {
-                // 先标记源文件已修改：不依赖引擎是否就绪，之后任何一次部署都会重编译。
-                ThemeLoader.touchThemeSource(configId)
-                pendingThemeRebuild = true
-                val session = com.osfans.trime.daemon.RimeDaemon.getFirstSessionOrNull()
-                com.osfans.trime.util.DiagnosticLog.event("theme", "deploy_check", "id=$configId hasSession=${session != null}")
-                if (session != null) {
-                    val deployed = runCatching {
-                        kotlinx.coroutines.withTimeout(30_000L) {
-                            session.runOnReady { deployThemeConfig(configId, force = true) }
-                        }
-                    }.onSuccess { ok ->
-                        com.osfans.trime.util.DiagnosticLog.event("theme", "deploy_done", "id=$configId ok=$ok")
-                    }.onFailure {
-                        Timber.w(it, "Theme deploy check failed for '$configId'")
-                        com.osfans.trime.util.DiagnosticLog.event("theme", "deploy_failed", "id=$configId type=${it.javaClass.simpleName}")
-                    }.getOrDefault(false)
-                    if (deployed) pendingThemeRebuild = false
-                    else scheduleMaintenanceFallback(session)
-                }
-            }
+            if (forceReload) synchronized(themeCache) { themeCache.evictAll() }
+            if (CustomKeyboards.mode != CustomKeyboards.MODE_CUSTOM && configId.isNotBlank()) refreshChangedConfig(configId)
             getThemeById(configId).let { resolved -> resolved.copy(theme = resolved.theme.copy(
-                customizationVersion = resolved.theme.customizationVersion + resourceRevision.incrementAndGet())) }
-                .also { it.theme.fonts.preload() }
+                customizationVersion = resolved.theme.customizationVersion + if (forceReload) resourceRevision.incrementAndGet() else resourceRevision.get())) }
+                .also {
+                    it.theme.fonts.preload()
+                    if (CustomKeyboards.mode == CustomKeyboards.MODE_CUSTOM) {
+                        CustomKeyboards.get(CustomKeyboards.activeId)?.let { layout ->
+                            (layout.typography.values + layout.floatingCandidates?.fonts.orEmpty().values)
+                                .map { spec -> spec.font }.distinct().forEach(FontOverrides::fromSelection)
+                        }
+                    }
+                }
         }
         return withContext(Dispatchers.Main.immediate) {
             // A slower earlier load must not overwrite the newest theme/layout selection.

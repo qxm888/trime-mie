@@ -55,8 +55,8 @@ class FloatingCandidatesEditActivity : PersonalizationActivity() {
                 FontOverrides.fromSelection(file.absolutePath) ?: error("字体不可用")
             } }
             result.onSuccess {
-                font(role,(draft.fonts[role] ?: FontSpec()).copy(font=file.absolutePath))
-                fontButtons[role]?.text="字体 · ${file.name}"
+                font(role,(draft.fonts[role] ?: FontSpec()).copy(font=FontOverrides.encode(FontOverrides.decode(draft.fonts[role]?.font.orEmpty()) + file.absolutePath)))
+                fontButtons[role]?.text="字体 · ${FontOverrides.name(draft.fonts[role]?.font.orEmpty())}"
             }.onFailure { file.delete();Toast.makeText(this@FloatingCandidatesEditActivity,it.message ?: "字体导入失败",1).show() }
         }
     }
@@ -298,11 +298,11 @@ class FloatingCandidatesEditActivity : PersonalizationActivity() {
             val pick=MaterialButton(this,null,com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
                 text="字体 · ${if(current.font.isBlank()) "继承当前布局" else FontOverrides.name(current.font)}"
                 setOnClickListener {
-                    val choices=FontOverrides.choices()
-                    MaterialAlertDialogBuilder(this@FloatingCandidatesEditActivity).setTitle("$title 字体").setItems((choices.map(FontOverrides::name)+"导入字体文件…").toTypedArray()) { _,index ->
-                        if(index==choices.size) { fontRole=role;importer.launch("*/*") }
-                        else { font(role,(draft.fonts[role] ?: FontSpec()).copy(font=choices[index]));text="字体 · ${if(choices[index].isBlank()) "继承当前布局" else FontOverrides.name(choices[index])}" }
-                    }.show()
+                    FontChainPicker.show(this@FloatingCandidatesEditActivity, title, (draft.fonts[role] ?: FontSpec()).font,
+                        onImport = { fontRole=role; importer.launch("*/*") }) { value ->
+                        font(role,(draft.fonts[role] ?: FontSpec()).copy(font=value))
+                        text="字体 · ${if(value.isBlank()) "继承当前布局" else FontOverrides.name(value)}"
+                    }
                 }
             }
             box.addView(pick);fontButtons[role]=pick

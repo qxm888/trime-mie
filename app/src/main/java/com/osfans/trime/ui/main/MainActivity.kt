@@ -179,7 +179,7 @@ class MainActivity : AppCompatActivity() {
                         kotlinx.coroutines.withTimeout(30_000L) { rime.deployThemeConfig(themeId, force = true) }
                     }.getOrDefault(false)
                     if (ok) {
-                        runCatching { com.osfans.trime.data.theme.ThemeManager.selectTheme(themeId) }
+                        runCatching { com.osfans.trime.data.theme.ThemeManager.selectTheme(themeId, forceReload = true) }
                         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
                             android.widget.Toast.makeText(this@MainActivity, R.string.refresh_theme_config_done, android.widget.Toast.LENGTH_SHORT).show()
                         }

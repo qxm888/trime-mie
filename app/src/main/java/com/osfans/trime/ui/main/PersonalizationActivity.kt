@@ -82,7 +82,7 @@ class FontSettingsActivity : PersonalizationActivity() {
                 } }
                 Typeface.createFromFile(dest!!)
                 FontOverrides.fromSelection(dest!!.absolutePath) ?: error("字体不可用")
-                FontOverrides.set(targetRole, dest!!.absolutePath)
+                FontOverrides.set(targetRole, FontOverrides.encode(FontOverrides.decode(FontOverrides.selection(targetRole)) + dest!!.absolutePath))
             } }
             result.onFailure { dest?.delete(); Toast.makeText(this@FontSettingsActivity, "无法读取字体：请选择有效的 TTF / OTF / TTC 文件", Toast.LENGTH_LONG).show() }
             render()
@@ -96,7 +96,7 @@ class FontSettingsActivity : PersonalizationActivity() {
     }
     private fun render() {
         body.removeAllViews()
-        note("仅影响主题键盘，按区域分别设置。字号设为0时跟随主题。自定义键盘在各自编辑菜单中单独保存字体与字号。支持 TTF、OTF、TTC，导入在后台完成。")
+        note("仅影响主题键盘，按区域分别设置。字号设为0时跟随主题。自定义键盘在各自编辑菜单中单独保存字体与字号。支持多字体按顺序补缺字及 TTF、OTF、TTC，导入在后台完成。")
         FontOverrides.roles.forEach { (role, title) ->
             val section = SettingsDrawers(body).section(title)
             section.addView(MaterialButton(this).apply {
@@ -125,14 +125,10 @@ class FontSettingsActivity : PersonalizationActivity() {
         } }; dialog.show()
     }
     private fun pick(role: String, title: String) {
-        val choices = FontOverrides.choices()
-        MaterialAlertDialogBuilder(this).setTitle(title)
-            .setItems((choices.map(FontOverrides::name) + "导入字体文件…").toTypedArray()) { _, index ->
-                if (index == choices.size) { targetRole = role; importer.launch("*/*") }
-                else lifecycleScope.launch {
-                    withContext(Dispatchers.IO) { FontOverrides.fromSelection(choices[index]); FontOverrides.set(role, choices[index]) }
-                    render()
-                }
-            }.setNegativeButton(android.R.string.cancel, null).show()
+        FontChainPicker.show(this, title, FontOverrides.selection(role),
+            onImport = { targetRole = role; importer.launch("*/*") }) { value ->
+            FontOverrides.set(role, value)
+            render()
+        }
     }
 }

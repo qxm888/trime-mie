@@ -147,27 +147,15 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
             }
             syncFloatingRatio(key)
             themeScope?.let { replaceInputView(it) }
-            if (key == prefs.keyboard.hideInputBar.key) {
-                if (prefs.keyboard.hideInputBar.getValue() &&
-                    com.osfans.trime.ime.bar.InputBarVisibility.candidatesFloating()
-                ) {
-                    prefs.candidates.floatingBall.setValue(true)
-                }
-                candidatesView?.refreshVisibility()
-            }
             inputDeviceManager.refreshPolicy()
         }
 
     @Keep
     private val recreateCandidatesViewListener =
         PreferenceDelegateProvider.OnChangeListener { key ->
-            // 候选栏模式（悬浮候选窗关闭）不许用悬浮球；悬浮窗模式隐藏状态栏时自动打开悬浮球。
-            if (key == prefs.candidates.mode.key) {
-                if (!com.osfans.trime.ime.bar.InputBarVisibility.candidatesFloating()) {
-                    prefs.candidates.floatingBall.setValue(false)
-                }
+            themeScope?.let {
+                if (key == prefs.candidates.mode.key) replaceInputViews(it) else replaceCandidateView(it)
             }
-            themeScope?.let { replaceCandidateView(it) }
             inputDeviceManager.refreshPolicy()
         }
 
@@ -262,9 +250,6 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
                 }
             }
         }
-        // 自愈：设置里改过主题源文件但当时引擎未就绪时，产物仍是旧的。
-        // 键盘再次弹出时补一次重编译，保证用户改完主题后能看到效果。
-        schedulePendingThemeRebuild()
         InputFeedbackManager.init(this)
         registerReceiver()
         super.onCreate()
@@ -369,27 +354,6 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         }
     }
 
-    /** 主题产物待重建时补编译一次；成功后重建视图让新主题立即显示。 */
-    private fun schedulePendingThemeRebuild() {
-        if (!ThemeManager.pendingThemeRebuild) return
-        lifecycleScope.launch {
-            runCatching {
-                kotlinx.coroutines.withTimeout(20_000L) {
-                    rime.runOnReady { deployThemeConfig(ThemeManager.prefs.selectedTheme.getValue()) }
-                }
-            }.onSuccess { ok ->
-                if (ok) {
-                    ThemeManager.pendingThemeRebuild = false
-                    com.osfans.trime.util.DiagnosticLog.event("theme", "deploy_healed", "ok=true")
-                    // 重编译完成后重建视图，让新主题立即生效。
-                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                        ThemeManager.requestCustomizationRefresh()
-                    }
-                }
-            }.onFailure { Timber.w(it, "Pending theme rebuild failed") }
-        }
-    }
-
     private fun replaceInputView(scope: ThemeScope): InputView {
         val began = android.os.SystemClock.elapsedRealtime()
         val previous = com.osfans.trime.ime.keyboard.KeyboardWindow.instance?.let {
@@ -410,22 +374,19 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
             com.osfans.trime.ime.candidates.popup.PopupCandidatesMode.ALWAYS_SHOW else com.osfans.trime.ime.candidates.popup.PopupCandidatesMode.DISABLED) }
     }
     fun toggleInputBar() {
-        val hide = !prefs.keyboard.hideInputBar.getValue()
-        prefs.keyboard.hideInputBar.setValue(hide)
-        if (hide) {
-            // 悬浮窗模式下隐藏状态栏时自动打开悬浮球，保证菜单入口还在。
-            if (com.osfans.trime.ime.bar.InputBarVisibility.candidatesFloating()) {
-                prefs.candidates.floatingBall.setValue(true)
-            }
-        }
+        prefs.keyboard.hideInputBar.run { setValue(!getValue()) }
     }
 
-    /**
-     * 状态栏此刻是否真的隐藏：硬性规则——候选栏模式不能隐藏，
-     * 悬浮候选窗模式可以隐藏（与悬浮键盘无关）。
-     */
+    fun toggleFloatingBall(): Boolean {
+        if (!com.osfans.trime.ime.bar.InputBarVisibility.candidatesFloating()) return false
+        prefs.candidates.floatingBall.run { setValue(!getValue()) }
+        return true
+    }
+
+    /** Floating/one-hand cards temporarily keep the toolbar visible. */
     fun inputBarHiddenForDisplay(): Boolean =
-        com.osfans.trime.ime.bar.InputBarVisibility.hidden(prefs.keyboard.hideInputBar.getValue())
+        com.osfans.trime.ime.bar.InputBarVisibility.hidden(prefs.keyboard.hideInputBar.getValue(),
+            com.osfans.trime.ime.keyboard.KeyboardPrefs.run { isFloatingEffective() })
     fun openKeyboardMenu() {
         showWindow(true)
         inputView?.post { inputView?.showKeyboardMenu() }
@@ -848,8 +809,6 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         restarting: Boolean,
     ) {
         Timber.d("onStartInputView: restarting=$restarting")
-        // 待重建的主题在这一刻补齐（切换主题时引擎不可用的情况）。
-        schedulePendingThemeRebuild()
         com.osfans.trime.data.sync.ClipboardSync.setWindowVisible(true)
         val began = android.os.SystemClock.elapsedRealtime()
         inputView?.post { com.osfans.trime.util.DiagnosticLog.event("keyboard", "shown", "ms=${android.os.SystemClock.elapsedRealtime() - began} restarting=$restarting") }

@@ -49,10 +49,10 @@ object LayoutTypographyEditor {
             val button=MaterialButton(activity,null,com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
                 text="字体 · ${if(original.font.isBlank()) "默认字体" else FontOverrides.name(original.font)}"; isAllCaps=false
                 setOnClickListener {
-                    val choices=FontOverrides.choices()
-                    MaterialAlertDialogBuilder(activity).setTitle("$label 字体").setItems(choices.map(FontOverrides::name).toTypedArray()) { _, index ->
-                        draft[role]=(draft[role] ?: FontSpec()).copy(font=choices[index]); text="字体 · ${if(choices[index].isBlank()) "默认字体" else FontOverrides.name(choices[index])}"
-                    }.show()
+                    FontChainPicker.show(activity, label, (draft[role] ?: FontSpec()).font) { value ->
+                        draft[role]=(draft[role] ?: FontSpec()).copy(font=value)
+                        text="字体 · ${if(value.isBlank()) "默认字体" else FontOverrides.name(value)}"
+                    }
                 }
             }
             content.addView(button)

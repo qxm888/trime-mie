@@ -4,6 +4,7 @@
 #include <dlfcn.h>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 #include "rime_api.h"
 
 namespace {
@@ -107,17 +108,30 @@ Java_com_osfans_trime_core_Rime_startupRimeWithoutMaintenance(
 }
 
 extern "C" JNIEXPORT jboolean JNICALL
-Java_com_osfans_trime_core_Rime_startRimeMaintenance(
-    JNIEnv* env, jclass /*clazz*/, jboolean full_check) {
-  // Only a source-file change should reach here; the front end skips the call
-  // when timestamps are unchanged, unlike librime's directory-mtime detection.
+Java_com_osfans_trime_core_Rime_forceDeployThemeConfig(
+    JNIEnv* env, jclass /*clazz*/, jstring theme_id) {
   static void* library = dlopen("librime_jni.so", RTLD_NOW | RTLD_LOCAL);
   if (!library) { fail(env, "Cannot open the existing Rime engine"); return JNI_FALSE; }
   const auto get_api = reinterpret_cast<RimeApi* (*)()>(dlsym(library, "rime_get_api"));
   const auto api = get_api ? get_api() : nullptr;
-  if (!RIME_PROVIDED(api, start_maintenance)) {
-    fail(env, "Rime engine does not provide the maintenance API");
+  if (!RIME_PROVIDED(api, deploy_config_file) || !RIME_PROVIDED(api, config_open) ||
+      !RIME_PROVIDED(api, config_clear) || !RIME_PROVIDED(api, config_close)) {
+    fail(env, "Rime engine does not provide the theme config API");
     return JNI_FALSE;
   }
-  return api->start_maintenance(full_check) ? JNI_TRUE : JNI_FALSE;
+  const auto id = env->GetStringUTFChars(theme_id, nullptr);
+  if (!id) return JNI_FALSE;
+  // Hold the versioned public config handle while invalidating only its build
+  // metadata. ConfigNeedsUpdate must now rebuild, even if mtime/size is identical.
+  // Deployed configs are not auto-saved; user source bytes are never touched.
+  RimeConfig config{};
+  api->config_open(id, &config);
+  if (config.ptr) api->config_clear(&config, "__build_info");
+  // An empty version key prevents TrashDeprecatedUserCopy from discarding an
+  // edited user theme just because its config_version is older than shared data.
+  const std::string file_name = std::string(id) + ".yaml";
+  const bool ok = api->deploy_config_file(file_name.c_str(), "");
+  if (config.ptr) api->config_close(&config);
+  env->ReleaseStringUTFChars(theme_id, id);
+  return ok ? JNI_TRUE : JNI_FALSE;
 }

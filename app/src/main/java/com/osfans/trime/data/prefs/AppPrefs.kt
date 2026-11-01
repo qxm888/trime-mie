@@ -55,10 +55,23 @@ class AppPrefs(
     private val onSharedPreferenceChangeListener =
         SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             if (key == null) return@OnSharedPreferenceChangeListener
+            normalizeCandidateInteraction(key)
             providers.forEach {
                 it.notifyChange(key)
             }
         }
+
+    /** Enforce the same rules for settings, toolbar bindings and restored prefs. */
+    private fun normalizeCandidateInteraction(key: String? = null) {
+        val floating = candidates.mode.getValue() != PopupCandidatesMode.DISABLED
+        val ball = candidates.floatingBall.getValue()
+        if (!floating && ball) {
+            candidates.floatingBall.setValue(false)
+        } else if (floating && !ball && keyboard.hideInputBar.getValue() &&
+            (key == Candidates.MODE || key == Keyboard.HIDE_INPUT_BAR)) {
+            candidates.floatingBall.setValue(true)
+        }
+    }
 
     companion object {
         private var defaultInstance: AppPrefs? = null
@@ -69,6 +82,7 @@ class AppPrefs(
             sharedPreferences.registerOnSharedPreferenceChangeListener(
                 defaultInstance().onSharedPreferenceChangeListener,
             )
+            instance.normalizeCandidateInteraction()
             return instance
         }
 
@@ -484,11 +498,11 @@ class AppPrefs(
         }
 
         val mode = enum(R.string.show_candidates_window, MODE, PopupCandidatesMode.DISABLED)
-        val floatingBall = switch(R.string.candidate_floating_ball, "candidate_floating_ball", false, R.string.candidate_floating_ball_summary)
+        val floatingBall = switch(R.string.candidate_floating_ball, "candidate_floating_ball", false, R.string.candidate_floating_ball_summary) { mode.getValue() != PopupCandidatesMode.DISABLED }
         /** 悬浮球长按扇形菜单，JSON 数组，元素为 ToolbarOverrides.Entry。 */
         val ballFanActions = string("ball_fan_actions", "")
         val bottomPagination = switch(R.string.candidate_bottom_pagination, "candidate_bottom_pagination", false)
-        val ballOpacity = int(R.string.candidate_ball_opacity, "candidate_ball_opacity", 65, 20, 100, "%", 5) { floatingBall.getValue() }
+        val ballOpacity = int(R.string.candidate_ball_opacity, "candidate_ball_opacity", 65, 20, 100, "%", 5) { mode.getValue() != PopupCandidatesMode.DISABLED && floatingBall.getValue() }
         val limitLines = switch(R.string.candidate_limit_lines, "candidate_limit_lines", true)
         val autoShrink = switch(R.string.candidate_auto_shrink, "candidate_auto_shrink", true, enableUiOn = { limitLines.getValue() && maxLines.getValue() == 1 })
         val fullDisplay = switch(R.string.candidate_full_display, "candidate_full_display", true)
