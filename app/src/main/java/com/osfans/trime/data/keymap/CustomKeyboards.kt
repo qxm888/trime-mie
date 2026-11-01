@@ -44,7 +44,7 @@ object CustomKeyboards {
     const val BUILTIN_DEFAULT_ID = "custom_pink"
 
     /** 内置五色键盘的版本；改过内置 YAML 后 +1，升级时自动刷新内置 id。 */
-    private const val BUILTIN_VERSION = 7
+    private const val BUILTIN_VERSION = 8
 
     @Serializable
     data class CustomKey(
@@ -278,13 +278,24 @@ object CustomKeyboards {
         if (synchronized(lock) { store.builtinExtrasVersion >= BUILTIN_VERSION }) return
         ioScope.launch {
             val extras = decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_extra) ?: return@launch
+            val hasLegacy = synchronized(lock) { store.keyboards.keys.any { "_cat_" in it } }
+            val legacy = if (hasLegacy) decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_legacy_symbols).orEmpty() else emptyMap()
             synchronized(lock) {
+                if (store.builtinExtrasVersion >= BUILTIN_VERSION) return@synchronized
+                // Drop only untouched stock symbol pages. User-edited pages stay available.
+                legacy.filterKeys { "_cat_" in it }.forEach { (id, template) ->
+                    if (store.keyboards[id] == normalizedCopy(template)) {
+                        store.keyboards.remove(id)
+                        if (store.activeId == id) store.activeId = id.substringBefore("_cat_")
+                    }
+                }
                 var added = 0
                 extras.forEach { (id, keyboard) ->
-                    if (!store.keyboards.containsKey(id)) {
+                    val existing = store.keyboards[id]
+                    if (existing == null) {
                         store.keyboards[id] = normalizedCopy(keyboard)
                         added++
-                    }
+                    } else store.keyboards[id] = upgradeSymbols(existing, keyboard)
                 }
                 store.builtinExtrasVersion = BUILTIN_VERSION
                 store.version++
@@ -339,7 +350,7 @@ object CustomKeyboards {
 
     /**
      * 升级时刷新内置五色键盘：只替换内置 id（custom_<色>_*），用户自建键盘保持不变。
-     * V7 在 V6 基础上仅增加七列页面和选择入口，保留已有布局的用户编辑。
+     * V7 增加七列页面，V8 添加表情入口并升级符号绑定，保留已有布局的用户编辑。
      * 较早版本沿用其原有整套模板升级规则。
      */
     private fun refreshBuiltinKeyboardsLocked() {
@@ -354,7 +365,8 @@ object CustomKeyboards {
             if (store.builtinVersion >= 6 && existing != null) {
                 // V7 adds pages and chooser entries. Keep each existing layout's
                 // fonts, toolbar, appearance and user-edited keys.
-                if (id.endsWith("_layouts")) store.keyboards[id] = existing.copy(rows = normalizedCopy(keyboard).rows)
+                val kept = if (store.builtinVersion < 7 && id.endsWith("_layouts")) existing.copy(rows = normalizedCopy(keyboard).rows) else existing
+                store.keyboards[id] = upgradeSymbols(kept, keyboard)
             } else store.keyboards[id] = normalizedCopy(keyboard)
         }
         store.builtinVersion = BUILTIN_VERSION
@@ -364,12 +376,35 @@ object CustomKeyboards {
         seedBuiltinExtrasInBackground(context)
     }
 
+    /** Insert a matching icon between floating/language without resetting edited keys/styles. */
+    private fun upgradeSymbols(existing: CustomKeyboard, template: CustomKeyboard): CustomKeyboard {
+        val updated = normalizedCopy(existing)
+        val emoji = template.toolbar.firstOrNull { it.icon.endsWith("tb_emoji.png") }
+        if (emoji != null && updated.toolbar.none { it.icon.endsWith("tb_emoji.png") || BindingActions.resolve(it.action)?.command == "__mie_symbols" }) {
+            val lang = updated.toolbar.indexOfFirst { it.icon.endsWith("tb_lang.png") }
+            val floating = updated.toolbar.indexOfFirst { it.action == "__mie_floating_keyboard" }
+            if (lang >= 0 && floating >= 0) updated.toolbar.add(lang + 1, emoji)
+        }
+        val category = Regex("Keyboard_custom_(?:mint|pink|blue|orange|purple)_(cat_(\\w+?)(?:_p\\d+)?|symbols(?:_cn|_math|_more)?)")
+        updated.rows.forEach { row -> row.keys.forEach { key ->
+            key.bindings.toMap().forEach { (behavior, token) ->
+                category.matchEntire(token)?.let { match ->
+                    val id = match.groupValues[2].ifEmpty {
+                        mapOf("symbols" to "english", "symbols_cn" to "chinese", "symbols_math" to "math", "symbols_more" to "common").getValue(match.groupValues[1])
+                    }
+                    key.bindings[behavior] = BindingActions.command("__mie_symbols", id, "表情与符号")
+                }
+            }
+        } }
+        return updated
+    }
+
     /** 内置键盘的图标解压到素材目录（.mie/键盘背景/icons），已存在的不覆盖。 */
     private fun ensureBuiltinIcons(context: Context) {
         val dir = File(com.osfans.trime.core.data.MieUserDirectory.assetFolder(context, "custom_kb_bg"), "icons")
         val marker = File(dir, ".builtin_v1")
         // 标记存在但关键图标缺失（例如早期解压失败）时重新解压一次。
-        if (marker.isFile && File(dir, "tb_menu.png").isFile && File(dir, "mint_shift.png").isFile) return
+        if (marker.isFile && File(dir, "tb_menu.png").isFile && File(dir, "mint_shift.png").isFile && File(dir, "tb_emoji.png").isFile) return
         if (!dir.isDirectory && !dir.mkdirs()) return
         runCatching {
             context.resources.openRawResource(com.osfans.trime.R.raw.mie_builtin_icons).use { input ->

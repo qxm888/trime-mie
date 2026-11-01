@@ -148,7 +148,12 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
                 if (shouldHandle) {
                     when (action.code) {
                         KeyEvent.KEYCODE_SWITCH_CHARSET -> handleSwitchCharset(action)
-                        KeyEvent.KEYCODE_EISU -> keyboardWindow.switchKeyboard(action.select)
+                        KeyEvent.KEYCODE_EISU -> {
+                            val legacy = Regex("custom_(?:mint|pink|blue|orange|purple)_cat_(\\w+?)(?:_p\\d+)?").matchEntire(action.select)
+                            if (legacy != null && com.osfans.trime.data.keymap.CustomKeyboards.get(action.select) == null)
+                                windowManager.attachWindow(com.osfans.trime.ime.symbol.BuiltinSymbolsWindow(di, legacy.groupValues[1]))
+                            else keyboardWindow.switchKeyboard(action.select)
+                        }
                         KeyEvent.KEYCODE_LANGUAGE_SWITCH -> handleLanguageSwitch(action)
                         KeyEvent.KEYCODE_FUNCTION -> handleFunctionCommand(action)
                         KeyEvent.KEYCODE_SETTINGS -> handleSettings(action)
@@ -204,6 +209,7 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
                                 }
                             } }.onFailure { android.widget.Toast.makeText(service,it.message,android.widget.Toast.LENGTH_SHORT).show() }
                     }
+                    "__mie_symbols" -> windowManager.attachWindow(com.osfans.trime.ime.symbol.BuiltinSymbolsWindow(di, arg.ifEmpty { "emoji" }))
                     "liquid_keyboard" -> handleLiquidKeyboard(arg)
                     "menu_keyboard" -> windowManager.attachWindow(SwitchOptionWindow(di))
                     "clipboard_window" -> handleClipboardWindow(arg)

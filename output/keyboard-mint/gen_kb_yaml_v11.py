@@ -167,6 +167,7 @@ def toolbar(tag: str, pal: dict, lang_action: str) -> list[dict]:
         btn("Hide", f"{TB}/tb_hide.png", filled=True),
         btn("clipboard", f"{TB}/tb_clipboard.png"),
         btn(lang_action, f"{TB}/tb_lang.png"),
+        btn("__mie_action:" + json.dumps({"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}, ensure_ascii=False), f"{TB}/tb_emoji.png"),
         btn("__mie_floating_keyboard", f"{TB}/tb_onehand.png",
             bindings={"longClick": "__mie_one_hand"}, filled=True),
         btn(f"Keyboard_custom_{tag}_layouts", f"{TB}/tb_layout.png"),

@@ -1,5 +1,5 @@
 {
-    "sha256": "f71124286d3c99a148688b4a944ee2bd6d94141b0a5d023e1431928dbc05b511",
+    "sha256": "7d1a5ca7caad4f03769de604c728ab1ffcc6ed732dbac91eedc38581b62d216b",
     "files": {
         "licenses": "",
         "licenses/Apache-2.0.txt": "6c11db5f4f0d8521559233b532c635692b6525bde771139723dc1ee489fac393",
@@ -9,6 +9,7 @@
         "licenses/rime-prelude-LGPL-3.0.txt": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
         "licenses/rime-prelude-NOTICE.txt": "a10dae4c4edcd3d289eb16e3b3d96cbff7022f514f23378100b96c67d716284e",
         "licenses/rime-startup-BSD-3-Clause.txt": "f67d27a6d2d586fcfed4b4c886a83747095396a39b6641e18e855086be2ec400",
+        "licenses/unicode-data-LICENSE.txt": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96",
         "shared": "",
         "shared/default.yaml": "dd55653a991f9418eb425ee2112666f82e3e753c5ce3ed5702dd243041a45382",
         "shared/key_bindings.yaml": "5c484257cccbab899bc874dfeb9257ce7190c99fee3abc33321767c8dac56af9",

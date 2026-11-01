@@ -1,3 +1,11 @@
+# 当前内置键盘（V3.1.10）
+
+五色各 15 页，共 75 个键盘布局。完整表情/符号使用共享的可滑动面板，不再把每页做成独立键盘。工具栏显示顺序：菜单、主题、布局、悬浮、表情、中英、剪贴板、收起。表情图标为 tb_emoji.png，矢量源在 tools/icons/tb_emoji.svg。
+
+当前以 app/src/main/res/raw/mie_builtin_keyboards.yaml 和 mie_builtin_extra.yaml 为准。维护入口脚本为 tools/update_builtin_symbols.py；目录由 tools/build_symbol_catalog.py 生成。旧 gen_kb_yaml_v*.py 和下方旧说明仅为历史记录，不能直接覆盖当前资源。
+
+---
+
 # 薄荷五色键盘 v8
 
 五色：薄荷绿 / 樱花粉 / 浅天蓝 / 杏子橙 / 薰衣紫。

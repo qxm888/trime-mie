@@ -1,4 +1,4 @@
-# 内置五色键盘·核心（26/9/14/18/七列一/七列二 + 英文/数字/符号/布局/主题）
+# 内置五色键盘；表情与完整符号库使用可滑动面板
 mie:
   format: trime-custom-keyboards-yaml
   version: 1
@@ -363,7 +363,7 @@ preset_keyboards:
       key_border_color: '#B8D0C3'
     - label: '123'
       click: Keyboard_custom_mint_num
-      long_click: Keyboard_custom_mint_symbols
+      long_click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       label_symbol: ' '
       width: 14
       key_back_color: '#E6F2EA'
@@ -470,6 +470,16 @@ preset_keyboards:
       - action: Keyboard_custom_mint_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -605,7 +615,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B8D0C3'
     - label: '@#'
-      click: Keyboard_custom_mint_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 23
       key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
@@ -789,7 +799,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B8D0C3'
     - label: 符号
-      click: Keyboard_custom_mint_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 15
       key_back_color: '#7BC8A4'
       key_text_color: '#FFFFFF'
@@ -899,6 +909,16 @@ preset_keyboards:
       - action: Keyboard_custom_mint_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -1247,7 +1267,7 @@ preset_keyboards:
       key_border_color: '#B8D0C3'
     - label: '123'
       click: Keyboard_custom_mint_num
-      long_click: Keyboard_custom_mint_symbols
+      long_click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       label_symbol: ' '
       width: 14
       key_back_color: '#E6F2EA'
@@ -1354,6 +1374,16 @@ preset_keyboards:
       - action: Keyboard_custom_mint_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -1742,7 +1772,7 @@ preset_keyboards:
       key_border_color: '#B8D0C3'
     - label: '123'
       click: Keyboard_custom_mint_num
-      long_click: Keyboard_custom_mint_symbols
+      long_click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       label_symbol: ' '
       width: 14
       key_back_color: '#E6F2EA'
@@ -1849,6 +1879,16 @@ preset_keyboards:
       - action: Keyboard_custom_mint_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -2139,7 +2179,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B8D0C3'
     - label: 符号
-      click: Keyboard_custom_mint_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 20
       key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
@@ -2251,6 +2291,16 @@ preset_keyboards:
       - action: Keyboard_custom_mint_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -2717,7 +2767,7 @@ preset_keyboards:
       key_border_color: '#B8D0C3'
     - label: '123'
       click: Keyboard_custom_mint_num
-      long_click: Keyboard_custom_mint_symbols
+      long_click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       label_symbol: ' '
       width: 14
       key_back_color: '#E6F2EA'
@@ -2818,6 +2868,16 @@ preset_keyboards:
       - action: Keyboard_custom_mint
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -3336,7 +3396,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B8D0C3'
     - label: 英文
-      click: Keyboard_custom_mint_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 20
       key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
@@ -3348,7 +3408,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B8D0C3'
     - label: 中文
-      click: Keyboard_custom_mint_symbols_cn
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}
       width: 20
       key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
@@ -3360,7 +3420,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B8D0C3'
     - label: 数学
-      click: Keyboard_custom_mint_symbols_math
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}
       width: 20
       key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
@@ -3372,7 +3432,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B8D0C3'
     - label: 更多
-      click: Keyboard_custom_mint_symbols_more
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
       width: 20
       key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
@@ -3422,6 +3482,16 @@ preset_keyboards:
       - action: Keyboard_custom_mint_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -3936,7 +4006,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B8D0C3'
     - label: 英文
-      click: Keyboard_custom_mint_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 20
       key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
@@ -3948,7 +4018,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B8D0C3'
     - label: 中文
-      click: Keyboard_custom_mint_symbols_cn
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}
       width: 20
       key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
@@ -3960,7 +4030,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B8D0C3'
     - label: 数学
-      click: Keyboard_custom_mint_symbols_math
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}
       width: 20
       key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
@@ -3972,7 +4042,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B8D0C3'
     - label: 更多
-      click: Keyboard_custom_mint_symbols_more
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
       width: 20
       key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
@@ -4022,6 +4092,16 @@ preset_keyboards:
       - action: Keyboard_custom_mint_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -4536,7 +4616,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B8D0C3'
     - label: 英文
-      click: Keyboard_custom_mint_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 20
       key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
@@ -4548,7 +4628,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B8D0C3'
     - label: 中文
-      click: Keyboard_custom_mint_symbols_cn
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}
       width: 20
       key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
@@ -4560,7 +4640,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B8D0C3'
     - label: 数学
-      click: Keyboard_custom_mint_symbols_math
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}
       width: 20
       key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
@@ -4572,7 +4652,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B8D0C3'
     - label: 更多
-      click: Keyboard_custom_mint_symbols_more
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
       width: 20
       key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
@@ -4622,6 +4702,16 @@ preset_keyboards:
       - action: Keyboard_custom_mint_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -4861,6 +4951,16 @@ preset_keyboards:
       - action: Keyboard_custom_mint_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -5112,6 +5212,16 @@ preset_keyboards:
       - action: Keyboard_custom_mint_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -5583,7 +5693,7 @@ preset_keyboards:
       key_border_color: '#E3C2C8'
     - label: '123'
       click: Keyboard_custom_pink_num
-      long_click: Keyboard_custom_pink_symbols
+      long_click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       label_symbol: ' '
       width: 14
       key_back_color: '#FCEBED'
@@ -5690,6 +5800,16 @@ preset_keyboards:
       - action: Keyboard_custom_pink_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -5825,7 +5945,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E3C2C8'
     - label: '@#'
-      click: Keyboard_custom_pink_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 23
       key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
@@ -6009,7 +6129,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E3C2C8'
     - label: 符号
-      click: Keyboard_custom_pink_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 15
       key_back_color: '#F4AEB8'
       key_text_color: '#FFFFFF'
@@ -6119,6 +6239,16 @@ preset_keyboards:
       - action: Keyboard_custom_pink_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -6467,7 +6597,7 @@ preset_keyboards:
       key_border_color: '#E3C2C8'
     - label: '123'
       click: Keyboard_custom_pink_num
-      long_click: Keyboard_custom_pink_symbols
+      long_click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       label_symbol: ' '
       width: 14
       key_back_color: '#FCEBED'
@@ -6574,6 +6704,16 @@ preset_keyboards:
       - action: Keyboard_custom_pink_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -6962,7 +7102,7 @@ preset_keyboards:
       key_border_color: '#E3C2C8'
     - label: '123'
       click: Keyboard_custom_pink_num
-      long_click: Keyboard_custom_pink_symbols
+      long_click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       label_symbol: ' '
       width: 14
       key_back_color: '#FCEBED'
@@ -7069,6 +7209,16 @@ preset_keyboards:
       - action: Keyboard_custom_pink_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -7359,7 +7509,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E3C2C8'
     - label: 符号
-      click: Keyboard_custom_pink_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 20
       key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
@@ -7471,6 +7621,16 @@ preset_keyboards:
       - action: Keyboard_custom_pink_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -7937,7 +8097,7 @@ preset_keyboards:
       key_border_color: '#E3C2C8'
     - label: '123'
       click: Keyboard_custom_pink_num
-      long_click: Keyboard_custom_pink_symbols
+      long_click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       label_symbol: ' '
       width: 14
       key_back_color: '#FCEBED'
@@ -8038,6 +8198,16 @@ preset_keyboards:
       - action: Keyboard_custom_pink
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -8556,7 +8726,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E3C2C8'
     - label: 英文
-      click: Keyboard_custom_pink_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 20
       key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
@@ -8568,7 +8738,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E3C2C8'
     - label: 中文
-      click: Keyboard_custom_pink_symbols_cn
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}
       width: 20
       key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
@@ -8580,7 +8750,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E3C2C8'
     - label: 数学
-      click: Keyboard_custom_pink_symbols_math
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}
       width: 20
       key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
@@ -8592,7 +8762,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E3C2C8'
     - label: 更多
-      click: Keyboard_custom_pink_symbols_more
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
       width: 20
       key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
@@ -8642,6 +8812,16 @@ preset_keyboards:
       - action: Keyboard_custom_pink_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -9156,7 +9336,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E3C2C8'
     - label: 英文
-      click: Keyboard_custom_pink_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 20
       key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
@@ -9168,7 +9348,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E3C2C8'
     - label: 中文
-      click: Keyboard_custom_pink_symbols_cn
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}
       width: 20
       key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
@@ -9180,7 +9360,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E3C2C8'
     - label: 数学
-      click: Keyboard_custom_pink_symbols_math
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}
       width: 20
       key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
@@ -9192,7 +9372,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E3C2C8'
     - label: 更多
-      click: Keyboard_custom_pink_symbols_more
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
       width: 20
       key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
@@ -9242,6 +9422,16 @@ preset_keyboards:
       - action: Keyboard_custom_pink_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -9756,7 +9946,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E3C2C8'
     - label: 英文
-      click: Keyboard_custom_pink_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 20
       key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
@@ -9768,7 +9958,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E3C2C8'
     - label: 中文
-      click: Keyboard_custom_pink_symbols_cn
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}
       width: 20
       key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
@@ -9780,7 +9970,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E3C2C8'
     - label: 数学
-      click: Keyboard_custom_pink_symbols_math
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}
       width: 20
       key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
@@ -9792,7 +9982,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E3C2C8'
     - label: 更多
-      click: Keyboard_custom_pink_symbols_more
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
       width: 20
       key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
@@ -9842,6 +10032,16 @@ preset_keyboards:
       - action: Keyboard_custom_pink_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -10081,6 +10281,16 @@ preset_keyboards:
       - action: Keyboard_custom_pink_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -10332,6 +10542,16 @@ preset_keyboards:
       - action: Keyboard_custom_pink_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -10803,7 +11023,7 @@ preset_keyboards:
       key_border_color: '#B9D4E6'
     - label: '123'
       click: Keyboard_custom_blue_num
-      long_click: Keyboard_custom_blue_symbols
+      long_click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       label_symbol: ' '
       width: 14
       key_back_color: '#E7F3FC'
@@ -10910,6 +11130,16 @@ preset_keyboards:
       - action: Keyboard_custom_blue_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -11045,7 +11275,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B9D4E6'
     - label: '@#'
-      click: Keyboard_custom_blue_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 23
       key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
@@ -11229,7 +11459,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B9D4E6'
     - label: 符号
-      click: Keyboard_custom_blue_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 15
       key_back_color: '#96CBF4'
       key_text_color: '#FFFFFF'
@@ -11339,6 +11569,16 @@ preset_keyboards:
       - action: Keyboard_custom_blue_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -11687,7 +11927,7 @@ preset_keyboards:
       key_border_color: '#B9D4E6'
     - label: '123'
       click: Keyboard_custom_blue_num
-      long_click: Keyboard_custom_blue_symbols
+      long_click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       label_symbol: ' '
       width: 14
       key_back_color: '#E7F3FC'
@@ -11794,6 +12034,16 @@ preset_keyboards:
       - action: Keyboard_custom_blue_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -12182,7 +12432,7 @@ preset_keyboards:
       key_border_color: '#B9D4E6'
     - label: '123'
       click: Keyboard_custom_blue_num
-      long_click: Keyboard_custom_blue_symbols
+      long_click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       label_symbol: ' '
       width: 14
       key_back_color: '#E7F3FC'
@@ -12289,6 +12539,16 @@ preset_keyboards:
       - action: Keyboard_custom_blue_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -12579,7 +12839,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B9D4E6'
     - label: 符号
-      click: Keyboard_custom_blue_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 20
       key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
@@ -12691,6 +12951,16 @@ preset_keyboards:
       - action: Keyboard_custom_blue_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -13157,7 +13427,7 @@ preset_keyboards:
       key_border_color: '#B9D4E6'
     - label: '123'
       click: Keyboard_custom_blue_num
-      long_click: Keyboard_custom_blue_symbols
+      long_click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       label_symbol: ' '
       width: 14
       key_back_color: '#E7F3FC'
@@ -13258,6 +13528,16 @@ preset_keyboards:
       - action: Keyboard_custom_blue
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -13776,7 +14056,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B9D4E6'
     - label: 英文
-      click: Keyboard_custom_blue_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 20
       key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
@@ -13788,7 +14068,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B9D4E6'
     - label: 中文
-      click: Keyboard_custom_blue_symbols_cn
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}
       width: 20
       key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
@@ -13800,7 +14080,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B9D4E6'
     - label: 数学
-      click: Keyboard_custom_blue_symbols_math
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}
       width: 20
       key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
@@ -13812,7 +14092,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B9D4E6'
     - label: 更多
-      click: Keyboard_custom_blue_symbols_more
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
       width: 20
       key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
@@ -13862,6 +14142,16 @@ preset_keyboards:
       - action: Keyboard_custom_blue_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -14376,7 +14666,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B9D4E6'
     - label: 英文
-      click: Keyboard_custom_blue_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 20
       key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
@@ -14388,7 +14678,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B9D4E6'
     - label: 中文
-      click: Keyboard_custom_blue_symbols_cn
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}
       width: 20
       key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
@@ -14400,7 +14690,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B9D4E6'
     - label: 数学
-      click: Keyboard_custom_blue_symbols_math
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}
       width: 20
       key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
@@ -14412,7 +14702,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B9D4E6'
     - label: 更多
-      click: Keyboard_custom_blue_symbols_more
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
       width: 20
       key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
@@ -14462,6 +14752,16 @@ preset_keyboards:
       - action: Keyboard_custom_blue_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -14976,7 +15276,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B9D4E6'
     - label: 英文
-      click: Keyboard_custom_blue_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 20
       key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
@@ -14988,7 +15288,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B9D4E6'
     - label: 中文
-      click: Keyboard_custom_blue_symbols_cn
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}
       width: 20
       key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
@@ -15000,7 +15300,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B9D4E6'
     - label: 数学
-      click: Keyboard_custom_blue_symbols_math
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}
       width: 20
       key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
@@ -15012,7 +15312,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B9D4E6'
     - label: 更多
-      click: Keyboard_custom_blue_symbols_more
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
       width: 20
       key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
@@ -15062,6 +15362,16 @@ preset_keyboards:
       - action: Keyboard_custom_blue_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -15301,6 +15611,16 @@ preset_keyboards:
       - action: Keyboard_custom_blue_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -15552,6 +15872,16 @@ preset_keyboards:
       - action: Keyboard_custom_blue_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -16023,7 +16353,7 @@ preset_keyboards:
       key_border_color: '#E5C7AE'
     - label: '123'
       click: Keyboard_custom_orange_num
-      long_click: Keyboard_custom_orange_symbols
+      long_click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       label_symbol: ' '
       width: 14
       key_back_color: '#FFF0E2'
@@ -16130,6 +16460,16 @@ preset_keyboards:
       - action: Keyboard_custom_orange_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -16265,7 +16605,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E5C7AE'
     - label: '@#'
-      click: Keyboard_custom_orange_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 23
       key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
@@ -16449,7 +16789,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E5C7AE'
     - label: 符号
-      click: Keyboard_custom_orange_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 15
       key_back_color: '#F7BD99'
       key_text_color: '#FFFFFF'
@@ -16559,6 +16899,16 @@ preset_keyboards:
       - action: Keyboard_custom_orange_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -16907,7 +17257,7 @@ preset_keyboards:
       key_border_color: '#E5C7AE'
     - label: '123'
       click: Keyboard_custom_orange_num
-      long_click: Keyboard_custom_orange_symbols
+      long_click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       label_symbol: ' '
       width: 14
       key_back_color: '#FFF0E2'
@@ -17014,6 +17364,16 @@ preset_keyboards:
       - action: Keyboard_custom_orange_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -17402,7 +17762,7 @@ preset_keyboards:
       key_border_color: '#E5C7AE'
     - label: '123'
       click: Keyboard_custom_orange_num
-      long_click: Keyboard_custom_orange_symbols
+      long_click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       label_symbol: ' '
       width: 14
       key_back_color: '#FFF0E2'
@@ -17509,6 +17869,16 @@ preset_keyboards:
       - action: Keyboard_custom_orange_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -17799,7 +18169,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E5C7AE'
     - label: 符号
-      click: Keyboard_custom_orange_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 20
       key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
@@ -17911,6 +18281,16 @@ preset_keyboards:
       - action: Keyboard_custom_orange_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -18377,7 +18757,7 @@ preset_keyboards:
       key_border_color: '#E5C7AE'
     - label: '123'
       click: Keyboard_custom_orange_num
-      long_click: Keyboard_custom_orange_symbols
+      long_click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       label_symbol: ' '
       width: 14
       key_back_color: '#FFF0E2'
@@ -18478,6 +18858,16 @@ preset_keyboards:
       - action: Keyboard_custom_orange
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -18996,7 +19386,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E5C7AE'
     - label: 英文
-      click: Keyboard_custom_orange_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 20
       key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
@@ -19008,7 +19398,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E5C7AE'
     - label: 中文
-      click: Keyboard_custom_orange_symbols_cn
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}
       width: 20
       key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
@@ -19020,7 +19410,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E5C7AE'
     - label: 数学
-      click: Keyboard_custom_orange_symbols_math
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}
       width: 20
       key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
@@ -19032,7 +19422,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E5C7AE'
     - label: 更多
-      click: Keyboard_custom_orange_symbols_more
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
       width: 20
       key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
@@ -19082,6 +19472,16 @@ preset_keyboards:
       - action: Keyboard_custom_orange_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -19596,7 +19996,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E5C7AE'
     - label: 英文
-      click: Keyboard_custom_orange_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 20
       key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
@@ -19608,7 +20008,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E5C7AE'
     - label: 中文
-      click: Keyboard_custom_orange_symbols_cn
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}
       width: 20
       key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
@@ -19620,7 +20020,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E5C7AE'
     - label: 数学
-      click: Keyboard_custom_orange_symbols_math
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}
       width: 20
       key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
@@ -19632,7 +20032,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E5C7AE'
     - label: 更多
-      click: Keyboard_custom_orange_symbols_more
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
       width: 20
       key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
@@ -19682,6 +20082,16 @@ preset_keyboards:
       - action: Keyboard_custom_orange_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -20196,7 +20606,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E5C7AE'
     - label: 英文
-      click: Keyboard_custom_orange_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 20
       key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
@@ -20208,7 +20618,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E5C7AE'
     - label: 中文
-      click: Keyboard_custom_orange_symbols_cn
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}
       width: 20
       key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
@@ -20220,7 +20630,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E5C7AE'
     - label: 数学
-      click: Keyboard_custom_orange_symbols_math
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}
       width: 20
       key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
@@ -20232,7 +20642,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E5C7AE'
     - label: 更多
-      click: Keyboard_custom_orange_symbols_more
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
       width: 20
       key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
@@ -20282,6 +20692,16 @@ preset_keyboards:
       - action: Keyboard_custom_orange_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -20521,6 +20941,16 @@ preset_keyboards:
       - action: Keyboard_custom_orange_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -20772,6 +21202,16 @@ preset_keyboards:
       - action: Keyboard_custom_orange_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -21243,7 +21683,7 @@ preset_keyboards:
       key_border_color: '#D3BFE6'
     - label: '123'
       click: Keyboard_custom_purple_num
-      long_click: Keyboard_custom_purple_symbols
+      long_click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       label_symbol: ' '
       width: 14
       key_back_color: '#F1E9FC'
@@ -21350,6 +21790,16 @@ preset_keyboards:
       - action: Keyboard_custom_purple_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -21485,7 +21935,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D3BFE6'
     - label: '@#'
-      click: Keyboard_custom_purple_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 23
       key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
@@ -21669,7 +22119,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D3BFE6'
     - label: 符号
-      click: Keyboard_custom_purple_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 15
       key_back_color: '#C9A6ED'
       key_text_color: '#FFFFFF'
@@ -21779,6 +22229,16 @@ preset_keyboards:
       - action: Keyboard_custom_purple_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -22127,7 +22587,7 @@ preset_keyboards:
       key_border_color: '#D3BFE6'
     - label: '123'
       click: Keyboard_custom_purple_num
-      long_click: Keyboard_custom_purple_symbols
+      long_click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       label_symbol: ' '
       width: 14
       key_back_color: '#F1E9FC'
@@ -22234,6 +22694,16 @@ preset_keyboards:
       - action: Keyboard_custom_purple_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -22622,7 +23092,7 @@ preset_keyboards:
       key_border_color: '#D3BFE6'
     - label: '123'
       click: Keyboard_custom_purple_num
-      long_click: Keyboard_custom_purple_symbols
+      long_click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       label_symbol: ' '
       width: 14
       key_back_color: '#F1E9FC'
@@ -22729,6 +23199,16 @@ preset_keyboards:
       - action: Keyboard_custom_purple_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -23019,7 +23499,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D3BFE6'
     - label: 符号
-      click: Keyboard_custom_purple_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 20
       key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
@@ -23131,6 +23611,16 @@ preset_keyboards:
       - action: Keyboard_custom_purple_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -23597,7 +24087,7 @@ preset_keyboards:
       key_border_color: '#D3BFE6'
     - label: '123'
       click: Keyboard_custom_purple_num
-      long_click: Keyboard_custom_purple_symbols
+      long_click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       label_symbol: ' '
       width: 14
       key_back_color: '#F1E9FC'
@@ -23698,6 +24188,16 @@ preset_keyboards:
       - action: Keyboard_custom_purple
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -24216,7 +24716,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D3BFE6'
     - label: 英文
-      click: Keyboard_custom_purple_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 20
       key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
@@ -24228,7 +24728,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D3BFE6'
     - label: 中文
-      click: Keyboard_custom_purple_symbols_cn
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}
       width: 20
       key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
@@ -24240,7 +24740,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D3BFE6'
     - label: 数学
-      click: Keyboard_custom_purple_symbols_math
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}
       width: 20
       key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
@@ -24252,7 +24752,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D3BFE6'
     - label: 更多
-      click: Keyboard_custom_purple_symbols_more
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
       width: 20
       key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
@@ -24302,6 +24802,16 @@ preset_keyboards:
       - action: Keyboard_custom_purple_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -24816,7 +25326,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D3BFE6'
     - label: 英文
-      click: Keyboard_custom_purple_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 20
       key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
@@ -24828,7 +25338,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D3BFE6'
     - label: 中文
-      click: Keyboard_custom_purple_symbols_cn
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}
       width: 20
       key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
@@ -24840,7 +25350,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D3BFE6'
     - label: 数学
-      click: Keyboard_custom_purple_symbols_math
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}
       width: 20
       key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
@@ -24852,7 +25362,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D3BFE6'
     - label: 更多
-      click: Keyboard_custom_purple_symbols_more
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
       width: 20
       key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
@@ -24902,6 +25412,16 @@ preset_keyboards:
       - action: Keyboard_custom_purple_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -25416,7 +25936,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D3BFE6'
     - label: 英文
-      click: Keyboard_custom_purple_symbols
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
       width: 20
       key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
@@ -25428,7 +25948,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D3BFE6'
     - label: 中文
-      click: Keyboard_custom_purple_symbols_cn
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}
       width: 20
       key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
@@ -25440,7 +25960,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D3BFE6'
     - label: 数学
-      click: Keyboard_custom_purple_symbols_math
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}
       width: 20
       key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
@@ -25452,7 +25972,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D3BFE6'
     - label: 更多
-      click: Keyboard_custom_purple_symbols_more
+      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
       width: 20
       key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
@@ -25502,6 +26022,16 @@ preset_keyboards:
       - action: Keyboard_custom_purple_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -25741,6 +26271,16 @@ preset_keyboards:
       - action: Keyboard_custom_purple_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -25992,6 +26532,16 @@ preset_keyboards:
       - action: Keyboard_custom_purple_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -26706,6 +27256,16 @@ preset_keyboards:
           keyBackColor: '#00000000'
           roundCorner: '8'
           keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
       - action: __mie_floating_keyboard
         enabled: true
         icon: icons/tb_onehand.png
@@ -27306,6 +27866,16 @@ preset_keyboards:
       - action: Keyboard_custom_mint_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -28020,6 +28590,16 @@ preset_keyboards:
           keyBackColor: '#00000000'
           roundCorner: '8'
           keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
       - action: __mie_floating_keyboard
         enabled: true
         icon: icons/tb_onehand.png
@@ -28620,6 +29200,16 @@ preset_keyboards:
       - action: Keyboard_custom_pink_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -29334,6 +29924,16 @@ preset_keyboards:
           keyBackColor: '#00000000'
           roundCorner: '8'
           keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
       - action: __mie_floating_keyboard
         enabled: true
         icon: icons/tb_onehand.png
@@ -29934,6 +30534,16 @@ preset_keyboards:
       - action: Keyboard_custom_blue_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -30648,6 +31258,16 @@ preset_keyboards:
           keyBackColor: '#00000000'
           roundCorner: '8'
           keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
       - action: __mie_floating_keyboard
         enabled: true
         icon: icons/tb_onehand.png
@@ -31248,6 +31868,16 @@ preset_keyboards:
       - action: Keyboard_custom_orange_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -31962,6 +32592,16 @@ preset_keyboards:
           keyBackColor: '#00000000'
           roundCorner: '8'
           keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
       - action: __mie_floating_keyboard
         enabled: true
         icon: icons/tb_onehand.png
@@ -32562,6 +33202,16 @@ preset_keyboards:
       - action: Keyboard_custom_purple_en
         enabled: true
         icon: icons/tb_lang.png
+        iconSize: 18
+        width: 34
+        height: 34
+        appearance:
+          keyBackColor: '#00000000'
+          roundCorner: '8'
+          keyBorder: '0'
+      - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
+        enabled: true
+        icon: icons/tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
