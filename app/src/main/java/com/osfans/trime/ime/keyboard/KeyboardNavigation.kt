@@ -36,8 +36,10 @@ internal class KeyboardNavigation(
     fun select(request: String, state: State): String {
         val index = ids.indexOf(state.resolvedCurrent)
         val selected = when (request) {
-            // 返回主键盘：优先回到最近选中的主键盘（lock=true，如 26/9/14/18 键），否则主题默认。
-            ".default" -> state.locked.takeIf { it.isNotEmpty() && it in ids } ?: default(state)
+            // Theme .default keeps its original meaning; an inherited lock must not
+            // turn a number/editor page into its own return destination. Custom
+            // layouts still return to the user's most recently selected main layout.
+            ".default" -> state.locked.takeIf { custom && it.isNotEmpty() && it in ids } ?: default(state)
             ".prior" -> ids.getOrNull(index - 1) ?: if (custom) ids.lastOrNull().orEmpty() else state.current
             ".next" -> ids.getOrNull(index + 1) ?: if (custom) ids.firstOrNull().orEmpty() else state.current
             ".last" -> state.last
