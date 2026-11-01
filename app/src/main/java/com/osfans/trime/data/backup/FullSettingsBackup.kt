@@ -234,7 +234,8 @@ object FullSettingsBackup {
         try {
             for(i in 0 until files.length()) {
                 val name=files.getJSONObject(i).getString("name"); if(name=="preferences.json") continue
-                val target=safe(targets.getValue(name.substringBefore('/')),name.substringAfter('/'))
+                val target=if (name == "state/custom_keyboards.json") com.osfans.trime.data.keymap.KeyboardLayoutStorage.resolve(context)
+                    else safe(targets.getValue(name.substringBefore('/')),name.substringAfter('/'))
                 target.parentFile!!.mkdirs()
                 val prepared=File(target.parentFile,".${target.name}.mie-pending-${java.util.UUID.randomUUID()}")
                 val entry=JSONObject().put("target",target.path).put("prepared",prepared.path)
@@ -242,7 +243,7 @@ object FullSettingsBackup {
                 File(pending,"plan.json").writeAtomicText(plan.toString())
                 val source=safe(pending,name)
                 val rewrite=when(name.substringBefore('/')) {
-                    "state" -> target.name in setOf("custom_keyboards.json","toolbar_overrides.json","key_binding_overrides.json")
+                    "state" -> name.removePrefix("state/") in setOf("custom_keyboards.json","toolbar_overrides.json","key_binding_overrides.json")
                     "rime" -> target.extension in setOf("yaml","yml") && !target.name.endsWith(".dict.yaml")
                     else -> false
                 }

@@ -31,8 +31,8 @@ android {
         applicationId = if (variantTag.isEmpty()) "com.osfans.trime.mie" else "com.osfans.trime"
         minSdk = 21
         targetSdk = 37
-        versionCode = 20261218
-        versionName = "V3.1.11"
+        versionCode = 20261221
+        versionName = "V3.1.14"
 
         multiDexEnabled = true
         buildConfigField("String", "BUILDER", "\"${project.builder}\"")
@@ -74,6 +74,13 @@ android {
             resValue("string", "trime_app_name", "@string/app_name_release")
         }
         debug {
+            // Opt-in release optimizer verification, with the independent debug
+            // application id and signing key; normal debug builds stay unchanged.
+            if (providers.gradleProperty("verifyReleaseOptimizer").orNull == "true") {
+                isMinifyEnabled = true
+                isShrinkResources = true
+                proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro", "optimizer-check.pro")
+            }
             // Named debug variants keep their original identity; release has no debug suffix.
             applicationIdSuffix = if (variantTag.isNotEmpty()) ".debug.$variantTag" else ".debug"
             resValue(

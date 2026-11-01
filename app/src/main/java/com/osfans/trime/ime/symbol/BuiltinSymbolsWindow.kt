@@ -34,11 +34,12 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
     private val manager: BoardWindowManager by instance()
     private val actions: CommonKeyboardActionListener by instance()
     private lateinit var root: LinearLayout
-    private lateinit var selector: Spinner
+    private lateinit var selector: TextView
     private lateinit var grid: RecyclerView
     private lateinit var count: TextView
     private var categories = emptyList<BuiltinSymbolCatalog.Category>()
     private var items = emptyList<String>()
+    private var selectedId = initialCategory
     private var wide = false
     private var emoji = false
     private var job: Job? = null
@@ -88,7 +89,12 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
     }
     private class Cell(val text: TextView) : RecyclerView.ViewHolder(text)
     override fun onCreateView(): View {
-        selector = Spinner(context)
+        selector = TextView(context).apply {
+            gravity = Gravity.CENTER_VERTICAL; textSize = 16f; setTextColor(ink)
+            setPadding(dp(12), 0, dp(12), 0); text = "选择分类  ▾"
+            contentDescription = "选择符号分类；长按分类可拖动排序"
+            setOnClickListener { if (categories.isNotEmpty()) showCategories() }
+        }
         root = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(4), 0, dp(4), dp(2)) }
         count = TextView(context).apply { text = "正在载入表情与符号…"; textSize = 11f; setPadding(dp(8), dp(2), dp(8), dp(2)); setTextColor(ink) }
         grid = RecyclerView(context).apply {
@@ -119,27 +125,70 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
     override fun onAttached() {
         job = service.lifecycleScope.launch {
             try {
-                categories = withContext(Dispatchers.IO) { BuiltinSymbolCatalog.categories }
-                selector.adapter = object : ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, categories.map { it.name }) {
-                    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View = super.getView(position, convertView, parent).also { (it as TextView).setTextColor(ink) }
-                }.apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
-                selector.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                    override fun onNothingSelected(parent: AdapterView<*>?) = Unit
-                    override fun onItemSelected(parent: AdapterView<*>?, view: View?, index: Int, id: Long) { select(index) }
-                }
-                selector.setSelection(categories.indexOfFirst { it.id == initialCategory }.coerceAtLeast(0))
+                categories = withContext(Dispatchers.IO) { com.osfans.trime.data.symbols.SymbolCategoryOrder.ordered(BuiltinSymbolCatalog.categories) }
+                select(categories.indexOfFirst { it.id == selectedId }.coerceAtLeast(0))
             } catch (e: CancellationException) { throw e }
             catch (e: Exception) { count.text = "载入失败，请返回后重试"; timber.log.Timber.e(e, "Builtin symbols failed") }
         }
     }
     private fun select(index: Int) {
         val category = categories.getOrNull(index) ?: return
+        selectedId = category.id; selector.text = "${category.name}  ▾"
         items = category.items; wide = category.wide
         emoji = category.id in setOf("emoji", "people", "components", "animals", "food", "travel", "activities", "objects", "emoji_symbols", "flags", "emoji_full") || category.id.endsWith("_tones")
         resizeColumns(grid.width.takeIf { it > 0 } ?: context.resources.displayMetrics.widthPixels)
         count.text = "${category.name} · ${items.size} 项 · 上下滑动浏览"
         cells.notifyDataSetChanged(); grid.scrollToPosition(0)
     }
+    private fun showCategories() {
+        val working = categories.toMutableList()
+        val chooser = RecyclerView(context).apply {
+            layoutManager = GridLayoutManager(context, 2); itemAnimator = null
+            setPadding(dp(8), dp(4), dp(8), dp(4))
+        }
+        lateinit var dialog: AlertDialog
+        val rows = object : RecyclerView.Adapter<Cell>() {
+            override fun getItemCount() = working.size
+            override fun onCreateViewHolder(parent: ViewGroup, type: Int) = Cell(TextView(context).apply {
+                gravity = Gravity.CENTER; textSize = 14f; setPadding(dp(8), dp(6), dp(8), dp(6))
+                layoutParams = RecyclerView.LayoutParams(-1, dp(56)).apply { setMargins(dp(3), dp(3), dp(3), dp(3)) }
+            })
+            override fun onBindViewHolder(holder: Cell, index: Int) {
+                val category = working[index]
+                holder.text.apply {
+                    text = (if (category.id == selectedId) "✓ " else "") + category.name
+                    setTextColor(ink); background = this@BuiltinSymbolsWindow.background()
+                    setOnClickListener {
+                        categories = working.toList()
+                        select(categories.indexOfFirst { it.id == category.id }); dialog.dismiss()
+                    }
+                }
+            }
+        }
+        chooser.adapter = rows
+        androidx.recyclerview.widget.ItemTouchHelper(object : androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback(
+            androidx.recyclerview.widget.ItemTouchHelper.UP or androidx.recyclerview.widget.ItemTouchHelper.DOWN or
+                androidx.recyclerview.widget.ItemTouchHelper.LEFT or androidx.recyclerview.widget.ItemTouchHelper.RIGHT, 0) {
+            override fun onMove(recycler: RecyclerView, from: RecyclerView.ViewHolder, to: RecyclerView.ViewHolder): Boolean {
+                val a = from.bindingAdapterPosition; val b = to.bindingAdapterPosition
+                if (a !in working.indices || b !in working.indices) return false
+                working.add(b, working.removeAt(a)); rows.notifyItemMoved(a, b)
+                categories = working.toList()
+                com.osfans.trime.data.symbols.SymbolCategoryOrder.save(working.map { it.id })
+                return true
+            }
+            override fun onSwiped(holder: RecyclerView.ViewHolder, direction: Int) = Unit
+        }).attachToRecyclerView(chooser)
+        val height = (context.resources.displayMetrics.heightPixels * .55f).toInt()
+        val container = FrameLayout(context).apply { addView(chooser, FrameLayout.LayoutParams(-1, height)) }
+        dialog = AlertDialog.Builder(context).setTitle("选择分类 · 长按拖动排序").setView(container)
+            .setNeutralButton("恢复默认顺序") { _, _ ->
+                com.osfans.trime.data.symbols.SymbolCategoryOrder.reset()
+                categories = BuiltinSymbolCatalog.categories
+            }.setNegativeButton("关闭", null).create()
+        service.showDialog(dialog)
+    }
+
     private fun resizeColumns(width: Int) {
         (grid.layoutManager as GridLayoutManager).spanCount =
             (width / dp(if (wide) 84 else 44)).coerceIn(if (wide) 2 else 3, 12)

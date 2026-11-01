@@ -64,7 +64,9 @@ open class PersonalizationActivity : AppCompatActivity() {
 }
 
 class FontSettingsActivity : PersonalizationActivity() {
+    private companion object { const val GLOBAL_ROLE = "__theme_global" }
     private var targetRole = "key"
+    private var targetThemeId = ""
     private val importer = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {
             lifecycleScope.launch {
@@ -82,25 +84,51 @@ class FontSettingsActivity : PersonalizationActivity() {
                 } }
                 Typeface.createFromFile(dest!!)
                 FontOverrides.fromSelection(dest!!.absolutePath) ?: error("字体不可用")
-                FontOverrides.set(targetRole, FontOverrides.encode(FontOverrides.decode(FontOverrides.selection(targetRole)) + dest!!.absolutePath))
+                val previous = if (targetRole == GLOBAL_ROLE) FontOverrides.globalSelection(targetThemeId) else FontOverrides.selection(targetRole)
+                val value = FontOverrides.encode(FontOverrides.decode(previous) + dest!!.absolutePath)
+                if (targetRole == GLOBAL_ROLE) FontOverrides.setGlobal(targetThemeId, value) else FontOverrides.set(targetRole, value)
             } }
             result.onFailure { dest?.delete(); Toast.makeText(this@FontSettingsActivity, "无法读取字体：请选择有效的 TTF / OTF / TTC 文件", Toast.LENGTH_LONG).show() }
             render()
             }
         }
     }
-    override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState); targetRole = savedInstanceState?.getString("fontRole") ?: "key"; page("主题键盘字体与字号"); render() }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        targetRole = savedInstanceState?.getString("fontRole") ?: "key"
+        targetThemeId = savedInstanceState?.getString("fontThemeId").orEmpty()
+        page("主题键盘字体与字号"); render()
+    }
+    override fun onResume() { super.onResume(); render() }
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putString("fontRole", targetRole)
+        outState.putString("fontThemeId", targetThemeId)
         super.onSaveInstanceState(outState)
     }
     private fun render() {
         body.removeAllViews()
-        note("仅影响主题键盘，按区域分别设置。字号设为0时跟随主题。自定义键盘在各自编辑菜单中单独保存字体与字号。支持多字体按顺序补缺字及 TTF、OTF、TTC，导入在后台完成。")
+        note("字体优先级：单项设置 → 当前主题全局字体 → 主题原始字体。全局字体按主题保存，字号设为0时跟随主题。自定义键盘仍在各自编辑菜单中保存字体与字号。")
+        val themeId = com.osfans.trime.data.theme.ThemeManager.prefs.selectedTheme.getValue()
+        val current = com.osfans.trime.data.theme.ThemeManager.activeThemeOrNull()
+        val themeName = current?.takeIf { !it.isCustom && it.fontConfigId == themeId }?.name ?: themeId.removeSuffix(".trime")
+        val drawers = SettingsDrawers(body)
+        val global = drawers.section("当前主题全局字体")
+        global.addView(TextView(this).apply {
+            text = if (themeId.isBlank()) "请先选择主题布局" else themeName
+            setPadding(dp(8), dp(4), dp(8), dp(8))
+        })
+        global.addView(MaterialButton(this).apply {
+            text = "字体 · " + FontOverrides.globalSelection(themeId).let { if (it.isEmpty()) "跟随主题原始字体" else FontOverrides.name(it) }
+            isEnabled = themeId.isNotBlank()
+            setOnClickListener { pickGlobal(themeId) }
+        })
         FontOverrides.roles.forEach { (role, title) ->
-            val section = SettingsDrawers(body).section(title)
+            val section = drawers.section(title)
             section.addView(MaterialButton(this).apply {
-                text = "字体 · " + FontOverrides.name(FontOverrides.selection(role))
+                text = "字体 · " + FontOverrides.selection(role).let {
+                    if (it.isNotEmpty()) FontOverrides.name(it)
+                    else if (FontOverrides.globalSelection(themeId).isNotEmpty()) "跟随当前主题全局字体" else "跟随主题原始字体"
+                }
                 setOnClickListener { pick(role,title) }
             })
             section.addView(MaterialButton(this).apply {
@@ -126,8 +154,16 @@ class FontSettingsActivity : PersonalizationActivity() {
     }
     private fun pick(role: String, title: String) {
         FontChainPicker.show(this, title, FontOverrides.selection(role),
-            onImport = { targetRole = role; importer.launch("*/*") }) { value ->
+            onImport = { targetRole = role; importer.launch("*/*") }, defaultLabel = "跟随当前主题全局字体；未设置时跟随主题原始字体") { value ->
             FontOverrides.set(role, value)
+            render()
+        }
+    }
+    private fun pickGlobal(themeId: String) {
+        FontChainPicker.show(this, "当前主题全局字体", FontOverrides.globalSelection(themeId),
+            onImport = { targetRole = GLOBAL_ROLE; targetThemeId = themeId; importer.launch("*/*") },
+            defaultLabel = "跟随主题原始字体") { value ->
+            FontOverrides.setGlobal(themeId, value)
             render()
         }
     }

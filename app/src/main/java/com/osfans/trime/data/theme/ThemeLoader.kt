@@ -111,8 +111,8 @@ object ThemeLoader {
         file: File? = null,
         sources: SourceLoader = SourceLoader(),
     ): ThemeLoadResult? {
-        val node = sources.load(themeId, file) ?: return null
         return try {
+            val node = sources.load(themeId, file) ?: return null
             decodeAndReport(themeId, expandSource(themeId, node) { id -> sources.load(id, null) })
         } catch (e: ThemeDslExpander.UnsupportedDsl) {
             fallBack(themeId, e, "uses DSL outside the supported subset (%s)")
@@ -121,7 +121,7 @@ object ThemeLoader {
         } catch (e: Exception) {
             fallBack(themeId, e, "cannot be decoded from its source (%s)")
         } finally {
-            ThemeSourceState.remember(themeId, sources.requested)
+            sources.rememberDependencies(themeId)
         }
     }
 
@@ -195,10 +195,10 @@ object ThemeLoader {
         file: File? = null,
         sources: SourceLoader = SourceLoader(),
     ): YamlNode? {
-        val node = sources.load(themeId, file) ?: return null
         return try {
+            val node = sources.load(themeId, file) ?: return null
             runCatching { ThemeDslExpander.expand(themeId, node) { id -> sources.load(id, null) } }.getOrNull()
-        } finally { ThemeSourceState.remember(themeId, sources.requested) }
+        } finally { sources.rememberDependencies(themeId) }
     }
 
     /**
@@ -208,12 +208,17 @@ object ThemeLoader {
      * then shared data) the same way librime resolves resources.
      *
      * @param findSource source file of a resource id; the data dirs by default.
+     * @param recordDependencies records attempted lookups, including missing
+     *   resources; fixture loaders can inject an isolated recorder.
      */
     internal class SourceLoader(
         private val findSource: (String) -> File? = ::findSourceFile,
+        private val recordDependencies: (String, Collection<String>) -> Unit = ThemeSourceState::remember,
     ) {
         private val cache = HashMap<String, YamlNode?>()
-        val requested = linkedSetOf<String>()
+        private val requested = linkedSetOf<String>()
+
+        fun rememberDependencies(themeId: String) = recordDependencies(themeId, requested.toList())
 
         /**
          * @param file source file of [resourceId] when it is already known.

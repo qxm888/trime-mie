@@ -38,6 +38,7 @@ class Key(
     /** 独立前景图标配置。 */
     fun icon(): String = keyDef?.icon.orEmpty()
     fun iconSize(): Int = keyDef?.iconSize ?: 0
+    fun iconTint(): String = keyDef?.iconTint.orEmpty()
     fun iconOffsetX(): Float = keyDef?.iconOffsetX ?: 0f
     fun iconOffsetY(): Float = keyDef?.iconOffsetY ?: 0f
 

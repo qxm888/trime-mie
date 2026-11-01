@@ -202,7 +202,7 @@ class ThemeKeyboardImporter(private val context: Context) {
         val sizes=mapOf("key" to s.keyTextSize,"candidate" to s.candidateTextSize,"comment" to s.commentTextSize,"symbol" to s.symbolTextSize,
             "hint" to s.symbolTextSize,"text" to s.keyTextSize,"popup" to s.popupTextSize,"label" to s.labelTextSize)
         return FontOverrides.roles.keys.associateWith { role ->
-            val override=if(includeAppOverrides) FontOverrides.selection(role) else ""
+            val override=if(includeAppOverrides) FontOverrides.effectiveSelection(role, theme.fontConfigId) else ""
             val names=files[role]?.toList().orEmpty()
             val selected = if (override.isNotEmpty()) FontOverrides.decode(override) else
                 names.map { File(DataManager.userDataDir,"fonts/$it") }.filter { it.isFile }.map { it.path }

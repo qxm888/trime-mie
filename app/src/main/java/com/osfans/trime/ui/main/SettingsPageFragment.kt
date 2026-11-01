@@ -182,6 +182,10 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
         }
         val ui = selectedUi(pageId)
         when (pageId) {
+            "landscape" -> {
+                group("横屏尺寸 · 所有主题与自定义键盘", ui.filter { it.key.startsWith("landscape_") })
+                group("横屏布局与分割", ui.filter { it.key.startsWith("keyboard_") }, collapsed = true)
+            }
             "feedback" -> {
                 group("声音", ui.filter { it.key in listOf("sound_on_keypress", "sound_volume", "custom_sound_effect_enabled", "custom_sound_effect_name") })
                 group("触感", ui.filter { it.key.startsWith("vibrat") })

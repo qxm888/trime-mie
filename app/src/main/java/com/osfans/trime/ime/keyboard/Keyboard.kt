@@ -32,6 +32,8 @@ class Keyboard(
     val keyboardId: String = "",
     /** Explicit pixel height for floating keyboards; zero uses the theme height. */
     heightOverridePx: Int = 0,
+    /** Actual measured space after toolbar, navigation insets and layout padding. */
+    maxHeightPx: Int = 0,
 ) {
     /** [KeyBindingOverrides.version] at build time, for cache staleness checks. */
     val builtWithOverridesVersion: Long = KeyBindingOverrides.version
@@ -126,10 +128,13 @@ class Keyboard(
     val importedLayout = importedData?.importedSkin?.layout(context)
     private val customKeys = importedData?.let { data -> CustomKeyboards.run { data.generatedKeys() } }
 
+    private val landscapeSizing = KeyboardPrefs.run { context.landscapeSizing() }
     val bakedFloatingWidthPercent = KeyboardPrefs.run { context.presentationWidthPercent() }
-    val bakedFloatingHeightPercent = AppPrefs.defaultInstance().keyboard.floatingKeyboardHeight.getValue()
+    val bakedFloatingHeightPercent = KeyboardPrefs.run { context.presentationHeightPercent() }
     private val floatingGeometry = context.isFloatingEffective()
-    val keyTextScale = floatingKeyTextScale(floatingGeometry, bakedFloatingWidthPercent, bakedFloatingHeightPercent)
+    val keyTextScale: Float
+        get() = if (landscapeSizing != null) (keyboardHeight.toFloat() / naturalKeyboardHeight.coerceAtLeast(1)).coerceIn(0.6f, 1f)
+        else floatingKeyTextScale(floatingGeometry, bakedFloatingWidthPercent, bakedFloatingHeightPercent)
     private val useLandscapeGeometry = context.isLandscapeMode() && !floatingGeometry
 
     private val naturalKeyboardHeight: Int =
@@ -154,10 +159,16 @@ class Keyboard(
 
     // Bake a docked landscape height into the actual key geometry, leaving room for the editor
     // and candidate comments even when a portrait theme specifies a very tall keyboard.
-    val keyboardHeight: Int = if (!floatingGeometry && context.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+    internal val unconstrainedHeight: Int = if (landscapeSizing != null && heightOverridePx <= 0) {
+        // Apply the size to key geometry, not canvas scale: touch targets and popup anchors agree.
+        (context.resources.displayMetrics.heightPixels * landscapeSizing.height.getValue().coerceIn(20, 70) / 100f)
+            .toInt().coerceAtLeast(context.dp(56))
+    } else if (!floatingGeometry && context.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
         val bar = context.dp(theme.style.candidateViewHeight + theme.style.commentHeight)
         requestedKeyboardHeight.coerceAtMost((context.resources.displayMetrics.heightPixels * 0.5f).toInt() - bar).coerceAtLeast(context.dp(80))
     } else requestedKeyboardHeight
+
+    val keyboardHeight: Int = if (maxHeightPx > 0) unconstrainedHeight.coerceAtMost(maxHeightPx).coerceAtLeast(1) else unconstrainedHeight
 
     private val expandKeypressArea: Boolean by AppPrefs.defaultInstance().keyboard.expandKeypressArea
 

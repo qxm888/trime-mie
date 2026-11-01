@@ -228,7 +228,7 @@ class SwitchOptionWindow(di: DI) :
             itemAnimator = null
             adapter = this@SwitchOptionWindow.adapter
             // 菜单底色跟随当前自定义键盘配色，避免一片灰白。
-            com.osfans.trime.data.keymap.CustomKeyboards.activePalette()?.background
+            (if (theme.isCustom) com.osfans.trime.data.keymap.CustomKeyboards.activePalette()?.background else null)
                 ?.takeIf { it.isNotBlank() }
                 ?.let { runCatching { android.graphics.Color.parseColor(it) }.getOrNull() }
                 ?.let { background = android.graphics.drawable.ColorDrawable(it) }
@@ -237,13 +237,29 @@ class SwitchOptionWindow(di: DI) :
         }
     }
 
+    private fun layoutId(): String? = if (theme.isCustom)
+        com.osfans.trime.ime.keyboard.KeyboardWindow.lastAttachedId.let {
+            com.osfans.trime.data.keymap.CustomKeyboards.resolveId(it)
+        }.takeIf { com.osfans.trime.data.keymap.CustomKeyboards.get(it) != null } else null
+
+    private fun visibleEntries(entries: List<SwitchOptionEntry>): List<SwitchOptionEntry> {
+        val hidden = layoutId()?.let { com.osfans.trime.data.keymap.CustomKeyboards.get(it)?.hiddenMenuItems }.orEmpty()
+        return entries.filter { entry ->
+            val id = when (entry) {
+                is SwitchOptionEntry.Static -> "static:${entry.type.name}"
+                is SwitchOptionEntry.Custom -> "schema:" + entry.switch.name.ifBlank { entry.switch.options.joinToString(",") }
+            }
+            id !in hidden
+        }
+    }
+
     private fun updateSchemaOptionEntries() {
         val switches = rime.run { schemaCached }.switches
         adapter.submitList(
-            listOf(
+            visibleEntries(listOf(
                 *staticEntries,
                 *switches.mapNotNull { SwitchOptionEntry.fromSwitch(rime, it) }.toTypedArray(),
-            ),
+            )),
         )
     }
 
@@ -266,6 +282,7 @@ class SwitchOptionWindow(di: DI) :
         if (!viewCreated) return
         (view.adapter as? SwitchOptionAdapter)?.refreshColors()
         settingsButton.refreshColors()
+        if (theme.isCustom) editButton.refreshColors()
     }
 
     private val settingsButton by lazy {
@@ -275,15 +292,20 @@ class SwitchOptionWindow(di: DI) :
         }
     }
 
+    private val editButton by lazy {
+        ToolButton(context, R.drawable.ic_baseline_edit_24, scope).apply {
+            id = View.generateViewId(); contentDescription = "编辑功能菜单"
+            setOnClickListener { layoutId()?.let { id ->
+                service.showDialog(com.osfans.trime.ui.main.FunctionMenuEditor.build(context, id) { updateSchemaOptionEntries() })
+            } }
+        }
+    }
+
     private val barExternalView by lazy {
         context.constraintLayout {
             val size = dp(theme.style.run { candidateViewHeight + commentHeight })
-            add(
-                settingsButton,
-                lParams(size, size) {
-                    endOfParent()
-                },
-            )
+            add(settingsButton, lParams(size, size) { endOfParent() })
+            if (theme.isCustom) add(editButton, lParams(size, size) { rightMargin = size; endOfParent() })
         }
     }
 
@@ -294,10 +316,10 @@ class SwitchOptionWindow(di: DI) :
             val data = api.currentSchema().switches
             service.lifecycleScope.launch {
                 adapter.submitList(
-                    listOf(
+                    visibleEntries(listOf(
                         *staticEntries,
                         *data.mapNotNull { SwitchOptionEntry.fromSwitch(rime, it) }.toTypedArray(),
-                    ),
+                    )),
                 )
             }
         }

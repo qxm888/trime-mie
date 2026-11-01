@@ -34,8 +34,15 @@ object KeyboardPrefs {
     fun Context.oneHandActive(): Boolean = prefs.keyboard.oneHandMode.getValue() != 0 &&
         !resources.configuration.isLandscape()
 
-    fun Context.presentationWidthPercent(): Int = if (oneHandActive())
-        prefs.keyboard.oneHandWidth.getValue() else prefs.keyboard.floatingKeyboardWidth.getValue()
+    fun Context.landscapeSizing(): AppPrefs.Keyboard.LandscapeSize? =
+        prefs.keyboard.landscapeSize.takeIf { resources.configuration.isLandscape() && it.enabled.getValue() }
+
+    fun Context.presentationWidthPercent(): Int =
+        landscapeSizing()?.width?.getValue()?.coerceIn(40, 100) ?: if (oneHandActive())
+            prefs.keyboard.oneHandWidth.getValue() else prefs.keyboard.floatingKeyboardWidth.getValue()
+
+    fun Context.presentationHeightPercent(): Int =
+        landscapeSizing()?.height?.getValue()?.coerceIn(20, 70) ?: prefs.keyboard.floatingKeyboardHeight.getValue()
 
     /**
      * 「有效悬浮」：悬浮开关、生效中的单手模式，或横屏自动悬浮。

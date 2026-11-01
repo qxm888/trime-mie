@@ -10,6 +10,7 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.osfans.trime.data.keymap.CustomKeyboards
 import com.osfans.trime.data.keymap.FontSpec
+import com.osfans.trime.data.keymap.LayoutTypography
 import com.osfans.trime.data.theme.FontOverrides
 import com.osfans.trime.data.theme.ThemeManager
 import androidx.lifecycle.lifecycleScope
@@ -42,19 +43,51 @@ object LayoutTypographyEditor {
             }
         }
         body.addView(MaterialButton(activity,null,com.google.android.material.R.attr.materialButtonOutlinedStyle).apply { text="导入字体文件…"; setOnClickListener { importer.launch("*/*") } })
+        body.addView(android.widget.TextView(activity).apply {
+            text="全局默认跟随系统当前字体，单项设置优先。次级键盘可继承主键盘全局字体；字号仍按各项设置。"
+            setPadding(0,8,0,16)
+        })
+        val drawers=SettingsDrawers(body)
+        val buttons=mutableMapOf<String,MaterialButton>()
+        fun inheritedGlobal() = keyboard.secondaryOf.takeIf { it.isNotBlank() }?.let(CustomKeyboards::globalFont).orEmpty()
+        fun roleLabel(role: String): String {
+            val font=draft[role]?.font.orEmpty()
+            return "字体 · " + when {
+                font.isNotBlank() -> FontOverrides.name(font)
+                draft[LayoutTypography.GLOBAL]?.font?.isNotBlank() == true -> "跟随当前键盘全局字体"
+                inheritedGlobal().isNotBlank() -> "继承主键盘全局字体"
+                else -> "系统当前字体"
+            }
+        }
+        val global=drawers.section("当前键盘全局字体")
+        global.addView(MaterialButton(activity,null,com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+            fun summary(value: String) = "字体 · " + if(value.isNotBlank()) FontOverrides.name(value)
+                else if(inheritedGlobal().isNotBlank()) "继承主键盘全局字体" else "系统当前字体"
+            text=summary(draft[LayoutTypography.GLOBAL]?.font.orEmpty()); isAllCaps=false
+            setOnClickListener {
+                FontChainPicker.show(activity,"当前键盘全局字体",draft[LayoutTypography.GLOBAL]?.font.orEmpty(),
+                    defaultLabel="次级键盘继承主键盘；未设置时跟随系统当前字体") { value ->
+                    draft[LayoutTypography.GLOBAL]=FontSpec(font=value)
+                    text=summary(value)
+                    buttons.forEach { (role,button) -> button.text=roleLabel(role) }
+                }
+            }
+        })
         val sizes=mutableMapOf<String,TextInputEditText>()
         FontOverrides.roles.forEach { (role,label) ->
             val original=draft[role] ?: FontSpec()
-            val content=SettingsDrawers(body).section(label)
+            val content=drawers.section(label)
             val button=MaterialButton(activity,null,com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
-                text="字体 · ${if(original.font.isBlank()) "默认字体" else FontOverrides.name(original.font)}"; isAllCaps=false
+                text=roleLabel(role); isAllCaps=false
                 setOnClickListener {
-                    FontChainPicker.show(activity, label, (draft[role] ?: FontSpec()).font) { value ->
+                    FontChainPicker.show(activity, label, (draft[role] ?: FontSpec()).font,
+                        defaultLabel="跟随当前键盘全局字体 / 主键盘全局字体") { value ->
                         draft[role]=(draft[role] ?: FontSpec()).copy(font=value)
-                        text="字体 · ${if(value.isBlank()) "默认字体" else FontOverrides.name(value)}"
+                        text=roleLabel(role)
                     }
                 }
             }
+            buttons[role]=button
             content.addView(button)
             val size=TextInputEditText(activity).apply { setSingleLine(); setText(original.size.toString()); inputType=android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL }
             content.addView(TextInputLayout(activity).apply { hint="字号 sp（0 跟随默认，最大200）"; addView(size) }); sizes[role]=size

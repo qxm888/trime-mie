@@ -158,11 +158,7 @@ object MieUserDirectory {
             }
         }.onFailure { Timber.w(it, "MieUserDirectory: rewrite custom keyboards failed") }
         runCatching {
-            com.osfans.trime.data.theme.FontOverrides.roles.keys.forEach { role ->
-                val value = com.osfans.trime.data.theme.FontOverrides.selection(role)
-                val moved = relocate(value)
-                if (moved != value) com.osfans.trime.data.theme.FontOverrides.set(role, moved, refresh = false)
-            }
+            com.osfans.trime.data.theme.FontOverrides.relocateSelections(::relocate)
         }.onFailure { Timber.w(it, "MieUserDirectory: rewrite fonts failed") }
         runCatching {
             val prefs = com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard

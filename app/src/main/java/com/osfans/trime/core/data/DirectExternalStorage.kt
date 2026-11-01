@@ -108,11 +108,7 @@ object DirectExternalStorage {
             val before = CustomKeyboards.exportJson()
             val after = relocated(before)
             if (after != before) { CustomKeyboards.importJson(after, true); check(CustomKeyboards.flush()) { "布局素材路径保存失败" } }
-            FontOverrides.roles.forEach { (role, _) ->
-                val value = FontOverrides.selection(role)
-                val moved = relocated(value)
-                if (moved != value) FontOverrides.set(role, moved, refresh = false)
-            }
+            FontOverrides.relocateSelections(::relocated)
             commitLocation(mode, oldPath, oldReady)
         } catch (error: Exception) {
             // Attempt every rollback even if one write fails (e.g. the disk is full).

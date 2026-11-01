@@ -152,7 +152,7 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
                             val legacy = Regex("custom_(?:mint|pink|blue|orange|purple)_cat_(\\w+?)(?:_p\\d+)?").matchEntire(action.select)
                             if (legacy != null && com.osfans.trime.data.keymap.CustomKeyboards.get(action.select) == null)
                                 windowManager.attachWindow(com.osfans.trime.ime.symbol.BuiltinSymbolsWindow(di, legacy.groupValues[1]))
-                            else keyboardWindow.switchKeyboard(action.select)
+                            else keyboardWindow.switchKeyboardFromAction(action.select)
                         }
                         KeyEvent.KEYCODE_LANGUAGE_SWITCH -> handleLanguageSwitch(action)
                         KeyEvent.KEYCODE_FUNCTION -> handleFunctionCommand(action)

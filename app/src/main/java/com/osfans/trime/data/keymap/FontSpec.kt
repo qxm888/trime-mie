@@ -7,12 +7,27 @@ import kotlinx.serialization.Serializable
 data class FontSpec(val font: String = "", val size: Float = 0f)
 
 object LayoutTypography {
+    const val GLOBAL = "global"
+    private var globalVersion = -1L
+    private var globalId = ""
+    private var globalValue = ""
+    @Synchronized private fun currentGlobal(): String {
+        val id = com.osfans.trime.ime.keyboard.KeyboardWindow.lastAttachedId
+        val version = CustomKeyboards.version
+        if (version != globalVersion || id != globalId) {
+            globalValue = CustomKeyboards.globalFont(id)
+            globalVersion = version; globalId = id
+        }
+        return globalValue
+    }
     private fun spec(role: String): FontSpec? =
         if (CustomKeyboards.mode == CustomKeyboards.MODE_CUSTOM)
             com.osfans.trime.ime.appearance.SurfaceAppearance.currentLayout()?.typography?.get(role)
         else null
-    fun typeface(role: String, custom: Boolean) = if (custom)
-        com.osfans.trime.data.theme.FontOverrides.fromSelection(spec(role)?.font.orEmpty()) else null
+    fun typeface(role: String, custom: Boolean) = if (custom && CustomKeyboards.mode == CustomKeyboards.MODE_CUSTOM)
+        com.osfans.trime.data.theme.FontOverrides.fromSelection(spec(role)?.font.orEmpty())
+            ?: com.osfans.trime.data.theme.FontOverrides.fromSelection(currentGlobal())
+            ?: android.graphics.Typeface.DEFAULT else null
     fun size(role: String, fallback: Float): Float =
         (if (CustomKeyboards.mode == CustomKeyboards.MODE_CUSTOM) spec(role)?.size
         else com.osfans.trime.data.theme.FontOverrides.size(role))

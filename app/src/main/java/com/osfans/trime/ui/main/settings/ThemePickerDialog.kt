@@ -57,6 +57,7 @@ object ThemePickerDialog {
         var choices = emptyList<Choice>()
         var loadJob: Job? = null
         var switchJob: Job? = null
+        var restoringMode = false
         fun load() {
             loadJob?.cancel()
             val custom = modes.checkedRadioButtonId == customId
@@ -81,21 +82,28 @@ object ThemePickerDialog {
             }
         }
         modes.setOnCheckedChangeListener { _, id ->
+            if (restoringMode) return@setOnCheckedChangeListener
             switchJob?.cancel()
-            // Switch the model on the UI thread so rapid toggles keep their order.
-            CustomKeyboards.setMode(if (id == customId) CustomKeyboards.MODE_CUSTOM else CustomKeyboards.MODE_THEME)
+            val targetMode = if (id == customId) CustomKeyboards.MODE_CUSTOM else CustomKeyboards.MODE_THEME
             load()
             switchJob = scope.launch {
                 try {
                     afterConfirm?.invoke()
-                    ThemeManager.selectTheme(ThemeManager.prefs.selectedTheme.getValue())
+                    ThemeManager.selectTheme(ThemeManager.prefs.selectedTheme.getValue(), layoutMode = targetMode)
                 } catch (cancelled: CancellationException) { throw cancelled }
-                catch (error: Exception) { timber.log.Timber.w(error, "Layout mode switch failed"); context.toast("布局切换失败") }
+                catch (error: Exception) {
+                    timber.log.Timber.w(error, "Layout mode switch failed"); context.toast("布局切换失败")
+                    restoringMode = true
+                    modes.check(if (CustomKeyboards.mode == CustomKeyboards.MODE_CUSTOM) customId else themeId)
+                    restoringMode = false
+                    load()
+                }
             }
         }
         list.setOnItemClickListener { _, _, position, _ ->
             val item = choices.getOrNull(position) ?: return@setOnItemClickListener
             val custom = modes.checkedRadioButtonId == customId
+            val previousActive = CustomKeyboards.activeId
             list.isEnabled = false; modes.isEnabled = false; progress.visibility = View.VISIBLE
             modes.getChildAt(0).isEnabled = false; modes.getChildAt(1).isEnabled = false
             switchJob?.cancel()
@@ -103,11 +111,13 @@ object ThemePickerDialog {
                 try {
                     afterConfirm?.invoke()
                     if (custom) CustomKeyboards.activeId = item.id
-                    val resolved = ThemeManager.selectTheme(if (custom) ThemeManager.prefs.selectedTheme.getValue() else item.id)
+                    val resolved = ThemeManager.selectTheme(if (custom) ThemeManager.prefs.selectedTheme.getValue() else item.id,
+                        layoutMode = if (custom) CustomKeyboards.MODE_CUSTOM else CustomKeyboards.MODE_THEME)
                     dialog.dismiss()
                     if (!custom && resolved != item.id) context.toast("主题暂不可用，已使用默认主题；如缺少编译文件，请手动部署")
                 } catch (cancelled: CancellationException) { throw cancelled }
                 catch (error: Exception) {
+                    if (custom && CustomKeyboards.activeId == item.id) CustomKeyboards.activeId = previousActive
                     timber.log.Timber.w(error, "Keyboard style switch failed")
                     context.toast("切换失败，请检查主题文件")
                     progress.visibility = View.GONE; list.isEnabled = true

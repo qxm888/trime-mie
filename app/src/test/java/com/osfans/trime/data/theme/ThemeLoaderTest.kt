@@ -120,7 +120,7 @@ class ThemeLoaderTest :
                 deleteOnExit()
             }
 
-            val noResources = ThemeLoader.SourceLoader { null }
+            val noResources = ThemeLoader.SourceLoader(findSource = { null }, recordDependencies = { _, _ -> })
 
             Then("anything it cannot read faithfully falls back to the deployed artifact") {
                 // DSL outside the supported subset.
@@ -167,10 +167,37 @@ class ThemeLoaderTest :
             }
 
             Then("an explicit file wins over the loader cache") {
-                val loader = ThemeLoader.SourceLoader { null }
+                val loader = ThemeLoader.SourceLoader(findSource = { null }, recordDependencies = { _, _ -> })
                 fun nameOf(file: File): String? = loader.load("theme", file)?.mapping?.pairs?.get("name")?.string
                 nameOf(sourceFile("name: first\n")) shouldBe "first"
                 nameOf(sourceFile("name: second\n")) shouldBe "second"
+            }
+
+            Then("source decoding records included and missing optional resources") {
+                val recorded = mutableMapOf<String, Collection<String>>()
+                val included = sourceFile("name: from_include\nstyle: {}\npreset_color_schemes: {default: {}}\n")
+                val loader = ThemeLoader.SourceLoader(
+                    findSource = { id -> included.takeIf { id == "base" } },
+                    recordDependencies = { id, dependencies -> recorded[id] = dependencies },
+                )
+                val result = ThemeLoader.loadFromSource("theme", sourceFile("__include: base:/\n"), loader)
+                (result as? ThemeLoader.ThemeLoadResult.Success)?.theme?.name shouldBe "from_include"
+                recorded.getValue("theme").toSet() shouldBe setOf("theme", "theme.custom", "base", "base.custom")
+            }
+
+            Then("both source entry points record missing and invalid sources before falling back") {
+                listOf(false, true).forEach { expandOnly ->
+                    listOf<File?>(null, sourceFile("a: [\n"), sourceFile("a: {keys/+: [1]}\n")).forEach { file ->
+                        val recorded = mutableMapOf<String, Collection<String>>()
+                        val loader = ThemeLoader.SourceLoader(
+                            findSource = { null },
+                            recordDependencies = { id, dependencies -> recorded[id] = dependencies },
+                        )
+                        if (expandOnly) ThemeLoader.loadSourceNode("theme", file, loader) shouldBe null
+                        else ThemeLoader.loadFromSource("theme", file, loader) shouldBe null
+                        recorded.getValue("theme") shouldContain "theme"
+                    }
+                }
             }
         }
 
@@ -204,13 +231,13 @@ class ThemeLoaderTest :
                     "included.yaml",
                     "name_source: from_include\nname:\n  __include: /name_source\n",
                 )
-                val sources = ThemeLoader.SourceLoader { null }
+                val sources = ThemeLoader.SourceLoader(findSource = { null }, recordDependencies = { _, _ -> })
                 ThemeLoader.loadSourceNode("included", file, sources)?.mapping?.pairs?.get("name")?.string shouldBe "from_include"
             }
 
             Then("a source outside the supported DSL is not expanded") {
                 val file = sourceFile("dsl.yaml", "name: dsl\na: {keys/+: [1]}\n")
-                ThemeLoader.loadSourceNode("dsl", file, ThemeLoader.SourceLoader { null }) shouldBe null
+                ThemeLoader.loadSourceNode("dsl", file, ThemeLoader.SourceLoader(findSource = { null }, recordDependencies = { _, _ -> })) shouldBe null
             }
         }
 

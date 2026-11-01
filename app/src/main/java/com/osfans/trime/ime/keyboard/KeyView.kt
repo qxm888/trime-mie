@@ -768,12 +768,15 @@ class KeyView(
         val tint = key.lockedTextColor()
         val paint = iconPaint.apply {
             isFilterBitmap = true; isAntiAlias = true; alpha = 255
-            colorFilter = tint?.let { android.graphics.PorterDuffColorFilter(it, android.graphics.PorterDuff.Mode.SRC_IN) }
+            colorFilter = tint?.let { android.graphics.PorterDuffColorFilter(it, android.graphics.PorterDuff.Mode.SRC_IN) } ?: normalIconFilter
         }
         canvas.drawBitmap(image.bitmap, null, android.graphics.RectF(centerX - drawW / 2, centerY - drawH / 2, centerX + drawW / 2, centerY + drawH / 2), paint)
     }
 
     private val iconPaint = Paint()
+    private val normalIconFilter = key.iconTint().takeIf { it.isNotBlank() }?.let { value ->
+        runCatching { android.graphics.PorterDuffColorFilter(android.graphics.Color.parseColor(value), android.graphics.PorterDuff.Mode.SRC_IN) }.getOrNull()
+    }
 
     private fun drawIcon(
         canvas: Canvas,

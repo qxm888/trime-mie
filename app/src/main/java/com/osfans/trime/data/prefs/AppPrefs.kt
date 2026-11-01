@@ -67,6 +67,8 @@ class AppPrefs(
         val ball = candidates.floatingBall.getValue()
         if (!floating && ball) {
             candidates.floatingBall.setValue(false)
+        } else if (floating && ball && key == Keyboard.HIDE_INPUT_BAR && !keyboard.hideInputBar.getValue()) {
+            candidates.floatingBall.setValue(false)
         } else if (floating && !ball && keyboard.hideInputBar.getValue() &&
             (key == Candidates.MODE || key == Keyboard.HIDE_INPUT_BAR)) {
             candidates.floatingBall.setValue(true)
@@ -301,6 +303,20 @@ class AppPrefs(
             LEFT(R.string.one_hand_left), RIGHT(R.string.one_hand_right), BOTH(R.string.one_hand_both),
         }
         val oneHandSide = enum(R.string.one_hand_side, "one_hand_side", OneHandSide.BOTH)
+
+        // One landscape size for every theme/custom layout; portrait floating geometry is untouched.
+        data class LandscapeSize(
+            val enabled: PreferenceDelegate<Boolean>,
+            val width: PreferenceDelegate<Int>,
+            val height: PreferenceDelegate<Int>,
+            val position: PreferenceDelegate<Int>,
+            val offsetY: PreferenceDelegate<Int>,
+        )
+        val landscapeSizeEnabled = switch(R.string.landscape_size_enabled, "landscape_size_enabled", false, R.string.landscape_size_summary)
+        val landscapeWidth = int(R.string.landscape_width, "landscape_width", 70, 40, 100, "%", 1) { landscapeSizeEnabled.getValue() }
+        val landscapeHeight = int(R.string.landscape_height, "landscape_height", 40, 20, 70, "%", 1) { landscapeSizeEnabled.getValue() }
+        val landscapePosition = int(R.string.landscape_position, "landscape_position", 50, 0, 100, "%", 1) { landscapeSizeEnabled.getValue() }
+        val landscapeSize = LandscapeSize(landscapeSizeEnabled, landscapeWidth, landscapeHeight, landscapePosition, int("landscape_offset_y", 0))
 
         val landscapeMode = enum(R.string.enable_landscape_mode, LANDSCAPE_MODE, LandscapeMode.NEVER)
         val splitSpacePercent = int(

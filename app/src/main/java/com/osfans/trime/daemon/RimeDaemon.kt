@@ -49,17 +49,9 @@ object RimeDaemon {
 
     private val realRime by lazy { Rime() }
 
-    private val rimeImpl by lazy {
-        object : RimeApi by realRime {
-            override suspend fun customizeCandidate(
-                idx: Int,
-                text: String,
-                global: Boolean,
-                action: String,
-                value: String,
-            ): Boolean = realRime.customizeCandidate(idx, text, global, action, value)
-        }
-    }
+    // Use the implementation directly. An optimized delegation proxy could lose
+    // a suspend bridge and throw AbstractMethodError when refreshing old themes.
+    private val rimeImpl: RimeApi get() = realRime
 
     private val sessions = mutableMapOf<String, RimeSession>()
 

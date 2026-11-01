@@ -97,6 +97,24 @@ class InputView(
     scope: ThemeScope,
 ) : BaseInputView(service, rime, scope), DIAware {
     private val keyboardPrefs = AppPrefs.defaultInstance().keyboard
+    private val landscapeSizing = com.osfans.trime.ime.keyboard.KeyboardPrefs.run { service.landscapeSizing() }
+    private val landscapeHeightUpdate = Runnable {
+        if (landscapeSizing != null && isAttachedToWindow && height > 0) {
+            val barHeight = if (inputBar.view.visibility == View.GONE) 0 else inputBar.view.height
+            val reservedBottom = if (isFloatingKeyboardEnabled) {
+                (keyboardView.layoutParams as LayoutParams).bottomMargin + dp(16)
+            } else {
+                bottomPaddingSpace.height + (bottomPaddingSpace.layoutParams as LayoutParams).bottomMargin
+            }
+            keyboardWindow.limitHeight((height - barHeight - reservedBottom).coerceAtLeast(1))
+        }
+    }
+
+    private fun scheduleLandscapeHeightUpdate() {
+        if (landscapeSizing == null) return
+        removeCallbacks(landscapeHeightUpdate)
+        post(landscapeHeightUpdate)
+    }
 
     // 「有效悬浮」（KeyboardPrefs.isFloatingEffective）：横屏回落普通键盘时为
     // false，恢复原始 landscape_keyboard 行为。构造期一次性求值；横屏悬浮偏好
@@ -124,7 +142,7 @@ class InputView(
      * 布局与 scaleY 不会把同一档位施加两次。
      */
     private var floatingKeyboardWidth = com.osfans.trime.ime.keyboard.KeyboardPrefs.run { context.presentationWidthPercent() }
-    private var floatingKeyboardHeight = keyboardPrefs.floatingKeyboardHeight.getValue()
+    private var floatingKeyboardHeight = com.osfans.trime.ime.keyboard.KeyboardPrefs.run { context.presentationHeightPercent() }
 
     /** 缩放基准 = 当前键盘构造时烘焙的档位；键盘尚未挂载时退回偏好镜像。 */
     private val floatingKeyboardBaseWidth: Int
@@ -266,7 +284,7 @@ class InputView(
         service.requestInputInsetsUpdate()
     }
 
-    fun restoreInputState(source: com.osfans.trime.ime.keyboard.Keyboard) = keyboardWindow.restoreDockedState(source)
+    fun restoreInputState(source: com.osfans.trime.ime.keyboard.KeyboardWindow.RuntimeState) = keyboardWindow.restoreRuntimeState(source)
 
     val keyboardView: View
 
@@ -336,7 +354,7 @@ class InputView(
      */
     private fun referenceWidthPx(): Int {
         val metrics = resources.displayMetrics
-        return minOf(metrics.widthPixels, metrics.heightPixels)
+        return if (landscapeSizing != null) metrics.widthPixels else minOf(metrics.widthPixels, metrics.heightPixels)
     }
 
     /** The share [minWidthPercent] of the reference width, floored by an absolute size. */
@@ -380,7 +398,7 @@ class InputView(
     /** 缩放手柄拖动驱动尺寸：等比模式取主导轴的位移，非等比两轴各自驱动。 */
     private fun updateFloatingResize(widthDelta: Float, heightDelta: Float) {
         if (resizeStartWidth == 0 || resizeStartHeight == 0) return
-        val keepRatio = keyboardPrefs.floatingKeyboardKeepRatio.getValue()
+        val keepRatio = landscapeSizing == null && keyboardPrefs.floatingKeyboardKeepRatio.getValue()
         // 等比模式取主导轴的位移（对角线两向相当，取哪轴都一样）；
         // 宽高偏好是同一个值：宽度是唯一的“缩放档位”，高度只是它的显示副本。
         val widthDeltaEffective = if (keepRatio) {
@@ -403,8 +421,8 @@ class InputView(
                     resizeStartHeightPercent,
                     (resizeStartHeight * resizeStartScaleY).roundToInt(),
                     heightDelta,
-                    40,
-                    100,
+                    if (landscapeSizing != null) 20 else 40,
+                    if (landscapeSizing != null) 70 else 100,
                 )
             }
         keyboardView.scaleX = floatingScaleX(resizedWidth, floatingKeyboardBaseWidth)
@@ -479,7 +497,7 @@ class InputView(
         keyboardView.pivotY = 0f
         keyboardView.scaleX = 1f
         keyboardView.scaleY =
-            if (keyboardPrefs.floatingKeyboardKeepRatio.getValue()) {
+            if (landscapeSizing == null && keyboardPrefs.floatingKeyboardKeepRatio.getValue()) {
                 // 等比：宽度偏好是唯一的缩放档位，Y 复制 X 的期望缩放（宽度本身由
                 // 布局承载，scaleX≈1，所以这里取的是“档位缩放”而非实时 scaleX）。
                 floatingScaleX(floatingKeyboardWidth, floatingKeyboardBaseWidth)
@@ -506,6 +524,10 @@ class InputView(
         applyFloatingScale()
         if (isOneHandMode) {
             applyFloatingPosition(0f, 0f, persist = false)
+        } else if (landscapeSizing != null) {
+            val free = (width - keyboardView.width * keyboardView.scaleX - dp(16)).coerceAtLeast(0f)
+            val x = dp(8) + free * landscapeSizing.position.getValue().coerceIn(0, 100) / 100f - keyboardView.left
+            applyFloatingPosition(x, landscapeSizing.offsetY.getValue().toFloat(), persist = false)
         } else {
             applyFloatingPosition(
                 keyboardPrefs.floatingKeyboardOffsetX.getValue().toFloat(),
@@ -605,6 +627,10 @@ class InputView(
         if (persist) {
             if (isOneHandMode) {
                 keyboardPrefs.oneHandOffsetX.setValue(resolvedX.roundToInt())
+            } else if (landscapeSizing != null) {
+                val free = (width - visualWidth - 2 * horizontalMargin).coerceAtLeast(0f)
+                val position = if (free > 0f) ((keyboardView.left + resolvedX - horizontalMargin) * 100 / free).roundToInt() else 50
+                service.updateLandscapeKeyboardPosition(position, resolvedY.roundToInt())
             } else {
                 keyboardPrefs.floatingKeyboardOffsetX.setValue(resolvedX.roundToInt())
                 keyboardPrefs.floatingKeyboardOffsetY.setValue(resolvedY.roundToInt())
@@ -1024,15 +1050,19 @@ class InputView(
             preedit.ui.root,
             lParams(wrapContent, wrapContent) {
                 above(keyboardView)
-                startOfParent()
+                startToStart = keyboardView.id
             },
         )
 
         add(
             keyboardView,
-            lParams(if (isFloatingKeyboardEnabled) matchConstraints else matchParent, wrapContent) {
+            lParams(if (isFloatingKeyboardEnabled || landscapeSizing != null) matchConstraints else matchParent, wrapContent) {
                 centerHorizontally()
                 bottomOfParent()
+                if (!isFloatingKeyboardEnabled && landscapeSizing != null) {
+                    matchConstraintPercentWidth = landscapeSizing.width.getValue().coerceIn(40, 100) / 100f
+                    horizontalBias = landscapeSizing.position.getValue().coerceIn(0, 100) / 100f
+                }
                 if (isFloatingKeyboardEnabled) {
                     matchConstraintPercentWidth = layoutWidthPercent(floatingKeyboardWidth) / 100f
                     // 单手固定沉底：贴住屏幕底边（系统手势条高度由 onApplyWindowInsets
@@ -1053,6 +1083,7 @@ class InputView(
         rightResizeHandle.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> syncHandlePlacement() }
 
         keyboardView.addOnLayoutChangeListener { _, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+            scheduleLandscapeHeightUpdate()
             syncFloatingPreeditPosition()
             syncHandlePlacement()
             // The candidate window docks against the keyboard's top edge. onComputeInsets may
@@ -1061,6 +1092,7 @@ class InputView(
                 service.refreshCandidatesGeometry()
             }
         }
+        addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> scheduleLandscapeHeightUpdate() }
         if (isFloatingKeyboardEnabled) {
             keyboardView.post {
                 // Re-apply the persisted size and placement: the key grid's geometry comes from
@@ -1133,6 +1165,7 @@ class InputView(
                 bottomMargin = floatingSystemBottomInset + if (isOneHandMode) 0 else dp(16)
             }
         }
+        scheduleLandscapeHeightUpdate()
         return insets
     }
 
@@ -1220,6 +1253,7 @@ class InputView(
     }
 
     override fun onDetachedFromWindow() {
+        removeCallbacks(landscapeHeightUpdate)
         preedit.dispose()
         releaseKeyboard()
         ViewCompat.setOnApplyWindowInsetsListener(this, null)

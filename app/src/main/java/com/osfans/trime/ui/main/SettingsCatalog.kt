@@ -23,7 +23,7 @@ object SettingsCatalog {
         Page("toolbar", "工具栏", "编辑工具栏与状态栏显示", "keyboard", keys = listOf("hide_input_bar")),
         Page("floating", "单手与悬浮键盘", "单手宽度、左右手与横屏自动悬浮", "keyboard", keys = listOf("one_hand_width", "one_hand_side", "floating_keyboard", "floating_keyboard_auto_landscape")),
         Page("floating_detail", "悬浮键盘高级参数", "尺寸、保持比例、编码偏移与圆角", "floating", keys = listOf("floating_keyboard_width", "floating_keyboard_height", "floating_keyboard_keep_ratio", "floating_preedit_offset_x", "floating_preedit_offset_y", "floating_keyboard_corner_radius"), collapsed = true),
-        Page("landscape", "横屏布局", "横屏模式与空格分割比例", "keyboard", keys = listOf("keyboard_landscape_mode", "keyboard_split_space")),
+        Page("landscape", "横屏布局", "所有键盘共用的横屏高度、宽度、左右位置与分割比例", "keyboard", keys = listOf("landscape_size_enabled", "landscape_width", "landscape_height", "landscape_position", "keyboard_landscape_mode", "keyboard_split_space")),
         Page("display", "键盘显示", "按键符号、提示与边缘触摸区域", "keyboard", keys = listOf("hide_key_symbol", "hide_key_hint", "expand_keypress_area")),
         Page("feedback", "按键反馈", "声音、振动、播报与按下气泡", "keyboard", keys = listOf("sound_on_keypress", "sound_volume", "custom_sound_effect_enabled", "custom_sound_effect_name", "vibrate_on_key_press", "vibrate_on_key_release", "vibrate_on_key_repeat", "vibration_duration", "vibration_amplitude", "speak_on_keypress", "speak_on_commit", "show_key_popup")),
         Page("gestures", "手势与长按", "滑动距离、速度、长按、重复与双击", "keyboard", keys = listOf("key_swipe_travel", "key_swipe_velocity", "key_long_press_timeout", "key_repeat_interval", "key_double_tap_timeout", "key_slide_step_size")),

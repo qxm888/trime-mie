@@ -1,4 +1,4 @@
-# 内置五色键盘；表情与完整符号库使用可滑动面板
+# 内置五色键盘；轻量层次与按压反馈
 mie:
   format: trime-custom-keyboards-yaml
   version: 1
@@ -544,7 +544,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id001
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B8D0C3'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -562,8 +606,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id001
-        barEffects: *id001
       floatingCandidates:
         enabled: true
         panel:
@@ -983,7 +1025,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id002
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B8D0C3'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -1001,8 +1087,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id002
-        barEffects: *id002
       floatingCandidates:
         enabled: true
         panel:
@@ -1448,7 +1532,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id003
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B8D0C3'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -1466,8 +1594,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id003
-        barEffects: *id003
       floatingCandidates:
         enabled: true
         panel:
@@ -1953,7 +2079,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id004
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B8D0C3'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -1971,8 +2141,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id004
-        barEffects: *id004
       floatingCandidates:
         enabled: true
         panel:
@@ -2365,7 +2533,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id005
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B8D0C3'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -2383,8 +2595,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id005
-        barEffects: *id005
       floatingCandidates:
         enabled: true
         panel:
@@ -2942,7 +3152,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id006
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B8D0C3'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -2960,8 +3214,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id006
-        barEffects: *id006
       floatingCandidates:
         enabled: true
         panel:
@@ -3556,7 +3808,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id007
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B8D0C3'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -3574,8 +3870,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id007
-        barEffects: *id007
       floatingCandidates:
         enabled: true
         panel:
@@ -4166,7 +4460,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id008
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B8D0C3'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -4184,8 +4522,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id008
-        barEffects: *id008
       floatingCandidates:
         enabled: true
         panel:
@@ -4776,7 +5112,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id009
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B8D0C3'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -4794,8 +5174,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id009
-        barEffects: *id009
       floatingCandidates:
         enabled: true
         panel:
@@ -5025,7 +5403,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id010
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B8D0C3'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -5043,8 +5465,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id010
-        barEffects: *id010
       floatingCandidates:
         enabled: true
         panel:
@@ -5286,7 +5706,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id011
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B8D0C3'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -5304,8 +5768,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id011
-        barEffects: *id011
       floatingCandidates:
         enabled: true
         panel:
@@ -5874,7 +6336,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id012
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E3C2C8'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -5892,8 +6398,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id012
-        barEffects: *id012
       floatingCandidates:
         enabled: true
         panel:
@@ -6313,7 +6817,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id013
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E3C2C8'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -6331,8 +6879,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id013
-        barEffects: *id013
       floatingCandidates:
         enabled: true
         panel:
@@ -6778,7 +7324,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id014
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E3C2C8'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -6796,8 +7386,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id014
-        barEffects: *id014
       floatingCandidates:
         enabled: true
         panel:
@@ -7283,7 +7871,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id015
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E3C2C8'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -7301,8 +7933,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id015
-        barEffects: *id015
       floatingCandidates:
         enabled: true
         panel:
@@ -7695,7 +8325,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id016
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E3C2C8'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -7713,8 +8387,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id016
-        barEffects: *id016
       floatingCandidates:
         enabled: true
         panel:
@@ -8272,7 +8944,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id017
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E3C2C8'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -8290,8 +9006,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id017
-        barEffects: *id017
       floatingCandidates:
         enabled: true
         panel:
@@ -8886,7 +9600,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id018
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E3C2C8'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -8904,8 +9662,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id018
-        barEffects: *id018
       floatingCandidates:
         enabled: true
         panel:
@@ -9496,7 +10252,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id019
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E3C2C8'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -9514,8 +10314,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id019
-        barEffects: *id019
       floatingCandidates:
         enabled: true
         panel:
@@ -10106,7 +10904,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id020
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E3C2C8'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -10124,8 +10966,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id020
-        barEffects: *id020
       floatingCandidates:
         enabled: true
         panel:
@@ -10355,7 +11195,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id021
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E3C2C8'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -10373,8 +11257,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id021
-        barEffects: *id021
       floatingCandidates:
         enabled: true
         panel:
@@ -10616,7 +11498,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id022
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E3C2C8'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -10634,8 +11560,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id022
-        barEffects: *id022
       floatingCandidates:
         enabled: true
         panel:
@@ -11204,7 +12128,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id023
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B9D4E6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -11222,8 +12190,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id023
-        barEffects: *id023
       floatingCandidates:
         enabled: true
         panel:
@@ -11643,7 +12609,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id024
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B9D4E6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -11661,8 +12671,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id024
-        barEffects: *id024
       floatingCandidates:
         enabled: true
         panel:
@@ -12108,7 +13116,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id025
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B9D4E6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -12126,8 +13178,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id025
-        barEffects: *id025
       floatingCandidates:
         enabled: true
         panel:
@@ -12613,7 +13663,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id026
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B9D4E6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -12631,8 +13725,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id026
-        barEffects: *id026
       floatingCandidates:
         enabled: true
         panel:
@@ -13025,7 +14117,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id027
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B9D4E6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -13043,8 +14179,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id027
-        barEffects: *id027
       floatingCandidates:
         enabled: true
         panel:
@@ -13602,7 +14736,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id028
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B9D4E6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -13620,8 +14798,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id028
-        barEffects: *id028
       floatingCandidates:
         enabled: true
         panel:
@@ -14216,7 +15392,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id029
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B9D4E6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -14234,8 +15454,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id029
-        barEffects: *id029
       floatingCandidates:
         enabled: true
         panel:
@@ -14826,7 +16044,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id030
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B9D4E6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -14844,8 +16106,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id030
-        barEffects: *id030
       floatingCandidates:
         enabled: true
         panel:
@@ -15436,7 +16696,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id031
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B9D4E6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -15454,8 +16758,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id031
-        barEffects: *id031
       floatingCandidates:
         enabled: true
         panel:
@@ -15685,7 +16987,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id032
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B9D4E6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -15703,8 +17049,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id032
-        barEffects: *id032
       floatingCandidates:
         enabled: true
         panel:
@@ -15946,7 +17290,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id033
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B9D4E6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -15964,8 +17352,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id033
-        barEffects: *id033
       floatingCandidates:
         enabled: true
         panel:
@@ -16534,7 +17920,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id034
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E5C7AE'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -16552,8 +17982,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id034
-        barEffects: *id034
       floatingCandidates:
         enabled: true
         panel:
@@ -16973,7 +18401,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id035
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E5C7AE'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -16991,8 +18463,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id035
-        barEffects: *id035
       floatingCandidates:
         enabled: true
         panel:
@@ -17438,7 +18908,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id036
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E5C7AE'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -17456,8 +18970,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id036
-        barEffects: *id036
       floatingCandidates:
         enabled: true
         panel:
@@ -17943,7 +19455,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id037
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E5C7AE'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -17961,8 +19517,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id037
-        barEffects: *id037
       floatingCandidates:
         enabled: true
         panel:
@@ -18355,7 +19909,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id038
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E5C7AE'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -18373,8 +19971,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id038
-        barEffects: *id038
       floatingCandidates:
         enabled: true
         panel:
@@ -18932,7 +20528,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id039
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E5C7AE'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -18950,8 +20590,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id039
-        barEffects: *id039
       floatingCandidates:
         enabled: true
         panel:
@@ -19546,7 +21184,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id040
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E5C7AE'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -19564,8 +21246,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id040
-        barEffects: *id040
       floatingCandidates:
         enabled: true
         panel:
@@ -20156,7 +21836,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id041
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E5C7AE'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -20174,8 +21898,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id041
-        barEffects: *id041
       floatingCandidates:
         enabled: true
         panel:
@@ -20766,7 +22488,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id042
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E5C7AE'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -20784,8 +22550,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id042
-        barEffects: *id042
       floatingCandidates:
         enabled: true
         panel:
@@ -21015,7 +22779,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id043
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E5C7AE'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -21033,8 +22841,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id043
-        barEffects: *id043
       floatingCandidates:
         enabled: true
         panel:
@@ -21276,7 +23082,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id044
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E5C7AE'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -21294,8 +23144,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id044
-        barEffects: *id044
       floatingCandidates:
         enabled: true
         panel:
@@ -21864,7 +23712,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id045
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18D3BFE6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -21882,8 +23774,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id045
-        barEffects: *id045
       floatingCandidates:
         enabled: true
         panel:
@@ -22303,7 +24193,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id046
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18D3BFE6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -22321,8 +24255,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id046
-        barEffects: *id046
       floatingCandidates:
         enabled: true
         panel:
@@ -22768,7 +24700,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id047
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18D3BFE6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -22786,8 +24762,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id047
-        barEffects: *id047
       floatingCandidates:
         enabled: true
         panel:
@@ -23273,7 +25247,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id048
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18D3BFE6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -23291,8 +25309,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id048
-        barEffects: *id048
       floatingCandidates:
         enabled: true
         panel:
@@ -23685,7 +25701,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id049
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18D3BFE6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -23703,8 +25763,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id049
-        barEffects: *id049
       floatingCandidates:
         enabled: true
         panel:
@@ -24262,7 +26320,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id050
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18D3BFE6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -24280,8 +26382,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id050
-        barEffects: *id050
       floatingCandidates:
         enabled: true
         panel:
@@ -24876,7 +26976,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id051
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18D3BFE6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -24894,8 +27038,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id051
-        barEffects: *id051
       floatingCandidates:
         enabled: true
         panel:
@@ -25486,7 +27628,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id052
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18D3BFE6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -25504,8 +27690,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id052
-        barEffects: *id052
       floatingCandidates:
         enabled: true
         panel:
@@ -26096,7 +28280,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id053
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18D3BFE6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -26114,8 +28342,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id053
-        barEffects: *id053
       floatingCandidates:
         enabled: true
         panel:
@@ -26345,7 +28571,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id054
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18D3BFE6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -26363,8 +28633,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id054
-        barEffects: *id054
       floatingCandidates:
         enabled: true
         panel:
@@ -26606,7 +28874,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id055
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18D3BFE6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -26624,8 +28936,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id055
-        barEffects: *id055
       floatingCandidates:
         enabled: true
         panel:
@@ -27024,18 +29334,23 @@ preset_keyboards:
       label: ''
       mie:
         row: 4
-    - label: ⇧
+    - label: ''
       click: Shift_L
       width: 14
-      key_back_color: '#FFFFFF'
+      key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
-      key_text_size: '14'
+      key_text_size: '20'
       height: 52
       mie:
         row: 4
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B8D0C3'
+      key_on_back_color: '#7BC8A4'
+      key_on_text_color: '#FFFFFF'
+      key_on_border_color: '#7BC8A4'
+      icon: icons/mint_shift.png
+      icon_size: 24
     - label: X
       click: x
       width: 14
@@ -27103,12 +29418,12 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B8D0C3'
       long_click: ;
-    - label: ⌫
+    - label: ''
       click: BackSpace
       width: 14
-      key_back_color: '#FFFFFF'
+      key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
-      key_text_size: '14'
+      key_text_size: '20'
       height: 52
       mie:
         row: 4
@@ -27116,6 +29431,8 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B8D0C3'
       long_click: Control+BackSpace
+      icon: icons/mint_delete.png
+      icon_size: 26
     - key_back_color: '#00000000'
       key_text_color: '#3F5A4E'
       height: 52
@@ -27139,7 +29456,7 @@ preset_keyboards:
     - label: '123'
       click: Keyboard_custom_mint_num
       width: 15
-      key_back_color: '#FFFFFF'
+      key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
       key_text_size: '14'
       height: 52
@@ -27188,18 +29505,20 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B8D0C3'
       long_click: '!'
-    - label: ↵
+    - label: ''
       click: Return
       width: 15
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
+      key_back_color: '#7BC8A4'
+      key_text_color: '#FFFFFF'
+      key_text_size: '20'
       height: 52
       mie:
         row: 5
       round_corner: '6'
-      key_border: '1'
+      key_border: '0'
       key_border_color: '#B8D0C3'
+      icon: icons/enter_w.png
+      icon_size: 24
     - key_back_color: '#00000000'
       key_text_color: '#3F5A4E'
       height: 52
@@ -27323,7 +29642,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id056
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B8D0C3'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -27341,8 +29704,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id056
-        barEffects: *id056
       floatingCandidates:
         enabled: true
         panel:
@@ -27755,7 +30116,7 @@ preset_keyboards:
     - label: '123'
       click: Keyboard_custom_mint_num
       width: 15
-      key_back_color: '#FFFFFF'
+      key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
       key_text_size: '14'
       height: 52
@@ -27764,18 +30125,23 @@ preset_keyboards:
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B8D0C3'
-    - label: ⇧
+    - label: ''
       click: Shift_L
       width: 14
-      key_back_color: '#FFFFFF'
+      key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
-      key_text_size: '14'
+      key_text_size: '20'
       height: 52
       mie:
         row: 5
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B8D0C3'
+      key_on_back_color: '#7BC8A4'
+      key_on_text_color: '#FFFFFF'
+      key_on_border_color: '#7BC8A4'
+      icon: icons/mint_shift.png
+      icon_size: 24
     - label: ，
       click: ','
       width: 21
@@ -27802,12 +30168,12 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B8D0C3'
       long_click: '!'
-    - label: ⌫
+    - label: ''
       click: BackSpace
       width: 21
-      key_back_color: '#FFFFFF'
+      key_back_color: '#E6F2EA'
       key_text_color: '#3F5A4E'
-      key_text_size: '14'
+      key_text_size: '20'
       height: 52
       mie:
         row: 5
@@ -27815,18 +30181,22 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B8D0C3'
       long_click: Control+BackSpace
-    - label: ↵
+      icon: icons/mint_delete.png
+      icon_size: 26
+    - label: ''
       click: Return
       width: 15
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
+      key_back_color: '#7BC8A4'
+      key_text_color: '#FFFFFF'
+      key_text_size: '20'
       height: 52
       mie:
         row: 5
       round_corner: '6'
-      key_border: '1'
+      key_border: '0'
       key_border_color: '#B8D0C3'
+      icon: icons/enter_w.png
+      icon_size: 24
     mie:
       rowMargin: 1
       toolbarAlignment: legacy
@@ -27940,7 +30310,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id057
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B8D0C3'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -27958,8 +30372,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id057
-        barEffects: *id057
       floatingCandidates:
         enabled: true
         panel:
@@ -28358,18 +30770,23 @@ preset_keyboards:
       label: ''
       mie:
         row: 4
-    - label: ⇧
+    - label: ''
       click: Shift_L
       width: 14
-      key_back_color: '#FFFFFF'
+      key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
-      key_text_size: '14'
+      key_text_size: '20'
       height: 52
       mie:
         row: 4
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E3C2C8'
+      key_on_back_color: '#F4AEB8'
+      key_on_text_color: '#FFFFFF'
+      key_on_border_color: '#F4AEB8'
+      icon: icons/pink_shift.png
+      icon_size: 24
     - label: X
       click: x
       width: 14
@@ -28437,12 +30854,12 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E3C2C8'
       long_click: ;
-    - label: ⌫
+    - label: ''
       click: BackSpace
       width: 14
-      key_back_color: '#FFFFFF'
+      key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
-      key_text_size: '14'
+      key_text_size: '20'
       height: 52
       mie:
         row: 4
@@ -28450,6 +30867,8 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E3C2C8'
       long_click: Control+BackSpace
+      icon: icons/pink_delete.png
+      icon_size: 26
     - key_back_color: '#00000000'
       key_text_color: '#5E4B50'
       height: 52
@@ -28473,7 +30892,7 @@ preset_keyboards:
     - label: '123'
       click: Keyboard_custom_pink_num
       width: 15
-      key_back_color: '#FFFFFF'
+      key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
       key_text_size: '14'
       height: 52
@@ -28522,18 +30941,20 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E3C2C8'
       long_click: '!'
-    - label: ↵
+    - label: ''
       click: Return
       width: 15
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
+      key_back_color: '#F4AEB8'
+      key_text_color: '#FFFFFF'
+      key_text_size: '20'
       height: 52
       mie:
         row: 5
       round_corner: '6'
-      key_border: '1'
+      key_border: '0'
       key_border_color: '#E3C2C8'
+      icon: icons/enter_w.png
+      icon_size: 24
     - key_back_color: '#00000000'
       key_text_color: '#5E4B50'
       height: 52
@@ -28657,7 +31078,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id058
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E3C2C8'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -28675,8 +31140,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id058
-        barEffects: *id058
       floatingCandidates:
         enabled: true
         panel:
@@ -29089,7 +31552,7 @@ preset_keyboards:
     - label: '123'
       click: Keyboard_custom_pink_num
       width: 15
-      key_back_color: '#FFFFFF'
+      key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
       key_text_size: '14'
       height: 52
@@ -29098,18 +31561,23 @@ preset_keyboards:
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E3C2C8'
-    - label: ⇧
+    - label: ''
       click: Shift_L
       width: 14
-      key_back_color: '#FFFFFF'
+      key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
-      key_text_size: '14'
+      key_text_size: '20'
       height: 52
       mie:
         row: 5
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E3C2C8'
+      key_on_back_color: '#F4AEB8'
+      key_on_text_color: '#FFFFFF'
+      key_on_border_color: '#F4AEB8'
+      icon: icons/pink_shift.png
+      icon_size: 24
     - label: ，
       click: ','
       width: 21
@@ -29136,12 +31604,12 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E3C2C8'
       long_click: '!'
-    - label: ⌫
+    - label: ''
       click: BackSpace
       width: 21
-      key_back_color: '#FFFFFF'
+      key_back_color: '#FCEBED'
       key_text_color: '#5E4B50'
-      key_text_size: '14'
+      key_text_size: '20'
       height: 52
       mie:
         row: 5
@@ -29149,18 +31617,22 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E3C2C8'
       long_click: Control+BackSpace
-    - label: ↵
+      icon: icons/pink_delete.png
+      icon_size: 26
+    - label: ''
       click: Return
       width: 15
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
+      key_back_color: '#F4AEB8'
+      key_text_color: '#FFFFFF'
+      key_text_size: '20'
       height: 52
       mie:
         row: 5
       round_corner: '6'
-      key_border: '1'
+      key_border: '0'
       key_border_color: '#E3C2C8'
+      icon: icons/enter_w.png
+      icon_size: 24
     mie:
       rowMargin: 1
       toolbarAlignment: legacy
@@ -29274,7 +31746,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id059
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E3C2C8'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -29292,8 +31808,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id059
-        barEffects: *id059
       floatingCandidates:
         enabled: true
         panel:
@@ -29692,18 +32206,23 @@ preset_keyboards:
       label: ''
       mie:
         row: 4
-    - label: ⇧
+    - label: ''
       click: Shift_L
       width: 14
-      key_back_color: '#FFFFFF'
+      key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
-      key_text_size: '14'
+      key_text_size: '20'
       height: 52
       mie:
         row: 4
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B9D4E6'
+      key_on_back_color: '#96CBF4'
+      key_on_text_color: '#FFFFFF'
+      key_on_border_color: '#96CBF4'
+      icon: icons/blue_shift.png
+      icon_size: 24
     - label: X
       click: x
       width: 14
@@ -29771,12 +32290,12 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B9D4E6'
       long_click: ;
-    - label: ⌫
+    - label: ''
       click: BackSpace
       width: 14
-      key_back_color: '#FFFFFF'
+      key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
-      key_text_size: '14'
+      key_text_size: '20'
       height: 52
       mie:
         row: 4
@@ -29784,6 +32303,8 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B9D4E6'
       long_click: Control+BackSpace
+      icon: icons/blue_delete.png
+      icon_size: 26
     - key_back_color: '#00000000'
       key_text_color: '#43586B'
       height: 52
@@ -29807,7 +32328,7 @@ preset_keyboards:
     - label: '123'
       click: Keyboard_custom_blue_num
       width: 15
-      key_back_color: '#FFFFFF'
+      key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
       key_text_size: '14'
       height: 52
@@ -29856,18 +32377,20 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B9D4E6'
       long_click: '!'
-    - label: ↵
+    - label: ''
       click: Return
       width: 15
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
+      key_back_color: '#96CBF4'
+      key_text_color: '#FFFFFF'
+      key_text_size: '20'
       height: 52
       mie:
         row: 5
       round_corner: '6'
-      key_border: '1'
+      key_border: '0'
       key_border_color: '#B9D4E6'
+      icon: icons/enter_w.png
+      icon_size: 24
     - key_back_color: '#00000000'
       key_text_color: '#43586B'
       height: 52
@@ -29991,7 +32514,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id060
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B9D4E6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -30009,8 +32576,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id060
-        barEffects: *id060
       floatingCandidates:
         enabled: true
         panel:
@@ -30423,7 +32988,7 @@ preset_keyboards:
     - label: '123'
       click: Keyboard_custom_blue_num
       width: 15
-      key_back_color: '#FFFFFF'
+      key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
       key_text_size: '14'
       height: 52
@@ -30432,18 +32997,23 @@ preset_keyboards:
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B9D4E6'
-    - label: ⇧
+    - label: ''
       click: Shift_L
       width: 14
-      key_back_color: '#FFFFFF'
+      key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
-      key_text_size: '14'
+      key_text_size: '20'
       height: 52
       mie:
         row: 5
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B9D4E6'
+      key_on_back_color: '#96CBF4'
+      key_on_text_color: '#FFFFFF'
+      key_on_border_color: '#96CBF4'
+      icon: icons/blue_shift.png
+      icon_size: 24
     - label: ，
       click: ','
       width: 21
@@ -30470,12 +33040,12 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B9D4E6'
       long_click: '!'
-    - label: ⌫
+    - label: ''
       click: BackSpace
       width: 21
-      key_back_color: '#FFFFFF'
+      key_back_color: '#E7F3FC'
       key_text_color: '#43586B'
-      key_text_size: '14'
+      key_text_size: '20'
       height: 52
       mie:
         row: 5
@@ -30483,18 +33053,22 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B9D4E6'
       long_click: Control+BackSpace
-    - label: ↵
+      icon: icons/blue_delete.png
+      icon_size: 26
+    - label: ''
       click: Return
       width: 15
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
+      key_back_color: '#96CBF4'
+      key_text_color: '#FFFFFF'
+      key_text_size: '20'
       height: 52
       mie:
         row: 5
       round_corner: '6'
-      key_border: '1'
+      key_border: '0'
       key_border_color: '#B9D4E6'
+      icon: icons/enter_w.png
+      icon_size: 24
     mie:
       rowMargin: 1
       toolbarAlignment: legacy
@@ -30608,7 +33182,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id061
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18B9D4E6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -30626,8 +33244,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id061
-        barEffects: *id061
       floatingCandidates:
         enabled: true
         panel:
@@ -31026,18 +33642,23 @@ preset_keyboards:
       label: ''
       mie:
         row: 4
-    - label: ⇧
+    - label: ''
       click: Shift_L
       width: 14
-      key_back_color: '#FFFFFF'
+      key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
-      key_text_size: '14'
+      key_text_size: '20'
       height: 52
       mie:
         row: 4
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E5C7AE'
+      key_on_back_color: '#F7BD99'
+      key_on_text_color: '#FFFFFF'
+      key_on_border_color: '#F7BD99'
+      icon: icons/orange_shift.png
+      icon_size: 24
     - label: X
       click: x
       width: 14
@@ -31105,12 +33726,12 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E5C7AE'
       long_click: ;
-    - label: ⌫
+    - label: ''
       click: BackSpace
       width: 14
-      key_back_color: '#FFFFFF'
+      key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
-      key_text_size: '14'
+      key_text_size: '20'
       height: 52
       mie:
         row: 4
@@ -31118,6 +33739,8 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E5C7AE'
       long_click: Control+BackSpace
+      icon: icons/orange_delete.png
+      icon_size: 26
     - key_back_color: '#00000000'
       key_text_color: '#6B564A'
       height: 52
@@ -31141,7 +33764,7 @@ preset_keyboards:
     - label: '123'
       click: Keyboard_custom_orange_num
       width: 15
-      key_back_color: '#FFFFFF'
+      key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
       key_text_size: '14'
       height: 52
@@ -31190,18 +33813,20 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E5C7AE'
       long_click: '!'
-    - label: ↵
+    - label: ''
       click: Return
       width: 15
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
+      key_back_color: '#F7BD99'
+      key_text_color: '#FFFFFF'
+      key_text_size: '20'
       height: 52
       mie:
         row: 5
       round_corner: '6'
-      key_border: '1'
+      key_border: '0'
       key_border_color: '#E5C7AE'
+      icon: icons/enter_w.png
+      icon_size: 24
     - key_back_color: '#00000000'
       key_text_color: '#6B564A'
       height: 52
@@ -31325,7 +33950,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id062
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E5C7AE'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -31343,8 +34012,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id062
-        barEffects: *id062
       floatingCandidates:
         enabled: true
         panel:
@@ -31757,7 +34424,7 @@ preset_keyboards:
     - label: '123'
       click: Keyboard_custom_orange_num
       width: 15
-      key_back_color: '#FFFFFF'
+      key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
       key_text_size: '14'
       height: 52
@@ -31766,18 +34433,23 @@ preset_keyboards:
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E5C7AE'
-    - label: ⇧
+    - label: ''
       click: Shift_L
       width: 14
-      key_back_color: '#FFFFFF'
+      key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
-      key_text_size: '14'
+      key_text_size: '20'
       height: 52
       mie:
         row: 5
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E5C7AE'
+      key_on_back_color: '#F7BD99'
+      key_on_text_color: '#FFFFFF'
+      key_on_border_color: '#F7BD99'
+      icon: icons/orange_shift.png
+      icon_size: 24
     - label: ，
       click: ','
       width: 21
@@ -31804,12 +34476,12 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E5C7AE'
       long_click: '!'
-    - label: ⌫
+    - label: ''
       click: BackSpace
       width: 21
-      key_back_color: '#FFFFFF'
+      key_back_color: '#FFF0E2'
       key_text_color: '#6B564A'
-      key_text_size: '14'
+      key_text_size: '20'
       height: 52
       mie:
         row: 5
@@ -31817,18 +34489,22 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E5C7AE'
       long_click: Control+BackSpace
-    - label: ↵
+      icon: icons/orange_delete.png
+      icon_size: 26
+    - label: ''
       click: Return
       width: 15
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
+      key_back_color: '#F7BD99'
+      key_text_color: '#FFFFFF'
+      key_text_size: '20'
       height: 52
       mie:
         row: 5
       round_corner: '6'
-      key_border: '1'
+      key_border: '0'
       key_border_color: '#E5C7AE'
+      icon: icons/enter_w.png
+      icon_size: 24
     mie:
       rowMargin: 1
       toolbarAlignment: legacy
@@ -31942,7 +34618,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id063
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18E5C7AE'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -31960,8 +34680,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id063
-        barEffects: *id063
       floatingCandidates:
         enabled: true
         panel:
@@ -32360,18 +35078,23 @@ preset_keyboards:
       label: ''
       mie:
         row: 4
-    - label: ⇧
+    - label: ''
       click: Shift_L
       width: 14
-      key_back_color: '#FFFFFF'
+      key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
-      key_text_size: '14'
+      key_text_size: '20'
       height: 52
       mie:
         row: 4
       round_corner: '6'
       key_border: '1'
       key_border_color: '#D3BFE6'
+      key_on_back_color: '#C9A6ED'
+      key_on_text_color: '#FFFFFF'
+      key_on_border_color: '#C9A6ED'
+      icon: icons/purple_shift.png
+      icon_size: 24
     - label: X
       click: x
       width: 14
@@ -32439,12 +35162,12 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D3BFE6'
       long_click: ;
-    - label: ⌫
+    - label: ''
       click: BackSpace
       width: 14
-      key_back_color: '#FFFFFF'
+      key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
-      key_text_size: '14'
+      key_text_size: '20'
       height: 52
       mie:
         row: 4
@@ -32452,6 +35175,8 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D3BFE6'
       long_click: Control+BackSpace
+      icon: icons/purple_delete.png
+      icon_size: 26
     - key_back_color: '#00000000'
       key_text_color: '#574B66'
       height: 52
@@ -32475,7 +35200,7 @@ preset_keyboards:
     - label: '123'
       click: Keyboard_custom_purple_num
       width: 15
-      key_back_color: '#FFFFFF'
+      key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
       key_text_size: '14'
       height: 52
@@ -32524,18 +35249,20 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D3BFE6'
       long_click: '!'
-    - label: ↵
+    - label: ''
       click: Return
       width: 15
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
+      key_back_color: '#C9A6ED'
+      key_text_color: '#FFFFFF'
+      key_text_size: '20'
       height: 52
       mie:
         row: 5
       round_corner: '6'
-      key_border: '1'
+      key_border: '0'
       key_border_color: '#D3BFE6'
+      icon: icons/enter_w.png
+      icon_size: 24
     - key_back_color: '#00000000'
       key_text_color: '#574B66'
       height: 52
@@ -32659,7 +35386,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id064
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18D3BFE6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -32677,8 +35448,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id064
-        barEffects: *id064
       floatingCandidates:
         enabled: true
         panel:
@@ -33091,7 +35860,7 @@ preset_keyboards:
     - label: '123'
       click: Keyboard_custom_purple_num
       width: 15
-      key_back_color: '#FFFFFF'
+      key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
       key_text_size: '14'
       height: 52
@@ -33100,18 +35869,23 @@ preset_keyboards:
       round_corner: '6'
       key_border: '1'
       key_border_color: '#D3BFE6'
-    - label: ⇧
+    - label: ''
       click: Shift_L
       width: 14
-      key_back_color: '#FFFFFF'
+      key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
-      key_text_size: '14'
+      key_text_size: '20'
       height: 52
       mie:
         row: 5
       round_corner: '6'
       key_border: '1'
       key_border_color: '#D3BFE6'
+      key_on_back_color: '#C9A6ED'
+      key_on_text_color: '#FFFFFF'
+      key_on_border_color: '#C9A6ED'
+      icon: icons/purple_shift.png
+      icon_size: 24
     - label: ，
       click: ','
       width: 21
@@ -33138,12 +35912,12 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D3BFE6'
       long_click: '!'
-    - label: ⌫
+    - label: ''
       click: BackSpace
       width: 21
-      key_back_color: '#FFFFFF'
+      key_back_color: '#F1E9FC'
       key_text_color: '#574B66'
-      key_text_size: '14'
+      key_text_size: '20'
       height: 52
       mie:
         row: 5
@@ -33151,18 +35925,22 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D3BFE6'
       long_click: Control+BackSpace
-    - label: ↵
+      icon: icons/purple_delete.png
+      icon_size: 26
+    - label: ''
       click: Return
       width: 15
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
+      key_back_color: '#C9A6ED'
+      key_text_color: '#FFFFFF'
+      key_text_size: '20'
       height: 52
       mie:
         row: 5
       round_corner: '6'
-      key_border: '1'
+      key_border: '0'
       key_border_color: '#D3BFE6'
+      icon: icons/enter_w.png
+      icon_size: 24
     mie:
       rowMargin: 1
       toolbarAlignment: legacy
@@ -33276,7 +36054,51 @@ preset_keyboards:
           radius: 0.0
           blur: false
         linkToolbar: false
-        effects: &id065
+        effects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: true
+            startColor: '#16FFFFFF'
+            endColor: '#00000000'
+            angle: 90
+            opacity: 100
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: true
+          pressScale: 1.2
+          pressSink: 0.35
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+          edgeDepth: 0.6
+          edgeColor: '#18D3BFE6'
+        toolbarEffects:
+          shadow:
+            enabled: false
+          innerShadow:
+            enabled: false
+          gradient:
+            enabled: false
+          borderGradient:
+            enabled: false
+          textShadow:
+            enabled: false
+          gloss: false
+          noise: false
+          edge3d: false
+          pressScale: 1.5
+          pressSink: 0.25
+          pressDarken: 6
+          ripple: false
+          animationMs: 90
+        barEffects:
           shadow:
             enabled: false
           innerShadow:
@@ -33294,8 +36116,6 @@ preset_keyboards:
           pressSink: 0.0
           pressDarken: 6
           ripple: false
-        toolbarEffects: *id065
-        barEffects: *id065
       floatingCandidates:
         enabled: true
         panel:

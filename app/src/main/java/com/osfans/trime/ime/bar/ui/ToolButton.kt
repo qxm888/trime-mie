@@ -388,7 +388,8 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
         updateImageSize()
         if (drawable != null) { // image icon
             image.imageDrawable = drawable
-            image.imageTintList = if (!useLocalImage) colorStateList else null
+            image.imageTintList = if (!useLocalImage) colorStateList else config?.appearance?.iconTint
+                ?.takeIf { it.isNotBlank() }?.let { value -> runCatching { ColorStateList.valueOf(android.graphics.Color.parseColor(value)) }.getOrNull() }
             label.isVisible = false
             image.isVisible = true
         } else { // text icon

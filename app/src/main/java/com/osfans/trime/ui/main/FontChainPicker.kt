@@ -17,7 +17,7 @@ import kotlinx.coroutines.withContext
 /** One ordered font selection UI shared by theme, layout and floating window. */
 object FontChainPicker {
     fun show(activity: FragmentActivity, title: String, current: String,
-             onImport: (() -> Unit)? = null, onSelected: (String) -> Unit) {
+             onImport: (() -> Unit)? = null, defaultLabel: String = "跟随主题 / 布局默认字体", onSelected: (String) -> Unit) {
         fun dp(n: Int) = (n * activity.resources.displayMetrics.density).toInt()
         val selected = FontOverrides.decode(current).toMutableList()
         val body = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(20), dp(8), dp(20), dp(8)) }
@@ -30,7 +30,7 @@ object FontChainPicker {
         body.addView(rows)
         fun render() {
             rows.removeAllViews()
-            if (selected.isEmpty()) rows.addView(TextView(activity).apply { text = "跟随主题 / 布局默认字体"; setPadding(0, dp(8), 0, dp(8)) })
+            if (selected.isEmpty()) rows.addView(TextView(activity).apply { text = defaultLabel; setPadding(0, dp(8), 0, dp(8)) })
             selected.toList().forEachIndexed { index, path ->
                 val row = LinearLayout(activity).apply { gravity = Gravity.CENTER_VERTICAL }
                 row.addView(TextView(activity).apply {

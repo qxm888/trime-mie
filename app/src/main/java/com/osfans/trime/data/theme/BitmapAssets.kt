@@ -87,7 +87,14 @@ class AssetBitmapDrawable(private val path: String) : Drawable(), BitmapAssets.O
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
     private var image: BitmapAssets.Image? = null
     private var generation = -1L
-    override fun onImageReady() { invalidateSelf() }
+    override fun onImageReady() {
+        invalidateSelf()
+        // The initial blur capture can precede asynchronous bitmap decoding.
+        // Refresh the shared backdrop when the real image replaces that empty frame.
+        var owner = callback
+        while (owner is Drawable) owner = owner.callback
+        (owner as? android.view.View)?.let(com.osfans.trime.ime.appearance.BackdropBlur::invalidateBackground)
+    }
     override fun draw(canvas: Canvas) {
         if (generation != BitmapAssets.generation) { image = null; generation = BitmapAssets.generation }
         val current = image ?: BitmapAssets.request(path, this,

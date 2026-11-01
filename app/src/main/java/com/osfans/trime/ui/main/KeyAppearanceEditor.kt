@@ -71,7 +71,7 @@ object KeyAppearanceEditor {
                 name.contains("Offset") -> "offset"
                 name.startsWith("hilited") -> "pressed"
                 name.startsWith("keyOn") -> "on"
-                name.endsWith("Color") -> "normal"
+                (name.endsWith("Color") || name == "iconTint") -> "normal"
                 name == "roundCorner" || name == "keyBorder" -> "shape"
                 else -> "text"
             }
@@ -118,7 +118,7 @@ object KeyAppearanceEditor {
                     setPadding(24, 4, 24, 4)
                     addView(input)
                 })
-                if (name.endsWith("Color")) {
+                if ((name.endsWith("Color") || name == "iconTint")) {
                     body.addView(com.google.android.material.button.MaterialButton(context, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
                         text = if (name.endsWith("BackColor")) "预设颜色 · 透明 · 图片" else "选择预设颜色"
                         setOnClickListener { AppearancePicker.show(context, label, input.text.toString(), name.endsWith("BackColor")) { input.setText(it) } }

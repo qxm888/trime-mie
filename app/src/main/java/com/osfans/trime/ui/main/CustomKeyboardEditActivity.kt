@@ -23,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.doOnLayout
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -46,7 +47,7 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
     private var kbId: String = ""
     private lateinit var rowsBox: LinearLayout
 
-    private data class KeyDrag(val keyboard: String, val row: Int, val key: Int, val version: Long)
+    private var settledKey: Pair<Int, Int>? = null
     private var returningFromAppearance = false
     override fun onResume() {
         super.onResume()
@@ -210,6 +211,20 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
             rowsBox.addView(rowCard(kb, rowIdx, row))
         }
         renderPreview(kb)
+        settledKey?.let { (row, index) ->
+            settledKey = null
+            val card = rowsBox.getChildAt(row) as? LinearLayout
+            val scroll = card?.getChildAt(card.childCount - 1) as? HorizontalScrollView
+            val strip = scroll?.getChildAt(0) as? LinearLayout
+            strip?.getChildAt(index)?.let { key -> key.doOnLayout {
+                if (key.isAttachedToWindow) {
+                    scroll.smoothScrollTo((key.left - scroll.width / 2 + key.width / 2).coerceAtLeast(0), 0)
+                    key.scaleX = .92f; key.scaleY = .92f
+                    key.animate().scaleX(1f).scaleY(1f).setDuration(160).start()
+                    key.announceForAccessibility("已移到第${row + 1}行，第${index + 1}位")
+                }
+            } }
+        }
     }
 
     /** 底部整体实时预览：按行权重渲染最终键盘形态（运行时行尾自动补空隙）。 */
@@ -403,10 +418,7 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
             chip.contentDescription = "${ck.label.ifEmpty { "未命名按键" }}；点击编辑，长按拖动位置"
             chip.setOnClickListener { showKeyEditor(rowIdx, keyIdx) }
             chip.setOnLongClickListener {
-                val token = KeyDrag(kbId,rowIdx,keyIdx,CustomKeyboards.version)
-                val data = android.content.ClipData.newPlainText("keyboard-key","")
-                if (android.os.Build.VERSION.SDK_INT >= 24) chip.startDragAndDrop(data,View.DragShadowBuilder(chip),token,0)
-                else @Suppress("DEPRECATION") chip.startDrag(data,View.DragShadowBuilder(chip),token,0)
+                KeyboardDragFeedback.start(chip, kbId, rowIdx, keyIdx, CustomKeyboards.version)
             }
             strip.addView(
                 chip,
@@ -669,43 +681,15 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    /** Drops insert between keys, including into empty rows. No mutation before ACTION_DROP. */
+    /** Insert directly at the indicated boundary; no intermediate model writes. */
     private fun enableKeyDrop(scroll: HorizontalScrollView, strip: LinearLayout, row: Int) {
-        var boundary = 0
-        fun boundaryAt(x:Float) = (0 until strip.childCount-1).firstOrNull { x < strip.getChildAt(it).let { v -> (v.left+v.right)/2f } } ?: (strip.childCount-1)
-        fun clearHint() { for (i in 0 until strip.childCount) strip.getChildAt(i).alpha=1f }
-        scroll.setOnDragListener { _, event ->
-            val token=event.localState as? KeyDrag
-            if(token==null || token.keyboard!=kbId) return@setOnDragListener false
-            when(event.action) {
-                android.view.DragEvent.ACTION_DRAG_STARTED -> true
-                android.view.DragEvent.ACTION_DRAG_LOCATION -> {
-                    val x=event.x+scroll.scrollX
-                    boundary=boundaryAt(x)
-                    clearHint();strip.getChildAt(boundary)?.alpha=.45f
-                    val edge=dp(32)
-                    if(event.x < edge) scroll.smoothScrollBy(-dp(20),0)
-                    else if(event.x > scroll.width-edge) scroll.smoothScrollBy(dp(20),0)
-                    var owner=scroll.parent
-                    while(owner is View && owner !is android.widget.ScrollView) owner=owner.parent
-                    (owner as? android.widget.ScrollView)?.let { vertical ->
-                        val rect=android.graphics.Rect();scroll.getDrawingRect(rect);vertical.offsetDescendantRectToMyCoords(scroll,rect)
-                        val y=rect.top+event.y-vertical.scrollY
-                        if(y < edge) vertical.smoothScrollBy(0,-dp(16))
-                        else if(y > vertical.height-edge) vertical.smoothScrollBy(0,dp(16))
-                    }
-                    true
+        KeyboardDragFeedback.attach(scroll, strip, row, kbId) { token, boundary ->
+            if (token.version != CustomKeyboards.version) {
+                Toast.makeText(this, "布局已更新，请重新拖动", Toast.LENGTH_SHORT).show()
+            } else if (!(token.row == row && boundary in token.key..(token.key + 1))) {
+                mutate { keyboard ->
+                    com.osfans.trime.data.keymap.KeyReorder.move(keyboard.rows, token.row, token.key, row, boundary)?.let { index -> settledKey = row to index }
                 }
-                android.view.DragEvent.ACTION_DROP -> {
-                    boundary=boundaryAt(event.x+scroll.scrollX)
-                    clearHint()
-                    if(token.version==CustomKeyboards.version) mutate { keyboard ->
-                        com.osfans.trime.data.keymap.KeyReorder.move(keyboard.rows,token.row,token.key,row,boundary)
-                    } else Toast.makeText(this,"布局已更新，请重新拖动",Toast.LENGTH_SHORT).show()
-                    true
-                }
-                android.view.DragEvent.ACTION_DRAG_EXITED,android.view.DragEvent.ACTION_DRAG_ENDED -> { clearHint();true }
-                else -> true
             }
         }
     }

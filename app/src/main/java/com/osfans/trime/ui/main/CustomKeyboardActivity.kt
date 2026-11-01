@@ -65,6 +65,7 @@ class CustomKeyboardActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.action_import_theme_keyboard -> importThemeKeyboard()
                 R.id.action_import_baidu_skin -> baiduLauncher.launch(arrayOf("*/*"))
+                R.id.action_restore_builtin_kbs -> showBuiltinRestore()
                 R.id.action_export_custom_kbs -> exportLayouts()
                 R.id.action_import_custom_kbs ->
                     importLauncher.launch(arrayOf("application/yaml", "application/x-yaml", "text/yaml", "text/plain", "application/json", "*/*"))
@@ -96,9 +97,11 @@ class CustomKeyboardActivity : AppCompatActivity() {
                 } else {
                     CustomKeyboards.MODE_CUSTOM
                 }
-            CustomKeyboards.setMode(newMode)
-            renderSections()
-            refreshTheme()
+            lifecycleScope.launch {
+                runCatching { ThemeManager.selectTheme(ThemeManager.prefs.selectedTheme.getValue(), layoutMode = newMode) }
+                    .onFailure { Toast.makeText(this@CustomKeyboardActivity, "切换失败：${it.message}", Toast.LENGTH_LONG).show() }
+                renderSections()
+            }
         }
 
         newButton.setOnClickListener { createKeyboard() }
@@ -246,20 +249,40 @@ class CustomKeyboardActivity : AppCompatActivity() {
         }
     }
 
+    private fun showBuiltinRestore() {
+        MaterialAlertDialogBuilder(this).setTitle("恢复内置键盘")
+            .setItems(arrayOf("补回缺失的内置键盘", "重置内置键盘的布局与外观")) { _, choice ->
+                fun restore() { lifecycleScope.launch {
+                    val result = runCatching { withContext(Dispatchers.IO) {
+                        val count = CustomKeyboards.restoreBuiltins(choice == 1)
+                        check(CustomKeyboards.flush()) { "保存失败" }; count
+                    } }
+                    result.onSuccess { count ->
+                        renderSections(); refreshTheme()
+                        Toast.makeText(this@CustomKeyboardActivity, "已恢复 $count 个内置布局", Toast.LENGTH_SHORT).show()
+                    }.onFailure { Toast.makeText(this@CustomKeyboardActivity, it.message, Toast.LENGTH_LONG).show() }
+                } }
+                if (choice == 0) restore() else MaterialAlertDialogBuilder(this)
+                    .setTitle("重置内置键盘？").setMessage("内置键盘的按键、外观、字体与工具栏将恢复默认。自行新建的键盘会保留。")
+                    .setPositiveButton("重置") { _, _ -> restore() }.setNegativeButton("取消", null).show()
+            }.setNegativeButton("取消", null).show()
+    }
+
     private fun exportLayouts() {
-        val entries = CustomKeyboards.list()
+        val entries = CustomKeyboards.list().filter { it.secondaryOf.isBlank() }
         if (entries.isEmpty()) {
             Toast.makeText(this, R.string.key_editor_nothing_to_export, Toast.LENGTH_SHORT).show()
             return
         }
-        val checked = BooleanArray(entries.size) { entries[it].id == CustomKeyboards.activeId }
+        val activePrimary = CustomKeyboards.get(CustomKeyboards.activeId)?.secondaryOf?.takeIf { it.isNotBlank() } ?: CustomKeyboards.activeId
+        val checked = BooleanArray(entries.size) { entries[it].id == activePrimary }
         if (checked.none { it }) checked[0] = true
         val duplicateNames = entries.groupingBy { it.name }.eachCount()
         val names = entries.map { entry ->
             val suffix = if (duplicateNames.getValue(entry.name) > 1) {
                 CustomKeyboards.get(entry.id)?.importedSkin?.sourceName?.takeIf { it.isNotBlank() } ?: entry.id.takeLast(8)
             } else ""
-            "${entry.name}（${entry.rowCount}行 · ${entry.keyCount}键）" + if (suffix.isEmpty()) "" else "\n$suffix"
+            entry.name + if (suffix.isEmpty()) "" else "\n$suffix"
         }.toTypedArray()
         val dialog = MaterialAlertDialogBuilder(this).setTitle(R.string.custom_kb_export_select)
             .setMultiChoiceItems(names, checked) { _, which, selected -> checked[which] = selected }
@@ -280,7 +303,7 @@ class CustomKeyboardActivity : AppCompatActivity() {
                 dialog.dismiss()
                 lifecycleScope.launch {
                     val snapshot = runCatching { withContext(Dispatchers.IO) {
-                        val content = CustomKeyboards.exportYaml(selected.map { it.id })
+                        val content = CustomKeyboards.exportYaml(CustomKeyboards.familyIds(selected.map { it.id }))
                         java.io.File.createTempFile("keyboard-export-", ".yaml", cacheDir).apply { writeText(content, Charsets.UTF_8) }
                     } }
                     if (!isActive || isFinishing || isDestroyed) { snapshot.getOrNull()?.delete(); return@launch }

@@ -32,6 +32,8 @@ data class Theme(
     val toolBar: ToolBar = ToolBar(),
     @Transient val isCustom: Boolean = false,
     @Transient val customizationVersion: Long = 0,
+    /** Stable source identity for theme-specific defaults, including during IO preload. */
+    @Transient val fontConfigId: String = "",
 ) {
     val fonts by lazy { ThemeFonts(this) }
 

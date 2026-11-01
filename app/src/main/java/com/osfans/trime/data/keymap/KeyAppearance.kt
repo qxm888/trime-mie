@@ -30,7 +30,7 @@ object KeyAppearance {
         /** 按键级符号对齐：空 跟随全局，left / center / right。 */
         val symbolAlign: String = "",
         /** 独立前景图标：空 = 显示文字标签；相对路径基于 .mie/键盘背景。 */
-        val icon: String = "", val iconSize: Int = 0,
+        val icon: String = "", val iconSize: Int = 0, val iconTint: String = "",
         val iconOffsetX: Float = 0f, val iconOffsetY: Float = 0f,
     ) {
         fun toTextKey() = TextKey(labelSymbol = labelSymbol, hint = hint,
@@ -44,7 +44,7 @@ object KeyAppearance {
             keyHintOffsetX = keyHintOffsetX, keyHintOffsetY = keyHintOffsetY,
             keyPressOffsetX = keyPressOffsetX, keyPressOffsetY = keyPressOffsetY, popup = popup, sendBindings = sendBindings ?: true,
             showSymbol = showSymbol, showHint = showHint, symbolAlign = symbolAlign,
-            icon = icon, iconSize = iconSize, iconOffsetX = iconOffsetX, iconOffsetY = iconOffsetY)
+            icon = icon, iconSize = iconSize, iconTint = iconTint, iconOffsetX = iconOffsetX, iconOffsetY = iconOffsetY)
     }
     val fields = linkedMapOf(
         "labelSymbol" to "符号文字", "hint" to "提示文字",
@@ -65,6 +65,7 @@ object KeyAppearance {
         "showSymbol" to "符号显示（留空跟随全局）", "showHint" to "注解显示（留空跟随全局）",
         "symbolAlign" to "符号对齐（留空跟随全局）",
         "icon" to "前景图标（留空显示文字）", "iconSize" to "图标尺寸 dp（0 自动）",
+        "iconTint" to "图标颜色（留空保留图片原色）",
         "iconOffsetX" to "图标横向偏移 dp", "iconOffsetY" to "图标纵向偏移 dp",
     )
     private val json = Json { encodeDefaults = true }

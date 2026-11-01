@@ -103,6 +103,10 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
     private var cursorUpdateIndex = 0
 
     private val recreateInputViewPrefs: Array<PreferenceDelegate<*>> = arrayOf(
+        prefs.keyboard.landscapeSizeEnabled,
+        prefs.keyboard.landscapeWidth,
+        prefs.keyboard.landscapeHeight,
+        prefs.keyboard.landscapePosition,
         prefs.keyboard.expandKeypressArea,
         prefs.keyboard.floatingKeyboard,
         prefs.keyboard.floatingKeyboardAutoLandscape,
@@ -356,9 +360,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
 
     private fun replaceInputView(scope: ThemeScope): InputView {
         val began = android.os.SystemClock.elapsedRealtime()
-        val previous = com.osfans.trime.ime.keyboard.KeyboardWindow.instance?.let {
-            runCatching { com.osfans.trime.ime.keyboard.KeyboardWindow.currentKeyboard }.getOrNull()
-        }
+        val previous = com.osfans.trime.ime.keyboard.KeyboardWindow.instance?.captureRuntimeState()
         val newInputView = InputView(this, rime, scope)
         setInputView(newInputView)
         inputDeviceManager.setInputView(newInputView)
@@ -658,10 +660,22 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
     fun updateFloatingKeyboardSize(widthPercent: Int, heightPercent: Int) {
         updatingKeyboardMode = true
         try {
-            prefs.keyboard.floatingKeyboardWidth.sharedPreferences.edit()
-                .putInt(prefs.keyboard.floatingKeyboardWidth.key, widthPercent)
-                .putInt(prefs.keyboard.floatingKeyboardHeight.key, heightPercent)
+            val landscape = com.osfans.trime.ime.keyboard.KeyboardPrefs.run { landscapeSizing() }
+            val width = landscape?.width ?: prefs.keyboard.floatingKeyboardWidth
+            val height = landscape?.height ?: prefs.keyboard.floatingKeyboardHeight
+            width.sharedPreferences.edit()
+                .putInt(width.key, widthPercent.coerceIn(40, 100))
+                .putInt(height.key, heightPercent.coerceIn(if (landscape != null) 20 else 40, if (landscape != null) 70 else 100))
                 .apply()
+        } finally { updatingKeyboardMode = false }
+    }
+
+    fun updateLandscapeKeyboardPosition(position: Int, offsetY: Int) {
+        val size = com.osfans.trime.ime.keyboard.KeyboardPrefs.run { landscapeSizing() } ?: return
+        updatingKeyboardMode = true
+        try {
+            size.position.sharedPreferences.edit().putInt(size.position.key, position.coerceIn(0, 100))
+                .putInt(size.offsetY.key, offsetY).apply()
         } finally { updatingKeyboardMode = false }
     }
 

@@ -137,6 +137,18 @@ class KeyboardWindow(di: DI) :
         return keyboard.options.lock || keyboard.secondaryOf.isBlank()
     }
     private val cachedKeyboards = mutableMapOf<String, Pair<Keyboard, KeyboardView>>()
+    var heightLimitPx: Int = 0
+        private set
+
+    fun limitHeight(maximum: Int) {
+        val limit = maximum.coerceAtLeast(1)
+        if (heightLimitPx == limit) return
+        heightLimitPx = limit
+        val current = activeKeyboard
+        // Ordinary sizes keep their view tree; only a real geometry change rebuilds keys.
+        cachedKeyboards.keys.filter { it != currentKeyboardId }.forEach(cachedKeyboards::remove)
+        if (current != null && current.unconstrainedHeight.coerceAtMost(limit) != current.keyboardHeight) refreshKeyboards()
+    }
     private val activeKeyboard: Keyboard? get() = cachedKeyboards[currentKeyboardId]?.first
     private val currentKeyboardView: KeyboardView? get() = cachedKeyboards[currentKeyboardId]?.second
 
@@ -160,7 +172,24 @@ class KeyboardWindow(di: DI) :
         cachedKeyboards.clear()
     }
 
+    data class RuntimeState(
+        val theme: Theme, val id: String, val last: String, val locked: String,
+        val main: String, val asciiPair: Pair<String, String>?, val keyboard: Keyboard?,
+    )
+    fun captureRuntimeState() = RuntimeState(theme, currentKeyboardId, lastKeyboardId, lastLockKeyboardId,
+        lastMainKeyboardId, asciiKeyboardPair, activeKeyboard)
+
+    fun restoreRuntimeState(state: RuntimeState) {
+        // Presentation changes reuse the same immutable theme. A new theme must
+        // never receive old custom ids, modifiers or layout navigation history.
+        if (state.theme !== theme || state.id !in theme.presetKeyboards) return
+        if (state.id != currentKeyboardId) { detachCurrentView(); attachKeyboard(state.id) }
+        lastKeyboardId = state.last; lastLockKeyboardId = state.locked
+        lastMainKeyboardId = state.main; asciiKeyboardPair = state.asciiPair
+        state.keyboard?.let(::restoreDockedState)
+    }
     fun restoreDockedState(source: Keyboard) {
+        if (source.keyboardId != activeKeyboard?.keyboardId) return
         activeKeyboard?.copyInputStateFrom(source)
         currentKeyboardView?.invalidateAllKeys()
     }
@@ -265,11 +294,13 @@ class KeyboardWindow(di: DI) :
         }
 
         val width = if (context.isFloatingEffective()) {
-            minOf(safeWidth, context.resources.displayMetrics.heightPixels) *
-                KeyboardPrefs.run { context.presentationWidthPercent() } / 100
+            val reference = if (KeyboardPrefs.run { context.landscapeSizing() } != null) safeWidth
+                else minOf(safeWidth, context.resources.displayMetrics.heightPixels)
+            reference * KeyboardPrefs.run { context.presentationWidthPercent() } / 100
         } else {
             val (left, right) = KeyboardPrefs.run { context.oneHandPadding(theme) }
-            safeWidth - left - right
+            val landscape = KeyboardPrefs.run { context.landscapeSizing() }
+            (if (landscape != null) safeWidth * landscape.width.getValue().coerceIn(40, 100) / 100 else safeWidth) - left - right
         }
         allowedWidth = width
         return width
@@ -296,7 +327,7 @@ class KeyboardWindow(di: DI) :
         val width = computeAllowedWidth()
         applyKeyboardSkin(target, width)
         // 行边距在 Keyboard 布局内按行生效（背景铺满不动）。
-        val keyboard = activeKeyboard ?: Keyboard(context, theme, width, config, target)
+        val keyboard = activeKeyboard ?: Keyboard(context, theme, width, config, target, maxHeightPx = heightLimitPx)
         val view = currentKeyboardView ?: KeyboardView(context, theme, keyboard, popup, service, keyboardActionListener, enterKeyDisplay)
 
         if (activeKeyboard == null) {
@@ -339,7 +370,7 @@ class KeyboardWindow(di: DI) :
             current = currentKeyboardId,
             resolvedCurrent = if (theme.isCustom) CustomKeyboards.resolveId(currentKeyboardId) else currentKeyboardId,
             last = lastKeyboardId,
-            locked = lastMainKeyboardId.ifEmpty { lastLockKeyboardId },
+            locked = lastMainKeyboardId.ifEmpty { lastLockKeyboardId }.ifEmpty { if (theme.isCustom) CustomKeyboards.resolveId("default") else "" },
             ascii = activeKeyboard?.asciiKeyboard,
             currentIsLocked = activeKeyboard?.isLock == true,
             schema = rime.run { statusCached }.schemaId,
@@ -348,13 +379,31 @@ class KeyboardWindow(di: DI) :
         ),
     )
 
+    /** Toolbar English pages often bind a fixed parent id. Return to the
+     * exact layout which opened that English page, including 9/14/18/7 columns. */
+    fun switchKeyboardFromAction(to: String) {
+        val pair = asciiKeyboardPair
+        val parent = pair?.first?.let { CustomKeyboards.get(it)?.secondaryOf }.orEmpty()
+        if (pair != null && currentKeyboardId == pair.second &&
+            (to == ".default" || to == pair.first || (parent.isNotEmpty() && to == parent))) {
+            switchKeyboard(pair.first)
+        } else switchKeyboard(to)
+    }
+
     fun switchKeyboard(to: String) {
         val target = evalKeyboard(to)
+        val declaredEnglish = activeKeyboard?.asciiKeyboard.orEmpty()
+        if (target != currentKeyboardId && declaredEnglish.isNotEmpty() && target == evalKeyboard(declaredEnglish)) {
+            asciiKeyboardPair = (if (theme.isCustom) CustomKeyboards.resolveId(currentKeyboardId) else currentKeyboardId) to target
+        }
         // 选中主键盘后把它记为当前自定义键盘：返回主键盘 / 下次启动都回到它。
         if (isMainKeyboard(target)) {
             val resolved = CustomKeyboards.resolveId(target)
             lastMainKeyboardId = resolved
-            if (CustomKeyboards.activeId != resolved) CustomKeyboards.activeId = resolved
+            if (CustomKeyboards.activeId != resolved) {
+                CustomKeyboards.activeId = resolved
+                com.osfans.trime.data.theme.ThemeManager.requestCustomizationRefresh()
+            }
         }
         asciiKeyboardPair?.let { (_, english) -> if (target != english) asciiKeyboardPair = null }
         ContextCompat.getMainExecutor(service).execute {

@@ -1,6 +1,6 @@
 # 构建同文输入法咩版
 
-本说明对应 **V3.1.11 / versionCode 20261218**。正式 APK 使用原发布证书。
+本说明对应 **V3.1.14 / versionCode 20261221**。正式 APK 使用原发布证书。
 
 ## 1. 获取源码
 
@@ -9,7 +9,7 @@ git clone https://github.com/qxm888/trime-mie.git
 cd trime-mie
 ```
 
-此版本先以本地交接包提供：解压 `trime-mie-v3.1.11-source.zip`，进入 `repository/`。接手者完成 GitHub 发布后，可使用 `v3.1.11` 标签或对应 Release 附件；本说明不代表远端标签已经建立。
+此版本以本地交接包提供：解压 `trime-mie-v3.1.14-source.zip`，进入 `repository/`。远端目前已发布 V3.1.11，V3.1.14 尚未上传；源码快照中的工作区改动记录见交接说明。
 
 旧 mie.15 的初始标签仅包含文档，旧版完整源码需使用其附件或补充源码标签。
 
@@ -65,6 +65,14 @@ Windows 使用 `gradlew.bat` 代替 `./gradlew`。
 
 咩2包名为 `com.osfans.trime.debug.v2`。Debug 包包含开发回归组件，面向开发使用。
 
+复现仅在正式压缩包出现的问题时，可为独立咩2启用相同优化器：
+
+```sh
+./gradlew :app:assembleDebug -PbuildABI=arm64-v8a -PvariantTag=v2 -PverifyReleaseOptimizer=true
+```
+
+此选项保持咩2包名与调试签名，启用 R8 与资源压缩；验证入口只存在于 Debug 源集。普通 Debug 和正式发布构建不需要该参数。
+
 ## 4. 构建 Release
 
 ```sh
@@ -107,6 +115,6 @@ adb install -r /路径/到/你构建的.apk
 ## 6. 构建信息与复现边界
 
 - 发布快照保留ZIP无.git时可用的构建属性；包名、用户可见版本与文件名由app/build.gradle.kts确定。签名、时间、工具链和环境会使自行构建的APK哈希不同，不承诺逐字节复现。
-- V3.1.11 的正式与咩2构建日志、符号目录数据核对结果随交付提供。检查范围见 docs/v3.1.11/检查记录.md；未运行手机回归或整个历史测试集。
+- V3.1.14 正式与咩2构建日志、配置设计预览随本地交付提供。检查范围见 docs/v3.1.14/检查记录.md；本轮未运行手机回归或自动测试。
 - 原预编译Rime库的完整来源仍需补全，详见原生说明。独立启动桥从随包源码编译，不能据此宣称已重建原引擎。
 - 使用传统rime目录；首次安装、修改方案词典、恢复数据或删除build后，由用户在设置右上角菜单手动选择“部署”。

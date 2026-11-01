@@ -38,7 +38,9 @@ data class CustomBackground(
             Type.TRANSPARENT -> ColorDrawable(Color.TRANSPARENT)
             Type.COLOR -> ColorDrawable(Color.parseColor(bg.color))
             Type.VIDEO -> ColorDrawable(Color.BLACK)
-            Type.IMAGE -> com.osfans.trime.data.theme.AssetBitmapDrawable(bg.image)
+            Type.IMAGE -> com.osfans.trime.data.theme.AssetBitmapDrawable(
+                if (bg.image.startsWith("/")) bg.image else CustomKeyAssets.resolve(context, bg.image).orEmpty(),
+            )
         }
     }
 

@@ -142,8 +142,8 @@ object ThemeManager {
         }
     }
 
-    private fun getThemeById(id: String): ResolvedTheme {
-        if (CustomKeyboards.mode == CustomKeyboards.MODE_CUSTOM) {
+    private fun getThemeById(id: String, custom: Boolean = CustomKeyboards.mode == CustomKeyboards.MODE_CUSTOM): ResolvedTheme {
+        if (custom) {
             return ResolvedTheme(id, CustomKeyboards.standaloneTheme().let { it.copy(customizationVersion = it.customizationVersion + com.osfans.trime.data.keymap.NamedFunctions.version + FontOverrides.version + com.osfans.trime.ime.voice.VoiceSettings.version) }, null)
         }
         when (val result = loadTheme(id)) {
@@ -201,7 +201,7 @@ object ThemeManager {
         configId: String,
         theme: Theme,
         findings: List<ThemeDiagnostics.Finding>?,
-    ): ResolvedTheme = ResolvedTheme(configId, theme.copy(presetKeys = theme.presetKeys + mapOf("VoiceInput" to com.osfans.trime.data.theme.model.PresetKey(label = "内置语音", send = "VOICE_ASSIST"), "BibiVoice" to com.osfans.trime.data.theme.model.PresetKey(label = "内置语音", send = "VOICE_ASSIST")),
+    ): ResolvedTheme = ResolvedTheme(configId, theme.copy(fontConfigId = configId, presetKeys = theme.presetKeys + mapOf("VoiceInput" to com.osfans.trime.data.theme.model.PresetKey(label = "内置语音", send = "VOICE_ASSIST"), "BibiVoice" to com.osfans.trime.data.theme.model.PresetKey(label = "内置语音", send = "VOICE_ASSIST")),
         // A video change must rebuild the keyboard even when its YAML is unchanged.
         customizationVersion = KeyBindingOverrides.version + ToolbarOverrides.version + com.osfans.trime.data.keymap.NamedFunctions.version + FontOverrides.version + com.osfans.trime.ime.voice.VoiceSettings.version + com.osfans.trime.ime.appearance.SurfaceAppearance.version + AppPrefs.defaultInstance().keyboard.videoBackground.getValue().hashCode().toLong()), findings)
 
@@ -220,6 +220,7 @@ object ThemeManager {
     }
 
     fun init(configuration: Configuration) {
+        DirectoryFontFallback.refresh()
         ensureActiveTheme()
         ColorManager.init(configuration)
     }
@@ -237,16 +238,21 @@ object ThemeManager {
      */
     private val resourceRevision = java.util.concurrent.atomic.AtomicLong()
     private val themeRequestRevision = java.util.concurrent.atomic.AtomicLong()
-    suspend fun selectTheme(configId: String, forceReload: Boolean = false): String {
+    suspend fun selectTheme(configId: String, forceReload: Boolean = false, layoutMode: String? = null): String {
+        val mode = layoutMode ?: CustomKeyboards.mode
+        require(mode in setOf(CustomKeyboards.MODE_THEME, CustomKeyboards.MODE_CUSTOM))
+        val custom = mode == CustomKeyboards.MODE_CUSTOM
         val request = themeRequestRevision.incrementAndGet()
         val resolvedTheme = withContext(Dispatchers.IO) {
+            DirectoryFontFallback.refresh()
             if (forceReload) synchronized(themeCache) { themeCache.evictAll() }
-            if (CustomKeyboards.mode != CustomKeyboards.MODE_CUSTOM && configId.isNotBlank()) refreshChangedConfig(configId)
-            getThemeById(configId).let { resolved -> resolved.copy(theme = resolved.theme.copy(
-                customizationVersion = resolved.theme.customizationVersion + if (forceReload) resourceRevision.incrementAndGet() else resourceRevision.get())) }
+            if (!custom && configId.isNotBlank()) refreshChangedConfig(configId)
+            getThemeById(configId, custom).let { resolved -> resolved.copy(theme = resolved.theme.copy(
+                customizationVersion = resolved.theme.customizationVersion + DirectoryFontFallback.stamp.hashCode().toLong() +
+                    (if (forceReload) resourceRevision.incrementAndGet() else resourceRevision.get()))) }
                 .also {
                     it.theme.fonts.preload()
-                    if (CustomKeyboards.mode == CustomKeyboards.MODE_CUSTOM) {
+                    if (custom) {
                         CustomKeyboards.get(CustomKeyboards.activeId)?.let { layout ->
                             (layout.typography.values + layout.floatingCandidates?.fonts.orEmpty().values)
                                 .map { spec -> spec.font }.distinct().forEach(FontOverrides::fromSelection)
@@ -257,8 +263,21 @@ object ThemeManager {
         return withContext(Dispatchers.Main.immediate) {
             // A slower earlier load must not overwrite the newest theme/layout selection.
             if (request != themeRequestRevision.get()) return@withContext prefs.selectedTheme.getValue()
-            BitmapAssets.invalidate()
-            applyTheme(resolvedTheme)
+            val oldMode = CustomKeyboards.mode
+            val oldTheme = activeThemeOrNull()
+            val oldFindings = _activeFindings
+            try {
+                CustomKeyboards.setMode(mode)
+                BitmapAssets.invalidate()
+                applyTheme(resolvedTheme)
+            } catch (error: Exception) {
+                CustomKeyboards.setMode(oldMode)
+                if (oldTheme != null) {
+                    ColorManager.attachTheme(oldTheme); _activeTheme = oldTheme; _activeFindings = oldFindings
+                    runCatching { fireChange() }.onFailure { Timber.e(it, "Could not rebuild previous theme") }
+                }
+                throw error
+            }
             prefs.selectedTheme.setValue(resolvedTheme.configId)
             resolvedTheme.configId
         }

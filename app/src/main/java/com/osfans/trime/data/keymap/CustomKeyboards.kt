@@ -44,7 +44,7 @@ object CustomKeyboards {
     const val BUILTIN_DEFAULT_ID = "custom_pink"
 
     /** 内置五色键盘的版本；改过内置 YAML 后 +1，升级时自动刷新内置 id。 */
-    private const val BUILTIN_VERSION = 8
+    private const val BUILTIN_VERSION = 10
 
     @Serializable
     data class CustomKey(
@@ -87,6 +87,7 @@ object CustomKeyboards {
         var background: CustomBackground? = null,
         var toolbarBackground: CustomBackground? = null,
         var toolbarAlignment: String = "legacy",
+        var hiddenMenuItems: Set<String> = emptySet(),
         /** Overlay for every key in this layout; empty restores individual backgrounds. */
         var allKeysBackground: String = "",
         var rowSpacing: Int = 4,
@@ -167,6 +168,7 @@ object CustomKeyboards {
     private val lock = Any()
     private var store = Store()
     private var appContext: Context? = null
+    private var layoutStorage: File? = null
 
     @Volatile
     private var dirty = false
@@ -244,6 +246,7 @@ object CustomKeyboards {
     fun init(context: Context) {
         synchronized(lock) {
             appContext = com.osfans.trime.util.storageContext(context)
+            layoutStorage = KeyboardLayoutStorage.resolve(appContext!!)
             runCatching {
                 val file = storeFile()
                 val contents = file.readAtomicText()
@@ -277,7 +280,8 @@ object CustomKeyboards {
     private fun seedBuiltinExtrasInBackground(context: android.content.Context) {
         if (synchronized(lock) { store.builtinExtrasVersion >= BUILTIN_VERSION }) return
         ioScope.launch {
-            val extras = decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_extra) ?: return@launch
+            val extras = (decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_extra) ?: return@launch) +
+                decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_effects).orEmpty()
             val hasLegacy = synchronized(lock) { store.keyboards.keys.any { "_cat_" in it } }
             val legacy = if (hasLegacy) decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_legacy_symbols).orEmpty() else emptyMap()
             synchronized(lock) {
@@ -303,6 +307,7 @@ object CustomKeyboards {
                 scheduleSaveLocked()
                 Timber.i("CustomKeyboards: added %d builtin extras", added)
             }
+            com.osfans.trime.data.theme.ThemeManager.requestCustomizationRefresh()
         }
     }
 
@@ -350,7 +355,7 @@ object CustomKeyboards {
 
     /**
      * 升级时刷新内置五色键盘：只替换内置 id（custom_<色>_*），用户自建键盘保持不变。
-     * V7 增加七列页面，V8 添加表情入口并升级符号绑定，保留已有布局的用户编辑。
+     * V7 增加七列页面，V8 添加表情入口，V9 补七列功能键外观，保留用户编辑。
      * 较早版本沿用其原有整套模板升级规则。
      */
     private fun refreshBuiltinKeyboardsLocked() {
@@ -360,13 +365,28 @@ object CustomKeyboards {
         if (layouts.isNullOrEmpty()) return
         // 只在已经内置过这套键盘的库里刷新，不把模板强塞进用户自建的列表。
         if (store.keyboards.keys.none { it in layouts.keys }) return
+        val oldSeven = if (store.builtinVersion in 6..8)
+            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_seven_legacy).orEmpty() else emptyMap()
         layouts.forEach { (id, keyboard) ->
             val existing = store.keyboards[id]
             if (store.builtinVersion >= 6 && existing != null) {
                 // V7 adds pages and chooser entries. Keep each existing layout's
                 // fonts, toolbar, appearance and user-edited keys.
                 val kept = if (store.builtinVersion < 7 && id.endsWith("_layouts")) existing.copy(rows = normalizedCopy(keyboard).rows) else existing
-                store.keyboards[id] = upgradeSymbols(kept, keyboard)
+                val updated = upgradeSymbols(kept, keyboard)
+                oldSeven[id]?.let { legacy ->
+                    // Compare whole keys: custom bindings, labels and appearances
+                    // prevent replacement. Existing order and layout settings stay.
+                    val replacements = normalizedCopy(legacy).rows.flatMap { it.keys }
+                        .zip(normalizedCopy(keyboard).rows.flatMap { it.keys })
+                        .filter { (before, after) -> before != after }.toMap()
+                    updated.rows.forEach { row -> row.keys.indices.forEach { index ->
+                        replacements[row.keys[index]]?.let { replacement ->
+                            row.keys[index] = replacement.copy(bindings = replacement.bindings.toMutableMap())
+                        }
+                    } }
+                }
+                store.keyboards[id] = updated
             } else store.keyboards[id] = normalizedCopy(keyboard)
         }
         store.builtinVersion = BUILTIN_VERSION
@@ -396,11 +416,37 @@ object CustomKeyboards {
                 }
             }
         } }
+        // The hub/symbol pages use the same conservative surface upgrade as
+        // core layouts. Preserve any effect that differs from the old defaults.
+        updated.surfaceAppearance?.let { current ->
+            val stock = com.osfans.trime.ime.appearance.KeyEffects(pressDarken = 6)
+            template.surfaceAppearance?.let { next ->
+                updated.surfaceAppearance = current.copy(
+                    effects = if (current.effects == stock) next.effects else current.effects,
+                    toolbarEffects = if (current.toolbarEffects == stock) next.toolbarEffects else current.toolbarEffects,
+                )
+            }
+        }
         return updated
     }
 
     /** 内置键盘的图标解压到素材目录（.mie/键盘背景/icons），已存在的不覆盖。 */
     private fun ensureBuiltinIcons(context: Context) {
+        val backdrop = File(com.osfans.trime.core.data.MieUserDirectory.assetFolder(context, "custom_kb_bg"), "backgrounds/frost.png")
+        if (!backdrop.isFile) {
+            backdrop.parentFile?.mkdirs()
+            context.resources.openRawResource(com.osfans.trime.R.raw.mie_frost_background).use { input ->
+                val atomic = android.util.AtomicFile(backdrop)
+                val output = atomic.startWrite()
+                try {
+                    input.copyTo(output)
+                    atomic.finishWrite(output)
+                } catch (error: Exception) {
+                    atomic.failWrite(output)
+                    throw error
+                }
+            }
+        }
         val dir = File(com.osfans.trime.core.data.MieUserDirectory.assetFolder(context, "custom_kb_bg"), "icons")
         val marker = File(dir, ".builtin_v1")
         // 标记存在但关键图标缺失（例如早期解压失败）时重新解压一次。
@@ -435,12 +481,13 @@ object CustomKeyboards {
     fun flush(): Boolean = synchronized(lock) {
         if (!dirty || appContext == null) return@synchronized true
         runCatching {
-            storeFile().writeAtomicText(json.encodeToString(store))
+            val payload = json.encodeToString(store)
+            layoutStorage = KeyboardLayoutStorage.save(appContext!!, payload)
             dirty = false
         }.onFailure { Timber.w(it, "CustomKeyboards: save failed") }.isSuccess
     }
 
-    private fun storeFile(): File = File(appContext!!.filesDir, "custom_keyboards.json")
+    private fun storeFile(): File = layoutStorage ?: KeyboardLayoutStorage.resolve(appContext!!).also { layoutStorage = it }
 
     data class Entry(
         val id: String,
@@ -459,6 +506,18 @@ object CustomKeyboards {
 
     fun get(id: String): CustomKeyboard? = synchronized(lock) { store.keyboards[id]?.let(::normalizedCopy) }
 
+    /** Read only typography metadata; parent fallback never copies full key arrays. */
+    fun globalFont(id: String): String = synchronized(lock) {
+        var current = resolveId(id)
+        val visited = mutableSetOf<String>()
+        while (current.isNotBlank() && visited.add(current)) {
+            val keyboard = store.keyboards[current] ?: break
+            keyboard.typography[LayoutTypography.GLOBAL]?.font?.takeIf { it.isNotBlank() }?.let { return@synchronized it }
+            current = keyboard.secondaryOf
+        }
+        ""
+    }
+
     private fun effectiveActiveId(): String = store.activeId.takeIf { it in store.keyboards } ?: store.keyboards.keys.firstOrNull().orEmpty()
 
     private fun normalizedCopy(kb: CustomKeyboard): CustomKeyboard = kb.copy(
@@ -466,7 +525,7 @@ object CustomKeyboards {
         importedActions = kb.importedActions.toMap(),
         surfaceAppearance=kb.surfaceAppearance?.sanitized(),
         floatingCandidates=kb.floatingCandidates?.sanitized(),
-        typography=kb.typography.filterKeys { it in com.osfans.trime.data.theme.FontOverrides.roles }.mapValues { (_,spec) -> spec.copy(size=if(spec.size.isFinite()) spec.size.coerceIn(0f,200f) else 0f) },
+        typography=kb.typography.filterKeys { it in com.osfans.trime.data.theme.FontOverrides.roles || it == LayoutTypography.GLOBAL }.mapValues { (role,spec) -> spec.copy(size=if(role != LayoutTypography.GLOBAL && spec.size.isFinite()) spec.size.coerceIn(0f,200f) else 0f) },
         bgColor = "", bgImage = "", background = kb.resolvedBackground(),
         toolbar = kb.toolbar.toMutableList(),
         toolbarAlignment = kb.toolbarAlignment.takeIf { it == "legacy" || it in ButtonAlignment.choices } ?: "legacy",
@@ -822,6 +881,36 @@ object CustomKeyboards {
                 ExportFile.serializer(),
                 ExportFile(functions=functions, exportedAt = now, keyboards = store.keyboards),
             )
+        }
+    }
+
+    /** A primary selection includes its complete descendant tree exactly once. */
+    fun familyIds(primaries: Collection<String>): List<String> = synchronized(lock) {
+        val selected = primaries.filter { it in store.keyboards }.toMutableSet()
+        do {
+            val before = selected.size
+            store.keyboards.forEach { (id, keyboard) -> if (keyboard.secondaryOf in selected) selected.add(id) }
+        } while (selected.size != before)
+        store.keyboards.keys.filter { it in selected }
+    }
+
+    /** Restore missing stock pages, or reset only known built-in ids. User-created ids survive. */
+    fun restoreBuiltins(reset: Boolean): Int {
+        val context = appContext ?: error("键盘尚未初始化")
+        val templates = decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_keyboards).orEmpty() +
+            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_extra).orEmpty() +
+            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_effects).orEmpty()
+        check(templates.isNotEmpty()) { "内置键盘资源读取失败" }
+        synchronized(lock) {
+            var count = 0
+            templates.forEach { (id, keyboard) ->
+                if (reset || id !in store.keyboards) { store.keyboards[id] = normalizedCopy(keyboard); count++ }
+            }
+            if (store.activeId !in store.keyboards) store.activeId = BUILTIN_DEFAULT_ID
+            store.builtinVersion = BUILTIN_VERSION; store.builtinExtrasVersion = BUILTIN_VERSION
+            store.builtinsOffered = true; store.version++; dirty = true
+            scheduleSaveLocked(); ensureBuiltinIcons(context)
+            return count
         }
     }
 
