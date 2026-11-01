@@ -63,7 +63,7 @@ class ToolbarEditActivity : AppCompatActivity() {
             require(CustomKeyboards.get(kbId) != null) { "自定义键盘不存在" }
             toolbar.title = getString(R.string.toolbar_edit_kb, CustomKeyboards.get(kbId)?.name ?: "")
         }
-        if (kbId.isNotEmpty()) toolbar.menu.add(0, 2181, 1, "功能菜单显示项目")
+        toolbar.menu.add(0, 2181, 1, "功能菜单显示项目")
         toolbar.menu.add(0, 2180, 0, if(kbId.isEmpty()) "主题键盘外观" else "当前布局外观")
         findViewById<TextView>(R.id.toolbar_edit_hint).text =
             (if (kbId.isEmpty()) "主题键盘状态栏。" else "仅修改当前自定义布局的状态栏。") + "点击按钮名称编辑功能与外观，支持增删、排序和停用。"

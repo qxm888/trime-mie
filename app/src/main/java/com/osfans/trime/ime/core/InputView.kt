@@ -1024,7 +1024,8 @@ class InputView(
                         // 窗口必须钳到屏幕内，否则底部被系统裁掉；悬浮卡片随后由
                         // applyFloatingScale 的 clampedMaxScaleY 等比缩小适配。
                         windowManager.view.updateLayoutParams {
-                            height = it.coerceAtMost(screenShortSidePx())
+                            height = it.coerceAtMost(if (resources.configuration.isLandscape()) screenShortSidePx()
+                                else resources.displayMetrics.heightPixels)
                         }
                         // 键盘（重新）挂载意味着网格几何已按当前档位重新烘焙：宽度变化触发的
                         // refreshKeyboards、键盘切换重建都会走到这里。缩放基准随新烘焙值走，

@@ -165,6 +165,12 @@ SPDX-License-Identifier: GPL-3.0-or-later
                 android:layout_height="wrap_content"
                 android:text="悬浮候选窗编辑" />
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/cbe_copy_bindings"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="从其它键盘复制绑定" />
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/cbe_functions"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="match_parent"

@@ -102,8 +102,9 @@ class ThemeFonts(private val theme: Theme) {
             TypefaceKey((makeFileStateList(style.latinFont.toList() + fonts + style.hanbFont.toList()) +
                 DirectoryFontFallback.files.map { FileState(it.path, it.lastModified(), it.length()) }).distinct()
                 .take(Typeface.CustomFallbackBuilder.getMaxCustomFallbackCount()))
-            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) TypefaceKey(DirectoryFontFallback.files.map { FileState(it.path, it.lastModified(), it.length()) }
-                .take(Typeface.CustomFallbackBuilder.getMaxCustomFallbackCount())) else primary
+            // An unconfigured theme font has always meant the current system font.
+            // Directory fonts may supplement a declared font, never replace that default.
+            else primary
         synchronized(typefaceCache) {
         val typeface = typefaceCache[key]
         if (typeface == null) {

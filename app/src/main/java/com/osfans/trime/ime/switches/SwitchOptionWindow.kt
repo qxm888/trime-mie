@@ -243,7 +243,8 @@ class SwitchOptionWindow(di: DI) :
         }.takeIf { com.osfans.trime.data.keymap.CustomKeyboards.get(it) != null } else null
 
     private fun visibleEntries(entries: List<SwitchOptionEntry>): List<SwitchOptionEntry> {
-        val hidden = layoutId()?.let { com.osfans.trime.data.keymap.CustomKeyboards.get(it)?.hiddenMenuItems }.orEmpty()
+        val hidden = if (theme.isCustom) layoutId()?.let { com.osfans.trime.data.keymap.CustomKeyboards.get(it)?.hiddenMenuItems }.orEmpty()
+            else com.osfans.trime.data.keymap.ToolbarOverrides.hiddenMenuItems(theme.fontConfigId)
         return entries.filter { entry ->
             val id = when (entry) {
                 is SwitchOptionEntry.Static -> "static:${entry.type.name}"
@@ -282,7 +283,7 @@ class SwitchOptionWindow(di: DI) :
         if (!viewCreated) return
         (view.adapter as? SwitchOptionAdapter)?.refreshColors()
         settingsButton.refreshColors()
-        if (theme.isCustom) editButton.refreshColors()
+        editButton.refreshColors()
     }
 
     private val settingsButton by lazy {
@@ -295,9 +296,9 @@ class SwitchOptionWindow(di: DI) :
     private val editButton by lazy {
         ToolButton(context, R.drawable.ic_baseline_edit_24, scope).apply {
             id = View.generateViewId(); contentDescription = "编辑功能菜单"
-            setOnClickListener { layoutId()?.let { id ->
-                service.showDialog(com.osfans.trime.ui.main.FunctionMenuEditor.build(context, id) { updateSchemaOptionEntries() })
-            } }
+            setOnClickListener {
+                service.showDialog(com.osfans.trime.ui.main.FunctionMenuEditor.build(context, layoutId().orEmpty()) { updateSchemaOptionEntries() })
+            }
         }
     }
 
@@ -305,7 +306,7 @@ class SwitchOptionWindow(di: DI) :
         context.constraintLayout {
             val size = dp(theme.style.run { candidateViewHeight + commentHeight })
             add(settingsButton, lParams(size, size) { endOfParent() })
-            if (theme.isCustom) add(editButton, lParams(size, size) { rightMargin = size; endOfParent() })
+            add(editButton, lParams(size, size) { rightMargin = size; endOfParent() })
         }
     }
 

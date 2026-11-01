@@ -75,6 +75,7 @@ object ToolbarOverrides {
     private data class Store(
         var version: Long = 1,
         var configured: Boolean = false,
+        val hiddenMenus: MutableMap<String, Set<String>> = mutableMapOf(),
         val buttons: MutableList<Entry> = mutableListOf(),
     )
 
@@ -124,6 +125,15 @@ object ToolbarOverrides {
 
     /** Current entries in display order (action + enabled). */
     fun entries(): List<Entry> = synchronized(lock) { store.buttons.toList() }
+
+    /** Theme-mode menu visibility is scoped by theme and independent from custom layouts. */
+    fun hiddenMenuItems(themeId: String): Set<String> = synchronized(lock) { store.hiddenMenus[themeId].orEmpty().toSet() }
+
+    fun setHiddenMenuItems(themeId: String, hidden: Set<String>) = synchronized(lock) {
+        require(themeId.isNotBlank()) { "请先选择一个主题" }
+        if (hidden.isEmpty()) store.hiddenMenus.remove(themeId) else store.hiddenMenus[themeId] = hidden.toSet()
+        store.version++; dirty = true; scheduleSaveLocked()
+    }
 
     fun setEntries(entries: List<Entry>) {
         synchronized(lock) {

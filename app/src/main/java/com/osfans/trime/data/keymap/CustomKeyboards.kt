@@ -44,7 +44,7 @@ object CustomKeyboards {
     const val BUILTIN_DEFAULT_ID = "custom_pink"
 
     /** 内置五色键盘的版本；改过内置 YAML 后 +1，升级时自动刷新内置 id。 */
-    private const val BUILTIN_VERSION = 10
+    private const val BUILTIN_VERSION = 11
 
     @Serializable
     data class CustomKey(
@@ -397,8 +397,29 @@ object CustomKeyboards {
     }
 
     /** Insert a matching icon between floating/language without resetting edited keys/styles. */
+    private val legacyChoosers by lazy {
+        appContext?.let { decodeBuiltin(it, com.osfans.trime.R.raw.mie_builtin_chooser_legacy) }.orEmpty()
+    }
+
     private fun upgradeSymbols(existing: CustomKeyboard, template: CustomKeyboard): CustomKeyboard {
         val updated = normalizedCopy(existing)
+        if (template.rows.firstOrNull()?.keys?.firstOrNull()?.label == "选择键盘主题") {
+            val legacy = legacyChoosers[template.secondaryOf + "_themes"]?.let(::normalizedCopy)
+            if (legacy?.rows == existing.rows) {
+                updated.rows.clear(); updated.rows.addAll(normalizedCopy(template).rows)
+            } else {
+                // Edited chooser pages retain their keys/order; append only the four new themes.
+                val actions = updated.rows.flatMap { it.keys }.map { it.bindings["click"] }.toSet()
+                val added = template.rows.flatMap { it.keys }.filter {
+                    it.bindings["click"] in setOf("Keyboard_custom_porcelain", "Keyboard_custom_obsidian", "Keyboard_custom_champagne", "Keyboard_custom_frost") &&
+                        it.bindings["click"] !in actions
+                }
+                val position = updated.rows.indexOfLast { row -> row.keys.any { it.label == "返回" } }.takeIf { it >= 0 } ?: updated.rows.size
+                added.chunked(2).forEachIndexed { offset, keys ->
+                    updated.rows.add(position + offset, CustomRow(keys.map { it.copy(width = 50f, bindings = it.bindings.toMutableMap()) }.toMutableList(), height = 52))
+                }
+            }
+        }
         val emoji = template.toolbar.firstOrNull { it.icon.endsWith("tb_emoji.png") }
         if (emoji != null && updated.toolbar.none { it.icon.endsWith("tb_emoji.png") || BindingActions.resolve(it.action)?.command == "__mie_symbols" }) {
             val lang = updated.toolbar.indexOfFirst { it.icon.endsWith("tb_lang.png") }
@@ -407,6 +428,12 @@ object CustomKeyboards {
         }
         val category = Regex("Keyboard_custom_(?:mint|pink|blue|orange|purple)_(cat_(\\w+?)(?:_p\\d+)?|symbols(?:_cn|_math|_more)?)")
         updated.rows.forEach { row -> row.keys.forEach { key ->
+            // Old stock return buttons hard-code the 26-key family root. Keep explicit
+            // 26/9/14/18 choices intact and migrate only a labelled return action.
+            if (key.label == "返回" && updated.secondaryOf.isNotBlank() &&
+                key.bindings["click"] == "Keyboard_${updated.secondaryOf}") {
+                key.bindings["click"] = "Keyboard_default"
+            }
             key.bindings.toMap().forEach { (behavior, token) ->
                 category.matchEntire(token)?.let { match ->
                     val id = match.groupValues[2].ifEmpty {

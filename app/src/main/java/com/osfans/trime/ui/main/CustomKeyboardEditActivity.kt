@@ -100,6 +100,7 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         }
         findViewById<View>(R.id.cbe_fonts).setOnClickListener { LayoutTypographyEditor.show(this, kbId) }
         findViewById<View>(R.id.cbe_floating_candidates).setOnClickListener { FloatingCandidatesEditActivity.start(this, kbId) }
+        findViewById<View>(R.id.cbe_copy_bindings).setOnClickListener { KeyboardBindingCopyDialog.show(this, kbId) { render() } }
         findViewById<View>(R.id.cbe_functions).setOnClickListener { NamedFunctionsEditor.show(this) }
 
         findViewById<View>(R.id.cbe_keyboard_height).setOnClickListener { showKeyboardHeightEditor() }

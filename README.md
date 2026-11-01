@@ -6,7 +6,17 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前源码版本：**V3.1.14**，本地正式 APK 文件名 `trime-mie-v3.1.14.apk`；尚未发布此版到 GitHub。[上一版发布页](https://github.com/qxm888/trime-mie/releases/tag/v3.1.11)。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+> 当前源码版本：**V3.1.15**，正式 APK 文件名 `trime-mie-v3.1.15.apk`。[V3.1.15 发布页](https://github.com/qxm888/trime-mie/releases/tag/v3.1.15)。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+
+## V3.1.15 布局返回、绑定复制与主题兼容
+
+- 内置返回键回到最近选中的 26/9/14/18/七列主布局，保留中英返回记忆；显式选择 26 键仍有效。
+- 自定义键盘编辑新增“从其它键盘复制绑定”：按相同按键匹配，复制手势、弹出备选和绑定发送开关，保留布局及外观。
+- 主题模式支持功能菜单显示项目编辑，各主题分别保存。
+- 字体未配置时保留系统当前字体，主题已指定字体仍优先，目录字体仅补充已声明字体的缺字。沿用原版上标偏移算法。
+- 主题按钮补齐九套内置键盘；修复竖屏长选择页最后一行被裁切。
+
+详见 [更新说明](docs/v3.1.15/更新说明.md) 与 [实测记录](docs/v3.1.15/检查记录.md)。
 
 ## V3.1.14 半透键盘、全局字体与横屏尺寸
 
