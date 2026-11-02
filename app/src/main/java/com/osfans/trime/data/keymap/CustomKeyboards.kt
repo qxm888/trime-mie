@@ -46,7 +46,7 @@ object CustomKeyboards {
     const val BUILTIN_DEFAULT_ID = "custom_pink"
 
     /** 内置五色键盘的版本；改过内置 YAML 后 +1，升级时自动刷新内置 id。 */
-    private const val BUILTIN_VERSION = 14
+    private const val BUILTIN_VERSION = 15
     private var builtinBindings: BuiltinBindingDefaults? = null
 
     @Serializable
@@ -462,6 +462,7 @@ object CustomKeyboards {
 
     internal fun upgradeSymbols(existing: CustomKeyboard, template: CustomKeyboard, existingIds: Set<String>, preservedGeometry: JsonObject? = null): CustomKeyboard {
         val updated = normalizedCopy(existing)
+        updated.rows.forEach { row -> row.keys.replaceAll(BuiltinPunctuationDefaults::upgrade) }
         if (updated.options.asciiKeyboard.isBlank() && template.options.asciiKeyboard in existingIds) {
             updated.options = updated.options.copy(asciiKeyboard = template.options.asciiKeyboard)
         }

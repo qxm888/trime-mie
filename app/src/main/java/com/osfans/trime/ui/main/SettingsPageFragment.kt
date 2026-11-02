@@ -157,6 +157,7 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
                 },
             )
         }
+        if (pageId == "theme") preferenceScreen.addPreference("配色组", "新建日间 / 夜间主题组合，跟随系统切换") { startActivity(Intent(requireContext(), KeyboardColorGroupsActivity::class.java)) }
         if (pageId == "theme") preferenceScreen.addPreference("主题键盘字体与字号", "按键、符号、注解、候选和工具栏分别设置") { startActivity(Intent(requireContext(), FontSettingsActivity::class.java)) }
         if (pageId == "layout") preferenceScreen.addPreference("自定义功能", "命名并组合多个动作，供按键和工具栏绑定") { NamedFunctionsEditor.show(requireActivity()) }
         if (pageId == "transfer") preferenceScreen.addPreference("整包备份与恢复", "打包全部设置与键盘资源到 rime/mie，支持一键导入") { startActivity(Intent(requireContext(), FullBackupActivity::class.java)) }

@@ -13,6 +13,7 @@ internal class KeyboardPresentationState<K : Any, V : Any> {
     private var floating: Surface<K, V>? = null
 
     val visible: Surface<K, V>? get() = floating ?: docked
+    fun owns(owner: Any): Boolean = session === owner
 
     fun visibleFor(owner: Any): Surface<K, V>? = visible.takeIf { session === owner }
 

@@ -41,10 +41,11 @@ class KeyAppearanceTest : FunSpec({
         KeyAppearance.merge(TextKey(hintAlign = "right"), TextKey(hintAlign = "")).hintAlign shouldBe ""
         shouldThrow<IllegalArgumentException> { KeyAppearance.parse(mapOf("hintAlign" to "invalid")) }
     }
-    test("legacy shared alignment survives decoding and explicit independent choices do not follow changes") {
-        TextKey(symbolAlign = "right").toTextKey().hintAlign shouldBe "right"
+    test("default symbols align right and hints center without following symbol changes") {
+        TextKey(symbolAlign = "right").toTextKey().hintAlign shouldBe ""
         TextKey(symbolAlign = "right", hintAlign = "center").copy(symbolAlign = "left").toTextKey().hintAlign shouldBe "center"
-        KeyboardOptions(symbolAlignment = "right").effectiveHintAlignment shouldBe "right"
+        KeyboardOptions().symbolAlignment shouldBe "right"
+        KeyboardOptions(symbolAlignment = "right").effectiveHintAlignment shouldBe "center"
         KeyboardOptions(symbolAlignment = "right", hintAlignment = "left").copy(symbolAlignment = "center").effectiveHintAlignment shouldBe "left"
     }
     test("individual bindings may explicitly override a disabled keyboard default") {

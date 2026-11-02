@@ -52,4 +52,17 @@ class KeyboardNavigationTest : FunSpec({
     test("empty custom preset list safely returns default") {
         KeyboardNavigation(mapOf("default" to TextKeyboard()), true).select(".next", KeyboardNavigation.State()) shouldBe "default"
     }
+    test("same-editor restart preserves recolored auxiliary page once") {
+        KeyboardNavigation.inputRequest("", "english", true, true) shouldBe "english"
+        KeyboardNavigation.inputRequest("", "number", true, true) shouldBe "number"
+    }
+    test("new editor and ordinary restart keep existing reset behavior") {
+        KeyboardNavigation.inputRequest("", "english", false, true) shouldBe ""
+        KeyboardNavigation.inputRequest("", "english", true, false) shouldBe ""
+    }
+    test("forced input types take precedence over recolor preservation") {
+        KeyboardNavigation.inputRequest(".ascii", "number", true, true) shouldBe ".ascii"
+        KeyboardNavigation.inputRequest("number", "english", true, true) shouldBe "number"
+        KeyboardNavigation.inputRequest("", "", true, true) shouldBe ""
+    }
 })

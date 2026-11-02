@@ -834,10 +834,14 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         return inputView?.handleInlineSuggestions(response) == true
     }
 
+    var isRestartingInputView: Boolean = false
+        private set
+
     override fun onStartInputView(
         attribute: EditorInfo,
         restarting: Boolean,
     ) {
+        isRestartingInputView = restarting
         Timber.d("onStartInputView: restarting=$restarting")
         com.osfans.trime.data.sync.ClipboardSync.setWindowVisible(true)
         val began = android.os.SystemClock.elapsedRealtime()

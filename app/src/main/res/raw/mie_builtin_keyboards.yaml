@@ -411,8 +411,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B8D0C3'
@@ -1401,8 +1399,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B8D0C3'
@@ -1949,8 +1945,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B8D0C3'
@@ -6262,8 +6256,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E3C2C8'
@@ -7252,8 +7244,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E3C2C8'
@@ -7800,8 +7790,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E3C2C8'
@@ -12113,8 +12101,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B9D4E6'
@@ -13103,8 +13089,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B9D4E6'
@@ -13651,8 +13635,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#B9D4E6'
@@ -17964,8 +17946,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E5C7AE'
@@ -18954,8 +18934,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E5C7AE'
@@ -19502,8 +19480,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#E5C7AE'
@@ -23815,8 +23791,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#D3BFE6'
@@ -24805,8 +24779,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#D3BFE6'
@@ -25353,8 +25325,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#D3BFE6'

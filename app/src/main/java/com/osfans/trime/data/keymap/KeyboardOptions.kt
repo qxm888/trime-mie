@@ -16,12 +16,12 @@ data class KeyboardOptions(
     val landscapeKeyboard: String = "",
     val uppercaseLabels: Boolean = false,
     /** 按键上方符号的水平对齐：left / center / right。 */
-    val symbolAlignment: String = "center",
+    val symbolAlignment: String = "right",
     val landscapeSplitPercent: Int = 0,
-    /** Legacy missing values retain their previous alignment until edited independently. */
+    /** Missing values follow the independent lower-hint default. */
     val hintAlignment: String? = null,
 ) {
-    val effectiveHintAlignment get() = hintAlignment ?: symbolAlignment
+    val effectiveHintAlignment get() = hintAlignment ?: "center"
     fun validated(): KeyboardOptions = apply {
         require(horizontalGap in 0..32) { "横向键距须为 0–32 dp" }
         require(heightPercent in 50..200 && landscapeHeightPercent in 50..200) { "高度比例须为 50–200%" }

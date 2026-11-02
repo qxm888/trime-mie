@@ -8,6 +8,10 @@ internal class KeyboardNavigation(
     private val presets: Map<String, TextKeyboard>,
     private val custom: Boolean,
 ) {
+    companion object {
+        fun inputRequest(request: String, current: String, restarting: Boolean, preservePage: Boolean): String =
+            if (request.isEmpty() && current.isNotEmpty() && restarting && preservePage) current else request
+    }
     private val ids = presets.keys.filter { !custom || it != "default" }
 
     data class State(

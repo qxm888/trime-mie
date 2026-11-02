@@ -120,11 +120,12 @@ class KeyboardWindow(di: DI) :
         get() = KeyboardWindow
 
     private val navigation by lazy { KeyboardNavigation(theme.presetKeyboards, theme.isCustom) }
-    private var currentKeyboardId = ""
+    @Volatile private var currentKeyboardId = ""
     private var lastKeyboardId = ""
     private var lastLockKeyboardId = ""
     private var tempAsciiMode: Boolean? = null
     /** 自动切到 ascii_keyboard 时的 (来源键盘, 英文键盘)；切回中文时恢复来源。 */
+    private var colorGroupInputRestartPending = false
     private var asciiKeyboardPair: Pair<String, String>? = null
     /** 最近一次选中的自定义主键盘（26/9/14/18 键等）。 */
     private var lastMainKeyboardId = ""
@@ -175,9 +176,10 @@ class KeyboardWindow(di: DI) :
     data class RuntimeState(
         val theme: Theme, val id: String, val last: String, val locked: String,
         val main: String, val asciiPair: Pair<String, String>?, val keyboard: Keyboard?,
+        val recolorRestartPending: Boolean = false,
     )
     fun captureRuntimeState() = RuntimeState(theme, currentKeyboardId, lastKeyboardId, lastLockKeyboardId,
-        lastMainKeyboardId, asciiKeyboardPair, activeKeyboard)
+        lastMainKeyboardId, asciiKeyboardPair, activeKeyboard, colorGroupInputRestartPending)
 
     fun restoreRuntimeState(state: RuntimeState) {
         // Presentation changes reuse the same immutable theme. A new theme must
@@ -186,8 +188,29 @@ class KeyboardWindow(di: DI) :
         if (state.id != currentKeyboardId) { detachCurrentView(); attachKeyboard(state.id) }
         lastKeyboardId = state.last; lastLockKeyboardId = state.locked
         lastMainKeyboardId = state.main; asciiKeyboardPair = state.asciiPair
+        colorGroupInputRestartPending = state.recolorRestartPending
         state.keyboard?.let(::restoreDockedState)
     }
+    /** A background edit refresh keeps the currently visible page, including unlocked panels. */
+    fun restoreAfterCustomizationRefresh(state: RuntimeState) {
+        if (!theme.isCustom || !state.theme.isCustom || state.id !in theme.presetKeyboards) return
+        if (state.id != currentKeyboardId) { detachCurrentView(); attachKeyboard(state.id) }
+        fun valid(id: String) = id.takeIf { it in theme.presetKeyboards }.orEmpty()
+        lastKeyboardId = valid(state.last); lastLockKeyboardId = valid(state.locked)
+        lastMainKeyboardId = valid(state.main)
+        asciiKeyboardPair = state.asciiPair?.takeIf { it.first in theme.presetKeyboards && it.second in theme.presetKeyboards }
+        colorGroupInputRestartPending = state.recolorRestartPending
+    }
+
+    /** Transfer page roles after a color-group family change, never old theme objects or ids. */
+    fun restoreFamilyNavigation(main: String?, previous: String?, asciiOrigin: String?) {
+        if (!theme.isCustom || theme !== com.osfans.trime.data.theme.ThemeManager.activeThemeOrNull()) return
+        main?.takeIf { it in theme.presetKeyboards }?.let { lastMainKeyboardId = it; lastLockKeyboardId = it }
+        previous?.takeIf { it in theme.presetKeyboards }?.let { lastKeyboardId = it }
+        asciiOrigin?.takeIf { it in theme.presetKeyboards }?.let { asciiKeyboardPair = it to currentKeyboardId }
+        colorGroupInputRestartPending = CustomKeyboards.pageRole(CustomKeyboards.resolveId(currentKeyboardId)) in setOf("en", "num")
+    }
+
     fun restoreDockedState(source: Keyboard) {
         if (source.keyboardId != activeKeyboard?.keyboardId) return
         activeKeyboard?.copyInputStateFrom(source)
@@ -309,6 +332,7 @@ class KeyboardWindow(di: DI) :
     private fun selectKeyboardConfig(name: String): TextKeyboard? = selectKeyboardPreset(theme.presetKeyboards, name)
 
     private fun attachKeyboard(target: String) {
+        if (instance !== this || !presentation.owns(this)) return
         if (currentKeyboardId.isNotEmpty() && currentKeyboardId != target) lastKeyboardId = currentKeyboardId
         currentKeyboardId = target
         lastAttachedId = target
@@ -348,6 +372,7 @@ class KeyboardWindow(di: DI) :
 
             if (currentMode != targetMode) {
                 service.postRimeJob {
+                    if (instance !== this@KeyboardWindow || currentKeyboardId != target) return@postRimeJob
                     commitComposition()
                     setRuntimeOption("ascii_mode", targetMode)
                 }
@@ -392,6 +417,8 @@ class KeyboardWindow(di: DI) :
     }
 
     fun switchKeyboard(to: String) {
+        if (instance !== this || !presentation.owns(this)) return
+        colorGroupInputRestartPending = false
         val target = evalKeyboard(to)
         val declaredEnglish = activeKeyboard?.asciiKeyboard.orEmpty()
         if (target != currentKeyboardId && declaredEnglish.isNotEmpty() && target == evalKeyboard(declaredEnglish)) {
@@ -408,6 +435,7 @@ class KeyboardWindow(di: DI) :
         }
         asciiKeyboardPair?.let { (_, english) -> if (target != english) asciiKeyboardPair = null }
         ContextCompat.getMainExecutor(service).execute {
+            if (instance !== this || !presentation.owns(this)) return@execute
             if (cachedKeyboards.containsKey(target)) {
                 val cached = cachedKeyboards[target]?.first
                 if (target == currentKeyboardId && cached?.builtWithOverridesVersion == KeyBindingOverrides.version &&
@@ -439,6 +467,7 @@ class KeyboardWindow(di: DI) :
     }
 
     override fun onStartInput(info: EditorInfo) {
+        if (instance !== this || !presentation.owns(this)) return
         val targetKeyboard =
             when (info.imeOptions and EditorInfo.IME_FLAG_FORCE_ASCII) {
                 EditorInfo.IME_FLAG_FORCE_ASCII -> ".ascii"
@@ -467,7 +496,10 @@ class KeyboardWindow(di: DI) :
                     }
                 }
             }
-        switchKeyboard(targetKeyboard)
+        val inputTarget = KeyboardNavigation.inputRequest(targetKeyboard, currentKeyboardId,
+            service.isRestartingInputView, colorGroupInputRestartPending)
+        colorGroupInputRestartPending = false
+        switchKeyboard(inputTarget)
         val isAsciiMode = rime.run { statusCached }.isAsciiMode
         if (targetKeyboard == ".ascii" || targetKeyboard == "number") {
             if (tempAsciiMode == null) {

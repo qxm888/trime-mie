@@ -186,5 +186,6 @@ SPDX-License-Identifier: GPL-3.0-or-later
         </activity-alias>
 
         <!-- All activities must be declared above <activity-alias> tag -->
+        <activity android:name=".ui.main.KeyboardColorGroupsActivity" android:exported="false" />
     </application>
 </manifest>

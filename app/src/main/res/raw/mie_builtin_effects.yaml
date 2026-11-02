@@ -413,8 +413,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#D7CFDF'
@@ -1461,8 +1459,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#D7CFDF'
@@ -2039,8 +2035,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#D7CFDF'
@@ -9012,8 +9006,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#45606F'
@@ -10058,8 +10050,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#45606F'
@@ -10635,8 +10625,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#45606F'
@@ -17596,8 +17584,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#806D55'
@@ -18642,8 +18628,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#806D55'
@@ -19219,8 +19203,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: '6'
       key_border: '1'
       key_border_color: '#806D55'
@@ -26180,8 +26162,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: 8
       key_border: '1'
       key_border_color: '#ADFFFFFF'
@@ -27232,8 +27212,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: 8
       key_border: '1'
       key_border_color: '#ADFFFFFF'
@@ -27812,8 +27790,6 @@ preset_keyboards:
       height: 52
       mie:
         row: 4
-      key_text_offset_x: 5.0
-      key_text_offset_y: -5.0
       round_corner: 8
       key_border: '1'
       key_border_color: '#ADFFFFFF'

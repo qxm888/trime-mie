@@ -23,6 +23,8 @@ import com.google.android.material.color.MaterialColors
 import com.osfans.trime.data.keymap.CustomKeyboards
 import com.osfans.trime.data.keymap.KeyboardLayoutCatalog
 import com.osfans.trime.data.theme.ThemeManager
+import com.osfans.trime.data.theme.KeyboardColorGroups
+import com.osfans.trime.data.theme.KeyboardStyleTarget
 import com.osfans.trime.util.toast
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +35,7 @@ import kotlinx.coroutines.withContext
 /** Category changes only filter the list. Apply one complete layout when a tile is selected. */
 object ThemePickerDialog {
     suspend fun build(scope: LifecycleCoroutineScope, context: Context,
+                      pickTarget: ((KeyboardStyleTarget) -> Unit)? = null,
                       afterConfirm: (suspend () -> Unit)? = null): AlertDialog {
         fun dp(v: Int) = (v * context.resources.displayMetrics.density).toInt()
         val night = context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK == android.content.res.Configuration.UI_MODE_NIGHT_YES
@@ -46,7 +49,7 @@ object ThemePickerDialog {
         }
 
         val categories = listOf(KeyboardLayoutCatalog.THEME to "主题布局",
-            KeyboardLayoutCatalog.CUSTOM to "自定义布局", KeyboardLayoutCatalog.BUILTIN to "内置布局")
+            KeyboardLayoutCatalog.BUILTIN to "内置布局", KeyboardLayoutCatalog.CUSTOM to "自定义布局")
         val ids = categories.associate { it.first to View.generateViewId() }
         var source = CustomKeyboards.pickerSource
         val modes = RadioGroup(context).apply {
@@ -65,10 +68,27 @@ object ThemePickerDialog {
             }
             check(ids.getValue(source))
         }
+        var colorsPage = false
+        val sectionIds = listOf(View.generateViewId(), View.generateViewId())
+        val sections = RadioGroup(context).apply {
+            orientation = RadioGroup.HORIZONTAL
+            listOf("布局", "配色").forEachIndexed { index, label ->
+                addView(RadioButton(context).apply {
+                    id = sectionIds[index]; text = label; textSize = 16f; buttonDrawable = null
+                    gravity = Gravity.CENTER; minHeight = dp(44)
+                    setTextColor(ColorStateList(arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf()), intArrayOf(primary, ink)))
+                    background = android.graphics.drawable.StateListDrawable().apply {
+                        addState(intArrayOf(android.R.attr.state_checked), tabShape(true)); addState(intArrayOf(), tabShape(false))
+                    }
+                }, RadioGroup.LayoutParams(0, -2, 1f).apply { setMargins(dp(2), 0, dp(2), dp(6)) })
+            }
+            check(sectionIds[0]); visibility = if (pickTarget == null) View.VISIBLE else View.GONE
+        }
         val title = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(12), dp(16), dp(8))
+            addView(TextView(context).apply { text = if (pickTarget == null) "键盘样式" else "选择主题"; textSize = 20f; setTextColor(ink); setPadding(dp(4), 0, 0, dp(8)) })
+            addView(sections, LinearLayout.LayoutParams(-1, -2))
             addView(modes, LinearLayout.LayoutParams(-1, -2))
-            addView(TextView(context).apply { text = "键盘样式"; textSize = 20f; setPadding(dp(4), dp(8), 0, 0) })
         }
         val grid = GridView(context).apply {
             stretchMode = GridView.STRETCH_COLUMN_WIDTH; verticalSpacing = dp(4)
@@ -85,7 +105,7 @@ object ThemePickerDialog {
         }
         val dialog = AlertDialog.Builder(context).setCustomTitle(title).setView(content)
             .setNegativeButton(android.R.string.cancel, null).create()
-        data class Choice(val id: String, val label: String)
+        data class Choice(val id: String, val label: String, val target: KeyboardStyleTarget? = null)
         var choices = emptyList<Choice>()
         var loadJob: Job? = null
         var switchJob: Job? = null
@@ -94,10 +114,12 @@ object ThemePickerDialog {
         fun enabled(value: Boolean) {
             grid.isEnabled = value
             for (i in 0 until modes.childCount) modes.getChildAt(i).isEnabled = value
+            for (i in 0 until sections.childCount) sections.getChildAt(i).isEnabled = value
             dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.isEnabled = value
             dialog.setCancelable(value)
         }
         fun selected(): String {
+            if (colorsPage) return KeyboardColorGroups.activeId()
             if (source == KeyboardLayoutCatalog.THEME) return if (CustomKeyboards.mode == CustomKeyboards.MODE_THEME)
                 ThemeManager.prefs.selectedTheme.getValue() else ""
             if (CustomKeyboards.mode != CustomKeyboards.MODE_CUSTOM) return ""
@@ -107,14 +129,17 @@ object ThemePickerDialog {
             loadJob?.cancel()
             val request = ++generation
             val category = source
+            val palette = colorsPage
+            modes.visibility = if (palette) View.GONE else View.VISIBLE
             progress.visibility = View.VISIBLE; empty.visibility = View.GONE; grid.isEnabled = false
-            grid.numColumns = if (category == KeyboardLayoutCatalog.THEME) 1 else 2
+            grid.numColumns = if (!palette && category == KeyboardLayoutCatalog.THEME) 1 else 2
             loadJob = scope.launch {
                 try {
                     val loaded = withContext(Dispatchers.IO) {
-                        if (category == KeyboardLayoutCatalog.THEME)
-                            ThemeManager.getAllThemes().map { Choice(it.configId, it.name ?: it.configId) }
-                        else KeyboardLayoutCatalog.roots(context, category).map { Choice(it.id, it.name) }
+                        if (palette) KeyboardColorGroups.list().map { Choice(it.id, "${it.name}\n日 · ${it.day.name}\n夜 · ${it.night.name}") }
+                        else if (category == KeyboardLayoutCatalog.THEME)
+                            ThemeManager.getAllThemes().map { Choice(it.configId, it.name.ifBlank { it.configId }, KeyboardStyleTarget(category, it.configId, it.name.ifBlank { it.configId })) }
+                        else KeyboardLayoutCatalog.roots(context, category).map { Choice(it.id, it.name, KeyboardStyleTarget(category, it.id, it.name)) }
                     }
                     if (request != generation || !attached) return@launch
                     choices = loaded
@@ -127,7 +152,7 @@ object ThemePickerDialog {
                             val item = loaded[position]; val checked = item.id == active
                             val text = TextView(context).apply {
                                 this.text = if (checked) "${item.label}  ✓" else item.label
-                                textSize = 15f; gravity = Gravity.CENTER; maxLines = 2
+                                textSize = if (palette) 14f else 15f; gravity = Gravity.CENTER; maxLines = if (palette) 3 else 2
                                 ellipsize = android.text.TextUtils.TruncateAt.END
                                 setTextColor(if (checked) primary else ink)
                                 setPadding(dp(10), dp(10), dp(10), dp(10))
@@ -140,11 +165,11 @@ object ThemePickerDialog {
                                 background = RippleDrawable(ColorStateList.valueOf(MaterialColors.layer(Color.TRANSPARENT, primary, .12f)), shape, null)
                             }
                             return FrameLayout(context).apply {
-                                addView(text, FrameLayout.LayoutParams(-1, dp(68)).apply { setMargins(dp(4), dp(2), dp(4), dp(2)) })
+                                addView(text, FrameLayout.LayoutParams(-1, dp(if (palette) 96 else 68)).apply { setMargins(dp(4), dp(2), dp(4), dp(2)) })
                             }
                         }
                     }
-                    empty.text = when (category) {
+                    empty.text = if (palette) "" else when (category) {
                         KeyboardLayoutCatalog.CUSTOM -> "暂无自定义布局，可在布局管理中创建或导入"
                         KeyboardLayoutCatalog.BUILTIN -> "暂无内置布局，可在布局管理中恢复内置键盘"
                         else -> "暂无可用主题"
@@ -159,34 +184,34 @@ object ThemePickerDialog {
                 }
             }
         }
+        sections.setOnCheckedChangeListener { _, id ->
+            if (switchJob?.isActive == true) return@setOnCheckedChangeListener
+            colorsPage = id == sectionIds[1]
+            load()
+        }
         modes.setOnCheckedChangeListener { _, id ->
             if (switchJob?.isActive == true) return@setOnCheckedChangeListener
             source = ids.entries.first { it.value == id }.key
-            CustomKeyboards.pickerSource = source
+            if (pickTarget == null) CustomKeyboards.pickerSource = source
             load()
         }
         grid.setOnItemClickListener { _, _, position, _ ->
             if (loadJob?.isActive == true || switchJob?.isActive == true || !grid.isEnabled) return@setOnItemClickListener
             val item = choices.getOrNull(position) ?: return@setOnItemClickListener
-            val custom = source != KeyboardLayoutCatalog.THEME
-            val category = source
+            val target = item.target
+            if (pickTarget != null && target != null) { pickTarget(target); dialog.dismiss(); return@setOnItemClickListener }
+            val palette = colorsPage
             loadJob?.cancel(); enabled(false); progress.visibility = View.VISIBLE
             switchJob = scope.launch {
                 try {
                     afterConfirm?.invoke()
-                    val resolved = ThemeManager.selectTheme(
-                        if (custom) ThemeManager.prefs.selectedTheme.getValue() else item.id,
-                        layoutMode = if (custom) CustomKeyboards.MODE_CUSTOM else CustomKeyboards.MODE_THEME,
-                        customLayoutId = item.id.takeIf { custom }?.let { root ->
-                            CustomKeyboards.get(root)?.setConfig?.defaultPage?.takeIf { CustomKeyboards.get(it) != null } ?: root
-                        })
-                    CustomKeyboards.pickerSource = category
+                    if (palette) KeyboardColorGroups.activate(item.id)
+                    else KeyboardColorGroups.selectLayout(requireNotNull(target))
                     if (attached) dialog.dismiss()
-                    if (!custom && resolved != item.id) context.toast("主题暂不可用，已使用默认主题；如缺少编译文件，请手动部署")
                 } catch (cancelled: CancellationException) { throw cancelled }
                 catch (error: Exception) {
                     timber.log.Timber.w(error, "Keyboard style switch failed")
-                    if (attached) context.toast("切换失败，已保留原键盘")
+                    if (attached) context.toast(error.message ?: "切换失败，已保留原键盘")
                 } finally {
                     if (attached && dialog.isShowing) { enabled(true); progress.visibility = View.GONE }
                 }

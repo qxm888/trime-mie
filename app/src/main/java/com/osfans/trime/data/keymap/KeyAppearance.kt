@@ -32,7 +32,7 @@ object KeyAppearance {
         /** 独立前景图标：空 = 显示文字标签；相对路径基于 .mie/键盘背景。 */
         val icon: String = "", val iconSize: Int = 0, val iconTint: String = "",
         val iconOffsetX: Float = 0f, val iconOffsetY: Float = 0f,
-        /** null preserves legacy shared alignment; empty follows the independent hint default. */
+        /** Null or empty follows the independent hint default. */
         val hintAlign: String? = null,
     ) {
         fun toTextKey() = TextKey(labelSymbol = labelSymbol, hint = hint,
@@ -45,7 +45,7 @@ object KeyAppearance {
             keySymbolOffsetX = keySymbolOffsetX, keySymbolOffsetY = keySymbolOffsetY,
             keyHintOffsetX = keyHintOffsetX, keyHintOffsetY = keyHintOffsetY,
             keyPressOffsetX = keyPressOffsetX, keyPressOffsetY = keyPressOffsetY, popup = popup, sendBindings = sendBindings ?: true,
-            showSymbol = showSymbol, showHint = showHint, symbolAlign = symbolAlign, hintAlign = hintAlign ?: symbolAlign,
+            showSymbol = showSymbol, showHint = showHint, symbolAlign = symbolAlign, hintAlign = hintAlign ?: "",
             icon = icon, iconSize = iconSize, iconTint = iconTint, iconOffsetX = iconOffsetX, iconOffsetY = iconOffsetY)
     }
     val fields = linkedMapOf(

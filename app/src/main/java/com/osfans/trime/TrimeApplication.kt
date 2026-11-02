@@ -233,6 +233,7 @@ class TrimeApplication : Application() {
         super.onConfigurationChanged(newConfig)
         try {
             ColorManager.onSystemNightModeChange(newConfig.isNightMode())
+            com.osfans.trime.data.theme.KeyboardColorGroups.onNightModeChanged(newConfig.isNightMode())
         } catch (e: Exception) {
             Timber.w(e, "Something wrong on configuration changed")
         }

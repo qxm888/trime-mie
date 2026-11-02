@@ -1296,7 +1296,7 @@
       }
     ],
     "options": {
-      "symbolAlignment": "center",
+      "symbolAlignment": "right",
       "hintAlignment": "center"
     }
   },
@@ -1798,7 +1798,7 @@
       }
     ],
     "options": {
-      "symbolAlignment": "center",
+      "symbolAlignment": "right",
       "hintAlignment": "center"
     }
   },
@@ -2384,7 +2384,7 @@
       }
     ],
     "options": {
-      "symbolAlignment": "center",
+      "symbolAlignment": "right",
       "hintAlignment": "center"
     }
   },
@@ -2848,7 +2848,7 @@
       }
     ],
     "options": {
-      "symbolAlignment": "center",
+      "symbolAlignment": "right",
       "hintAlignment": "center"
     }
   },
@@ -3600,7 +3600,7 @@
       }
     ],
     "options": {
-      "symbolAlignment": "center",
+      "symbolAlignment": "right",
       "hintAlignment": "center"
     }
   },
@@ -4590,7 +4590,7 @@
       }
     ],
     "options": {
-      "symbolAlignment": "center",
+      "symbolAlignment": "right",
       "hintAlignment": "center"
     }
   },
@@ -5380,7 +5380,7 @@
       }
     ],
     "options": {
-      "symbolAlignment": "center",
+      "symbolAlignment": "right",
       "hintAlignment": "center"
     }
   }

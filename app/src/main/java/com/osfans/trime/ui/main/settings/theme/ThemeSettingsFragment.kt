@@ -38,7 +38,7 @@ class ThemeSettingsFragment : PreferenceDelegateFragment(ThemeManager.prefs) {
     }
 
     override fun onPreferenceUiCreated(screen: PreferenceScreen) {
-        // 自定义键盘模式使用独立外观：主题/配色跟随布局，不提供全局选择。
+        // 样式选择支持所有布局来源；传统主题内配色仅在主题模式展示。
         val standalone = CustomKeyboards.mode == CustomKeyboards.MODE_CUSTOM
         screen.addPreference(
             R.string.theme_diagnostics,
@@ -46,8 +46,11 @@ class ThemeSettingsFragment : PreferenceDelegateFragment(ThemeManager.prefs) {
         ) {
             startActivity<ThemeDiagnosticsActivity>()
         }
+        screen.addPreference("配色组", "新建日间 / 夜间主题组合，跟随系统切换") {
+            startActivity<com.osfans.trime.ui.main.KeyboardColorGroupsActivity>()
+        }
+        screen.findPreference<Preference>("selected_theme")?.title = "键盘样式"
         if (standalone) {
-            screen.findPreference<Preference>("selected_theme")?.isVisible = false
             screen.findPreference<Preference>("normal_mode_color")?.isVisible = false
         }
         // 夜间配色的选择通过“配色”在夜间完成（写入夜间槽位），不单独暴露原始偏好行。

@@ -224,6 +224,7 @@ object ThemeManager {
         DirectoryFontFallback.refresh()
         ensureActiveTheme()
         ColorManager.init(configuration)
+        KeyboardColorGroups.init(configuration)
     }
 
     /**
@@ -232,7 +233,7 @@ object ThemeManager {
      */
     suspend fun refreshActiveTheme(): String {
         selectionGate.awaitSelection()
-        return selectThemeInternal(prefs.selectedTheme.getValue(), forceReload = true)
+        return selectThemeInternal(prefs.selectedTheme.getValue(), forceReload = true, preserveRuntime = true)
     }
 
     /**
@@ -240,15 +241,17 @@ object ThemeManager {
      * Loading runs on [Dispatchers.IO]; state changes and listener callbacks run on the main thread.
      * @return the config id actually in effect; differs from [configId] when a fallback was used.
      */
+    suspend fun awaitSelection() = selectionGate.awaitSelection()
+
     private val resourceRevision = java.util.concurrent.atomic.AtomicLong()
     private val themeRequestRevision = java.util.concurrent.atomic.AtomicLong()
-    suspend fun selectTheme(configId: String, forceReload: Boolean = false, layoutMode: String? = null, customLayoutId: String? = null): String {
+    suspend fun selectTheme(configId: String, forceReload: Boolean = false, layoutMode: String? = null, customLayoutId: String? = null, requireExact: Boolean = false): String {
         val ticket = selectionGate.begin()
-        try { return selectThemeInternal(configId, forceReload, layoutMode, customLayoutId) }
+        try { return selectThemeInternal(configId, forceReload, layoutMode, customLayoutId, requireExact) }
         finally { selectionGate.finish(ticket) }
     }
 
-    private suspend fun selectThemeInternal(configId: String, forceReload: Boolean = false, layoutMode: String? = null, customLayoutId: String? = null): String {
+    private suspend fun selectThemeInternal(configId: String, forceReload: Boolean = false, layoutMode: String? = null, customLayoutId: String? = null, requireExact: Boolean = false, preserveRuntime: Boolean = false): String {
         val mode = layoutMode ?: CustomKeyboards.mode
         require(mode in setOf(CustomKeyboards.MODE_THEME, CustomKeyboards.MODE_CUSTOM))
         val custom = mode == CustomKeyboards.MODE_CUSTOM
@@ -270,19 +273,26 @@ object ThemeManager {
                     }
                 }
         }
+        if (requireExact) check(resolvedTheme.configId == configId) { "主题暂不可用，请手动部署或重新选择" }
         return withContext(Dispatchers.Main.immediate) {
             // A slower earlier load must not overwrite the newest theme/layout selection.
-            if (request != themeRequestRevision.get()) return@withContext prefs.selectedTheme.getValue()
+            if (request != themeRequestRevision.get()) {
+                if (requireExact) throw kotlinx.coroutines.CancellationException("已有更新的键盘选择")
+                return@withContext prefs.selectedTheme.getValue()
+            }
             val oldMode = CustomKeyboards.mode
             val oldActive = CustomKeyboards.activeId
             val oldSource = CustomKeyboards.pickerSource
             val oldTheme = activeThemeOrNull()
             val oldFindings = _activeFindings
+            val visible = if (preserveRuntime && custom && oldMode == mode)
+                com.osfans.trime.ime.keyboard.KeyboardWindow.instance?.captureRuntimeState() else null
             try {
                 if (custom && customLayoutId != null) CustomKeyboards.activeId = customLayoutId
                 CustomKeyboards.setMode(mode)
                 BitmapAssets.invalidate()
                 applyTheme(resolvedTheme)
+                visible?.let { com.osfans.trime.ime.keyboard.KeyboardWindow.instance?.restoreAfterCustomizationRefresh(it) }
             } catch (error: Exception) {
                 CustomKeyboards.activeId = oldActive
                 CustomKeyboards.setMode(oldMode)

@@ -28,7 +28,7 @@ object SettingsCatalog {
         Page("feedback", "按键反馈", "声音、振动、播报与按下气泡", "keyboard", keys = listOf("sound_on_keypress", "sound_volume", "custom_sound_effect_enabled", "custom_sound_effect_name", "vibrate_on_key_press", "vibrate_on_key_release", "vibrate_on_key_repeat", "vibration_duration", "vibration_amplitude", "speak_on_keypress", "speak_on_commit", "show_key_popup")),
         Page("gestures", "手势与长按", "滑动距离、速度、长按、重复与双击", "keyboard", keys = listOf("key_swipe_travel", "key_swipe_velocity", "key_long_press_timeout", "key_repeat_interval", "key_double_tap_timeout", "key_slide_step_size")),
         Page("hardware", "实体键盘快捷键", "Ctrl 与 Shift 组合键行为", "keyboard", collapsed = true),
-        Page("theme", "主题与配色", "键盘主题、配色与跟随昼夜", "appearance"),
+        Page("theme", "主题与配色", "键盘主题、配色组与跟随昼夜", "appearance"),
         Page("background", "主题视频背景", "选择视频；背景共用开关在各自全局外观中", "appearance", keys = listOf("keyboard_video_background")),
         Page("surface", "键盘与工具栏样式", "主题和每个自定义布局分别保存外观", "appearance"),
         Page("fonts", "主题键盘字体与字号", "按键、候选栏与工具栏分别设置；自定义键盘独立保存", "appearance"),

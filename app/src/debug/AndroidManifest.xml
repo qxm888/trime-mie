@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <instrumentation android:name="com.osfans.trime.benchmark.ColorGroupsRunner" android:targetPackage="${applicationId}" />
     <instrumentation android:name="com.osfans.trime.benchmark.ModeBindingsRunner" android:targetPackage="${applicationId}" />
     <instrumentation android:name="com.osfans.trime.benchmark.Mie320Runner" android:targetPackage="${applicationId}" />
     <instrumentation android:name="com.osfans.trime.benchmark.Mie3116Runner" android:targetPackage="${applicationId}" />
@@ -32,7 +33,7 @@
     <instrumentation android:name="com.osfans.trime.benchmark.Mie319Runner" android:targetPackage="${applicationId}" />
     <application>
         <activity android:name="com.osfans.trime.benchmark.Mie302FixtureActivity" android:exported="false" />
-        <activity android:name="com.osfans.trime.benchmark.CandidateViewportActivity" android:exported="false" android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity android:name="com.osfans.trime.benchmark.CandidateViewportActivity" android:exported="false" android:configChanges="orientation|screenSize|keyboardHidden|uiMode" />
     </application>
     <instrumentation android:name="com.osfans.trime.benchmark.CandidateViewportRunner" android:targetPackage="${applicationId}" />
     <instrumentation android:name="com.osfans.trime.benchmark.Mie14Runner" android:targetPackage="${applicationId}" />

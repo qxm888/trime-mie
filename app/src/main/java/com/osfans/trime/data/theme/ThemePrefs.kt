@@ -15,6 +15,9 @@ import com.osfans.trime.data.prefs.PreferenceDelegateOwner
 class ThemePrefs(
     sharedPrefs: SharedPreferences,
 ) : PreferenceDelegateOwner(sharedPrefs, R.string.theme) {
+    val keyboardColorGroups = string("keyboard_color_groups", "[]")
+    val activeKeyboardColorGroup = string("keyboard_color_group_active", "")
+
     val selectedTheme =
         string(
             R.string.selected_theme,

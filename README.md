@@ -6,7 +6,17 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前正式版：**V3.2.2**，安装包 `trime-mie-v3.2.2.apk`；[下载 V3.2.2](https://github.com/qxm888/trime-mie/releases/tag/v3.2.2)。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+> 当前正式版：**V3.2.3**，安装包 `trime-mie-v3.2.3.apk`；[下载 V3.2.3](https://github.com/qxm888/trime-mie/releases/tag/v3.2.3)。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+
+## V3.2.3 日夜配色组与键盘样式选择
+
+- 新建配色组，指定日间和夜间主题，启用后可跟随系统夜间自动切换。
+- 键盘样式和皮肤入口统一为“布局 / 配色”；布局再分主题、内置、自定义，配色列用户创建的组。
+- 切换配色尽量保留布局与英文/数字返回记忆；手动选布局退出配色组，失效目标保留当前键盘。
+
+- 句号清理旧右上偏移，按字形居中；上方符号默认靠右，下方注解默认居中并独立设置。
+
+[更新说明](docs/v3.2.3/更新说明.md) · [使用方法](docs/日夜配色组.md) · [检查范围](docs/v3.2.3/检查记录.md)。
 
 ## V3.2.2 键盘绑定、模式恢复与显示修复
 

@@ -16,7 +16,7 @@ object KeyboardBindingCopy {
     ) {
         constructor(style: KeyAppearance.Style) : this(style.labelSymbol, style.hint,
             style.symbolTextSize, style.hintTextSize, style.keySymbolOffsetX, style.keySymbolOffsetY,
-            style.keyHintOffsetX, style.keyHintOffsetY, style.showSymbol, style.showHint, style.symbolAlign, style.hintAlign ?: style.symbolAlign)
+            style.keyHintOffsetX, style.keyHintOffsetY, style.showSymbol, style.showHint, style.symbolAlign, style.hintAlign ?: "")
 
         fun applyTo(style: KeyAppearance.Style) = style.copy(labelSymbol = labelSymbol, hint = hint,
             symbolTextSize = symbolTextSize, hintTextSize = hintTextSize,
