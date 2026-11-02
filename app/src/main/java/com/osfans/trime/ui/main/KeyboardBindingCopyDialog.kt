@@ -26,11 +26,11 @@ object KeyboardBindingCopyDialog {
                     val result = withContext(Dispatchers.Default) { runCatching { KeyboardFamilyBindingCopy.plan(choices[index].id, targetRoot) } }
                     result.onSuccess { plan ->
                         MaterialAlertDialogBuilder(activity).setTitle("复制整套按键绑定")
-                            .setMessage("来源：${choices[index].name}\n目标：${CustomKeyboards.get(targetRoot)?.name.orEmpty()}\n\n可复制 ${plan.updates.size} 页、${plan.keyCount} 个按键；${plan.skippedKeys} 个未匹配按键保留。\n目标有 ${plan.unmatchedTargets.size} 页未匹配；来源有 ${plan.unmatchedSources.size} 页在目标中无对应页，均不覆盖或新建。\n\n一次复制主键盘及对应次级键盘的手势、弹出备选和绑定发送开关。套内跳转改为目标套内对应页面，保留布局、背景、字体和外观。")
+                            .setMessage("来源：${choices[index].name}\n目标：${CustomKeyboards.get(targetRoot)?.name.orEmpty()}\n\n可复制 ${plan.updates.size} 页、${plan.keyCount} 个按键；${plan.skippedKeys} 个未匹配按键保留。\n目标有 ${plan.unmatchedTargets.size} 页未匹配；来源有 ${plan.unmatchedSources.size} 页在目标中无对应页，均不覆盖或新建。\n\n一次复制主键盘及对应次级键盘的手势、弹出备选、绑定发送开关，以及符号和注解的文字、单键字号、位置与显示设置。来源为空时也会清空对应内容。套内跳转改为目标套内对应页面，保留目标的主标签、布局、背景、颜色和字体。")
                             .setPositiveButton("复制整套绑定") { _, _ ->
                                 activity.lifecycleScope.launch {
                                     val copied = withContext(Dispatchers.IO) { runCatching { KeyboardFamilyBindingCopy.apply(plan) } }
-                                    copied.onSuccess { ThemeManager.requestCustomizationRefresh(); onSaved(); android.widget.Toast.makeText(activity, "已复制整套 $it 个按键的绑定", 0).show() }
+                                    copied.onSuccess { ThemeManager.requestCustomizationRefresh(); onSaved(); android.widget.Toast.makeText(activity, "已复制整套 $it 个按键的绑定、符号与注解", 0).show() }
                                         .onFailure { android.widget.Toast.makeText(activity, it.message ?: "复制失败", 1).show() }
                                 }
                             }.setNegativeButton("取消", null).show().also { it.getButton(-1).isEnabled = plan.updates.isNotEmpty() }

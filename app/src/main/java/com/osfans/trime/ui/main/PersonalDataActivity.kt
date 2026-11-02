@@ -17,6 +17,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.osfans.trime.core.data.CandidatePreferences
+import com.osfans.trime.core.data.CandidateRecordFormats
 import com.osfans.trime.core.data.DataManager
 import com.osfans.trime.core.data.UserDataManager
 import com.osfans.trime.data.stats.InputStats
@@ -33,6 +34,7 @@ import java.util.zip.ZipOutputStream
 class PersonalDataActivity : AppCompatActivity() {
     private var exporting = "stats"
     private var importing = "stats"
+    private var candidateFormat = CandidateRecordFormats.Format.JSON
     private var busy = false
     private lateinit var body: LinearLayout
     private val exportFile = registerForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
@@ -58,7 +60,7 @@ class PersonalDataActivity : AppCompatActivity() {
         if (uri != null) {
             val kind = importing
             confirmRestore(kind) {
-                task("已恢复") {
+                task(if (kind == "stats") "已恢复" else "已导入") {
                     val raw = contentResolver.openInputStream(uri)?.use { it.readBoundedText(32 * 1024 * 1024) } ?: error("无法读取文件")
                     restore(kind, raw)
                 }
@@ -70,6 +72,8 @@ class PersonalDataActivity : AppCompatActivity() {
         enableEdgeToEdge()
         exporting = savedInstanceState?.getString("exporting") ?: "stats"
         importing = savedInstanceState?.getString("importing") ?: "stats"
+        candidateFormat = CandidateRecordFormats.Format.entries.firstOrNull { it.name == savedInstanceState?.getString("candidateFormat") }
+            ?: CandidateRecordFormats.Format.JSON
         fun dp(n: Int) = (n * resources.displayMetrics.density).toInt()
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -127,9 +131,11 @@ class PersonalDataActivity : AppCompatActivity() {
                 InputStats.restoreFromRime()
             } } },
         ))
-        card("候选调整", "JSON 保存各方案、各编码的固定位置、前后调序、隐藏和造词。原生 Control+Delete 忘词由 Rime 用户词典管理，请使用整包备份保存。恢复 JSON 会替换应用内调整，并保留恢复前备份。", listOf(
-            "导出候选调整…" to { exporting = "candidates"; exportFile.launch("mie-candidate-order.json") },
-            "导入候选调整…" to { importing = "candidates"; importFile.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
+        card("候选调整", "可选 YAML、JSON、TXT，完整保存各方案、各编码的固定位置、前后调序、隐藏和造词；也可导入旧版 JSON。完整备份替换当前调整，仅造词备份合并词条，导入前保留原记录备份。原生 Control+Delete 忘词由 Rime 用户词典管理，请使用整包备份保存。", listOf(
+            "导出候选调整…" to { CandidateExportDialog.show(this) { format ->
+                exporting = "candidates"; candidateFormat = format; exportFile.launch("mie-candidate-order.${format.extension}")
+            } },
+            "导入候选调整或造词…" to { importing = "candidates"; importFile.launch(arrayOf("*/*")) },
             "保存候选调整到 Rime 目录" to { task("已保存到 Rime 目录") {
                 check(UserDataManager.isStorageAvailable()) { "请先设置并授权数据目录" }
                 File(DataManager.userDataDir, candidateFileName()).writeAtomicText(CandidatePreferences.exportJson()); check(UserDataManager.sync()) { "已保存本地文件，但外部同步失败" }
@@ -149,15 +155,17 @@ class PersonalDataActivity : AppCompatActivity() {
         ))
     }
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putString("exporting", exporting); outState.putString("importing", importing); super.onSaveInstanceState(outState)
+        outState.putString("exporting", exporting); outState.putString("importing", importing)
+        outState.putString("candidateFormat", candidateFormat.name); super.onSaveInstanceState(outState)
     }
     private fun candidateFileName() = if (com.osfans.trime.BuildConfig.DEBUG) "mie_candidate_order-$packageName.json" else "mie_candidate_order.json"
-    private fun exportText(kind: String) = if (kind == "stats") InputStats.exportJson() else CandidatePreferences.exportJson()
-    private fun restore(kind: String, raw: String) = if (kind == "stats") InputStats.importJson(raw) else CandidatePreferences.importJson(raw)
+    private fun exportText(kind: String) = if (kind == "stats") InputStats.exportJson() else CandidatePreferences.export(candidateFormat)
+    private fun restore(kind: String, raw: String) = if (kind == "stats") InputStats.importJson(raw) else CandidatePreferences.importDocument(raw)
     private fun confirmRestore(kind: String, action: () -> Unit) {
-        MaterialAlertDialogBuilder(this).setTitle(if (kind == "stats") "替换当前统计？" else "替换当前候选调整？")
-            .setMessage("恢复文件将替换当前记录，不会重复累加。应用会保留恢复前备份。")
-            .setNegativeButton(android.R.string.cancel, null).setPositiveButton("恢复") { _, _ -> if (!busy) action() }.show()
+        MaterialAlertDialogBuilder(this).setTitle(if (kind == "stats") "替换当前统计？" else "导入候选调整或造词？")
+            .setMessage(if (kind == "stats") "恢复文件将替换当前记录，不会重复累加。应用会保留恢复前备份。"
+                else "完整候选备份将替换当前调整；仅造词备份会合并词条，保留当前其它调整。应用会保留导入前备份。")
+            .setNegativeButton(android.R.string.cancel, null).setPositiveButton(if (kind == "stats") "恢复" else "导入") { _, _ -> if (!busy) action() }.show()
     }
     private fun task(success: String, action: suspend () -> Unit) {
         if (busy) return

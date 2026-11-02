@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -24,6 +25,7 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.osfans.trime.R
 import com.osfans.trime.core.data.CandidatePreferences
+import com.osfans.trime.core.data.CandidateRecordFormats
 import com.osfans.trime.core.data.CandidatePreferences.CreatedWord
 import kotlinx.coroutines.*
 
@@ -39,15 +41,43 @@ class CreatedWordsActivity : AppCompatActivity() {
     private lateinit var empty:TextView
     private var filtering:Job?=null
     private var loading:Job?=null
+    private var exportFormat = CandidateRecordFormats.Format.JSON
+    private var exporting = false
+    private val exportFile = registerForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
+        if (uri != null && !exporting) {
+            val format = exportFormat
+            exporting = true
+            lifecycleScope.launch {
+                try {
+                    withContext(Dispatchers.IO) {
+                        val text = CandidatePreferences.export(format, createdWordsOnly = true)
+                        contentResolver.openOutputStream(uri, "wt")?.use { it.write(text.toByteArray(Charsets.UTF_8)) }
+                            ?: error("无法写入目标文件")
+                    }
+                    Toast.makeText(this@CreatedWordsActivity, "已导出全部造词", Toast.LENGTH_LONG).show()
+                } catch (error: CancellationException) { throw error }
+                catch (error: Exception) { Toast.makeText(this@CreatedWordsActivity, error.message ?: "导出失败", Toast.LENGTH_LONG).show() }
+                finally { exporting = false }
+            }
+        }
+    }
     private data class WordRow(val entry:CreatedWord,val schemaName:String)
     private val adapter=WordsAdapter()
     private fun dp(n:Int)=(n*resources.displayMetrics.density).toInt()
     override fun onCreate(state:Bundle?) {
         super.onCreate(state)
         schema=state?.getString("schema") ?: intent.getStringExtra("schema").orEmpty();query=state?.getString("query").orEmpty()
+        exportFormat = CandidateRecordFormats.Format.entries.firstOrNull { it.name == state?.getString("exportFormat") }
+            ?: CandidateRecordFormats.Format.JSON
         val root=LinearLayout(this).apply { orientation=LinearLayout.VERTICAL;setBackgroundColor(ContextCompat.getColor(context,R.color.framework_background)) }
         root.addView(MaterialToolbar(this).apply {
             title="造词管理";setNavigationIcon(R.drawable.ic_baseline_arrow_back_24);setNavigationOnClickListener { finish() }
+            menu.add("导出全部造词…").setOnMenuItemClickListener {
+                if (!exporting) CandidateExportDialog.show(this@CreatedWordsActivity, createdWordsOnly = true) { format ->
+                    exportFormat = format; exportFile.launch("mie-created-words.${format.extension}")
+                }
+                true
+            }
         },LinearLayout.LayoutParams(-1,dp(64)))
         val top=LinearLayout(this).apply { orientation=LinearLayout.VERTICAL;setPadding(dp(16),dp(8),dp(16),dp(8)) }
         val search=TextInputEditText(this).apply { setSingleLine();setText(query);contentDescription="搜索词条、编码或方案" }
@@ -154,5 +184,7 @@ class CreatedWordsActivity : AppCompatActivity() {
         }
     }
     private class Holder(row:View,val word:TextView,val detail:TextView,val more:MaterialButton):RecyclerView.ViewHolder(row)
-    override fun onSaveInstanceState(state:Bundle) { state.putString("schema",schema);state.putString("query",query);super.onSaveInstanceState(state) }
+    override fun onSaveInstanceState(outState:Bundle) {
+        outState.putString("schema",schema);outState.putString("query",query);outState.putString("exportFormat",exportFormat.name);super.onSaveInstanceState(outState)
+    }
 }

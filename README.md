@@ -6,7 +6,15 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前正式版：**V3.2.0**，安装包 `trime-mie-v3.2.0.apk`；[下载 V3.2.0](https://github.com/qxm888/trime-mie/releases/tag/v3.2.0)。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+> 当前正式版：**V3.2.1**，安装包 `trime-mie-v3.2.1.apk`；[下载 V3.2.1](https://github.com/qxm888/trime-mie/releases/tag/v3.2.1)。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+
+## V3.2.1 导出格式与绑定复制
+
+- 造词和候选调整支持选择 YAML、JSON、TXT 导出，导入自动识别格式并兼容旧 JSON。
+- 造词文件导入时合并，完整候选备份导入时替换规则，并保存导入前备份。
+- 复制整套按键绑定时，同时复制符号与注解的文字、单键字号、位置、对齐和显示设置。
+
+详见 [V3.2.1 更新说明](docs/v3.2.1/更新说明.md)。本版完成编译和正式包检查，尚未进行本轮真机或自动化回归。
 
 ## V3.2.0 整套键盘管理
 

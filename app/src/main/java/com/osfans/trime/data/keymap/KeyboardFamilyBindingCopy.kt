@@ -126,9 +126,7 @@ object KeyboardFamilyBindingCopy {
                     (token(value, isReturn) ?: old.bindings[behavior])?.let { behavior to it }
                 }.toMap().toMutableMap()
                 val popup = item.popup.mapNotNull { token(it) }
-                dst.rows[item.row].keys[item.column] = old.copy(bindings = bindings,
-                    setBindingOverrides = old.setBindingOverrides?.plus(old.bindings.keys + bindings.keys),
-                    appearance = old.appearance.copy(popup = popup, sendBindings = item.sendBindings))
+                dst.rows[item.row].keys[item.column] = KeyboardBindingCopy.copyKey(old, item, bindings, popup)
             }
             val actions = needed.associate { aliases.getValue(it) to requireNotNull(remapAction(allActions.getValue(it))) }
             require(actions.none { (name, action) -> dst.importedActions[name]?.let { it != action } == true }) {

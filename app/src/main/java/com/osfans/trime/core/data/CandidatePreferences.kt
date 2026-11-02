@@ -120,27 +120,38 @@ object CandidatePreferences {
     }
 
     fun exportJson(): String = synchronized(this) { Backup(rules = data()) }.let { json.encodeToString(it) }
-    fun importJson(raw: String): Int {
-        val backup = json.decodeFromString<Backup>(raw)
-        require(backup.version == 1 && backup.rules.size <= 10000) { "不支持的备份版本或规则过多" }
-        var words = 0
-        backup.rules.forEach { (id, rule) ->
-            val parts = json.decodeFromString<List<String>>(id)
-            require(parts.size == 2 && parts[0].isNotBlank() && parts[1].isNotBlank() && parts.all { it.length <= 256 }) { "候选编码格式无效" }
-            words += rule.order.size + rule.hidden.size + rule.aliases.size + rule.forgotten.size
-            require(rule.order.size <= 20000 && rule.order.distinct().size == rule.order.size) { "候选顺序包含重复项或记录过多" }
-            require(words <= 500000 && rule.searchLimit in 1..20000) { "候选记录过大或搜索范围无效" }
-            require((rule.order + rule.hidden + rule.aliases + rule.forgotten).all { it.isNotEmpty() && it.length <= 1024 }) { "候选内容无效" }
-        }
+    fun export(format: CandidateRecordFormats.Format, createdWordsOnly: Boolean = false): String {
+        val snapshot = synchronized(this) { data() }
+        return CandidateRecordFormats.encode(snapshot, format, createdWordsOnly)
+    }
+
+    /** Kept for full-settings backups from previous versions. */
+    fun importJson(raw: String): Int = importDocument(raw)
+
+    fun importDocument(raw: String): Int {
+        val document = CandidateRecordFormats.decode(raw)
+        val imported = CandidateRecordFormats.rules(document)
         synchronized(writeLock) {
             synchronized(this) {
                 File(file.parentFile, "candidate_preferences-before-import-${System.currentTimeMillis()}.json").writeAtomicText(json.encodeToString(data()))
-                val rules=backup.rules.mapValues { (_,rule) -> rule.copy(forgotten=emptySet()) }
+                val rules = if (document.scope == "createdWords") {
+                    // A word-only export merges definitions; it must never wipe unrelated ordering.
+                    data().toMutableMap().apply {
+                        imported.forEach { (id, incoming) ->
+                            val old = this[id]
+                            this[id] = if (old == null) incoming.copy(forgotten = emptySet()) else old.copy(
+                                aliases = (old.aliases + incoming.aliases).distinct(),
+                                order = (old.order + incoming.order + incoming.aliases).distinct(),
+                                hidden = old.hidden + incoming.hidden,
+                            )
+                        }
+                    }
+                } else imported.mapValues { (_, rule) -> rule.copy(forgotten = emptySet()) }
                 file.writeAtomicText(json.encodeToString(rules))
                 cache = rules
             }
         }
-        return backup.rules.size
+        return imported.size
     }
 
     /** Input spelling may differ from a translator's dictionary code: export a draft, not an automatic schema patch. */
