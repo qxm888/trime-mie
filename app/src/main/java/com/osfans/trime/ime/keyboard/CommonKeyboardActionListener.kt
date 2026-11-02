@@ -195,6 +195,7 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
                 val arg = expandActiveText(action.option)
 
                 when (action.command) {
+                    "theme" -> showThemePicker()
                     "__mie_voice_start" -> if (com.osfans.trime.ime.voice.VoiceSettings.enabled) service.voiceInput.start()
                     "__mie_voice_finish" -> if (com.osfans.trime.ime.voice.VoiceSettings.enabled) service.voiceInput.release()
                     "__mie_voice_cancel" -> service.cancelVoiceIfActive()
@@ -323,10 +324,22 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
                     ?.let { service.commitText(it.toString()) }
             }
 
+            private fun startCommandActivity(intent: Intent) {
+                try {
+                    service.startActivity(intent)
+                } catch (error: android.content.ActivityNotFoundException) {
+                    Timber.w(error, "No activity handles keyboard command: %s", intent.action)
+                    service.toast("没有可处理此功能的应用")
+                } catch (error: SecurityException) {
+                    Timber.w(error, "Keyboard command activity is not accessible: %s", intent.action)
+                    service.toast("无法打开此功能")
+                }
+            }
+
             private fun handleRunCommand(arg: String) {
                 buildIntentFromArgument(arg)?.let { intent ->
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_HISTORY
-                    service.startActivity(intent)
+                    startCommandActivity(intent)
                 }
             }
 
@@ -359,7 +372,7 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
             private fun handleIntentAction(command: String, arg: String) {
                 buildIntentFromAction(command, arg)?.let { intent ->
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_HISTORY
-                    service.startActivity(intent)
+                    startCommandActivity(intent)
                 }
             }
 

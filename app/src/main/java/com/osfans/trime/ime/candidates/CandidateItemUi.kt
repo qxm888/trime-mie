@@ -179,10 +179,16 @@ class CandidateItemUi(
             backgroundFill = contentColor
             backgroundRipple = rippleColor
         }
-        text.text = item.text
+        val created = item.comment == CandidateProto.CREATED_WORD_COMMENT
+        text.text = if (created) android.text.SpannableStringBuilder(item.text).apply {
+            append(" ")
+            val start = length; append(CandidateProto.CREATED_WORD_COMMENT)
+            setSpan(android.text.style.RelativeSizeSpan(.6f), start, length, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            setSpan(android.text.style.ForegroundColorSpan(cColor), start, length, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        } else item.text
         text.setTextColor(tColor)
 
-        val commentText = item.comment
+        val commentText = if (created) "" else item.comment
         comment.text = commentText
         comment.setTextColor(cColor)
         comment.isVisible = commentText.isNotEmpty()

@@ -23,7 +23,7 @@ class ModeToolbarTest : FunSpec({
         theme.toolBar.buttons.size shouldBe 3
     }
 
-    test("renamed internal mode commands are filtered like the legacy names") {
+    test("modern internal mode commands remain assignable to toolbar buttons") {
         val theme = Theme(name = "renamed", presetKeys = mapOf(
             "mieFloat" to com.osfans.trime.data.theme.model.PresetKey(command = "__mie_toggle_floating_keyboard"),
             "mieHand" to com.osfans.trime.data.theme.model.PresetKey(command = "__mie_toggle_one_hand"),
@@ -31,8 +31,8 @@ class ModeToolbarTest : FunSpec({
             ToolBar.Button(action = "mieFloat"), ToolBar.Button(action = "mieHand"), ToolBar.Button(action = "copy"),
         )))
         val result = ToolbarOverrides.forKeyboard(theme)
-        result.primaryButton.shouldBeNull()
-        result.buttons.map { it.action } shouldBe listOf("copy")
+        result.primaryButton?.action shouldBe "__mie_floating_keyboard"
+        result.buttons.map { it.action } shouldBe listOf("mieFloat", "mieHand", "copy")
         result.buttons.none { ToolbarOverrides.isModeAction(it.action) } shouldBe true
     }
 })

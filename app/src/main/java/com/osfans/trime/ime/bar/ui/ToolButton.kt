@@ -77,10 +77,13 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
     private var localImage = false
     private fun updateImageSize() {
         val requested = config?.foreground?.iconSize ?: 0
+        // Legacy theme bitmaps keep their intrinsic size and never upscale just
+        // because a button is larger. Explicit sizing and custom layouts opt in.
+        val fit = localImage && (scope.theme.isCustom || requested > 0)
         val size = if (requested > 0) minOf(dp(requested) + maxOf(image.paddingLeft + image.paddingRight, image.paddingTop + image.paddingBottom), width, height).coerceAtLeast(0) else -1
         val actual = if (size == 0) -1 else size
-        image.layoutParams = android.widget.FrameLayout.LayoutParams(if (localImage) actual else -2, if (localImage) actual else -2, gravityCenter)
-        image.scaleType = if (localImage) ImageView.ScaleType.FIT_CENTER else ImageView.ScaleType.CENTER_INSIDE
+        image.layoutParams = android.widget.FrameLayout.LayoutParams(if (fit) actual else -2, if (fit) actual else -2, gravityCenter)
+        image.scaleType = if (fit) ImageView.ScaleType.FIT_CENTER else ImageView.ScaleType.CENTER_INSIDE
     }
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
@@ -125,7 +128,7 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
         image.padding = padding
         label.padding = padding
 
-        fontSize = config.appearance.keyTextSize.takeIf { it > 0 } ?: com.osfans.trime.data.keymap.LayoutTypography.size("toolbar", fg.fontSize)
+        fontSize = config.appearance.keyTextSize.takeIf { it > 0 } ?: com.osfans.trime.data.keymap.LayoutTypography.size("toolbar", fg.fontSize, scope.theme.isCustom)
         label.textSize = fontSize
 
         label.typeface = scope.theme.fonts.toolbar
@@ -369,7 +372,8 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
         val drawable = if (IMAGE_PATTERN.matches(style)) {
             useLocalImage = true
             when {
-                java.io.File(style).isAbsolute -> android.graphics.drawable.Drawable.createFromPath(style)
+                java.io.File(style).isAbsolute -> android.graphics.drawable.Drawable.createFromPath(
+                    com.osfans.trime.data.keymap.CustomKeyAssets.resolve(context, style) ?: style)
                 // 相对路径优先按咩版素材目录（.mie/键盘背景）解析，主题/应用资源兜底。
                 else -> com.osfans.trime.data.keymap.CustomKeyAssets.resolve(context, style)
                     ?.let { android.graphics.drawable.Drawable.createFromPath(it) }
@@ -378,7 +382,7 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
         } else if (style.startsWith("ic@")) {
             val icon = "cmd_${style.substring(3)}"
             IconicsDrawable(context, icon).apply {
-                sizeDp = fontSize.toInt()
+                sizeDp = (config?.foreground?.iconSize?.takeIf { it > 0 } ?: if (scope.theme.isCustom) fontSize.toInt() else config?.foreground?.fontSize?.toInt() ?: fontSize.toInt())
             }
         } else {
             null

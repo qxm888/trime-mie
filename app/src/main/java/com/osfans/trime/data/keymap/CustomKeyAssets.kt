@@ -19,11 +19,14 @@ object CustomKeyAssets {
     fun resolve(context: Context, raw: String): String? {
         if (raw.isBlank()) return null
         val root = root(context)
-        val file = if (raw.startsWith("/")) File(raw) else File(root, raw)
+        val file = if (raw.startsWith("/")) File(raw) else File(root, BuiltinToolbarAssets.path(raw))
         val canonical = runCatching { file.canonicalFile.path }.getOrNull() ?: return null
         val rootPath = runCatching { root.canonicalFile.path }.getOrNull() ?: return null
         val filesRoot = runCatching { File(context.filesDir, "custom_kb_bg").canonicalFile.path }.getOrNull() ?: return null
         if (!canonical.startsWith("$rootPath${File.separator}") && !canonical.startsWith("$filesRoot${File.separator}")) return null
-        return canonical.takeIf { File(it).isFile }
+        val prefix = if (canonical.startsWith("$rootPath${File.separator}")) rootPath else filesRoot
+        val relative = canonical.removePrefix(prefix + File.separator)
+        val migrated = BuiltinToolbarAssets.path(relative)
+        return File(prefix, migrated).path.takeIf { File(it).isFile }
     }
 }

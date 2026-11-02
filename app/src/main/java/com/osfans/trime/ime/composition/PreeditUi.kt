@@ -38,7 +38,7 @@ open class PreeditUi(
     val preedit =
         view(::PreeditTextView) {
             setTextColor(textColor)
-            textSize = com.osfans.trime.data.keymap.LayoutTypography.size("text", theme.preedit.foreground.fontSize)
+            textSize = com.osfans.trime.data.keymap.LayoutTypography.size("text", theme.preedit.foreground.fontSize, theme.isCustom)
             typeface = theme.fonts.text
             setupPreeditView?.invoke(this)
             onMoveCursor = this@PreeditUi.onMoveCursor
@@ -57,7 +57,11 @@ open class PreeditUi(
     private fun CompositionProto.toSpannedString() = buildSpannedString {
         if (!preedit.isNullOrEmpty()) {
             append(preedit)
-            setSpan(ForegroundColorSpan(highlightTextColor), selStart, selEnd, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
+            var start = selStart.coerceIn(0, length)
+            var end = selEnd.coerceIn(start, length)
+            if (start > 0 && start < length && Character.isLowSurrogate(this[start]) && Character.isHighSurrogate(this[start - 1])) start--
+            if (end > 0 && end < length && Character.isLowSurrogate(this[end]) && Character.isHighSurrogate(this[end - 1])) end++
+            setSpan(ForegroundColorSpan(highlightTextColor), start, end, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
         }
     }
 
@@ -78,28 +82,23 @@ open class PreeditUi(
     }
 
     fun update(composition: CompositionProto) {
-        val defaultSize=com.osfans.trime.data.keymap.LayoutTypography.size("text", theme.preedit.foreground.fontSize)
+        val defaultSize=com.osfans.trime.data.keymap.LayoutTypography.size("text", theme.preedit.foreground.fontSize, theme.isCustom)
         val style = appearance()
         preedit.textSize = style?.size("text",defaultSize) ?: defaultSize
         preedit.typeface = com.osfans.trime.data.theme.FontOverrides.fromSelection(style?.fonts?.get("text")?.font.orEmpty()) ?: theme.fonts.text
         preedit.setTextColor(textColor)
-        val string = composition.toSpannedString()
-        val cursorPos = composition.cursorPos
+        val raw = composition.toSpannedString()
+        val string = if (theme.isCustom) PreeditFontFallback.apply(raw, preedit.typeface) {
+            listOf(theme.fonts.latin, theme.fonts.hanb)
+        } else raw
         val hasPreedit = composition.length > 0
         visible = hasPreedit
         if (!visible) {
             updateTextView("", false)
             return
         }
-        val stringWithCursor =
-            if (cursorPos == 0 || cursorPos == string.length) {
-                string
-            } else {
-                buildSpannedString {
-                    if (cursorPos > 0) append(string, 0, cursorPos)
-                    append(string, cursorPos, string.length)
-                }
-            }
-        updateTextView(stringWithCursor, true)
+        // Display the untouched UTF-16 string. Splitting/re-appending at a native
+        // caret index can split a surrogate pair or an emoji variation sequence.
+        updateTextView(string, true)
     }
 }

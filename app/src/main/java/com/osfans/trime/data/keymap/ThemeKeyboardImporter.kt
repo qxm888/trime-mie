@@ -198,12 +198,13 @@ class ThemeKeyboardImporter(private val context: Context) {
     private fun fonts(theme:Theme,assets:Assets,warnings:MutableSet<String>,includeAppOverrides:Boolean):Map<String,FontSpec> {
         val s=theme.style
         val files=mapOf("key" to s.keyFont,"candidate" to s.candidateFont,"comment" to s.commentFont,"symbol" to s.symbolFont,
-            "hint" to s.symbolFont,"text" to s.textFont,"popup" to s.popupFont,"label" to s.labelFont,"toolbar" to theme.toolBar.buttonFont)
+            "hint" to s.symbolFont,"text" to s.textFont,"popup" to s.popupFont,"label" to s.labelFont,"toolbar" to theme.toolBar.buttonFont,"latin" to s.latinFont,"hanb" to s.hanbFont)
         val sizes=mapOf("key" to s.keyTextSize,"candidate" to s.candidateTextSize,"comment" to s.commentTextSize,"symbol" to s.symbolTextSize,
             "hint" to s.symbolTextSize,"text" to s.keyTextSize,"popup" to s.popupTextSize,"label" to s.labelTextSize)
-        return FontOverrides.roles.keys.associateWith { role ->
+        return (FontOverrides.roles.keys + listOf("latin", "hanb")).associateWith { role ->
             val override=if(includeAppOverrides) FontOverrides.effectiveSelection(role, theme.fontConfigId) else ""
-            val names=files[role]?.toList().orEmpty()
+            val declared=files[role]?.toList().orEmpty()
+            val names=(declared + if (declared.isNotEmpty()) s.latinFont.toList() + s.hanbFont.toList() else emptyList()).distinct()
             val selected = if (override.isNotEmpty()) FontOverrides.decode(override) else
                 names.map { File(DataManager.userDataDir,"fonts/$it") }.filter { it.isFile }.map { it.path }
             val font = FontOverrides.encode(selected.map { path ->

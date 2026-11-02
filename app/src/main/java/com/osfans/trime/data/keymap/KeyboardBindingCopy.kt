@@ -7,8 +7,18 @@ object KeyboardBindingCopy {
                      val popup: List<String>, val sendBindings: Boolean?)
     data class Plan(val sourceId: String, val targetId: String, val matches: List<Match>, val skipped: Int,
                     val sourceVersion: Long)
-    private fun click(key: CustomKeyboards.CustomKey): String = key.bindings["click"].orEmpty().trim().let {
-        if (it.length == 1 || it.lowercase() in setOf("space", "backspace", "return", "shift_l", "shift_r")) it.lowercase() else it
+    private fun click(key: CustomKeyboards.CustomKey): String {
+        val raw = key.bindings["click"].orEmpty().trim()
+        val action = BindingActions.resolve(raw)
+        val value = when {
+            action == null -> raw
+            action.command.isNotEmpty() -> "command:${action.command}:${action.option}"
+            action.select.isNotEmpty() -> "keyboard:${action.select}"
+            action.commit.isNotEmpty() -> action.commit
+            action.send.isNotEmpty() -> action.send
+            else -> raw
+        }
+        return if (value.length == 1 || value.lowercase() in setOf("space", "backspace", "return", "shift_l", "shift_r")) value.lowercase() else value
     }
     private fun label(key: CustomKeyboards.CustomKey) = key.label.trim().lowercase()
     fun plan(sourceId: String, targetId: String): Plan {
@@ -20,7 +30,9 @@ object KeyboardBindingCopy {
         val byClick = keys.filter { click(it).isNotBlank() }.groupBy(::click)
         val byLabel = keys.filter { label(it).isNotBlank() }.groupBy(::label)
         fun unambiguous(values: List<CustomKeyboards.CustomKey>?): CustomKeyboards.CustomKey? = values?.takeIf {
-            it.size == 1 || it.map { key -> key.bindings }.distinct().size == 1
+            it.size == 1 || it.map { key ->
+                Triple(key.bindings, key.appearance.popup, key.appearance.sendBindings)
+            }.distinct().size == 1
         }?.firstOrNull()
         val matches = mutableListOf<Match>(); var skipped = 0
         target.rows.forEachIndexed { row, line -> line.keys.forEachIndexed keys@ { column, key ->

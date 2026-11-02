@@ -49,6 +49,10 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
     private fun color(value: String?, fallback: Int) = value?.let { runCatching { ColorUtils.parseColor(it) }.getOrNull() } ?: fallback
     private val ink get() = color(layout?.keyAppearance?.keyTextColor, scope.colors.keyTextColor)
     private fun dp(value: Int) = (value * context.resources.displayMetrics.density).toInt()
+    private fun commitSymbol(value: String) {
+        service.cancelVoiceIfActive()
+        service.postRimeJob { commitLiteralText(value) }
+    }
     private fun background() = GradientDrawable().apply {
         setColor(color(layout?.keyAppearance?.keyBackColor, scope.colors.keyBackColor))
         cornerRadius = dp(6).toFloat()
@@ -72,7 +76,7 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
                 typeface = if (emoji) Typeface.DEFAULT else scope.theme.fonts.key
                 maxLines = if (wide) 2 else 1
                 TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(this, if (wide) 9 else 12, if (wide) 16 else 25, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
-                setOnClickListener { service.commitText(value) }
+                setOnClickListener { commitSymbol(value) }
                 setOnLongClickListener {
                     val points = mutableListOf<String>()
                     var offset = 0
@@ -81,7 +85,7 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
                     }
                     val codes = points.joinToString(" ")
                     service.showDialog(AlertDialog.Builder(context).setTitle(value).setMessage(codes)
-                        .setPositiveButton("输入") { _, _ -> service.commitText(value) }.setNegativeButton("取消", null).create())
+                        .setPositiveButton("输入") { _, _ -> commitSymbol(value) }.setNegativeButton("取消", null).create())
                     true
                 }
             }

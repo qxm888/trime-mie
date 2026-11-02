@@ -44,7 +44,7 @@ object CustomKeyboards {
     const val BUILTIN_DEFAULT_ID = "custom_pink"
 
     /** 内置五色键盘的版本；改过内置 YAML 后 +1，升级时自动刷新内置 id。 */
-    private const val BUILTIN_VERSION = 11
+    private const val BUILTIN_VERSION = 12
 
     @Serializable
     data class CustomKey(
@@ -156,6 +156,7 @@ object CustomKeyboards {
         var version: Long = 1,
         var mode: String = MODE_THEME,
         var activeId: String = "",
+        var pickerSource: String = "",
         val keyboards: MutableMap<String, CustomKeyboard> = mutableMapOf(),
         /** 内置五色键盘的版本：升级时只刷新内置 id，用户自建键盘不动。 */
         var builtinVersion: Int = 0,
@@ -175,6 +176,7 @@ object CustomKeyboards {
 
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var saveJob: Job? = null
+    private var builtinExtrasJob: Job? = null
 
     // 只写非默认值：内置五色 300 套键盘的存档从 13.5MB 降到 2MB 级，启动解析更快。
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = false }
@@ -186,6 +188,22 @@ object CustomKeyboards {
     /** Current layout mode: [MODE_THEME] or [MODE_CUSTOM]. */
     val mode: String
         get() = synchronized(lock) { store.mode }
+
+    /** Last browsed category; separate from the two runtime loading modes. */
+    var pickerSource: String
+        get() = synchronized(lock) {
+            store.pickerSource.takeIf { it in KeyboardLayoutCatalog.sources }
+                ?: if (store.mode == MODE_THEME) KeyboardLayoutCatalog.THEME
+                else if (appContext?.let { store.activeId in KeyboardLayoutCatalog.builtinIds(it) } == true)
+                    KeyboardLayoutCatalog.BUILTIN else KeyboardLayoutCatalog.CUSTOM
+        }
+        set(value) {
+            require(value in KeyboardLayoutCatalog.sources)
+            synchronized(lock) {
+                if (store.pickerSource == value) return
+                store.pickerSource = value; dirty = true; scheduleSaveLocked()
+            }
+        }
 
     /**
      * The custom keyboard used at runtime in [MODE_CUSTOM]: aliased as
@@ -265,8 +283,15 @@ object CustomKeyboards {
                     refreshBuiltinKeyboardsLocked()
                 }
             }.onFailure { Timber.w(it, "CustomKeyboards: load failed, starting fresh") }
-            // 内置图标每次启动补齐（素材目录可能此时才可用），已存在的不覆盖。
+            // Upgrade only app-owned icon references; old exports remain readable via aliases.
+            store.keyboards.replaceAll { _, keyboard -> BuiltinToolbarAssets.upgrade(keyboard) }
+            dirty = true; scheduleSaveLocked()
+            // Install the versioned stock icon pack and remove its obsolete assets.
             runCatching { ensureBuiltinIcons(context) }.onFailure { Timber.w(it, "CustomKeyboards: builtin icons failed") }
+            // Main templates may have been saved before an interrupted background
+            // upgrade finished. Retry extras independently on the next launch.
+            seedBuiltinExtrasInBackground(context)
+
         }
     }
 
@@ -278,10 +303,10 @@ object CustomKeyboards {
 
     /** 扩展内置键盘（表情/符号分类页）放后台补，避免首次启动主线程卡住。 */
     private fun seedBuiltinExtrasInBackground(context: android.content.Context) {
-        if (synchronized(lock) { store.builtinExtrasVersion >= BUILTIN_VERSION }) return
-        ioScope.launch {
+        if (synchronized(lock) { store.builtinExtrasVersion >= BUILTIN_VERSION || builtinExtrasJob?.isActive == true }) return
+        builtinExtrasJob = ioScope.launch {
             val extras = (decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_extra) ?: return@launch) +
-                decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_effects).orEmpty()
+                (decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_effects) ?: return@launch)
             val hasLegacy = synchronized(lock) { store.keyboards.keys.any { "_cat_" in it } }
             val legacy = if (hasLegacy) decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_legacy_symbols).orEmpty() else emptyMap()
             synchronized(lock) {
@@ -299,7 +324,7 @@ object CustomKeyboards {
                     if (existing == null) {
                         store.keyboards[id] = normalizedCopy(keyboard)
                         added++
-                    } else store.keyboards[id] = upgradeSymbols(existing, keyboard)
+                    } else store.keyboards[id] = upgradeSymbols(existing, keyboard, store.keyboards.keys)
                 }
                 store.builtinExtrasVersion = BUILTIN_VERSION
                 store.version++
@@ -310,6 +335,9 @@ object CustomKeyboards {
             com.osfans.trime.data.theme.ThemeManager.requestCustomizationRefresh()
         }
     }
+
+    /** Picker waits off the main thread so first launch also lists every stock family. */
+    suspend fun awaitBuiltinLayouts() { synchronized(lock) { builtinExtrasJob }?.join() }
 
     /** 内置五色键盘：首次安装时写入并默认使用樱花粉。 */
     private fun seedBuiltinKeyboardsLocked() {
@@ -373,7 +401,7 @@ object CustomKeyboards {
                 // V7 adds pages and chooser entries. Keep each existing layout's
                 // fonts, toolbar, appearance and user-edited keys.
                 val kept = if (store.builtinVersion < 7 && id.endsWith("_layouts")) existing.copy(rows = normalizedCopy(keyboard).rows) else existing
-                val updated = upgradeSymbols(kept, keyboard)
+                val updated = upgradeSymbols(kept, keyboard, store.keyboards.keys)
                 oldSeven[id]?.let { legacy ->
                     // Compare whole keys: custom bindings, labels and appearances
                     // prevent replacement. Existing order and layout settings stay.
@@ -401,8 +429,16 @@ object CustomKeyboards {
         appContext?.let { decodeBuiltin(it, com.osfans.trime.R.raw.mie_builtin_chooser_legacy) }.orEmpty()
     }
 
-    private fun upgradeSymbols(existing: CustomKeyboard, template: CustomKeyboard): CustomKeyboard {
+    internal fun upgradeSymbols(existing: CustomKeyboard, template: CustomKeyboard, existingIds: Set<String>): CustomKeyboard {
         val updated = normalizedCopy(existing)
+        if (template.name.endsWith("9键")) {
+            updated.rows.lastOrNull()?.let { row ->
+                if (row.keys.map { it.width } == listOf(16f, 12f, 47f, 12f, 13f) && row.keys.last().label == "确定") {
+                    row.keys[2] = row.keys[2].copy(width = 45f)
+                    row.keys[4] = row.keys[4].copy(width = 15f)
+                }
+            }
+        }
         if (template.rows.firstOrNull()?.keys?.firstOrNull()?.label == "选择键盘主题") {
             val legacy = legacyChoosers[template.secondaryOf + "_themes"]?.let(::normalizedCopy)
             if (legacy?.rows == existing.rows) {
@@ -436,6 +472,9 @@ object CustomKeyboards {
             }
             key.bindings.toMap().forEach { (behavior, token) ->
                 category.matchEntire(token)?.let { match ->
+                    // Retained legacy category pages may contain user edits. Stock pages
+                    // removed later are handled by the missing-target navigation fallback.
+                    if (match.groupValues[1].startsWith("cat_") && token.removePrefix("Keyboard_") in existingIds) return@let
                     val id = match.groupValues[2].ifEmpty {
                         mapOf("symbols" to "english", "symbols_cn" to "chinese", "symbols_math" to "math", "symbols_more" to "common").getValue(match.groupValues[1])
                     }
@@ -454,7 +493,7 @@ object CustomKeyboards {
                 )
             }
         }
-        return updated
+        return BuiltinToolbarAssets.upgrade(updated)
     }
 
     /** 内置键盘的图标解压到素材目录（.mie/键盘背景/icons），已存在的不覆盖。 */
@@ -474,29 +513,7 @@ object CustomKeyboards {
                 }
             }
         }
-        val dir = File(com.osfans.trime.core.data.MieUserDirectory.assetFolder(context, "custom_kb_bg"), "icons")
-        val marker = File(dir, ".builtin_v1")
-        // 标记存在但关键图标缺失（例如早期解压失败）时重新解压一次。
-        if (marker.isFile && File(dir, "tb_menu.png").isFile && File(dir, "mint_shift.png").isFile && File(dir, "tb_emoji.png").isFile) return
-        if (!dir.isDirectory && !dir.mkdirs()) return
-        runCatching {
-            context.resources.openRawResource(com.osfans.trime.R.raw.mie_builtin_icons).use { input ->
-                java.util.zip.ZipInputStream(input.buffered()).use { zip ->
-                    while (true) {
-                        val entry = zip.nextEntry ?: break
-                        if (!entry.isDirectory) {
-                            val name = entry.name.substringAfterLast('/')
-                            if (name.isNotEmpty()) {
-                                val out = File(dir, name)
-                                if (!out.exists()) out.outputStream().use { zip.copyTo(it) }
-                            }
-                        }
-                        zip.closeEntry()
-                    }
-                }
-            }
-            marker.createNewFile()
-        }.onFailure { Timber.w(it, "CustomKeyboards: could not unpack builtin icons") }
+        BuiltinToolbarAssets.install(context)
     }
 
     fun shutdown() {
@@ -552,7 +569,7 @@ object CustomKeyboards {
         importedActions = kb.importedActions.toMap(),
         surfaceAppearance=kb.surfaceAppearance?.sanitized(),
         floatingCandidates=kb.floatingCandidates?.sanitized(),
-        typography=kb.typography.filterKeys { it in com.osfans.trime.data.theme.FontOverrides.roles || it == LayoutTypography.GLOBAL }.mapValues { (role,spec) -> spec.copy(size=if(role != LayoutTypography.GLOBAL && spec.size.isFinite()) spec.size.coerceIn(0f,200f) else 0f) },
+        typography=kb.typography.filterKeys { it in com.osfans.trime.data.theme.FontOverrides.roles || it in setOf("latin", "hanb") || it == LayoutTypography.GLOBAL }.mapValues { (role,spec) -> spec.copy(size=if(role != LayoutTypography.GLOBAL && spec.size.isFinite()) spec.size.coerceIn(0f,200f) else 0f) },
         bgColor = "", bgImage = "", background = kb.resolvedBackground(),
         toolbar = kb.toolbar.toMutableList(),
         toolbarAlignment = kb.toolbarAlignment.takeIf { it == "legacy" || it in ButtonAlignment.choices } ?: "legacy",
@@ -732,6 +749,22 @@ object CustomKeyboards {
             true
         }
 
+    /** Complete-family binding changes are validated/prepared before this single commit. */
+    internal fun replaceBindingLayouts(expectedVersion: Long, replacements: Map<String, CustomKeyboard>) {
+        synchronized(lock) {
+            require(store.version == expectedVersion) { "键盘已变化，请重新选择来源" }
+            require(replacements.keys.all { it in store.keyboards }) { "目标键盘已删除" }
+            val original = replacements.keys.associateWith { store.keyboards.getValue(it) }
+            val prepared = replacements.mapValues { normalizedCopy(it.value) }
+            store.keyboards.putAll(prepared); store.version++; dirty = true
+            if (!flush()) {
+                store.keyboards.putAll(original); store.version++; dirty = true
+                scheduleSaveLocked()
+                error("保存失败，请检查数据目录；内存中的原绑定已保留")
+            }
+        }
+    }
+
     // ----------------------------------------------------------------
     // runtime merge
     // ----------------------------------------------------------------
@@ -747,9 +780,9 @@ object CustomKeyboards {
     fun mergeInto(theme: Theme): Theme = if (mode == MODE_CUSTOM) standaloneTheme() else theme
 
     /** Creates the complete runtime configuration without loading a theme file. */
-    fun standaloneTheme(): Theme = synchronized(lock) {
+    fun standaloneTheme(selectedId: String? = null): Theme = synchronized(lock) {
         ensureStarterLocked()
-        val first = effectiveActiveId()
+        val first = selectedId?.also { require(store.keyboards.containsKey(it)) { "键盘已删除，请重新选择" } } ?: effectiveActiveId()
         val merged = linkedMapOf<String, TextKeyboard>()
         store.keyboards.entries.sortedBy { if (it.key == first) 0 else 1 }.forEach { (id, kb) ->
             merged[id] = kb.toTextKeyboard()
@@ -763,7 +796,7 @@ object CustomKeyboards {
         val dark = appContext?.resources?.configuration?.uiMode?.and(android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
         val text = if (imported != null && dark) "#FFF3F3F3" else "#FF202020"
         // 候选栏跟随当前键盘配色：底色用键盘背景、文字用键面文字色、选中项用回车强调色。
-        val active = store.keyboards[effectiveActiveId()] ?: store.keyboards.values.firstOrNull()
+        val active = store.keyboards[first] ?: store.keyboards.values.firstOrNull()
         val paletteBackground = active?.resolvedBackground()?.takeIf {
             it.type == com.osfans.trime.data.keymap.CustomBackground.Type.COLOR
         }?.color
@@ -901,8 +934,7 @@ object CustomKeyboards {
     )
 
     /** Serializes all custom keyboards to a self-describing JSON document. */
-    fun exportJson(now: Long = System.currentTimeMillis()): String {
-        val functions=NamedFunctions.list()
+    fun exportJson(now: Long = System.currentTimeMillis(), functions: List<NamedFunctions.Definition> = NamedFunctions.list()): String {
         return synchronized(lock) {
             json.encodeToString(
                 ExportFile.serializer(),

@@ -77,12 +77,16 @@ class Mie3114Runner : Instrumentation() {
         val originalLayouts = CustomKeyboards.exportJson()
         var activity: Activity? = null
         var originalAscii: Boolean? = null
+        var inputFixture: SyntheticInputSchema? = null
         val statsEnabled = com.osfans.trime.data.stats.InputStats.isEnabled()
         val keys = listOf(p.landscapeSizeEnabled, p.landscapeWidth, p.landscapeHeight, p.landscapePosition,
             p.floatingKeyboard, p.floatingKeyboardAutoLandscape, p.floatingKeyboardWidth, p.floatingKeyboardHeight,
             p.floatingKeyboardOffsetX, p.floatingKeyboardOffsetY, p.oneHandMode, p.floatingKeyboardKeepRatio,
             p.floatingToolbarExpanded, p.hideInputBar, prefs.general.inputStatsEnabled)
         try {
+            // Users may have removed stock pages; provision fixtures and restore
+            // the original exported layouts in finally, as for other mutations.
+            main { CustomKeyboards.restoreBuiltins(reset = false) }
             await("frost family not installed") { CustomKeyboards.get("custom_frost_7_2") != null }
             main {
                 prefs.general.inputStatsEnabled.setValue(false)
@@ -217,6 +221,8 @@ class Mie3114Runner : Instrumentation() {
             pause()
             main { check(input().keyboardView.width == portraitWidth && KeyboardWindow.currentKeyboard.keyboardHeight == portraitHeight) }
             // Exercise the real touch path into this app-owned editor.
+            inputFixture = SyntheticInputSchema.create(member(service(), "rime") as com.osfans.trime.daemon.RimeSession)
+            pause()
             service().postRimeJob { clearComposition(); setRuntimeOption("ascii_mode", true) }.join(); pause()
             val edit = member(screen, "input") as EditText
             var tapX = 0f; var tapY = 0f
@@ -245,6 +251,7 @@ class Mie3114Runner : Instrumentation() {
             result.putString("result", "FAIL: ${e.message}"); result.putString("trace", e.stackTraceToString())
             runCatching { shot("failure") }
         } finally {
+            inputFixture?.restore()
             runCatching { service().postRimeJob { clearComposition(); originalAscii?.let { setRuntimeOption("ascii_mode", it) } }.join() }
             main {
                 CustomKeyboards.importJson(originalLayouts, true)

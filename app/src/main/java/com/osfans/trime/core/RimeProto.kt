@@ -13,7 +13,9 @@ data class CandidateProto(
     val text: String,
     val comment: String,
     val label: String,
-)
+) {
+    companion object { const val CREATED_WORD_COMMENT = "造" }
+}
 
 data class CompositionProto(
     /**

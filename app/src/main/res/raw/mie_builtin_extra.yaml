@@ -134,7 +134,7 @@ preset_keyboards:
       toolbar:
       - action: __mie_menu
         enabled: true
-        icon: icons/tb_menu.png
+        icon: icons/mie2_tb_menu.png
         iconSize: 18
         width: 34
         height: 34
@@ -145,7 +145,7 @@ preset_keyboards:
         primary: true
       - action: Hide
         enabled: true
-        icon: icons/tb_hide.png
+        icon: icons/mie2_tb_hide.png
         iconSize: 18
         width: 34
         height: 34
@@ -155,7 +155,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: clipboard
         enabled: true
-        icon: icons/tb_clipboard.png
+        icon: icons/mie2_tb_clipboard.png
         iconSize: 18
         width: 34
         height: 34
@@ -165,7 +165,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: Keyboard_custom_mint_en
         enabled: true
-        icon: icons/tb_lang.png
+        icon: icons/mie2_tb_lang.png
         iconSize: 18
         width: 34
         height: 34
@@ -175,7 +175,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
         enabled: true
-        icon: icons/tb_emoji.png
+        icon: icons/mie2_tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -185,7 +185,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: __mie_floating_keyboard
         enabled: true
-        icon: icons/tb_onehand.png
+        icon: icons/mie2_tb_float.png
         iconSize: 18
         width: 34
         height: 34
@@ -197,7 +197,7 @@ preset_keyboards:
           longClick: __mie_one_hand
       - action: Keyboard_custom_mint_layouts
         enabled: true
-        icon: icons/tb_layout.png
+        icon: icons/mie2_tb_layout.png
         iconSize: 18
         width: 34
         height: 34
@@ -205,9 +205,9 @@ preset_keyboards:
           keyBackColor: '#00000000'
           roundCorner: '8'
           keyBorder: '0'
-      - action: Keyboard_custom_mint_themes
+      - action: __mie_theme_picker
         enabled: true
-        icon: icons/tb_theme.png
+        icon: icons/mie2_tb_theme.png
         iconSize: 18
         width: 34
         height: 34
@@ -690,7 +690,7 @@ preset_keyboards:
       toolbar:
       - action: __mie_menu
         enabled: true
-        icon: icons/tb_menu.png
+        icon: icons/mie2_tb_menu.png
         iconSize: 18
         width: 34
         height: 34
@@ -701,7 +701,7 @@ preset_keyboards:
         primary: true
       - action: Hide
         enabled: true
-        icon: icons/tb_hide.png
+        icon: icons/mie2_tb_hide.png
         iconSize: 18
         width: 34
         height: 34
@@ -711,7 +711,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: clipboard
         enabled: true
-        icon: icons/tb_clipboard.png
+        icon: icons/mie2_tb_clipboard.png
         iconSize: 18
         width: 34
         height: 34
@@ -721,7 +721,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: Keyboard_custom_mint_en
         enabled: true
-        icon: icons/tb_lang.png
+        icon: icons/mie2_tb_lang.png
         iconSize: 18
         width: 34
         height: 34
@@ -731,7 +731,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
         enabled: true
-        icon: icons/tb_emoji.png
+        icon: icons/mie2_tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -741,7 +741,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: __mie_floating_keyboard
         enabled: true
-        icon: icons/tb_onehand.png
+        icon: icons/mie2_tb_float.png
         iconSize: 18
         width: 34
         height: 34
@@ -753,7 +753,7 @@ preset_keyboards:
           longClick: __mie_one_hand
       - action: Keyboard_custom_mint_layouts
         enabled: true
-        icon: icons/tb_layout.png
+        icon: icons/mie2_tb_layout.png
         iconSize: 18
         width: 34
         height: 34
@@ -761,9 +761,9 @@ preset_keyboards:
           keyBackColor: '#00000000'
           roundCorner: '8'
           keyBorder: '0'
-      - action: Keyboard_custom_mint_themes
+      - action: __mie_theme_picker
         enabled: true
-        icon: icons/tb_theme.png
+        icon: icons/mie2_tb_theme.png
         iconSize: 18
         width: 34
         height: 34
@@ -1017,7 +1017,7 @@ preset_keyboards:
       toolbar:
       - action: __mie_menu
         enabled: true
-        icon: icons/tb_menu.png
+        icon: icons/mie2_tb_menu.png
         iconSize: 18
         width: 34
         height: 34
@@ -1028,7 +1028,7 @@ preset_keyboards:
         primary: true
       - action: Hide
         enabled: true
-        icon: icons/tb_hide.png
+        icon: icons/mie2_tb_hide.png
         iconSize: 18
         width: 34
         height: 34
@@ -1038,7 +1038,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: clipboard
         enabled: true
-        icon: icons/tb_clipboard.png
+        icon: icons/mie2_tb_clipboard.png
         iconSize: 18
         width: 34
         height: 34
@@ -1048,7 +1048,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: Keyboard_custom_pink_en
         enabled: true
-        icon: icons/tb_lang.png
+        icon: icons/mie2_tb_lang.png
         iconSize: 18
         width: 34
         height: 34
@@ -1058,7 +1058,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
         enabled: true
-        icon: icons/tb_emoji.png
+        icon: icons/mie2_tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -1068,7 +1068,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: __mie_floating_keyboard
         enabled: true
-        icon: icons/tb_onehand.png
+        icon: icons/mie2_tb_float.png
         iconSize: 18
         width: 34
         height: 34
@@ -1080,7 +1080,7 @@ preset_keyboards:
           longClick: __mie_one_hand
       - action: Keyboard_custom_pink_layouts
         enabled: true
-        icon: icons/tb_layout.png
+        icon: icons/mie2_tb_layout.png
         iconSize: 18
         width: 34
         height: 34
@@ -1088,9 +1088,9 @@ preset_keyboards:
           keyBackColor: '#00000000'
           roundCorner: '8'
           keyBorder: '0'
-      - action: Keyboard_custom_pink_themes
+      - action: __mie_theme_picker
         enabled: true
-        icon: icons/tb_theme.png
+        icon: icons/mie2_tb_theme.png
         iconSize: 18
         width: 34
         height: 34
@@ -1573,7 +1573,7 @@ preset_keyboards:
       toolbar:
       - action: __mie_menu
         enabled: true
-        icon: icons/tb_menu.png
+        icon: icons/mie2_tb_menu.png
         iconSize: 18
         width: 34
         height: 34
@@ -1584,7 +1584,7 @@ preset_keyboards:
         primary: true
       - action: Hide
         enabled: true
-        icon: icons/tb_hide.png
+        icon: icons/mie2_tb_hide.png
         iconSize: 18
         width: 34
         height: 34
@@ -1594,7 +1594,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: clipboard
         enabled: true
-        icon: icons/tb_clipboard.png
+        icon: icons/mie2_tb_clipboard.png
         iconSize: 18
         width: 34
         height: 34
@@ -1604,7 +1604,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: Keyboard_custom_pink_en
         enabled: true
-        icon: icons/tb_lang.png
+        icon: icons/mie2_tb_lang.png
         iconSize: 18
         width: 34
         height: 34
@@ -1614,7 +1614,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
         enabled: true
-        icon: icons/tb_emoji.png
+        icon: icons/mie2_tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -1624,7 +1624,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: __mie_floating_keyboard
         enabled: true
-        icon: icons/tb_onehand.png
+        icon: icons/mie2_tb_float.png
         iconSize: 18
         width: 34
         height: 34
@@ -1636,7 +1636,7 @@ preset_keyboards:
           longClick: __mie_one_hand
       - action: Keyboard_custom_pink_layouts
         enabled: true
-        icon: icons/tb_layout.png
+        icon: icons/mie2_tb_layout.png
         iconSize: 18
         width: 34
         height: 34
@@ -1644,9 +1644,9 @@ preset_keyboards:
           keyBackColor: '#00000000'
           roundCorner: '8'
           keyBorder: '0'
-      - action: Keyboard_custom_pink_themes
+      - action: __mie_theme_picker
         enabled: true
-        icon: icons/tb_theme.png
+        icon: icons/mie2_tb_theme.png
         iconSize: 18
         width: 34
         height: 34
@@ -1900,7 +1900,7 @@ preset_keyboards:
       toolbar:
       - action: __mie_menu
         enabled: true
-        icon: icons/tb_menu.png
+        icon: icons/mie2_tb_menu.png
         iconSize: 18
         width: 34
         height: 34
@@ -1911,7 +1911,7 @@ preset_keyboards:
         primary: true
       - action: Hide
         enabled: true
-        icon: icons/tb_hide.png
+        icon: icons/mie2_tb_hide.png
         iconSize: 18
         width: 34
         height: 34
@@ -1921,7 +1921,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: clipboard
         enabled: true
-        icon: icons/tb_clipboard.png
+        icon: icons/mie2_tb_clipboard.png
         iconSize: 18
         width: 34
         height: 34
@@ -1931,7 +1931,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: Keyboard_custom_blue_en
         enabled: true
-        icon: icons/tb_lang.png
+        icon: icons/mie2_tb_lang.png
         iconSize: 18
         width: 34
         height: 34
@@ -1941,7 +1941,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
         enabled: true
-        icon: icons/tb_emoji.png
+        icon: icons/mie2_tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -1951,7 +1951,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: __mie_floating_keyboard
         enabled: true
-        icon: icons/tb_onehand.png
+        icon: icons/mie2_tb_float.png
         iconSize: 18
         width: 34
         height: 34
@@ -1963,7 +1963,7 @@ preset_keyboards:
           longClick: __mie_one_hand
       - action: Keyboard_custom_blue_layouts
         enabled: true
-        icon: icons/tb_layout.png
+        icon: icons/mie2_tb_layout.png
         iconSize: 18
         width: 34
         height: 34
@@ -1971,9 +1971,9 @@ preset_keyboards:
           keyBackColor: '#00000000'
           roundCorner: '8'
           keyBorder: '0'
-      - action: Keyboard_custom_blue_themes
+      - action: __mie_theme_picker
         enabled: true
-        icon: icons/tb_theme.png
+        icon: icons/mie2_tb_theme.png
         iconSize: 18
         width: 34
         height: 34
@@ -2456,7 +2456,7 @@ preset_keyboards:
       toolbar:
       - action: __mie_menu
         enabled: true
-        icon: icons/tb_menu.png
+        icon: icons/mie2_tb_menu.png
         iconSize: 18
         width: 34
         height: 34
@@ -2467,7 +2467,7 @@ preset_keyboards:
         primary: true
       - action: Hide
         enabled: true
-        icon: icons/tb_hide.png
+        icon: icons/mie2_tb_hide.png
         iconSize: 18
         width: 34
         height: 34
@@ -2477,7 +2477,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: clipboard
         enabled: true
-        icon: icons/tb_clipboard.png
+        icon: icons/mie2_tb_clipboard.png
         iconSize: 18
         width: 34
         height: 34
@@ -2487,7 +2487,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: Keyboard_custom_blue_en
         enabled: true
-        icon: icons/tb_lang.png
+        icon: icons/mie2_tb_lang.png
         iconSize: 18
         width: 34
         height: 34
@@ -2497,7 +2497,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
         enabled: true
-        icon: icons/tb_emoji.png
+        icon: icons/mie2_tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -2507,7 +2507,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: __mie_floating_keyboard
         enabled: true
-        icon: icons/tb_onehand.png
+        icon: icons/mie2_tb_float.png
         iconSize: 18
         width: 34
         height: 34
@@ -2519,7 +2519,7 @@ preset_keyboards:
           longClick: __mie_one_hand
       - action: Keyboard_custom_blue_layouts
         enabled: true
-        icon: icons/tb_layout.png
+        icon: icons/mie2_tb_layout.png
         iconSize: 18
         width: 34
         height: 34
@@ -2527,9 +2527,9 @@ preset_keyboards:
           keyBackColor: '#00000000'
           roundCorner: '8'
           keyBorder: '0'
-      - action: Keyboard_custom_blue_themes
+      - action: __mie_theme_picker
         enabled: true
-        icon: icons/tb_theme.png
+        icon: icons/mie2_tb_theme.png
         iconSize: 18
         width: 34
         height: 34
@@ -2783,7 +2783,7 @@ preset_keyboards:
       toolbar:
       - action: __mie_menu
         enabled: true
-        icon: icons/tb_menu.png
+        icon: icons/mie2_tb_menu.png
         iconSize: 18
         width: 34
         height: 34
@@ -2794,7 +2794,7 @@ preset_keyboards:
         primary: true
       - action: Hide
         enabled: true
-        icon: icons/tb_hide.png
+        icon: icons/mie2_tb_hide.png
         iconSize: 18
         width: 34
         height: 34
@@ -2804,7 +2804,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: clipboard
         enabled: true
-        icon: icons/tb_clipboard.png
+        icon: icons/mie2_tb_clipboard.png
         iconSize: 18
         width: 34
         height: 34
@@ -2814,7 +2814,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: Keyboard_custom_orange_en
         enabled: true
-        icon: icons/tb_lang.png
+        icon: icons/mie2_tb_lang.png
         iconSize: 18
         width: 34
         height: 34
@@ -2824,7 +2824,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
         enabled: true
-        icon: icons/tb_emoji.png
+        icon: icons/mie2_tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -2834,7 +2834,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: __mie_floating_keyboard
         enabled: true
-        icon: icons/tb_onehand.png
+        icon: icons/mie2_tb_float.png
         iconSize: 18
         width: 34
         height: 34
@@ -2846,7 +2846,7 @@ preset_keyboards:
           longClick: __mie_one_hand
       - action: Keyboard_custom_orange_layouts
         enabled: true
-        icon: icons/tb_layout.png
+        icon: icons/mie2_tb_layout.png
         iconSize: 18
         width: 34
         height: 34
@@ -2854,9 +2854,9 @@ preset_keyboards:
           keyBackColor: '#00000000'
           roundCorner: '8'
           keyBorder: '0'
-      - action: Keyboard_custom_orange_themes
+      - action: __mie_theme_picker
         enabled: true
-        icon: icons/tb_theme.png
+        icon: icons/mie2_tb_theme.png
         iconSize: 18
         width: 34
         height: 34
@@ -3339,7 +3339,7 @@ preset_keyboards:
       toolbar:
       - action: __mie_menu
         enabled: true
-        icon: icons/tb_menu.png
+        icon: icons/mie2_tb_menu.png
         iconSize: 18
         width: 34
         height: 34
@@ -3350,7 +3350,7 @@ preset_keyboards:
         primary: true
       - action: Hide
         enabled: true
-        icon: icons/tb_hide.png
+        icon: icons/mie2_tb_hide.png
         iconSize: 18
         width: 34
         height: 34
@@ -3360,7 +3360,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: clipboard
         enabled: true
-        icon: icons/tb_clipboard.png
+        icon: icons/mie2_tb_clipboard.png
         iconSize: 18
         width: 34
         height: 34
@@ -3370,7 +3370,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: Keyboard_custom_orange_en
         enabled: true
-        icon: icons/tb_lang.png
+        icon: icons/mie2_tb_lang.png
         iconSize: 18
         width: 34
         height: 34
@@ -3380,7 +3380,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
         enabled: true
-        icon: icons/tb_emoji.png
+        icon: icons/mie2_tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -3390,7 +3390,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: __mie_floating_keyboard
         enabled: true
-        icon: icons/tb_onehand.png
+        icon: icons/mie2_tb_float.png
         iconSize: 18
         width: 34
         height: 34
@@ -3402,7 +3402,7 @@ preset_keyboards:
           longClick: __mie_one_hand
       - action: Keyboard_custom_orange_layouts
         enabled: true
-        icon: icons/tb_layout.png
+        icon: icons/mie2_tb_layout.png
         iconSize: 18
         width: 34
         height: 34
@@ -3410,9 +3410,9 @@ preset_keyboards:
           keyBackColor: '#00000000'
           roundCorner: '8'
           keyBorder: '0'
-      - action: Keyboard_custom_orange_themes
+      - action: __mie_theme_picker
         enabled: true
-        icon: icons/tb_theme.png
+        icon: icons/mie2_tb_theme.png
         iconSize: 18
         width: 34
         height: 34
@@ -3666,7 +3666,7 @@ preset_keyboards:
       toolbar:
       - action: __mie_menu
         enabled: true
-        icon: icons/tb_menu.png
+        icon: icons/mie2_tb_menu.png
         iconSize: 18
         width: 34
         height: 34
@@ -3677,7 +3677,7 @@ preset_keyboards:
         primary: true
       - action: Hide
         enabled: true
-        icon: icons/tb_hide.png
+        icon: icons/mie2_tb_hide.png
         iconSize: 18
         width: 34
         height: 34
@@ -3687,7 +3687,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: clipboard
         enabled: true
-        icon: icons/tb_clipboard.png
+        icon: icons/mie2_tb_clipboard.png
         iconSize: 18
         width: 34
         height: 34
@@ -3697,7 +3697,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: Keyboard_custom_purple_en
         enabled: true
-        icon: icons/tb_lang.png
+        icon: icons/mie2_tb_lang.png
         iconSize: 18
         width: 34
         height: 34
@@ -3707,7 +3707,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
         enabled: true
-        icon: icons/tb_emoji.png
+        icon: icons/mie2_tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -3717,7 +3717,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: __mie_floating_keyboard
         enabled: true
-        icon: icons/tb_onehand.png
+        icon: icons/mie2_tb_float.png
         iconSize: 18
         width: 34
         height: 34
@@ -3729,7 +3729,7 @@ preset_keyboards:
           longClick: __mie_one_hand
       - action: Keyboard_custom_purple_layouts
         enabled: true
-        icon: icons/tb_layout.png
+        icon: icons/mie2_tb_layout.png
         iconSize: 18
         width: 34
         height: 34
@@ -3737,9 +3737,9 @@ preset_keyboards:
           keyBackColor: '#00000000'
           roundCorner: '8'
           keyBorder: '0'
-      - action: Keyboard_custom_purple_themes
+      - action: __mie_theme_picker
         enabled: true
-        icon: icons/tb_theme.png
+        icon: icons/mie2_tb_theme.png
         iconSize: 18
         width: 34
         height: 34
@@ -4222,7 +4222,7 @@ preset_keyboards:
       toolbar:
       - action: __mie_menu
         enabled: true
-        icon: icons/tb_menu.png
+        icon: icons/mie2_tb_menu.png
         iconSize: 18
         width: 34
         height: 34
@@ -4233,7 +4233,7 @@ preset_keyboards:
         primary: true
       - action: Hide
         enabled: true
-        icon: icons/tb_hide.png
+        icon: icons/mie2_tb_hide.png
         iconSize: 18
         width: 34
         height: 34
@@ -4243,7 +4243,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: clipboard
         enabled: true
-        icon: icons/tb_clipboard.png
+        icon: icons/mie2_tb_clipboard.png
         iconSize: 18
         width: 34
         height: 34
@@ -4253,7 +4253,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: Keyboard_custom_purple_en
         enabled: true
-        icon: icons/tb_lang.png
+        icon: icons/mie2_tb_lang.png
         iconSize: 18
         width: 34
         height: 34
@@ -4263,7 +4263,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
         enabled: true
-        icon: icons/tb_emoji.png
+        icon: icons/mie2_tb_emoji.png
         iconSize: 18
         width: 34
         height: 34
@@ -4273,7 +4273,7 @@ preset_keyboards:
           keyBorder: '0'
       - action: __mie_floating_keyboard
         enabled: true
-        icon: icons/tb_onehand.png
+        icon: icons/mie2_tb_float.png
         iconSize: 18
         width: 34
         height: 34
@@ -4285,7 +4285,7 @@ preset_keyboards:
           longClick: __mie_one_hand
       - action: Keyboard_custom_purple_layouts
         enabled: true
-        icon: icons/tb_layout.png
+        icon: icons/mie2_tb_layout.png
         iconSize: 18
         width: 34
         height: 34
@@ -4293,9 +4293,9 @@ preset_keyboards:
           keyBackColor: '#00000000'
           roundCorner: '8'
           keyBorder: '0'
-      - action: Keyboard_custom_purple_themes
+      - action: __mie_theme_picker
         enabled: true
-        icon: icons/tb_theme.png
+        icon: icons/mie2_tb_theme.png
         iconSize: 18
         width: 34
         height: 34

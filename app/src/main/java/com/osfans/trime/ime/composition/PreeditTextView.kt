@@ -35,7 +35,9 @@ constructor(
                     0,
                     textString.length,
                 )
-                val bytes = textString.substring(0, lastTapOffset).toByteArray()
+                if (lastTapOffset > 0 && lastTapOffset < textString.length &&
+                    Character.isLowSurrogate(textString[lastTapOffset]) && Character.isHighSurrogate(textString[lastTapOffset - 1])) lastTapOffset--
+                val bytes = textString.substring(0, lastTapOffset).toByteArray(Charsets.UTF_8)
                 newCursorPos = bytes.size
                 return true
             }

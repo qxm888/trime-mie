@@ -28,8 +28,8 @@ object LayoutTypography {
         com.osfans.trime.data.theme.FontOverrides.fromSelection(spec(role)?.font.orEmpty())
             ?: com.osfans.trime.data.theme.FontOverrides.fromSelection(currentGlobal())
             ?: android.graphics.Typeface.DEFAULT else null
-    fun size(role: String, fallback: Float): Float =
-        (if (CustomKeyboards.mode == CustomKeyboards.MODE_CUSTOM) spec(role)?.size
+    fun size(role: String, fallback: Float, custom: Boolean = CustomKeyboards.mode == CustomKeyboards.MODE_CUSTOM): Float =
+        (if (custom) spec(role)?.size
         else com.osfans.trime.data.theme.FontOverrides.size(role))
             ?.takeIf { it.isFinite() && it in 1f..200f } ?: fallback
 }

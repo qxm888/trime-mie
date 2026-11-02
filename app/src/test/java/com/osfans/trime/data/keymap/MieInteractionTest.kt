@@ -15,7 +15,7 @@ class MieInteractionTest : FunSpec({
     }
     test("video background survives editable YAML round trip") {
         val k = CustomKeyboards.CustomKeyboard(name = "视频", rows = mutableListOf(CustomKeyboards.CustomRow(mutableListOf(CustomKeyboards.CustomKey(label = "a", bindings = mutableMapOf("click" to "a"))))), background = CustomBackground(CustomBackground.Type.VIDEO, image = "/a b/背景.mp4"))
-        CustomKeyboardYaml.decode(CustomKeyboardYaml.encode(mapOf("custom_video" to k))).getValue("custom_video").resolvedBackground() shouldBe k.background
+        CustomKeyboardYaml.decode(CustomKeyboardYaml.encode(mapOf("custom_video" to k), functions = emptyList())).getValue("custom_video").resolvedBackground() shouldBe k.background
     }
     test("window commands resolve with no theme preset definitions") {
         val theme = Theme(name = "empty")
@@ -24,9 +24,11 @@ class MieInteractionTest : FunSpec({
             action.command shouldBe preset.command
             action.code shouldBe android.view.KeyEvent.KEYCODE_FUNCTION
         }
-        // 内部命令与猫版旧参数脱钩：键名与执行命令都不再使用 switch_* 命名
+        // Mode actions use internal commands; symbol/hint visibility keeps its existing command names.
         Theme.BUILTIN_ACTIONS.keys.none { it.startsWith("switch_") } shouldBe true
-        Theme.BUILTIN_ACTIONS.values.none { it.command.startsWith("switch_") } shouldBe true
+        listOf("__mie_floating_keyboard", "__mie_one_hand").all {
+            Theme.BUILTIN_ACTIONS.getValue(it).command.startsWith("__mie_")
+        } shouldBe true
     }
     test("single row shrink is bounded and unknown width is unchanged") {
         candidateItemScale(100, 0) shouldBe 1f

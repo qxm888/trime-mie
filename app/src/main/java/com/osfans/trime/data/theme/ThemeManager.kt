@@ -142,9 +142,9 @@ object ThemeManager {
         }
     }
 
-    private fun getThemeById(id: String, custom: Boolean = CustomKeyboards.mode == CustomKeyboards.MODE_CUSTOM): ResolvedTheme {
+    private fun getThemeById(id: String, custom: Boolean = CustomKeyboards.mode == CustomKeyboards.MODE_CUSTOM, customLayoutId: String? = null): ResolvedTheme {
         if (custom) {
-            return ResolvedTheme(id, CustomKeyboards.standaloneTheme().let { it.copy(customizationVersion = it.customizationVersion + com.osfans.trime.data.keymap.NamedFunctions.version + FontOverrides.version + com.osfans.trime.ime.voice.VoiceSettings.version) }, null)
+            return ResolvedTheme(id, CustomKeyboards.standaloneTheme(customLayoutId).let { it.copy(customizationVersion = it.customizationVersion + com.osfans.trime.data.keymap.NamedFunctions.version + FontOverrides.version + com.osfans.trime.ime.voice.VoiceSettings.version) }, null)
         }
         when (val result = loadTheme(id)) {
             is ThemeLoader.ThemeLoadResult.Success -> return resolvedWithCustomKeyboards(id, result.theme, result.findings)
@@ -238,7 +238,7 @@ object ThemeManager {
      */
     private val resourceRevision = java.util.concurrent.atomic.AtomicLong()
     private val themeRequestRevision = java.util.concurrent.atomic.AtomicLong()
-    suspend fun selectTheme(configId: String, forceReload: Boolean = false, layoutMode: String? = null): String {
+    suspend fun selectTheme(configId: String, forceReload: Boolean = false, layoutMode: String? = null, customLayoutId: String? = null): String {
         val mode = layoutMode ?: CustomKeyboards.mode
         require(mode in setOf(CustomKeyboards.MODE_THEME, CustomKeyboards.MODE_CUSTOM))
         val custom = mode == CustomKeyboards.MODE_CUSTOM
@@ -247,13 +247,13 @@ object ThemeManager {
             DirectoryFontFallback.refresh()
             if (forceReload) synchronized(themeCache) { themeCache.evictAll() }
             if (!custom && configId.isNotBlank()) refreshChangedConfig(configId)
-            getThemeById(configId, custom).let { resolved -> resolved.copy(theme = resolved.theme.copy(
+            getThemeById(configId, custom, customLayoutId).let { resolved -> resolved.copy(theme = resolved.theme.copy(
                 customizationVersion = resolved.theme.customizationVersion + DirectoryFontFallback.stamp.hashCode().toLong() +
                     (if (forceReload) resourceRevision.incrementAndGet() else resourceRevision.get()))) }
                 .also {
                     it.theme.fonts.preload()
                     if (custom) {
-                        CustomKeyboards.get(CustomKeyboards.activeId)?.let { layout ->
+                        CustomKeyboards.get(customLayoutId ?: CustomKeyboards.activeId)?.let { layout ->
                             (layout.typography.values + layout.floatingCandidates?.fonts.orEmpty().values)
                                 .map { spec -> spec.font }.distinct().forEach(FontOverrides::fromSelection)
                         }
@@ -264,14 +264,19 @@ object ThemeManager {
             // A slower earlier load must not overwrite the newest theme/layout selection.
             if (request != themeRequestRevision.get()) return@withContext prefs.selectedTheme.getValue()
             val oldMode = CustomKeyboards.mode
+            val oldActive = CustomKeyboards.activeId
+            val oldSource = CustomKeyboards.pickerSource
             val oldTheme = activeThemeOrNull()
             val oldFindings = _activeFindings
             try {
+                if (custom && customLayoutId != null) CustomKeyboards.activeId = customLayoutId
                 CustomKeyboards.setMode(mode)
                 BitmapAssets.invalidate()
                 applyTheme(resolvedTheme)
             } catch (error: Exception) {
+                CustomKeyboards.activeId = oldActive
                 CustomKeyboards.setMode(oldMode)
+                CustomKeyboards.pickerSource = oldSource
                 if (oldTheme != null) {
                     ColorManager.attachTheme(oldTheme); _activeTheme = oldTheme; _activeFindings = oldFindings
                     runCatching { fireChange() }.onFailure { Timber.e(it, "Could not rebuild previous theme") }

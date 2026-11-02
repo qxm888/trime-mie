@@ -138,7 +138,7 @@ class CustomKeyboardsTest : FunSpec({
         }
         CustomKeyboards.setMode(CustomKeyboards.MODE_CUSTOM)
 
-        val json = CustomKeyboards.exportJson()
+        val json = CustomKeyboards.exportJson(functions = emptyList())
         CustomKeyboards.resetAllForTest()
         CustomKeyboards.list().isEmpty() shouldBe true
         // mode survived the wipe? resetForTest only clears keyboards

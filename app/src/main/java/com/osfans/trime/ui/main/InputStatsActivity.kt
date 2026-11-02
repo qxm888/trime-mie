@@ -480,13 +480,20 @@ class InputStatsActivity : AppCompatActivity() {
 
     private fun showShareDialog() {
         lastSnapshot = InputStats.read(currentSchema) { it }
-        val styles = arrayOf(getString(R.string.stats_share_short), getString(R.string.stats_share_long), "分享统计图片（含热力图）")
+        val styles = arrayOf(getString(R.string.stats_share_short), getString(R.string.stats_share_long), "分享统计图片（含热力图）", "仅分享热力图")
         var choice = 0
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.stats_share)
-            .setSingleChoiceItems(styles, 0) { _, which -> choice = which }
+            .setSingleChoiceItems(styles, 0) { dialog, which ->
+                choice = which
+                (dialog as? androidx.appcompat.app.AlertDialog)?.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEUTRAL)?.isEnabled = which < 2
+            }
             .setPositiveButton(R.string.share) { _, _ ->
-                if (choice == 2) shareReportImages() else dispatchReport(buildReport(choice == 1), share = true)
+                when (choice) {
+                    2 -> shareReportImages()
+                    3 -> StatsImageShare.share(this, heatGrid, "分享热力图")
+                    else -> dispatchReport(buildReport(choice == 1), share = true)
+                }
             }
             .setNeutralButton(R.string.stats_copy) { _, _ -> dispatchReport(buildReport(choice != 0), share = false) }
             .show()

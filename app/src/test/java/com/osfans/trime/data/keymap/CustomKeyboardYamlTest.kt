@@ -9,7 +9,7 @@ class CustomKeyboardYamlTest : FunSpec({
         val keyboard = CustomKeyboards.CustomKeyboard(name = "花:#🌸", rowSpacing = 12,
             rows = mutableListOf(CustomKeyboards.CustomRow(mutableListOf(CustomKeyboards.CustomKey("a", 60f,
                 mutableMapOf("click" to "a", "longClick" to "", "swipeUp" to "Up"))), 80), CustomKeyboards.CustomRow(height = 40)))
-        val encoded = CustomKeyboardYaml.encode(mapOf("custom_one" to keyboard))
+        val encoded = CustomKeyboardYaml.encode(mapOf("custom_one" to keyboard), functions = emptyList())
         val result = CustomKeyboardYaml.decode(encoded)
         result.keys shouldBe setOf("custom_one")
         result.getValue("custom_one").name shouldBe keyboard.name

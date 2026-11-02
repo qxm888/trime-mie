@@ -99,7 +99,7 @@ class ThemeFonts(private val theme: Theme) {
     @Synchronized private fun getTypeface(fonts: List<String>): Typeface = resolved.getOrPut(fonts) {
         val primary = resolveKey(fonts)
         val key = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && primary.files.isNotEmpty())
-            TypefaceKey((makeFileStateList(style.latinFont.toList() + fonts + style.hanbFont.toList()) +
+            TypefaceKey((makeFileStateList(fonts + style.latinFont.toList() + style.hanbFont.toList()) +
                 DirectoryFontFallback.files.map { FileState(it.path, it.lastModified(), it.length()) }).distinct()
                 .take(Typeface.CustomFallbackBuilder.getMaxCustomFallbackCount()))
             // An unconfigured theme font has always meant the current system font.

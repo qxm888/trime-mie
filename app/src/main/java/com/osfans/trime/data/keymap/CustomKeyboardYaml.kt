@@ -72,7 +72,7 @@ object CustomKeyboardYaml {
         else -> CustomBackground(CustomBackground.Type.IMAGE, image = value)
     }
 
-    fun encode(layouts: Map<String, CustomKeyboard>): String {
+    fun encode(layouts: Map<String, CustomKeyboard>, functions: List<NamedFunctions.Definition> = NamedFunctions.list()): String {
         require(layouts.isNotEmpty()) { "请先选择要导出的键盘" }
         val base = StandaloneKeyboardTheme.base()
         // Theme model serializers are intentionally read-only. Export ordinary scalar fields.
@@ -127,7 +127,9 @@ object CustomKeyboardYaml {
                 "keyboard_height" to JsonPrimitive(portraitHeight), "keyboard_height_land" to JsonPrimitive(landHeight),
                 "vertical_gap" to JsonPrimitive(kb.rowSpacing), "horizontal_gap" to JsonPrimitive(layout.horizontalGap), "ascii_mode" to JsonPrimitive(layout.asciiMode),
                 "reset_ascii_mode" to JsonPrimitive(layout.resetAsciiMode), "lock" to JsonPrimitive(layout.lock),
-                "ascii_keyboard" to string(layout.asciiKeyboard), "landscape_keyboard" to string(layout.landscapeKeyboard),
+                // Export the saved reference even when its target is currently absent.
+                // Runtime navigation filtering must not erase backup information.
+                "ascii_keyboard" to string(kb.options.asciiKeyboard), "landscape_keyboard" to string(kb.options.landscapeKeyboard),
                 "landscape_split_percent" to JsonPrimitive(layout.landscapeSplitPercent), "label_transform" to string(layout.labelTransform.name.lowercase()),
                 "keyboard_back_color" to string(bg),
                 "mie" to json.encodeToJsonElement(KeyboardInfo.serializer(), KeyboardInfo(hiddenMenuItems=kb.hiddenMenuItems, importedActions=kb.importedActions, toolbarAlignment=kb.toolbarAlignment, rowAlignments=kb.rows.mapIndexed { index,row -> index+1 to row.alignment }.toMap(), rowMargins=kb.rows.mapIndexed { index,row -> index+1 to (row.margin ?: -1) }.toMap(), surfaceAppearance=kb.surfaceAppearance, unifiedBackground=kb.unifiedBackground, typography=kb.typography, floatingCandidates=kb.floatingCandidates, toolbar=kb.toolbar, toolbarBackground=kb.toolbarBackground,
@@ -136,7 +138,7 @@ object CustomKeyboardYaml {
         val first = layouts.values.first()
         val root = obj("name" to string(if (layouts.size == 1) first.name else "自定义键盘合集"), "config_version" to string("1.0"),
             "author" to string("同文输入法咩版"),
-            "mie" to obj("format" to string(FORMAT), "version" to JsonPrimitive(1), "functions" to json.encodeToJsonElement(kotlinx.serialization.builtins.ListSerializer(NamedFunctions.Definition.serializer()), NamedFunctions.list())),
+            "mie" to obj("format" to string(FORMAT), "version" to JsonPrimitive(1), "functions" to json.encodeToJsonElement(kotlinx.serialization.builtins.ListSerializer(NamedFunctions.Definition.serializer()), functions)),
             "style" to obj("color_scheme" to string("default"), "keyboard_height" to JsonPrimitive(240), "keyboard_height_land" to JsonPrimitive(180),
                 "key_width" to JsonPrimitive(10), "key_height" to JsonPrimitive(60), "key_text_size" to JsonPrimitive(22),
                 "keyboard_back_color" to string(background(first.resolvedBackground()))),

@@ -94,7 +94,7 @@ class LabeledCandidateItemUi(
             inSpanWith(textFg, ctx.sp(textSize * scale), textFont) { append(candidate.text) }
             if (appearance?.showComments != false && comment.isNotBlank()) {
                 append(" ")
-                inSpanWith(commentFg, ctx.sp(commentSize * scale), commentFont) { append(comment) }
+                inSpanWith(commentFg, ctx.sp((if (candidate.comment == CandidateProto.CREATED_WORD_COMMENT) minOf(commentSize, textSize * .6f) else commentSize) * scale), commentFont) { append(comment) }
             }
         }
     }
@@ -159,7 +159,7 @@ class LabeledCandidateItemUi(
         rowLimit: Int = 2,
         autoShrink: Boolean = true,
     ): Float {
-        commentPaint.textSize = ctx.sp(commentSize)
+        commentPaint.textSize = ctx.sp(if (candidate.comment == CandidateProto.CREATED_WORD_COMMENT) minOf(commentSize, textSize * .6f) else commentSize)
         commentPaint.typeface = commentFont
         boundRowLimit = rowLimit
         lastCandidate = candidate

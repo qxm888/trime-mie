@@ -91,7 +91,7 @@ class ModeIsolationTest : FunSpec({
     test("layout backup cannot overwrite the separate theme binding file") {
         KeyBindingOverrides.setBinding("default", 0, "click", "a")
         val before = KeyBindingOverrides.binding("default", 0, "click")
-        runCatching { KeyBindingOverrides.importJson(CustomKeyboards.exportJson(), true) }.isFailure shouldBe true
+        runCatching { KeyBindingOverrides.importJson(CustomKeyboards.exportJson(functions = emptyList()), true) }.isFailure shouldBe true
         KeyBindingOverrides.binding("default", 0, "click") shouldBe before
         KeyBindingOverrides.clearKey("default", 0)
     }

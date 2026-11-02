@@ -49,6 +49,9 @@ constructor(
 
     private lateinit var text: CharSequence
 
+    // Styled candidates use a cached native layout; ordinary candidates retain
+    // the allocation-free Canvas.drawText path.
+    private var styledLayout: android.text.StaticLayout? = null
     private var needsMeasureText = true
     private val fontMetrics = Paint.FontMetrics()
     private val textBounds = Rect()
@@ -72,6 +75,7 @@ constructor(
             changed = true
         }
         if (changed) {
+            styledLayout = null
             needsMeasureText = true
             needsCalculateTransform = true
             requestLayout()
@@ -85,7 +89,9 @@ constructor(
         bufferType: BufferType,
     ) {
         // setText can be called in super constructor
-        if (!::text.isInitialized || charSequence == null || !text.contentEquals(charSequence)) {
+        if (!::text.isInitialized || charSequence == null ||
+            (if (text is android.text.Spanned || charSequence is android.text.Spanned) text != charSequence else !text.contentEquals(charSequence))) {
+            styledLayout = null
             needsMeasureText = true
             needsCalculateTransform = true
             text = charSequence ?: ""
@@ -129,7 +135,21 @@ constructor(
             val paint = paint
             paint.getFontMetrics(fontMetrics)
             val codePointCount = Character.codePointCount(text, 0, text.length)
-            if (codePointCount == 1) {
+            val styled = (text as? android.text.Spanned)?.let {
+                it.getSpans(0, it.length, android.text.style.CharacterStyle::class.java).isNotEmpty()
+            } == true
+            if (styled) {
+                val layoutWidth = ceil(android.text.Layout.getDesiredWidth(text, paint)).toInt().coerceAtLeast(1)
+                @Suppress("DEPRECATION")
+                val layout = android.text.StaticLayout(text, paint, layoutWidth,
+                    android.text.Layout.Alignment.ALIGN_NORMAL, 1f, 0f, false)
+                styledLayout = layout
+                fontMetrics.ascent = layout.getLineAscent(0).toFloat()
+                fontMetrics.descent = layout.getLineDescent(0).toFloat()
+                fontMetrics.top = fontMetrics.ascent
+                fontMetrics.bottom = fontMetrics.descent
+                textBounds.set(0, layout.getLineAscent(0), ceil(layout.getLineWidth(0)).toInt(), layout.getLineDescent(0))
+            } else if (codePointCount == 1) {
                 // use actual text bounds when there is only one "character",
                 // eg. full-width punctuation
                 CharArray(text.length).also {
@@ -258,7 +278,11 @@ constructor(
             translate(scrollX.toFloat(), scrollY.toFloat())
             scale(textScaleX, textScaleY, 0f, translateY)
             translate(translateX, translateY)
-            drawText(text, 0, text.length, 0f, 0f, paint)
+            val styled = styledLayout
+            if (styled != null) {
+                translate(0f, -styled.getLineBaseline(0).toFloat())
+                styled.draw(this)
+            } else drawText(text, 0, text.length, 0f, 0f, paint)
         }
     }
 

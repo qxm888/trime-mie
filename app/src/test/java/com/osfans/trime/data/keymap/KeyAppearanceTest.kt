@@ -13,7 +13,7 @@ class KeyAppearanceTest : FunSpec({
             appearance = TextKey(keyTextSize = 24f, hint = "提示", popup = listOf("á", "à"), hilitedKeyBackColor = "#FF0000"))
         val keyboard = CustomKeyboards.CustomKeyboard(name = "样式", keyAppearance = defaults,
             rows = mutableListOf(CustomKeyboards.CustomRow(mutableListOf(key))))
-        val encoded = CustomKeyboardYaml.encode(mapOf("custom_style" to keyboard))
+        val encoded = CustomKeyboardYaml.encode(mapOf("custom_style" to keyboard), functions = emptyList())
         val decoded = CustomKeyboardYaml.decode(encoded).getValue("custom_style")
         decoded.keyAppearance shouldBe defaults
         val restored = decoded.rows.first().keys.first()
@@ -35,17 +35,19 @@ class KeyAppearanceTest : FunSpec({
     }
     test("per keyboard layout and navigation survive export without changing row geometry") {
         val options = KeyboardOptions(horizontalGap = 9, heightPercent = 150, landscapeHeightPercent = 80,
-            asciiMode = 1, resetAsciiMode = true, lock = true, uppercaseLabels = true, asciiKeyboard = "custom_en")
+            asciiMode = 1, resetAsciiMode = true, lock = true, uppercaseLabels = true,
+            asciiKeyboard = "custom_en", landscapeKeyboard = "custom_land")
         val keyboard = CustomKeyboards.CustomKeyboard(name = "geometry", options = options,
             rows = mutableListOf(CustomKeyboards.CustomRow(mutableListOf(CustomKeyboards.CustomKey("a")), 60)))
-        val restored = CustomKeyboardYaml.decode(CustomKeyboardYaml.encode(mapOf("custom_options" to keyboard))).getValue("custom_options")
+        val restored = CustomKeyboardYaml.decode(CustomKeyboardYaml.encode(mapOf("custom_options" to keyboard), functions = emptyList())).getValue("custom_options")
         restored.options shouldBe options
         restored.rows.first().height shouldBe 60
         CustomKeyboards.run { restored.toTextKeyboard() }.let {
             it.keyboardHeight shouldBe 90
             it.keyboardHeightLand shouldBe 48
             it.horizontalGap shouldBe 9
-            it.asciiKeyboard shouldBe "custom_en"
+            // An unresolved target is suppressed at runtime, but retained in the export.
+            it.asciiKeyboard shouldBe ""
         }
     }
 })
