@@ -210,6 +210,25 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
                                 }
                             } }.onFailure { android.widget.Toast.makeText(service,it.message,android.widget.Toast.LENGTH_SHORT).show() }
                     }
+                    "__mie_set_page" -> {
+                        val current = com.osfans.trime.data.keymap.CustomKeyboards.resolveId(KeyboardWindow.lastAttachedId)
+                        val root = runCatching { com.osfans.trime.data.keymap.CustomKeyboards.setRoot(current) }.getOrNull()
+                        val target = root?.let { com.osfans.trime.data.keymap.KeyboardSetOperations.ordered(it) }
+                            ?.firstOrNull { com.osfans.trime.data.keymap.CustomKeyboards.pageRole(it) == arg }
+                        if (target != null) keyboardWindow.switchKeyboardFromAction(target)
+                        else android.widget.Toast.makeText(service, "此整套尚未添加相应布局", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                    "__mie_set_layouts" -> {
+                        val current = com.osfans.trime.data.keymap.CustomKeyboards.resolveId(KeyboardWindow.lastAttachedId)
+                        val root = runCatching { com.osfans.trime.data.keymap.CustomKeyboards.setRoot(current) }.getOrNull()
+                        if (root != null) {
+                            val ids = com.osfans.trime.data.keymap.KeyboardSetOperations.ordered(root)
+                            service.showDialog(android.app.AlertDialog.Builder(context)
+                                .setTitle("选择布局").setItems(ids.map { com.osfans.trime.data.keymap.CustomKeyboards.get(it)?.name.orEmpty() }.toTypedArray()) { _, i ->
+                                    keyboardWindow.switchKeyboardFromAction(ids[i])
+                                }.setNegativeButton("取消", null).create())
+                        }
+                    }
                     "__mie_symbols" -> windowManager.attachWindow(com.osfans.trime.ime.symbol.BuiltinSymbolsWindow(di, arg.ifEmpty { "emoji" }))
                     "liquid_keyboard" -> handleLiquidKeyboard(arg)
                     "menu_keyboard" -> windowManager.attachWindow(SwitchOptionWindow(di))

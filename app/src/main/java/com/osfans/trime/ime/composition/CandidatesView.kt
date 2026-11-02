@@ -138,6 +138,7 @@ class CandidatesView(
     }
 
     private fun toggleBallTools() {
+        refreshToolbar()
         showingTools = !showingTools
         removeCallbacks(closeTools)
         if (showingTools) postDelayed(closeTools, 6000)
@@ -165,15 +166,46 @@ class CandidatesView(
         }
     })
     }
+    private val toolsRow = android.widget.LinearLayout(ctx)
+    private var toolbarRuntimeId: String? = null
+    private var toolbarConfig: com.osfans.trime.data.theme.model.ToolBar? = null
+    private var toolbarGeneration = 0
     private val tools = android.widget.HorizontalScrollView(ctx).apply {
         isHorizontalScrollBarEnabled = false
-        val row = android.widget.LinearLayout(ctx)
-        com.osfans.trime.data.keymap.ToolbarOverrides.forKeyboard(theme).buttons.forEach { config ->
-            row.addView(com.osfans.trime.ime.bar.ui.ToolButton(ctx, config, scope).apply {
-                setOnClickListener { service.performFloatingToolbarAction(config.action); showingTools = false; updateUi() }
-            }, android.widget.LinearLayout.LayoutParams(dp(44), dp(44)))
+        addView(toolsRow)
+        refreshToolbar()
+    }
+
+    /** The ball mirrors the toolbar of the attached page, including English returns. */
+    fun refreshToolbar(
+        runtimeId: String = com.osfans.trime.ime.keyboard.KeyboardWindow.lastAttachedId,
+        force: Boolean = false,
+    ) {
+        val target = runtimeId.ifEmpty { "default" }
+        val config = com.osfans.trime.data.keymap.ToolbarOverrides.forKeyboard(theme, target)
+        if (!force && toolbarRuntimeId == target && toolbarConfig == config) return
+        toolbarRuntimeId = target
+        toolbarConfig = config
+        val generation = ++toolbarGeneration
+        toolsRow.removeAllViews()
+        val buttons = config.buttons.map { item ->
+            com.osfans.trime.ime.bar.ui.ToolButton(ctx, item, scope).apply {
+                setOnClickListener {
+                    service.performFloatingToolbarAction(item.action)
+                    showingTools = false
+                    updateUi()
+                }
+            }.also { toolsRow.addView(it, android.widget.LinearLayout.LayoutParams(dp(44), dp(44))) }
         }
-        addView(row)
+        val options = buttons.mapNotNull { it.option }.distinct()
+        if (options.isNotEmpty()) rime.launchOnReady { api ->
+            val states = options.associateWith { api.getRuntimeOption(it) }
+            androidx.core.content.ContextCompat.getMainExecutor(service).execute {
+                if (generation != toolbarGeneration) return@execute
+                buttons.forEach { button -> states.forEach { (option, enabled) -> button.updateStyle(option, enabled) } }
+            }
+        }
+        shouldUpdatePosition = true
     }
     private val touchEventReceiverWindow = TouchEventReceiverWindow(this)
 
@@ -181,6 +213,14 @@ class CandidatesView(
 
     override fun handleRimeMessage(it: RimeMessage<*>) {
         when (it) {
+            is RimeMessage.OptionMessage -> {
+                // Generic toggles may keep the same layout but change labels/icons.
+                refreshToolbar(force = it.data.option == "ascii_mode")
+                for (i in 0 until toolsRow.childCount) {
+                    (toolsRow.getChildAt(i) as com.osfans.trime.ime.bar.ui.ToolButton)
+                        .updateStyle(it.data.option, it.data.value)
+                }
+            }
             is RimeMessage.CompositionMessage -> {
                 if (composition.length == 0 && it.data.length > 0) { showingTools = false }
                 composition = it.data
@@ -279,6 +319,7 @@ class CandidatesView(
 
     /** Restyles after a scheme switch without rebuilding this view. */
     fun refreshColors() {
+        refreshToolbar(force = true)
         paintedColors=null
         updateUi()
         preeditUi.refreshColors()

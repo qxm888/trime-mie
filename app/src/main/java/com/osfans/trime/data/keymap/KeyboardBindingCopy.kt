@@ -8,6 +8,8 @@ object KeyboardBindingCopy {
     data class Plan(val sourceId: String, val targetId: String, val matches: List<Match>, val skipped: Int,
                     val sourceVersion: Long)
     private fun click(key: CustomKeyboards.CustomKey): String {
+        val identity = KeyboardSets.identity(key)
+        if(identity.startsWith("group:")) return identity
         val raw = key.bindings["click"].orEmpty().trim()
         val action = BindingActions.resolve(raw)
         val value = when {
@@ -56,6 +58,7 @@ object KeyboardBindingCopy {
             plan.matches.forEach { item ->
                 val old = keyboard.rows[item.row].keys[item.column]
                 keyboard.rows[item.row].keys[item.column] = old.copy(bindings = item.bindings.toMutableMap(),
+                    setBindingOverrides = old.setBindingOverrides?.plus(old.bindings.keys + item.bindings.keys),
                     appearance = old.appearance.copy(popup = item.popup, sendBindings = item.sendBindings))
             }
             keyboard.importedActions = keyboard.importedActions + source.importedActions

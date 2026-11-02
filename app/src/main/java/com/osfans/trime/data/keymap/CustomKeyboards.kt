@@ -17,6 +17,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.*
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -60,6 +62,13 @@ object CustomKeyboards {
         val skin: com.osfans.trime.data.baiduskin.ImportedKeyStyle? = null,
         /** Native key appearance; gestures continue to come from bindings. */
         val appearance: KeyAppearance.Style = KeyAppearance.Style(),
+        val keyId: String = "",
+        val identity: String = "",
+        val setRole: String = "normal",
+        val setStyleOverrides: JsonObject? = null,
+        val setBindingOverrides: Set<String>? = null,
+        val setBaseBindings: Map<String, String>? = null,
+
     ) {
         fun resolvedBackground(): CustomBackground = (background ?: CustomBackground.fromLegacy(bgColor, bgImage, CustomBackground.KEY_COLOR)).normalized()
     }
@@ -76,6 +85,11 @@ object CustomKeyboards {
     @Serializable
     data class CustomKeyboard(
         var name: String = "",
+        var setConfig: KeyboardSetConfig? = null,
+        var setOverrides: JsonObject? = null,
+        var setPageRole: String = "",
+        var setKeyStyles: Map<String, KeyAppearance.Style> = emptyMap(),
+        var setBindings: Map<String, Map<String, String>> = emptyMap(),
         /** Namespaced macro dependencies copied from a theme. */
         var importedActions: Map<String, PresetKey> = emptyMap(),
         /** overall keyboard skin, drawn under every key */
@@ -158,6 +172,7 @@ object CustomKeyboards {
         var activeId: String = "",
         var pickerSource: String = "",
         val keyboards: MutableMap<String, CustomKeyboard> = mutableMapOf(),
+        val sharedProfiles: MutableMap<String, KeyboardSharedProfile> = mutableMapOf(),
         /** 内置五色键盘的版本：升级时只刷新内置 id，用户自建键盘不动。 */
         var builtinVersion: Int = 0,
         /** 是否已经把内置键盘提供给这个库（升级老用户也会补一次）。 */
@@ -548,14 +563,87 @@ object CustomKeyboards {
             }.sortedBy { it.id }
         }
 
-    fun get(id: String): CustomKeyboard? = synchronized(lock) { store.keyboards[id]?.let(::normalizedCopy) }
+    private var resolvedVersion = -1L
+    private val resolvedCache = mutableMapOf<String, CustomKeyboard>()
+    private fun resolvedLocked(id: String): CustomKeyboard? {
+        if (resolvedVersion != store.version) { resolvedCache.clear(); resolvedVersion = store.version }
+        return resolvedCache[id] ?: KeyboardSets.resolve(id, store.keyboards, store.sharedProfiles)?.also { resolvedCache[id] = it }
+    }
+    fun get(id: String): CustomKeyboard? = synchronized(lock) {
+        (if (id.startsWith(KeyboardSets.EDIT_PREFIX)) KeyboardSets.editor(id.removePrefix(KeyboardSets.EDIT_PREFIX), store.keyboards, store.sharedProfiles)
+        else resolvedLocked(id))?.let(::normalizedCopy)
+    }
+    fun setPageIds(root: String): List<String> = synchronized(lock) {
+        val members = KeyboardSets.family(root, store.keyboards)
+        (store.keyboards[root]?.setConfig?.order.orEmpty() + members).distinct().filter { it in members }
+    }
+    fun pageRole(id: String): String = synchronized(lock) {
+        val kb = store.keyboards[id] ?: return@synchronized ""
+        val root = runCatching { KeyboardSets.rootOf(id, store.keyboards) }.getOrNull() ?: return@synchronized ""
+        KeyboardSets.pageRole(id, root, kb)
+    }
+    internal fun rawLayouts(): Map<String, CustomKeyboard> = synchronized(lock) { store.keyboards.mapValues { normalizedCopy(it.value) } }
+    fun sharedProfiles(): List<KeyboardSharedProfile> = synchronized(lock) { store.sharedProfiles.values.toList() }
+    fun setRoot(id: String): String = synchronized(lock) { KeyboardSets.rootOf(id, store.keyboards) }
+
+    @Serializable private data class SetUndo(val before: String, val afterFingerprint: String)
+    private fun setFingerprint(pages: Map<String, CustomKeyboard>, profiles: Map<String, KeyboardSharedProfile>): String {
+        val snapshot = kotlinx.serialization.json.buildJsonObject {
+            put("pages", json.encodeToJsonElement(kotlinx.serialization.builtins.MapSerializer(String.serializer(), CustomKeyboard.serializer()), pages.toSortedMap()))
+            put("profiles", json.encodeToJsonElement(kotlinx.serialization.builtins.MapSerializer(String.serializer(), KeyboardSharedProfile.serializer()), profiles.toSortedMap()))
+        }.toString()
+        return java.security.MessageDigest.getInstance("SHA-256").digest(snapshot.toByteArray()).joinToString("") { "%02x".format(it) }
+    }
+    /** Snapshot plus single synchronous store commit; any error restores the complete old state. */
+    internal fun editSets(block: (MutableMap<String, CustomKeyboard>, MutableMap<String, KeyboardSharedProfile>) -> Unit) = synchronized(lock) {
+        val previous = json.encodeToString(store)
+        val oldDirty = dirty
+        try {
+            val pages = store.keyboards.mapValues { normalizedCopy(it.value) }.toMutableMap()
+            val profiles = store.sharedProfiles.toMutableMap()
+            block(pages, profiles)
+            require(pages.values.all { it.secondaryOf.isEmpty() || it.secondaryOf in pages }) { "次级键盘所属整套不存在" }
+            pages.keys.forEach { id ->
+                KeyboardSets.rootOf(id, pages)
+                // Validate typed inherited configuration before committing an imported/shared change.
+                normalizedCopy(KeyboardSets.resolve(id, pages, profiles) ?: error("键盘已删除"))
+            }
+            File(storeFile().parentFile, "整套操作撤销.json").writeAtomicText(json.encodeToString(SetUndo(previous, setFingerprint(pages, profiles))))
+            store.keyboards.clear(); store.keyboards.putAll(pages)
+            store.sharedProfiles.clear(); store.sharedProfiles.putAll(profiles)
+            if (store.activeId !in pages) store.activeId = pages.keys.firstOrNull().orEmpty()
+            store.version++; dirty = true
+            check(flush()) { "整套设置保存失败，已恢复原数据" }
+        } catch (error: Exception) {
+            store = json.decodeFromString(Store.serializer(), previous); dirty = oldDirty
+            resolvedVersion = -1L
+            throw error
+        }
+    }
+    fun undoSetOperation() = synchronized(lock) {
+        val file = File(storeFile().parentFile, "整套操作撤销.json")
+        val text = file.readAtomicText() ?: error("没有可撤销的整套操作")
+        val undo = json.decodeFromString(SetUndo.serializer(), text)
+        require(undo.afterFingerprint == setFingerprint(store.keyboards, store.sharedProfiles)) { "整套操作后又修改过键盘，无法直接撤销；当前配置已保留" }
+        val restored = json.decodeFromString(Store.serializer(), undo.before)
+        val previous = store
+        store = restored.copy(version = store.version + 1); dirty = true
+        if (!flush()) { store = previous; dirty = true; error("撤销保存失败") }
+        file.delete(); resolvedVersion = -1L
+    }
+    internal fun portableLayouts(ids: List<String>): Map<String, CustomKeyboard> = synchronized(lock) {
+        ids.associateWith { id ->
+            val kb = get(id) ?: error("键盘已删除")
+            kb.copy(setConfig = kb.setConfig?.let { config -> config.copy(defaults = KeyboardSets.defaults(config, store.sharedProfiles), profiles = emptyMap()) })
+        }
+    }
 
     /** Read only typography metadata; parent fallback never copies full key arrays. */
     fun globalFont(id: String): String = synchronized(lock) {
         var current = resolveId(id)
         val visited = mutableSetOf<String>()
         while (current.isNotBlank() && visited.add(current)) {
-            val keyboard = store.keyboards[current] ?: break
+            val keyboard = resolvedLocked(current) ?: break
             keyboard.typography[LayoutTypography.GLOBAL]?.font?.takeIf { it.isNotBlank() }?.let { return@synchronized it }
             current = keyboard.secondaryOf
         }
@@ -588,7 +676,7 @@ object CustomKeyboards {
     )
 
     private fun starter(): CustomKeyboard {
-        fun key(label: String, width: Float = 10f, token: String = label) = CustomKey(label, width, mutableMapOf("click" to token))
+        fun key(label: String, width: Float = 10f, token: String = label) = CustomKey(label = label, width = width, bindings = mutableMapOf("click" to token))
         return CustomKeyboard(name = "自定义键盘", rows = mutableListOf(
             CustomRow("qwertyuiop".map { key(it.toString()) }.toMutableList()),
             CustomRow("asdfghjkl".map { key(it.toString(), 100f / 9) }.toMutableList()),
@@ -646,11 +734,11 @@ object CustomKeyboards {
     fun delete(id: String) {
         val removed = mutableListOf<CustomKeyboard>()
         synchronized(lock) {
-            store.keyboards.remove(id)?.let(removed::add)
-            // 次级键盘属于整套键盘：主键盘删除时一并删除。
-            store.keyboards.keys.filter { store.keyboards[it]?.secondaryOf == id }.forEach { key ->
-                store.keyboards.remove(key)?.let(removed::add)
-            }
+            val ids = KeyboardSets.family(id, store.keyboards).toSet()
+            ids.forEach { key -> store.keyboards.remove(key)?.let(removed::add) }
+            store.keyboards.values.forEach { kb -> kb.setConfig?.let { config ->
+                kb.setConfig = config.copy(order = config.order.filterNot { it in ids }, defaultPage = config.defaultPage.takeUnless { it in ids }.orEmpty())
+            } }
             if (store.activeId == id) store.activeId = ""
             store.version++
             dirty = true
@@ -663,6 +751,7 @@ object CustomKeyboards {
     /** 收集键盘模型里引用的、位于咩版自有素材目录内的文件/目录并删除。 */
     private fun deleteOwnedFiles(kb: CustomKeyboard) {
         val context = appContext ?: return
+        val survivors = synchronized(lock) { json.encodeToString(store) }
         val ownedRoots = buildList {
             runCatching { add(com.osfans.trime.core.data.MieUserDirectory.assetFolder(context, "custom_kb_bg").canonicalPath) }
             runCatching { add(com.osfans.trime.core.data.MieUserDirectory.assetFolder(context, "baidu_skins").canonicalPath) }
@@ -675,7 +764,7 @@ object CustomKeyboards {
             return ownedRoots.any { canonical.startsWith(it + File.separator) }
         }
         fun deletePath(path: String) {
-            if (!owned(path)) return
+            if (survivors.contains(path) || !owned(path)) return
             val file = File(path)
             if (file.isDirectory) file.deleteRecursively() else file.delete()
             com.osfans.trime.data.theme.BitmapAssets.invalidate()
@@ -740,9 +829,23 @@ object CustomKeyboards {
         block: (CustomKeyboard) -> Unit,
     ): Boolean =
         synchronized(lock) {
-            val kb = store.keyboards[id]?.let(::normalizedCopy) ?: return false
-            block(kb)
-            store.keyboards[id] = normalizedCopy(kb)
+            val scopeRoot = id.takeIf { it.startsWith(KeyboardSets.EDIT_PREFIX) }?.removePrefix(KeyboardSets.EDIT_PREFIX)
+            if (scopeRoot != null) {
+                val before = get(id) ?: return false
+                val after = normalizedCopy(before); block(after)
+                val root = store.keyboards[scopeRoot] ?: return false
+                val config = root.setConfig ?: return false
+                val patch = KeyboardSets.difference(KeyboardSets.values(before), KeyboardSets.values(after))
+                // Editing a set always makes the changed groups local; shared profiles have their own explicit save action.
+                val changedGroups = KeyboardSets.fields.filterValues { fields -> patch.keys.any { it in fields } }.keys
+                val base = KeyboardSets.defaults(config, store.sharedProfiles)
+                root.setConfig = config.copy(defaults = KeyboardSets.overlay(base, patch), profiles = config.profiles - changedGroups)
+            } else {
+                val raw = store.keyboards[id]?.let(::normalizedCopy) ?: return false
+                val before = get(id) ?: return false
+                val after = normalizedCopy(before); block(after)
+                store.keyboards[id] = normalizedCopy(KeyboardSets.captureMutation(raw, before, after))
+            }
             store.version++
             dirty = true
             scheduleSaveLocked()
@@ -755,7 +858,7 @@ object CustomKeyboards {
             require(store.version == expectedVersion) { "键盘已变化，请重新选择来源" }
             require(replacements.keys.all { it in store.keyboards }) { "目标键盘已删除" }
             val original = replacements.keys.associateWith { store.keyboards.getValue(it) }
-            val prepared = replacements.mapValues { normalizedCopy(it.value) }
+            val prepared = replacements.mapValues { (id, value) -> normalizedCopy(KeyboardSets.captureMutation(store.keyboards.getValue(id), get(id)!!, value)) }
             store.keyboards.putAll(prepared); store.version++; dirty = true
             if (!flush()) {
                 store.keyboards.putAll(original); store.version++; dirty = true
@@ -785,7 +888,7 @@ object CustomKeyboards {
         val first = selectedId?.also { require(store.keyboards.containsKey(it)) { "键盘已删除，请重新选择" } } ?: effectiveActiveId()
         val merged = linkedMapOf<String, TextKeyboard>()
         store.keyboards.entries.sortedBy { if (it.key == first) 0 else 1 }.forEach { (id, kb) ->
-            merged[id] = kb.toTextKeyboard()
+            merged[id] = (resolvedLocked(id) ?: kb).toTextKeyboard()
         }
         merged["default"] = merged.getValue(first)
         val base = StandaloneKeyboardTheme.base()
@@ -796,7 +899,7 @@ object CustomKeyboards {
         val dark = appContext?.resources?.configuration?.uiMode?.and(android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
         val text = if (imported != null && dark) "#FFF3F3F3" else "#FF202020"
         // 候选栏跟随当前键盘配色：底色用键盘背景、文字用键面文字色、选中项用回车强调色。
-        val active = store.keyboards[first] ?: store.keyboards.values.firstOrNull()
+        val active = resolvedLocked(first) ?: store.keyboards.values.firstOrNull()
         val paletteBackground = active?.resolvedBackground()?.takeIf {
             it.type == com.osfans.trime.data.keymap.CustomBackground.Type.COLOR
         }?.color
@@ -823,7 +926,7 @@ object CustomKeyboards {
                 scheme + listOf("candidate_text_color", "comment_text_color", "text_color", "label_color", "hilited_candidate_text_color").associateWith { text }
             }
         }
-        base.copy(presetKeyboards = merged, presetKeys = base.presetKeys + store.keyboards.values.flatMap { it.importedActions.entries }.associate { it.key to it.value } + switches, presetColorSchemes = colors, customizationVersion = store.version)
+        base.copy(presetKeyboards = merged, presetKeys = base.presetKeys + store.keyboards.keys.flatMap { resolvedLocked(it)?.importedActions?.entries.orEmpty() }.associate { it.key to it.value } + switches, presetColorSchemes = colors, customizationVersion = store.version)
     }
 
     /** 当前自定义键盘的配色（背景/文字/回车强调色），供菜单与候选栏美化使用。 */
@@ -831,7 +934,7 @@ object CustomKeyboards {
 
     fun activePalette(): Palette? {
         if (store.mode != MODE_CUSTOM) return null
-        val kb = synchronized(lock) { store.keyboards[effectiveActiveId()] } ?: return null
+        val kb = synchronized(lock) { resolvedLocked(effectiveActiveId()) } ?: return null
         val background = kb.resolvedBackground()
             .takeIf { it.type == CustomBackground.Type.COLOR }?.color.orEmpty()
         val text = kb.keyAppearance.keyTextColor.takeIf { it.isNotBlank() }.orEmpty()
@@ -931,6 +1034,7 @@ object CustomKeyboards {
         val formatVersion: Int = 1,
         val exportedAt: Long = 0,
         val keyboards: MutableMap<String, CustomKeyboard> = mutableMapOf(),
+        val sharedProfiles: Map<String, KeyboardSharedProfile> = emptyMap(),
     )
 
     /** Serializes all custom keyboards to a self-describing JSON document. */
@@ -938,7 +1042,7 @@ object CustomKeyboards {
         return synchronized(lock) {
             json.encodeToString(
                 ExportFile.serializer(),
-                ExportFile(functions=functions, exportedAt = now, keyboards = store.keyboards),
+                ExportFile(functions=functions, exportedAt = now, keyboards = store.keyboards, sharedProfiles = store.sharedProfiles),
             )
         }
     }
@@ -973,13 +1077,34 @@ object CustomKeyboards {
         }
     }
 
+    internal fun builtinTemplates(): Map<String, CustomKeyboard> {
+        val context = appContext ?: error("键盘尚未初始化")
+        return decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_keyboards).orEmpty() +
+            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_extra).orEmpty() +
+            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_effects).orEmpty()
+    }
+    fun resetBuiltinSet(root: String) {
+        val context = appContext ?: error("键盘尚未初始化")
+        val templates = decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_keyboards).orEmpty() +
+            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_extra).orEmpty() +
+            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_effects).orEmpty()
+        require(root in templates && templates.getValue(root).secondaryOf.isBlank()) { "不是内置整套" }
+        val ids = KeyboardSets.family(root, templates)
+        editSets { pages, profiles ->
+            ids.forEach { pages[it] = normalizedCopy(templates.getValue(it)) }
+            KeyboardSetOperations.adoptBuiltinData(root, pages, profiles, templates)
+        }
+    }
+
     /** Snapshot only the explicit selection before opening the system file picker. */
     fun exportYaml(ids: List<String>): String {
         val selected = synchronized(lock) {
             require(ids.isNotEmpty() && ids.all { it in store.keyboards }) { "请选择现有键盘" }
-            ids.distinct().associateWith { normalizedCopy(store.keyboards.getValue(it)) }
+            portableLayouts(ids.distinct())
         }
-        return CustomKeyboardYaml.encode(selected)
+        // Traditional YAML is an effective standalone snapshot. The ZIP format retains live inheritance and resources.
+        return CustomKeyboardYaml.encode(selected.mapValues { (_, kb) -> kb.copy(setConfig = null, setOverrides = null,
+            rows = kb.rows.map { row -> row.copy(keys = row.keys.map { it.copy(setStyleOverrides = null, setBindingOverrides = null) }.toMutableList()) }.toMutableList()) })
     }
 
     /** YAML is the user-facing format; existing JSON backups stay readable. */
@@ -1014,7 +1139,10 @@ object CustomKeyboards {
         require("keyboards" in json.parseToJsonElement(text).jsonObject) { "missing keyboard layouts" }
         require(file.keyboards.keys.all { it.startsWith(ID_PREFIX) }) { "invalid custom keyboard id" }
         if(file.functions.isNotEmpty()) NamedFunctions.merge(file.functions)
-        applyImportedLayouts(file.keyboards, replace)
+        val detached = file.keyboards.mapValues { (_, kb) -> kb.copy(setConfig = kb.setConfig?.let { config ->
+            config.copy(defaults = KeyboardSets.defaults(config, file.sharedProfiles), profiles = emptyMap())
+        }) }
+        applyImportedLayouts(detached, replace)
     }
 
     private fun applyImportedLayouts(layouts: Map<String, CustomKeyboard>, replace: Boolean) {

@@ -1,6 +1,6 @@
 # 构建同文输入法咩版
 
-本说明对应 **V3.1.16 / versionCode 20261223**。正式 APK 使用原发布证书。
+当前版本为 **V3.2.0 / versionCode 20261225**，整套键盘管理正式版。正式 APK 使用原发布证书。
 
 ## 1. 获取源码
 
@@ -9,7 +9,7 @@ git clone https://github.com/qxm888/trime-mie.git
 cd trime-mie
 ```
 
-复现 V3.1.16 时执行 `git checkout v3.1.16`，或从对应发布页下载 `trime-mie-v3.1.16-source.zip` 并进入 `repository/`。正式 APK、完整源码及交付说明使用同一发布标签。
+获取本版时执行 `git checkout v3.2.0`，或从对应发布页下载 `trime-mie-v3.2.0-source.zip` 并进入 `repository/`。正式 APK、完整源码及交付说明使用同一发布标签。
 
 旧 mie.15 的初始标签仅包含文档，旧版完整源码需使用其附件或补充源码标签。
 

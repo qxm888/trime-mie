@@ -41,16 +41,21 @@ import kotlinx.coroutines.withContext
  */
 class CustomKeyboardActivity : AppCompatActivity() {
     private var pendingExportName: String? = null
+    private var pendingSetExport: String? = null
     private lateinit var list: LinearLayout
     private lateinit var emptyHint: TextView
     private lateinit var themeSection: View
     private lateinit var listHeader: TextView
     private lateinit var newButton: MaterialButton
     private lateinit var modeCurrent: TextView
+    private var showBuiltinSets = false
+    private lateinit var setCategories: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         pendingExportName = savedInstanceState?.getString("pending_export_name")
+        pendingSetExport = savedInstanceState?.getString("pending_set_export")
+        showBuiltinSets = savedInstanceState?.getBoolean("builtin_sets") ?: false
         setContentView(R.layout.activity_custom_kb)
 
         val toolbar = findViewById<MaterialToolbar>(R.id.custom_kb_toolbar)
@@ -61,8 +66,12 @@ class CustomKeyboardActivity : AppCompatActivity() {
         }
         toolbar.setNavigationOnClickListener { finish() }
         toolbar.inflateMenu(R.menu.custom_kb)
+        toolbar.menu.add(0, 73001, 0, "导出整套（包含资源）")
+        toolbar.menu.add(0, 73002, 1, "导入整套键盘包")
         toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
+                73001 -> exportSet()
+                73002 -> setImportLauncher.launch(arrayOf("application/zip", "application/octet-stream", "*/*"))
                 R.id.action_import_theme_keyboard -> importThemeKeyboard()
                 R.id.action_import_baidu_skin -> baiduLauncher.launch(arrayOf("*/*"))
                 R.id.action_restore_builtin_kbs -> showBuiltinRestore()
@@ -78,7 +87,17 @@ class CustomKeyboardActivity : AppCompatActivity() {
         emptyHint = findViewById(R.id.custom_kb_empty)
         themeSection = findViewById(R.id.custom_kb_theme_section)
         listHeader = findViewById(R.id.custom_kb_list_header)
+        listHeader.text = "整套键盘"
+        setCategories = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+        (listHeader.parent as LinearLayout).addView(setCategories, (listHeader.parent as LinearLayout).indexOfChild(listHeader) + 1)
+        listOf("自定义整套", "内置整套").forEachIndexed { index, label ->
+            setCategories.addView(MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+                text = label; isAllCaps = false
+                setOnClickListener { showBuiltinSets = index == 1; renderList() }
+            }, LinearLayout.LayoutParams(0, -2, 1f))
+        }
         newButton = findViewById(R.id.custom_kb_new)
+        newButton.text = "新建整套键盘"
         modeCurrent = findViewById(R.id.custom_kb_mode_current)
 
         val toggle = findViewById<MaterialButtonToggleGroup>(R.id.custom_kb_mode_toggle)
@@ -115,6 +134,8 @@ class CustomKeyboardActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putString("pending_export_name", pendingExportName)
+        outState.putString("pending_set_export", pendingSetExport)
+        outState.putBoolean("builtin_sets", showBuiltinSets)
         super.onSaveInstanceState(outState)
     }
 
@@ -350,34 +371,61 @@ class CustomKeyboardActivity : AppCompatActivity() {
         }.show()
     }
 
-    private fun createKeyboard() {
-        val layout =
-            TextInputLayout(this).apply {
-                hint = getString(R.string.custom_kb_name_hint)
-                setPadding(dp(20), dp(4), dp(20), dp(4))
-            }
-        val input =
-            TextInputEditText(layout.context).apply {
-                setSingleLine(true)
-            }
-        layout.addView(
-            input,
-            LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT),
-        )
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.custom_kb_new)
-            .setView(layout)
-            .setPositiveButton(R.string.ok) { _, _ ->
-                val name = input.text?.toString()?.trim().orEmpty()
-                if (name.isNotEmpty()) {
-                    val id = CustomKeyboards.create(name)
-                    renderList()
-                    CustomKeyboardEditActivity.start(this, id)
-                }
-            }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
+
+    private val setExportLauncher = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.CreateDocument("application/zip")) { uri ->
+        val file = pendingSetExport?.takeIf { it.startsWith("keyboard-set-") && '/' !in it && '\\' !in it }?.let { java.io.File(cacheDir, it) }
+        pendingSetExport = null
+        if(uri == null) file?.delete() else KeyboardSetDialogs.run(this) {
+            try {
+                require(file?.isFile == true) { "导出快照已失效，请重新选择" }
+                contentResolver.openOutputStream(uri, "wt")?.use { out -> file!!.inputStream().use { it.copyTo(out) } } ?: error("无法写入所选文件")
+            } finally { file?.delete() }
+        }
     }
+    private val setImportLauncher = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.OpenDocument()) { uri ->
+        if(uri != null) {
+            val progress = MaterialAlertDialogBuilder(this).setMessage("正在导入整套键盘和资源…").setCancelable(false).create().also { it.show() }
+            lifecycleScope.launch {
+                val result = withContext(Dispatchers.IO) { runCatching {
+                    val file = java.io.File.createTempFile("keyboard-set-import-", ".zip", cacheDir)
+                    try {
+                        contentResolver.openInputStream(uri)?.use { input -> file.outputStream().use { output ->
+                            val buffer = ByteArray(65536); var total = 0L
+                            while(true) { val n = input.read(buffer); if(n < 0) break; total += n
+                                require(total <= 2L * 1024 * 1024 * 1024) { "键盘包超过2GB" }; output.write(buffer, 0, n) }
+                        } } ?: error("无法读取文件")
+                        com.osfans.trime.data.keymap.KeyboardSetArchive.import(this@CustomKeyboardActivity, file)
+                    } finally { file.delete() }
+                } }
+                progress.dismiss()
+                if(!isActive || isFinishing || isDestroyed) return@launch
+                result.onSuccess { ids -> renderList(); ThemeManager.requestCustomizationRefresh()
+                    MaterialAlertDialogBuilder(this@CustomKeyboardActivity).setTitle("整套导入完成").setMessage("已导入 ${ids.size} 套键盘及资源，未切换当前输入布局。")
+                        .setPositiveButton("编辑") { _, _ -> KeyboardSetActivity.start(this@CustomKeyboardActivity, ids.first()) }.setNegativeButton("关闭", null).show()
+                }.onFailure { error -> MaterialAlertDialogBuilder(this@CustomKeyboardActivity).setTitle("导入失败").setMessage(error.message).setPositiveButton("确定", null).show() }
+            }
+        }
+    }
+    private fun exportSet() {
+        KeyboardSetDialogs.chooseSet(this, "选择导出的整套") { id ->
+            val progress = MaterialAlertDialogBuilder(this).setMessage("正在打包布局和图片、视频、字体、图标…").setCancelable(false).create().also { it.show() }
+            lifecycleScope.launch {
+                val result = withContext(Dispatchers.IO) { runCatching { com.osfans.trime.data.keymap.KeyboardSetArchive.create(this@CustomKeyboardActivity, listOf(id)) } }
+                progress.dismiss()
+                if(!isActive || isFinishing || isDestroyed) { result.getOrNull()?.delete(); return@launch }
+                result.onSuccess { file ->
+                    pendingSetExport?.let { java.io.File(cacheDir, it).delete() }; pendingSetExport = file.name
+                    val name = CustomKeyboards.get(id)?.name.orEmpty().map { if(it in "/\\:*?\"<>|" || it.isISOControl()) '_' else it }.joinToString("").take(64).ifBlank { "键盘" }
+                    setExportLauncher.launch("$name.mie-keyboard.zip")
+                }.onFailure { error -> MaterialAlertDialogBuilder(this@CustomKeyboardActivity).setTitle("导出失败").setMessage(error.message).setPositiveButton("确定", null).show() }
+            }
+        }
+    }
+
+    private fun createKeyboard() {
+        KeyboardSetDialogs.create(this) { id -> renderList(); KeyboardSetActivity.start(this, id) }
+    }
+    override fun onResume() { super.onResume(); if (::list.isInitialized) renderList() }
 
     /** 模式联动：主题模式只显示「主题键盘按键定制」，自定义模式只显示自定义键盘列表。 */
     private fun renderSections() {
@@ -393,6 +441,7 @@ class CustomKeyboardActivity : AppCompatActivity() {
         findViewById<View>(R.id.custom_kb_toolbar_section).visibility =
             if (isTheme) View.VISIBLE else View.GONE
         listHeader.visibility = if (isTheme) View.GONE else View.VISIBLE
+        setCategories.visibility = if(isTheme) View.GONE else View.VISIBLE
         list.visibility = if (isTheme) View.GONE else View.VISIBLE
         newButton.visibility = if (isTheme) View.GONE else View.VISIBLE
         renderList()
@@ -401,12 +450,18 @@ class CustomKeyboardActivity : AppCompatActivity() {
     private fun renderList() {
         list.removeAllViews()
         // 主列表只显示主键盘；次级键盘（跳转用）在主键盘详情的“次级键盘”入口里管理。
-        val entries = CustomKeyboards.list().filter { it.secondaryOf.isEmpty() }
+        val stockIds = com.osfans.trime.data.keymap.KeyboardLayoutCatalog.builtinIds(this)
+        val entries = CustomKeyboards.list().filter { it.secondaryOf.isEmpty() && (it.id in stockIds) == showBuiltinSets }
+        for(i in 0 until setCategories.childCount) (setCategories.getChildAt(i) as MaterialButton).apply {
+            strokeWidth = dp(if((i == 1) == showBuiltinSets) 2 else 1)
+            contentDescription = text.toString() + if((i == 1) == showBuiltinSets) "，当前" else ""
+        }
         val isTheme = CustomKeyboards.mode == CustomKeyboards.MODE_THEME
         emptyHint.visibility = if (!isTheme && entries.isEmpty()) View.VISIBLE else View.GONE
+        emptyHint.text = if(showBuiltinSets) "暂无内置整套，可在右上角恢复内置键盘" else "还没有自定义整套，点下方创建"
 
         entries.forEach { entry ->
-            val active = CustomKeyboards.isActive(entry.id)
+            val active = runCatching { CustomKeyboards.setRoot(CustomKeyboards.activeId) == entry.id }.getOrDefault(false)
             val card = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_VERTICAL
@@ -429,7 +484,7 @@ class CustomKeyboardActivity : AppCompatActivity() {
                     val meta =
                         TextView(this@CustomKeyboardActivity).apply {
                             text =
-                                getString(R.string.custom_kb_meta, entry.rowCount, entry.keyCount) +
+                                "整套 · ${CustomKeyboards.familyIds(listOf(entry.id)).size} 个布局" +
                                     if (active) " · " + getString(R.string.custom_kb_in_use) else ""
                             textSize = 12f
                             setTextColor(
@@ -469,29 +524,8 @@ class CustomKeyboardActivity : AppCompatActivity() {
             )
             card.addView(rename)
             card.addView(delete)
-            card.setOnClickListener {
-                val options =
-                    arrayOf(
-                        getString(R.string.custom_kb_use_this),
-                        getString(R.string.custom_kb_edit),
-                        getString(R.string.secondary_kb_entry),
-                    )
-                MaterialAlertDialogBuilder(this)
-                    .setTitle(entry.name)
-                    .setItems(options) { _, which ->
-                        when (which) {
-                            0 -> {
-                                CustomKeyboards.activeId = entry.id
-                                renderSections()
-                                refreshTheme()
-                            }
+            card.setOnClickListener { KeyboardSetActivity.start(this, entry.id) }
 
-                            1 -> CustomKeyboardEditActivity.start(this, entry.id)
-                            else -> SecondaryKeyboardsActivity.start(this, entry.id)
-                        }
-                    }
-                    .show()
-            }
             list.addView(
                 card,
                 LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {

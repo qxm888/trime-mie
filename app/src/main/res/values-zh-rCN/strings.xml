@@ -399,9 +399,9 @@
     <string name="key_editor_key_select_left">向左选中</string>
     <string name="key_editor_key_select_right">向右选中</string>
     <string name="key_editor_back">返回</string>
-    <string name="custom_kb_title">自定义键盘</string>
+    <string name="custom_kb_title">布局与整套键盘</string>
     <string name="custom_kb_mode_title">布局模式</string>
-    <string name="custom_kb_mode_desc">方案一：YAML 主题加按键与工具栏覆盖，不改原文件。方案二：独立自定义键盘，不使用主题文件。一次只启用一种，切换保留各自配置。</string>
+    <string name="custom_kb_mode_desc">主题布局使用 YAML 主题；自定义布局可管理自建及内置整套，统一设置外观、工具栏和绑定。</string>
     <string name="custom_kb_mode_theme">主题布局</string>
     <string name="custom_kb_mode_custom">自定义布局</string>
     <string name="custom_kb_mode_changed">已切换，重新拉起键盘生效</string>

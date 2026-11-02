@@ -79,6 +79,9 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         }
         toolbar.setNavigationOnClickListener { finish() }
         toolbar.title = kb.name
+        toolbar.menu.add("跟随整套").setOnMenuItemClickListener {
+            KeyboardSetPageSettings.show(this, kbId) { render() }; true
+        }
 
         findViewById<View>(R.id.cbe_global_appearance).setOnClickListener {
             SurfaceAppearanceEditor.show(this, true, layoutId = kbId) { refreshAppearancePreview { render() } }
@@ -849,6 +852,18 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
             )
         }
         refreshGestureRows(gestureViews, key)
+        var resetSetStyle = false
+        var resetSetBindings = false
+        if(key.setStyleOverrides != null || key.setBindingOverrides != null) {
+            root.addView(com.google.android.material.button.MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+                text = "恢复跟随整套按键外观"
+                setOnClickListener { resetSetStyle = true; text = "保存后跟随整套外观" }
+            })
+            root.addView(com.google.android.material.button.MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+                text = "恢复跟随整套常用绑定"
+                setOnClickListener { resetSetBindings = true; text = "保存后跟随整套绑定" }
+            })
+        }
 
         val dialog =
             MaterialAlertDialogBuilder(this)
@@ -862,7 +877,10 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
                 .setPositiveButton(R.string.ok) { _, _ ->
                     val label = labelInput.text?.toString()?.trim().orEmpty()
                     val width = widthInput.text?.toString()?.toFloatOrNull()?.coerceIn(1f, 100f) ?: 10f
-                    val newKey = key.copy(label = label, width = width, bgColor = "", bgImage = "", background = keyBackground, appearance = keyAppearance, skin = key.skin.takeIf { keyBackground == key.resolvedBackground() && !replaceImportedStyle })
+                    val newKey = key.copy(
+                        setStyleOverrides = if(resetSetStyle) kotlinx.serialization.json.JsonObject(mapOf("__mie_reset" to kotlinx.serialization.json.JsonPrimitive(true))) else key.setStyleOverrides,
+                        setBindingOverrides = if(resetSetBindings) setOf("__mie_reset") else key.setBindingOverrides,
+                        label = label, width = width, bgColor = "", bgImage = "", background = keyBackground, appearance = keyAppearance, skin = key.skin.takeIf { keyBackground == key.resolvedBackground() && !replaceImportedStyle })
                     mutate { k ->
                         val row = k.rows[rowIdx]
                         if (isNew) {

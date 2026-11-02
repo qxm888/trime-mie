@@ -336,6 +336,7 @@ class KeyboardWindow(di: DI) :
         }
 
         runCatching { onKeyboardSwitched?.invoke(target) }
+        service.refreshFloatingToolbar(target)
         lastKeyboardHeight = keyboard.keyboardHeight
         keyboard.also {
             _currentKeyboardHeight.tryEmit(it.keyboardHeight)

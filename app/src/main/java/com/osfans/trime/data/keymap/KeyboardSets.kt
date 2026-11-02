@@ -1,0 +1,239 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+package com.osfans.trime.data.keymap
+
+import com.osfans.trime.data.keymap.CustomKeyboards.CustomKeyboard
+import com.osfans.trime.data.keymap.CustomKeyboards.CustomKey
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.*
+import java.util.UUID
+
+/** Set metadata is stored with the root, so existing backups remain self contained. */
+@Serializable data class KeyboardSetConfig(
+    val defaults: JsonObject = JsonObject(emptyMap()),
+    val profiles: Map<String, String> = emptyMap(),
+    val order: List<String> = emptyList(),
+    val defaultPage: String = "",
+)
+@Serializable data class KeyboardSharedProfile(val id: String, val name: String, val group: String,
+    val values: JsonObject, val revision: Long = 1)
+
+/** Pure merge/navigation helpers; storage commits are performed by CustomKeyboards. */
+object KeyboardSets {
+    const val EDIT_PREFIX = "__mie_set:"
+    val groups = linkedMapOf(
+        "background" to "背景", "appearance" to "按键外观", "fonts" to "字体",
+        "toolbar" to "工具栏", "menus" to "功能菜单", "floating" to "候选窗与悬浮球", "bindings" to "常用绑定",
+    )
+    val fields = mapOf(
+        "background" to setOf("background", "toolbarBackground", "unifiedBackground"),
+        "appearance" to setOf("surfaceAppearance", "keyAppearance", "allKeysBackground", "setKeyStyles"),
+        "fonts" to setOf("typography"),
+        "toolbar" to setOf("toolbar", "toolbarAlignment", "toolbarHeightDp", "importedActions"),
+        "menus" to setOf("hiddenMenuItems"),
+        "floating" to setOf("floatingCandidates"),
+        "bindings" to setOf("setBindings", "importedActions"),
+    )
+    val allFields = fields.values.flatten().toSet()
+    val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
+    private val emptyStyle by lazy { KeyAppearance.values(KeyAppearance.Style()) }
+    fun encode(kb: CustomKeyboard) = json.encodeToJsonElement(CustomKeyboard.serializer(), kb).jsonObject
+    fun decode(value: JsonObject) = json.decodeFromJsonElement(CustomKeyboard.serializer(), value)
+    fun values(kb: CustomKeyboard, group: String? = null) = JsonObject(encode(kb).filterKeys { it in (fields[group] ?: allFields) })
+
+    /** Object fields merge recursively; arrays, false, empty strings and explicit null replace. */
+    fun overlay(base: JsonObject, patch: JsonObject): JsonObject = JsonObject(base.toMutableMap().apply {
+        patch.forEach { (name, value) -> this[name] = if (value is JsonObject && value.keys == setOf("__mie_replace")) value.getValue("__mie_replace")
+            else if (value is JsonObject && this[name] is JsonObject) overlay(this.getValue(name).jsonObject, value) else value }
+    })
+    fun difference(before: JsonObject, after: JsonObject): JsonObject = JsonObject(buildMap {
+        (before.keys + after.keys).forEach { name ->
+            val a = before[name]; val b = after[name] ?: JsonNull
+            if (a != b) put(name, if (a is JsonObject && b is JsonObject) {
+                if (b.keys.containsAll(a.keys)) difference(a, b) else JsonObject(mapOf("__mie_replace" to b))
+            } else b)
+        }
+    })
+    fun withoutGroup(value: JsonObject, group: String) = JsonObject(value.filterKeys { it !in fields.getValue(group) })
+    fun rootOf(id: String, pages: Map<String, CustomKeyboard>): String {
+        var current = id.removePrefix(EDIT_PREFIX); val seen = mutableSetOf<String>()
+        while (seen.add(current)) {
+            val kb = pages[current] ?: error("键盘已删除")
+            if (kb.secondaryOf.isEmpty()) return current
+            current = kb.secondaryOf
+        }
+        error("键盘归属存在循环")
+    }
+    fun family(root: String, pages: Map<String, CustomKeyboard>): List<String> {
+        val ids = linkedSetOf(root)
+        do { val count = ids.size; pages.forEach { (id, kb) -> if (kb.secondaryOf in ids) ids.add(id) } } while (ids.size != count)
+        return ids.filter { it in pages }
+    }
+    fun defaults(config: KeyboardSetConfig, profiles: Map<String, KeyboardSharedProfile>): JsonObject {
+        var result = JsonObject(config.defaults.filterKeys { it in allFields })
+        config.profiles.forEach { (group, id) -> profiles[id]?.takeIf { it.group == group }?.let {
+            val incoming = JsonObject(it.values.filterKeys { name -> name in fields[group].orEmpty() })
+            val dependencies = result["importedActions"]?.jsonObject.orEmpty() + incoming["importedActions"]?.jsonObject.orEmpty()
+            result = JsonObject(result.filterKeys { it !in fields[group].orEmpty() } + incoming + ("importedActions" to JsonObject(dependencies)))
+        } }
+        return result
+    }
+    fun resolve(id: String, pages: Map<String, CustomKeyboard>, profiles: Map<String, KeyboardSharedProfile>): CustomKeyboard? {
+        val raw = pages[id] ?: return null
+        val root = runCatching { rootOf(id, pages) }.getOrNull() ?: return raw
+        val config = pages[root]?.setConfig ?: return raw
+        val base = defaults(config, profiles)
+        var result = if (raw.setOverrides == null) raw else decode(JsonObject(encode(raw) + overlay(base, raw.setOverrides!!)))
+        result = result.copy(importedActions = raw.importedActions + result.importedActions, rows = result.rows.map { row -> row.copy(keys = row.keys.map { key ->
+            var next = key
+            if (key.setStyleOverrides != null) {
+                val style = result.setKeyStyles[key.setRole] ?: KeyAppearance.Style()
+                val common = KeyAppearance.values(result.keyAppearance).filter { (field, value) -> value != emptyStyle[field] }
+                var styleValues = overlay(KeyAppearance.values(style), JsonObject(common))
+                (raw.setOverrides?.get("keyAppearance") as? JsonObject)?.let { styleValues = overlay(styleValues, it) }
+                val resolvedStyle = json.decodeFromJsonElement(KeyAppearance.Style.serializer(), overlay(styleValues, key.setStyleOverrides))
+                val background = resolvedStyle.keyBackColor.takeIf { it.isNotBlank() }?.let { token ->
+                    if(token.startsWith("#")) CustomBackground(CustomBackground.Type.COLOR, color = token).normalized()
+                    else CustomBackground(CustomBackground.Type.IMAGE, image = token)
+                }
+                next = next.copy(appearance = resolvedStyle, background = background ?: next.background)
+            }
+            if (key.setBindingOverrides != null) {
+                val rules = result.setBindings[key.identity].orEmpty()
+                val bindings = (key.setBaseBindings ?: key.bindings).toMutableMap()
+                key.setBindingOverrides.forEach { behavior ->
+                    if(behavior in key.bindings) bindings[behavior] = key.bindings.getValue(behavior) else bindings.remove(behavior)
+                }
+                next = next.copy(bindings = (bindings + rules.filterKeys { it !in key.setBindingOverrides }).toMutableMap())
+            }
+            next
+        }.toMutableList()) }.toMutableList())
+        return result
+    }
+    fun editor(root: String, pages: Map<String, CustomKeyboard>, profiles: Map<String, KeyboardSharedProfile>): CustomKeyboard? {
+        val raw = pages[root] ?: return null
+        val config = raw.setConfig ?: return raw
+        return decode(JsonObject(encode(raw) + defaults(config, profiles))).copy(name = raw.name + " · 整套设置")
+    }
+    fun captureMutation(raw: CustomKeyboard, before: CustomKeyboard, after: CustomKeyboard): CustomKeyboard {
+        val next = after.copy(setConfig = raw.setConfig)
+        if (raw.setOverrides != null) next.setOverrides = overlay(raw.setOverrides!!, difference(values(before), values(after)))
+        val oldKeys = before.rows.flatMap { it.keys }.filter { it.keyId.isNotBlank() }.associateBy { it.keyId }
+        next.rows.forEach { row -> row.keys.indices.forEach { index ->
+            var key = row.keys[index]
+            if(key.keyId.isEmpty()) {
+                var styleOverrides = JsonObject(KeyAppearance.values(key.appearance).filter { (name, value) -> value != emptyStyle[name] })
+                if(key.resolvedBackground() != CustomBackground().normalized()) styleOverrides = overlay(styleOverrides,
+                    JsonObject(mapOf("keyBackColor" to JsonPrimitive(backgroundToken(key.resolvedBackground())))))
+                key = key.copy(keyId = UUID.randomUUID().toString(), identity = identity(key), setRole = role(key),
+                    setStyleOverrides = if(raw.setOverrides != null) key.setStyleOverrides ?: styleOverrides else null,
+                    setBindingOverrides = if(raw.setOverrides != null) key.setBindingOverrides ?: emptySet() else null,
+                    setBaseBindings = if(raw.setOverrides != null) key.setBaseBindings ?: key.bindings.toMap() else null)
+                row.keys[index] = key
+            }
+            val old = oldKeys[key.keyId] ?: return@forEach
+            if(old.bindings["click"] != key.bindings["click"]) key = key.copy(identity = identity(key.copy(identity = "")), setRole = role(key))
+            var updated = key
+            if (key.setStyleOverrides != null && key.setStyleOverrides != JsonObject(mapOf("__mie_reset" to JsonPrimitive(true)))) {
+                var changes = difference(KeyAppearance.values(old.appearance), KeyAppearance.values(key.appearance))
+                if (old.background != key.background) changes = overlay(changes, JsonObject(mapOf("keyBackColor" to JsonPrimitive(backgroundToken(key.resolvedBackground())))))
+                updated = updated.copy(setStyleOverrides = overlay(key.setStyleOverrides, changes))
+            }
+            if (key.setBindingOverrides != null) updated = updated.copy(setBindingOverrides = key.setBindingOverrides +
+                (old.bindings.keys + key.bindings.keys).filter { old.bindings[it] != key.bindings[it] })
+            if(key.setStyleOverrides == JsonObject(mapOf("__mie_reset" to JsonPrimitive(true)))) updated = updated.copy(setStyleOverrides = JsonObject(emptyMap()))
+            if(key.setBindingOverrides == setOf("__mie_reset")) updated = updated.copy(setBindingOverrides = emptySet())
+            row.keys[index] = updated
+        } }
+        return next
+    }
+    fun rewriteMask(mask: JsonObject, effective: JsonObject): JsonObject = JsonObject(mask.mapValues { (key, value) ->
+        if(value is JsonObject && value.keys != setOf("__mie_replace") && effective[key] is JsonObject) rewriteMask(value, effective.getValue(key).jsonObject)
+        else if(value is JsonObject && value.keys == setOf("__mie_replace")) JsonObject(mapOf("__mie_replace" to (effective[key] ?: JsonObject(emptyMap()))))
+        else effective[key] ?: value
+    })
+    fun backgroundToken(bg: CustomBackground): String = when (bg.type) {
+        CustomBackground.Type.COLOR -> bg.color
+        CustomBackground.Type.TRANSPARENT -> "#00000000"
+        else -> bg.image
+    }
+    fun identity(key: CustomKey): String {
+        if (key.identity.isNotBlank()) return key.identity
+        val click = key.bindings["click"].orEmpty()
+        val group = key.label.trim().lowercase()
+        if(click.length == 1 && group.matches(Regex("[a-z]{2,6}")) && click.lowercase() in group) return "group:$group"
+        return when {
+            click.length == 1 -> "char:" + click.lowercase()
+            click in setOf("space", "Return", "BackSpace", "Shift_L", "Shift_R") -> "key:" + click.lowercase()
+            else -> "action:" + click
+        }
+    }
+    fun role(key: CustomKey): String = when {
+        key.bindings["click"] == "Return" -> "accent"
+        key.bindings["click"].orEmpty().length == 1 || key.bindings["click"] == "space" -> "normal"
+        else -> "function"
+    }
+    fun pageRole(id: String, root: String, kb: CustomKeyboard): String = kb.setPageRole.ifBlank {
+        if (id == root) "zh_26" else when (id.removePrefix(root + "_")) {
+            "en" -> "en"; "num" -> "num"; "9" -> "zh_9"; "14" -> "zh_14"; "18" -> "zh_18"
+            "7_1" -> "zh_7_1"; "7_2" -> "zh_7_2"; else -> "custom:$id"
+        }
+    }
+    fun newId() = CustomKeyboards.ID_PREFIX + UUID.randomUUID().toString().replace("-", "")
+
+    fun reusable(kb: CustomKeyboard, root: String, pages: Map<String, CustomKeyboard>): CustomKeyboard {
+        val members = family(root, pages).toSet()
+        val aliases = kb.importedActions.keys.associateWith { if(it.startsWith(root + "_shared_")) it else root + "_shared_" + it }
+        fun action(value: com.osfans.trime.data.theme.model.PresetKey): com.osfans.trime.data.theme.model.PresetKey {
+            val target = value.select
+            if (target in members) return com.osfans.trime.data.theme.model.PresetKey(send = "FUNCTION", command = "__mie_set_page",
+                option = pageRole(target, root, pages.getValue(target)), label = value.label)
+            return value.copy(text = Regex("\\{([^{}]+)\\}").replace(value.text) { match -> aliases[match.groupValues[1]]?.let { "{$it}" } ?: match.value })
+        }
+        fun token(value: String): String {
+            if (value.startsWith("Keyboard_") && value.removePrefix("Keyboard_") in members) {
+                val target = value.removePrefix("Keyboard_")
+                return when {
+                    target.endsWith("_layouts") || target.endsWith("_hub") -> BindingActions.command("__mie_set_layouts")
+                    target.endsWith("_themes") -> BindingActions.command("theme")
+                    target.contains("_symbol") || target.contains("_emoji") || target.contains("_cat_") -> BindingActions.command("__mie_symbols", "common")
+                    else -> BindingActions.command("__mie_set_page", pageRole(target, root, pages.getValue(target)))
+                }
+            }
+            aliases[value]?.let { return it }
+            if(value.startsWith("__mie_action:")) return BindingActions.resolve(value)?.let { BindingActions.token(action(it)) } ?: value
+            return Regex("\\{([^{}]+)\\}").replace(value) { match -> aliases[match.groupValues[1]]?.let { "{$it}" } ?: match.value }
+        }
+        return kb.copy(toolbar = kb.toolbar.map { entry ->
+            val language = entry.icon.contains("tb_lang") || entry.action == "Mode_switch"
+            entry.copy(action = if(language) "Mode_switch" else token(entry.action), template = entry.template?.copy(action = if(language) "Mode_switch" else token(entry.action)),
+                bindings = entry.bindings.mapValues { token(it.value) })
+        }.toMutableList(), setBindings = kb.setBindings.mapValues { (_, rules) -> rules.mapValues { token(it.value) } },
+            importedActions = kb.importedActions.entries.associate { (name, value) -> aliases.getValue(name) to action(value) })
+    }
+
+    /** Rewrite typed references and action dependencies; labels and committed text are preserved. */
+    fun remap(kb: CustomKeyboard, ids: Map<String, String>, actions: Map<String, String>): CustomKeyboard {
+        fun token(value: String): String {
+            if (value.startsWith("Keyboard_") && value.removePrefix("Keyboard_") in ids) return "Keyboard_" + ids.getValue(value.removePrefix("Keyboard_"))
+            actions[value]?.let { return it }
+            if (value.startsWith("__mie_action:")) return BindingActions.resolve(value)?.let { a ->
+                BindingActions.token(a.copy(select = ids[a.select] ?: a.select,
+                    text = Regex("\\{([^{}]+)\\}").replace(a.text) { m -> actions[m.groupValues[1]]?.let { "{$it}" } ?: m.value }))
+            } ?: value
+            return Regex("\\{([^{}]+)\\}").replace(value) { m -> actions[m.groupValues[1]]?.let { "{$it}" } ?: m.value }
+        }
+        return kb.copy(secondaryOf = ids[kb.secondaryOf] ?: kb.secondaryOf,
+            options = kb.options.copy(asciiKeyboard = ids[kb.options.asciiKeyboard] ?: kb.options.asciiKeyboard,
+                landscapeKeyboard = ids[kb.options.landscapeKeyboard] ?: kb.options.landscapeKeyboard),
+            rows = kb.rows.map { row -> row.copy(keys = row.keys.map { key -> key.copy(
+                keyId = UUID.randomUUID().toString(), bindings = key.bindings.mapValues { token(it.value) }.toMutableMap(),
+                setBaseBindings = key.setBaseBindings?.mapValues { token(it.value) },
+                appearance = key.appearance.copy(popup = key.appearance.popup.map(::token))) }.toMutableList()) }.toMutableList(),
+            toolbar = kb.toolbar.map { entry -> entry.copy(action = token(entry.action), bindings = entry.bindings.mapValues { token(it.value) },
+                template = entry.template?.let { it.copy(action = token(it.action)) }) }.toMutableList(),
+            importedActions = kb.importedActions.entries.associate { (name, a) -> (actions[name] ?: name) to a.copy(
+                select = ids[a.select] ?: a.select, text = token(a.text)) },
+            setConfig = null, setOverrides = null,
+            setBindings = kb.setBindings.mapValues { (_, rules) -> rules.mapValues { token(it.value) } })
+    }
+}

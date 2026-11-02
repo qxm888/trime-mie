@@ -146,6 +146,13 @@ object KeyTokenPicker {
         return listOf(
             "自定义功能" to com.osfans.trime.data.keymap.NamedFunctions.list().map { e(it.name, com.osfans.trime.data.keymap.NamedFunctions.PREFIX + it.id) },
             "键盘跳转" to (listOf(".default" to "返回主键盘", ".last" to "返回上个键盘", ".prior" to "上一个键盘", ".next" to "下一个键盘", ".last_lock" to "返回锁定键盘") + CustomKeyboards.list().map { it.id to it.name }).map { (id,name) -> e(name, com.osfans.trime.data.keymap.BindingActions.keyboard(id, name)) },
+            "整套键盘" to listOf(
+                e("本套数字布局", com.osfans.trime.data.keymap.BindingActions.command("__mie_set_page", "num", "本套数字布局")),
+                e("本套英文布局", com.osfans.trime.data.keymap.BindingActions.command("__mie_set_page", "en", "本套英文布局")),
+                e("选择本套布局", com.osfans.trime.data.keymap.BindingActions.command("__mie_set_layouts", label = "选择本套布局")),
+                e("中英切换（记住来源布局）", "Mode_switch"),
+                e("返回来源主布局", com.osfans.trime.data.keymap.BindingActions.keyboard(".default", "返回来源主布局")),
+            ),
             "内置语音控制" to listOf(e("开始录音",com.osfans.trime.data.keymap.BindingActions.command("__mie_voice_start",label="开始录音")),e("结束录音并识别",com.osfans.trime.data.keymap.BindingActions.command("__mie_voice_finish",label="结束录音并识别")),e("取消录音",com.osfans.trime.data.keymap.BindingActions.command("__mie_voice_cancel",label="取消录音"))),
             "方案选项与中英切换" to (listOf(e("自定义方案选项…","__parameter:__rime_option")) + listOf("ascii_mode" to "中英切换", "full_shape" to "全角半角", "simplification" to "简繁切换", "ascii_punct" to "中西文标点").map { (option,name) -> e(name,com.osfans.trime.data.keymap.BindingActions.token(com.osfans.trime.data.theme.model.PresetKey(send="Mode_switch",toggle=option,label=name))) }),
             "Rime 按键（全部）" to com.osfans.trime.core.RimeKeyMapping::class.java.fields.filter { it.name.startsWith("RimeKey_") }.sortedBy { it.name }.map { e(it.name.removePrefix("RimeKey_")) },

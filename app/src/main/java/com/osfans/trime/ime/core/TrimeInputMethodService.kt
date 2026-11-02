@@ -394,6 +394,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         inputView?.post { inputView?.showKeyboardMenu() }
     }
     fun performFloatingToolbarAction(action: String) { inputView?.performToolbarAction(action) }
+    fun refreshFloatingToolbar(runtimeId: String) { candidatesView?.refreshToolbar(runtimeId) }
 
     private fun replaceCandidateView(scope: ThemeScope): CandidatesView {
         val newCandidatesView = CandidatesView(this, rime, scope)

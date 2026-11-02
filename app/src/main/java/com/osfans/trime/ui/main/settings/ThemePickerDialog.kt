@@ -177,7 +177,9 @@ object ThemePickerDialog {
                     val resolved = ThemeManager.selectTheme(
                         if (custom) ThemeManager.prefs.selectedTheme.getValue() else item.id,
                         layoutMode = if (custom) CustomKeyboards.MODE_CUSTOM else CustomKeyboards.MODE_THEME,
-                        customLayoutId = item.id.takeIf { custom })
+                        customLayoutId = item.id.takeIf { custom }?.let { root ->
+                            CustomKeyboards.get(root)?.setConfig?.defaultPage?.takeIf { CustomKeyboards.get(it) != null } ?: root
+                        })
                     CustomKeyboards.pickerSource = category
                     if (attached) dialog.dismiss()
                     if (!custom && resolved != item.id) context.toast("主题暂不可用，已使用默认主题；如缺少编译文件，请手动部署")
