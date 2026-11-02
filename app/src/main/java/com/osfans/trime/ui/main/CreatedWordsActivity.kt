@@ -72,12 +72,6 @@ class CreatedWordsActivity : AppCompatActivity() {
         val root=LinearLayout(this).apply { orientation=LinearLayout.VERTICAL;setBackgroundColor(ContextCompat.getColor(context,R.color.framework_background)) }
         root.addView(MaterialToolbar(this).apply {
             title="造词管理";setNavigationIcon(R.drawable.ic_baseline_arrow_back_24);setNavigationOnClickListener { finish() }
-            menu.add("导出全部造词…").setOnMenuItemClickListener {
-                if (!exporting) CandidateExportDialog.show(this@CreatedWordsActivity, createdWordsOnly = true) { format ->
-                    exportFormat = format; exportFile.launch("mie-created-words.${format.extension}")
-                }
-                true
-            }
         },LinearLayout.LayoutParams(-1,dp(64)))
         val top=LinearLayout(this).apply { orientation=LinearLayout.VERTICAL;setPadding(dp(16),dp(8),dp(16),dp(8)) }
         val search=TextInputEditText(this).apply { setSingleLine();setText(query);contentDescription="搜索词条、编码或方案" }
@@ -96,6 +90,14 @@ class CreatedWordsActivity : AppCompatActivity() {
         actions.addView(filter,LinearLayout.LayoutParams(0,-2,1f))
         actions.addView(MaterialButton(this).apply { text="新建词条";setOnClickListener { create() } },LinearLayout.LayoutParams(-2,-2).apply { leftMargin=dp(12) })
         top.addView(actions)
+        top.addView(MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+            text = "导出造词 · YAML / JSON / TXT"
+            setOnClickListener {
+                if (!exporting) CandidateExportDialog.show(this@CreatedWordsActivity, createdWordsOnly = true) { format ->
+                    exportFormat = format; exportFile.launch("mie-created-words.${format.extension}")
+                }
+            }
+        }, LinearLayout.LayoutParams(-1, -2))
         count=TextView(this).apply { textSize=13f;setPadding(dp(4),dp(4),0,dp(8));setTextColor(ContextCompat.getColor(context,R.color.framework_text_secondary)) }
         top.addView(count);root.addView(top)
         val frame=FrameLayout(this)

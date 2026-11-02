@@ -647,6 +647,8 @@ class Keyboard(
     /** 按键上方符号的水平对齐：left / center / right。 */
     val symbolAlign: String
         get() = selfConfig?.symbolAlign?.takeIf { it in setOf("left", "center", "right") } ?: "center"
+    val hintAlign: String
+        get() = selfConfig?.hintAlign?.takeIf { it in setOf("left", "center", "right") } ?: symbolAlign
 
     companion object {
         const val EDGE_LEFT = 0x01

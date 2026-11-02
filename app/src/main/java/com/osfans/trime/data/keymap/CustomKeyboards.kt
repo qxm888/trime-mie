@@ -46,7 +46,8 @@ object CustomKeyboards {
     const val BUILTIN_DEFAULT_ID = "custom_pink"
 
     /** 内置五色键盘的版本；改过内置 YAML 后 +1，升级时自动刷新内置 id。 */
-    private const val BUILTIN_VERSION = 12
+    private const val BUILTIN_VERSION = 14
+    private var builtinBindings: BuiltinBindingDefaults? = null
 
     @Serializable
     data class CustomKey(
@@ -68,6 +69,10 @@ object CustomKeyboards {
         val setStyleOverrides: JsonObject? = null,
         val setBindingOverrides: Set<String>? = null,
         val setBaseBindings: Map<String, String>? = null,
+        val primaryBindingOverrides: Set<String> = emptySet(),
+        val primaryBaseBindings: Map<String, String>? = null,
+        val primaryBasePopup: List<String>? = null,
+        val primaryBaseSendBindings: Boolean? = null,
 
     ) {
         fun resolvedBackground(): CustomBackground = (background ?: CustomBackground.fromLegacy(bgColor, bgImage, CustomBackground.KEY_COLOR)).normalized()
@@ -312,8 +317,11 @@ object CustomKeyboards {
 
     private fun decodeBuiltin(context: android.content.Context, resId: Int): Map<String, CustomKeyboard>? =
         runCatching {
+            val current = resId in setOf(com.osfans.trime.R.raw.mie_builtin_keyboards, com.osfans.trime.R.raw.mie_builtin_extra, com.osfans.trime.R.raw.mie_builtin_effects)
+            val bindings = if (current) builtinBindings ?: BuiltinBindingDefaults(context.resources.openRawResource(com.osfans.trime.R.raw.mie_builtin_bindings)
+                .bufferedReader().use { it.readText() }).also { builtinBindings = it } else null
             context.resources.openRawResource(resId)
-                .bufferedReader().use { CustomKeyboardYaml.decode(it.readText()) }
+                .bufferedReader().use { CustomKeyboardYaml.decode(it.readText()) }.mapValues { (id, kb) -> bindings?.template(id, kb) ?: kb }
         }.onFailure { Timber.w(it, "CustomKeyboards: builtin asset %d decode failed", resId) }.getOrNull()
 
     /** 扩展内置键盘（表情/符号分类页）放后台补，避免首次启动主线程卡住。 */
@@ -334,12 +342,14 @@ object CustomKeyboards {
                     }
                 }
                 var added = 0
+                val sevenGeometry = preserveSevenGeometry(extras)
                 extras.forEach { (id, keyboard) ->
                     val existing = store.keyboards[id]
                     if (existing == null) {
                         store.keyboards[id] = normalizedCopy(keyboard)
                         added++
-                    } else store.keyboards[id] = upgradeSymbols(existing, keyboard, store.keyboards.keys)
+                    } else store.keyboards[id] = builtinBindings?.migrate(id, upgradeSymbols(existing, keyboard, store.keyboards.keys, sevenGeometry[id]))
+                        ?: upgradeSymbols(existing, keyboard, store.keyboards.keys, sevenGeometry[id])
                 }
                 store.builtinExtrasVersion = BUILTIN_VERSION
                 store.version++
@@ -410,13 +420,14 @@ object CustomKeyboards {
         if (store.keyboards.keys.none { it in layouts.keys }) return
         val oldSeven = if (store.builtinVersion in 6..8)
             decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_seven_legacy).orEmpty() else emptyMap()
+        val sevenGeometry = preserveSevenGeometry(layouts)
         layouts.forEach { (id, keyboard) ->
             val existing = store.keyboards[id]
             if (store.builtinVersion >= 6 && existing != null) {
                 // V7 adds pages and chooser entries. Keep each existing layout's
                 // fonts, toolbar, appearance and user-edited keys.
                 val kept = if (store.builtinVersion < 7 && id.endsWith("_layouts")) existing.copy(rows = normalizedCopy(keyboard).rows) else existing
-                val updated = upgradeSymbols(kept, keyboard, store.keyboards.keys)
+                val updated = upgradeSymbols(kept, keyboard, store.keyboards.keys, sevenGeometry[id])
                 oldSeven[id]?.let { legacy ->
                     // Compare whole keys: custom bindings, labels and appearances
                     // prevent replacement. Existing order and layout settings stay.
@@ -429,7 +440,7 @@ object CustomKeyboards {
                         }
                     } }
                 }
-                store.keyboards[id] = updated
+                store.keyboards[id] = builtinBindings?.migrate(id, updated) ?: updated
             } else store.keyboards[id] = normalizedCopy(keyboard)
         }
         store.builtinVersion = BUILTIN_VERSION
@@ -444,8 +455,30 @@ object CustomKeyboards {
         appContext?.let { decodeBuiltin(it, com.osfans.trime.R.raw.mie_builtin_chooser_legacy) }.orEmpty()
     }
 
-    internal fun upgradeSymbols(existing: CustomKeyboard, template: CustomKeyboard, existingIds: Set<String>): CustomKeyboard {
+    private fun preserveSevenGeometry(templates: Map<String, CustomKeyboard>): Map<String, JsonObject> =
+        templates.filterKeys { it.endsWith("_7_1") || it.endsWith("_7_2") }.mapNotNull { (id, _) ->
+            KeyboardSets.resolve(id, store.keyboards, store.sharedProfiles)?.let { id to KeyboardSets.values(it, "geometry") }
+        }.toMap()
+
+    internal fun upgradeSymbols(existing: CustomKeyboard, template: CustomKeyboard, existingIds: Set<String>, preservedGeometry: JsonObject? = null): CustomKeyboard {
         val updated = normalizedCopy(existing)
+        if (updated.options.asciiKeyboard.isBlank() && template.options.asciiKeyboard in existingIds) {
+            updated.options = updated.options.copy(asciiKeyboard = template.options.asciiKeyboard)
+        }
+        if (template.keyboardHeightDp == 260) {
+            if (updated.keyboardHeightDp == 0) updated.keyboardHeightDp = 260
+            if (updated.rowSpacing in setOf(4, 5)) updated.rowSpacing = 10
+            // Adopted sets read defaults/overrides instead of raw page fields.
+            fun migrate(values: JsonObject) = JsonObject(values.toMutableMap().apply {
+                if (get("keyboardHeightDp") == JsonPrimitive(0)) put("keyboardHeightDp", JsonPrimitive(260))
+                if ((get("rowSpacing") as? JsonPrimitive)?.intOrNull in setOf(4, 5)) put("rowSpacing", JsonPrimitive(10))
+            })
+            updated.setConfig = updated.setConfig?.let { it.copy(defaults = migrate(it.defaults)) }
+            updated.setOverrides = updated.setOverrides?.let(::migrate)
+        } else if (preservedGeometry != null && updated.setOverrides != null) {
+            // A seven-column page must not inherit the newly changed main-page dimensions.
+            updated.setOverrides = KeyboardSets.overlay(updated.setOverrides!!, preservedGeometry)
+        }
         if (template.name.endsWith("9键")) {
             updated.rows.lastOrNull()?.let { row ->
                 if (row.keys.map { it.width } == listOf(16f, 12f, 47f, 12f, 13f) && row.keys.last().label == "确定") {
@@ -888,7 +921,7 @@ object CustomKeyboards {
         val first = selectedId?.also { require(store.keyboards.containsKey(it)) { "键盘已删除，请重新选择" } } ?: effectiveActiveId()
         val merged = linkedMapOf<String, TextKeyboard>()
         store.keyboards.entries.sortedBy { if (it.key == first) 0 else 1 }.forEach { (id, kb) ->
-            merged[id] = (resolvedLocked(id) ?: kb).toTextKeyboard()
+            merged[id] = (resolvedLocked(id) ?: kb).toTextKeyboard(id)
         }
         merged["default"] = merged.getValue(first)
         val base = StandaloneKeyboardTheme.base()
@@ -986,7 +1019,15 @@ object CustomKeyboards {
         }
     }
 
-    fun CustomKeyboard.toTextKeyboard(): TextKeyboard = TextKeyboard(
+    internal fun effectiveAsciiTarget(id: String, keyboard: CustomKeyboard, pages: Map<String, CustomKeyboard>): String {
+        keyboard.options.asciiKeyboard.takeIf { it.isNotBlank() && it in pages }?.let { return it }
+        if(id.isBlank()) return ""
+        val root = runCatching { KeyboardSets.rootOf(id, pages) }.getOrNull() ?: return ""
+        if(!KeyboardSets.pageRole(id, root, keyboard).startsWith("zh_")) return ""
+        return KeyboardSets.family(root, pages).firstOrNull { KeyboardSets.pageRole(it, root, pages.getValue(it)) == "en" }.orEmpty()
+    }
+
+    fun CustomKeyboard.toTextKeyboard(layoutId: String = ""): TextKeyboard = TextKeyboard(
         name = name, width = 10f, height = 60f, columns = -1,
         verticalGap = rowSpacing.coerceIn(0, maxRowSpacing()),
         horizontalGap = options.horizontalGap,
@@ -996,13 +1037,14 @@ object CustomKeyboards {
             else rows.sumOf { it.height.coerceIn(24, 160) }.coerceAtLeast(24) * options.heightPercent / 100,
         keyboardHeightLand = if (landscapeHeightDp > 0) (landscapeHeightDp - effectiveToolbarHeightDp()).coerceAtLeast(24)
             else rows.sumOf { it.height.coerceIn(24, 160) }.coerceAtLeast(24) * options.landscapeHeightPercent / 100,
-        asciiKeyboard = options.asciiKeyboard.let { it.takeIf { id -> id.isNotEmpty() && store.keyboards.containsKey(id) }.orEmpty() },
+        asciiKeyboard = effectiveAsciiTarget(layoutId, this, store.keyboards),
         asciiMode = if (importedSkin != null) { if (importedSkin?.page == "en_26" || importedSkin?.page == "num_9") 1 else 0 } else options.asciiMode,
         resetAsciiMode = importedSkin != null || options.resetAsciiMode,
         lock = options.lock,
         landscapeSplitPercent = options.landscapeSplitPercent,
         labelTransform = if (options.uppercaseLabels) TextKeyboard.LabelTransform.UPPERCASE else TextKeyboard.LabelTransform.NONE,
         symbolAlign = options.symbolAlignment,
+        hintAlign = options.effectiveHintAlignment,
         keys = generatedKeys().map { it.second },
     )
 

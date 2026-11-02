@@ -71,7 +71,7 @@ object KeyboardSetOperations {
                     resetAsciiMode = true, asciiKeyboard = if (role.startsWith("zh_")) ids["en"].orEmpty() else ""),
                 rows = kb.rows.map { row -> row.copy(keys = row.keys.map { key ->
                     val type = KeyboardSets.role(key)
-                    val local = KeyAppearance.values(key.appearance).filterKeys { it in setOf("labelSymbol", "hint", "popup", "sendBindings", "icon", "iconSize", "showSymbol", "showHint", "symbolAlign") }
+                    val local = KeyAppearance.values(key.appearance).filterKeys { it in setOf("labelSymbol", "hint", "popup", "sendBindings", "icon", "iconSize", "showSymbol", "showHint", "symbolAlign", "hintAlign") }
                     val bindings = key.bindings.mapValues { (behavior, value) ->
                         if (behavior == "click" && key.label.contains("返回")) "Keyboard_default" else clean(value)
                     }
@@ -81,6 +81,9 @@ object KeyboardSetOperations {
         }
         val first = created.getValue(root)
         val defaultValues = KeyboardSets.values(first.copy(keyAppearance = KeyAppearance.Style(), setKeyStyles = styles))
+        // Seven-column templates retain their own dimensions instead of inheriting 260dp.
+        created.replaceAll { _, page -> page.copy(setOverrides = KeyboardSets.difference(
+            KeyboardSets.values(first, "geometry"), KeyboardSets.values(page, "geometry"))) }
         created[root] = first.copy(setConfig = KeyboardSetConfig(defaults = defaultValues, order = ids.values.toList(), defaultPage = root))
         return root to created
     }
@@ -257,7 +260,9 @@ object KeyboardSetOperations {
             val source = snapshot.copy(options = snapshot.options.copy(asciiKeyboard = if(role.startsWith("zh_")) en else ""))
             pages[id] = KeyboardSets.remap(source, mapOf(temp to id), emptyMap()).copy(
                 name = pages.getValue(root).name + " · " + layoutNames.getValue(role), secondaryOf = root,
-                setPageRole = role, setOverrides = JsonObject(emptyMap()))
+                setPageRole = role, setOverrides = if(role.startsWith("zh_7_")) KeyboardSets.difference(
+                    JsonObject(KeyboardSets.defaults(cfg, profiles).filterKeys { it in KeyboardSets.fields.getValue("geometry") }),
+                    KeyboardSets.values(source, "geometry")) else JsonObject(emptyMap()))
             pages.getValue(root).setConfig = cfg.copy(order = cfg.order + id)
             if (role == "en") family.forEach { pageId -> val kb = pages.getValue(pageId)
                 if ((kb.setPageRole.startsWith("zh_") || kb.options.lock) && kb.options.asciiKeyboard.isBlank()) kb.options = kb.options.copy(asciiKeyboard = id) }

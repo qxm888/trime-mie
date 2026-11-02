@@ -28,6 +28,7 @@ import timber.log.Timber
 object ThemeManager {
     private val customizationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var customizationRefreshJob: Job? = null
+    private val selectionGate = ThemeSelectionGate()
 
     /** Survives editor Activity destruction and coalesces rapid mode/edit changes. */
     fun requestCustomizationRefresh() {
@@ -229,7 +230,10 @@ object ThemeManager {
      * Reloads the active theme — needed after custom keyboards or the layout
      * mode changed, so the injected presets and the UI tree are rebuilt.
      */
-    suspend fun refreshActiveTheme(): String = selectTheme(prefs.selectedTheme.getValue(), forceReload = true)
+    suspend fun refreshActiveTheme(): String {
+        selectionGate.awaitSelection()
+        return selectThemeInternal(prefs.selectedTheme.getValue(), forceReload = true)
+    }
 
     /**
      * Switches to theme [configId], falling back when it is unavailable.
@@ -239,6 +243,12 @@ object ThemeManager {
     private val resourceRevision = java.util.concurrent.atomic.AtomicLong()
     private val themeRequestRevision = java.util.concurrent.atomic.AtomicLong()
     suspend fun selectTheme(configId: String, forceReload: Boolean = false, layoutMode: String? = null, customLayoutId: String? = null): String {
+        val ticket = selectionGate.begin()
+        try { return selectThemeInternal(configId, forceReload, layoutMode, customLayoutId) }
+        finally { selectionGate.finish(ticket) }
+    }
+
+    private suspend fun selectThemeInternal(configId: String, forceReload: Boolean = false, layoutMode: String? = null, customLayoutId: String? = null): String {
         val mode = layoutMode ?: CustomKeyboards.mode
         require(mode in setOf(CustomKeyboards.MODE_THEME, CustomKeyboards.MODE_CUSTOM))
         val custom = mode == CustomKeyboards.MODE_CUSTOM

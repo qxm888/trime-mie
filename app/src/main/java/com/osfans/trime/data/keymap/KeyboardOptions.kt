@@ -18,12 +18,16 @@ data class KeyboardOptions(
     /** 按键上方符号的水平对齐：left / center / right。 */
     val symbolAlignment: String = "center",
     val landscapeSplitPercent: Int = 0,
+    /** Legacy missing values retain their previous alignment until edited independently. */
+    val hintAlignment: String? = null,
 ) {
+    val effectiveHintAlignment get() = hintAlignment ?: symbolAlignment
     fun validated(): KeyboardOptions = apply {
         require(horizontalGap in 0..32) { "横向键距须为 0–32 dp" }
         require(heightPercent in 50..200 && landscapeHeightPercent in 50..200) { "高度比例须为 50–200%" }
         require(asciiMode in 0..1) { "初始英文模式须为 0 或 1" }
         require(landscapeSplitPercent in 0..100) { "横屏分割比例须为 0–100%" }
         require(symbolAlignment in setOf("left", "center", "right")) { "符号对齐须为 left / center / right" }
+        require(hintAlignment == null || hintAlignment in setOf("left", "center", "right")) { "注解对齐须为 left / center / right" }
     }
 }

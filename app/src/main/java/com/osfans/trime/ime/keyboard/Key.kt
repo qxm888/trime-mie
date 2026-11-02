@@ -34,6 +34,7 @@ class Key(
 
     /** 按键级符号对齐覆盖；空 = 跟随键盘级设置。 */
     val symbolAlign: String get() = keyDef?.symbolAlign.orEmpty()
+    val hintAlign: String get() = keyDef?.hintAlign ?: symbolAlign
 
     /** 独立前景图标配置。 */
     fun icon(): String = keyDef?.icon.orEmpty()
@@ -225,6 +226,8 @@ class Key(
     fun onPressed() {
         isPressed = true
     }
+    /** Cancelling a detached surface must not toggle a sticky key. */
+    fun cancelPress() { isPressed = false }
 
     /**
      * Changes the pressed state of the key. If it is a sticky key, it will also change the toggled

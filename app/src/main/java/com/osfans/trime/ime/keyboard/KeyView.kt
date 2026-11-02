@@ -99,6 +99,12 @@ class KeyView(
     }
     private val labelMetrics = Paint.FontMetrics()
     private val symbolMetrics = Paint.FontMetrics()
+    private val punctuationBounds = android.graphics.Rect()
+    private var punctuationLabel = ""
+    private var punctuationSize = 0f
+    private var punctuationFont: android.graphics.Typeface? = null
+    private var punctuationX = 0f
+    private var punctuationY = 0f
     private val backgroundStyle = com.osfans.trime.ime.appearance.KeyBackgroundStyle()
     private lateinit var frameAppearance: com.osfans.trime.ime.appearance.SurfaceAppearanceConfig
 
@@ -302,6 +308,8 @@ class KeyView(
         who === paintedBackground || who === key.customBgDrawable || super.verifyDrawable(who)
 
     override fun onDetachedFromWindow() {
+        keyPressed = false
+        key.cancelPress()
         paintedBackground?.takeIf { it.callback === this }?.callback = null
         paintedBackground = null
         key.customBgDrawable?.takeIf { it.callback === this }?.callback = null
@@ -309,6 +317,9 @@ class KeyView(
         rippleAnimator = null
         pressAnimator?.cancel()
         pressAnimator = null
+        rippleProgress = 0f; pressProgress = 0f
+        scaleX = 1f; scaleY = 1f; translationY = key.y.toFloat(); translationZ = 0f
+        keyboard.firstPressedKeyIndex = -1
         clearEffectCaches()
         if (voiceHeld) { voiceHeld = false; service.cancelVoiceIfActive() }
         super.onDetachedFromWindow()
@@ -742,8 +753,16 @@ class KeyView(
             val centerY = (height - paddingTop - paddingBottom) / 2f + paddingTop
             val fontMetrics = labelMetrics.also { textPaint.getFontMetrics(it) }
             val adjustmentY = -(fontMetrics.ascent + fontMetrics.descent) / 2f
-
-            canvas.drawText(label, centerX + sp(key.keyTextOffsetX) * keyboardView.keyTextScale, centerY + adjustmentY + sp(key.keyTextOffsetY) * keyboardView.keyTextScale, textPaint)
+            val punctuation = theme.isCustom && (label == "," || label == "." || label == "，" || label == "。")
+            if (punctuation && (punctuationLabel != label || punctuationSize != textSize || punctuationFont !== textPaint.typeface)) {
+                textPaint.getTextBounds(label, 0, label.length, punctuationBounds)
+                punctuationLabel = label; punctuationSize = textSize; punctuationFont = textPaint.typeface
+                punctuationX = textPaint.measureText(label) / 2f - punctuationBounds.exactCenterX()
+                punctuationY = -punctuationBounds.exactCenterY()
+            }
+            val opticalX = if (punctuation) punctuationX else 0f
+            val opticalY = if (punctuation) punctuationY else adjustmentY
+            canvas.drawText(label, centerX + opticalX + sp(key.keyTextOffsetX) * keyboardView.keyTextScale, centerY + opticalY + sp(key.keyTextOffsetY) * keyboardView.keyTextScale, textPaint)
         }
     }
 
@@ -803,7 +822,8 @@ class KeyView(
 
         icon.colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN)
 
-        val centerX = (width - paddingLeft - paddingRight) / 2f + paddingLeft + sp(offsetX) * keyboardView.keyTextScale
+        val centerX = (if (isTop != null) annotationCenterX(size.toFloat(), isTop)
+            else (width - paddingLeft - paddingRight) / 2f + paddingLeft) + sp(offsetX) * keyboardView.keyTextScale
 
         val centerY = when (isTop) {
             true -> paddingTop + halfSize + sp(offsetY) * keyboardView.keyTextScale
@@ -836,6 +856,17 @@ class KeyView(
         }
     }
 
+    private fun annotationCenterX(textWidth: Float, isTop: Boolean): Float {
+        val alignment = if (isTop) key.symbolAlign.ifBlank { keyboard.symbolAlign }
+            else key.hintAlign.ifBlank { keyboard.hintAlign }
+        val contentWidth = width - paddingLeft - paddingRight
+        return when (alignment) {
+            "left" -> paddingLeft + dpf(4f) + textWidth / 2f
+            "right" -> paddingLeft + contentWidth - dpf(4f) - textWidth / 2f
+            else -> paddingLeft + contentWidth / 2f
+        }
+    }
+
     private fun drawSymbol(canvas: Canvas, text: String, isTop: Boolean = true) {
         // 按键级覆盖优先于全局开关：showSymbol/showHint 三态（null 跟随全局）。
         val hide =
@@ -863,16 +894,6 @@ class KeyView(
             val lineHeight = fontMetrics.descent - fontMetrics.ascent
             val totalHeight = lineHeight * lines.size
 
-            // 按键上方符号的水平对齐：left / center / right（按键级覆盖优先于键盘级，默认居中）。
-            val contentWidth = width - paddingLeft - paddingRight
-            val textWidth = lines.maxOf { symbolPaint.measureText(it) }
-            // 靠左 / 靠右时与键缘保持 4dp 间距，避免符号贴边。
-            val edgeInset = dpf(4f)
-            val centerX = when (key.symbolAlign.ifBlank { keyboard.symbolAlign }) {
-                "left" -> paddingLeft + edgeInset + textWidth / 2f
-                "right" -> paddingLeft + contentWidth - edgeInset - textWidth / 2f
-                else -> contentWidth / 2f + paddingLeft
-            } + sp(offsetX) * keyboardView.keyTextScale
             val startY = if (isTop) {
                 paddingTop - fontMetrics.top + sp(offsetY) * keyboardView.keyTextScale - (totalHeight - lineHeight) / 2
             } else {
@@ -880,6 +901,7 @@ class KeyView(
             }
 
             for (i in lines.indices) {
+                val centerX = annotationCenterX(symbolPaint.measureText(lines[i]), isTop) + sp(offsetX) * keyboardView.keyTextScale
                 val lineY = startY + lineHeight * i
                 canvas.drawText(lines[i], centerX, lineY, symbolPaint)
             }

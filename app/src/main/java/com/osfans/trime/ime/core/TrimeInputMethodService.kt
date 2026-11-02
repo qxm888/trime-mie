@@ -117,6 +117,8 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         prefs.keyboard.floatingPreeditOffsetX,
         prefs.keyboard.floatingPreeditOffsetY,
         prefs.keyboard.oneHandMode,
+        prefs.keyboard.oneHandBinding,
+        prefs.keyboard.floatingBinding,
         prefs.keyboard.oneHandWidth,
         prefs.keyboard.oneHandSide,
         prefs.keyboard.hideKeySymbol,
@@ -150,6 +152,8 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
                 return@OnChangeListener
             }
             syncFloatingRatio(key)
+            if(key in setOf(prefs.keyboard.floatingKeyboard.key, prefs.keyboard.floatingKeyboardAutoLandscape.key,
+                    prefs.keyboard.oneHandMode.key, prefs.keyboard.oneHandBinding.key, prefs.keyboard.floatingBinding.key)) syncModeBinding()
             themeScope?.let { replaceInputView(it) }
             inputDeviceManager.refreshPolicy()
         }
@@ -506,6 +510,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
             super.onConfigurationChanged(newConfig)
         }
         lastKnownConfig.setTo(newConfig)
+        syncModeBinding()
     }
 
     private val contentSize = floatArrayOf(0f, 0f)
@@ -617,6 +622,15 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
     private val inputViewLocation = intArrayOf(0, 0)
 
     private var updatingKeyboardMode = false
+    private var modeBindingController: KeyboardModeBindingController? = null
+    private fun syncModeBinding() {
+        if(!::rime.isInitialized) return
+        val mode = com.osfans.trime.ime.keyboard.KeyboardPrefs.run {
+            when { oneHandActive() -> "oneHand"; isFloatingEffective() -> "floating"; else -> "normal" }
+        }
+        val controller = modeBindingController ?: KeyboardModeBindingController(this, rime).also { modeBindingController = it }
+        controller.request(mode)
+    }
 
     private fun syncFloatingRatio(changedKey: String) {
         if (!prefs.keyboard.floatingKeyboardKeepRatio.getValue()) return
@@ -645,6 +659,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
                 .also { if (disableAutoLandscape) it.putBoolean(prefs.keyboard.floatingKeyboardAutoLandscape.key, false) }
                 .apply()
         } finally { updatingKeyboardMode = false }
+        syncModeBinding()
         themeScope?.let(::replaceInputView)
         forceShowSelf()
     }
@@ -839,7 +854,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
             inputDeviceManager.evaluateOnStartInputView(attribute, this)
         if (useVirtualKeyboard) {
             inputView?.startInput(attribute, restarting)
-
+            syncModeBinding()
         }
         if (useCandidatesView) {
             if (currentInputConnection?.monitorCursorAnchor() != true) {

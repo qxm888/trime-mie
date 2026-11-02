@@ -181,6 +181,15 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
             }
         }
         val ui = selectedUi(pageId)
+        if(pageId == "floating") {
+            fun binding(oneHand: Boolean) = preferenceScreen.addPreference(
+                if(oneHand) "单手键盘绑定方案与布局" else "悬浮键盘绑定方案与布局",
+                com.osfans.trime.data.keymap.KeyboardModeBinding.read(oneHand).summary() + "；退出模式恢复原键盘",
+            ) { KeyboardModeBindingEditor.show(requireActivity(), oneHand, viewModel.rime) {
+                preferenceScreen.removeAll(); buildPage()
+            } }
+            binding(true); binding(false)
+        }
         when (pageId) {
             "landscape" -> {
                 group("横屏尺寸 · 所有主题与自定义键盘", ui.filter { it.key.startsWith("landscape_") })

@@ -32,6 +32,8 @@ object KeyAppearance {
         /** 独立前景图标：空 = 显示文字标签；相对路径基于 .mie/键盘背景。 */
         val icon: String = "", val iconSize: Int = 0, val iconTint: String = "",
         val iconOffsetX: Float = 0f, val iconOffsetY: Float = 0f,
+        /** null preserves legacy shared alignment; empty follows the independent hint default. */
+        val hintAlign: String? = null,
     ) {
         fun toTextKey() = TextKey(labelSymbol = labelSymbol, hint = hint,
             keyTextSize = keyTextSize, symbolTextSize = symbolTextSize, hintTextSize = hintTextSize, roundCorner = roundCorner, keyBorder = keyBorder,
@@ -43,7 +45,7 @@ object KeyAppearance {
             keySymbolOffsetX = keySymbolOffsetX, keySymbolOffsetY = keySymbolOffsetY,
             keyHintOffsetX = keyHintOffsetX, keyHintOffsetY = keyHintOffsetY,
             keyPressOffsetX = keyPressOffsetX, keyPressOffsetY = keyPressOffsetY, popup = popup, sendBindings = sendBindings ?: true,
-            showSymbol = showSymbol, showHint = showHint, symbolAlign = symbolAlign,
+            showSymbol = showSymbol, showHint = showHint, symbolAlign = symbolAlign, hintAlign = hintAlign ?: symbolAlign,
             icon = icon, iconSize = iconSize, iconTint = iconTint, iconOffsetX = iconOffsetX, iconOffsetY = iconOffsetY)
     }
     val fields = linkedMapOf(
@@ -63,14 +65,15 @@ object KeyAppearance {
         "keyPressOffsetX" to "按下横向偏移 dp", "keyPressOffsetY" to "按下纵向偏移 dp",
         "popup" to "弹出备选（每行一个）", "sendBindings" to "发送手势绑定",
         "showSymbol" to "符号显示（留空跟随全局）", "showHint" to "注解显示（留空跟随全局）",
-        "symbolAlign" to "符号对齐（留空跟随全局）",
+        "symbolAlign" to "上方符号对齐（留空跟随全局）",
+        "hintAlign" to "下方注解对齐（留空跟随全局）",
         "icon" to "前景图标（留空显示文字）", "iconSize" to "图标尺寸 dp（0 自动）",
         "iconTint" to "图标颜色（留空保留图片原色）",
         "iconOffsetX" to "图标横向偏移 dp", "iconOffsetY" to "图标纵向偏移 dp",
     )
     private val json = Json { encodeDefaults = true }
     fun values(style: Style): JsonObject = json.encodeToJsonElement(Style.serializer(), style).jsonObject
-    fun textValues(style: Style): Map<String, String> = values(style).filterKeys { it in fields }.mapValues { (_, value) ->
+    fun textValues(style: Style): Map<String, String> = values(style).filter { (name, value) -> name in fields && (name != "hintAlign" || value != JsonNull) }.mapValues { (_, value) ->
         if (value is JsonArray) value.joinToString("\n") { it.jsonPrimitive.content } else if (value == JsonNull) "" else value.jsonPrimitive.content
     }
     fun yamlName(name: String): String = name.replace(Regex("([a-z])([A-Z])"), "$1_$2").lowercase()
@@ -94,12 +97,12 @@ object KeyAppearance {
                     text == "隐藏" || text == "false" -> JsonPrimitive(false)
                     else -> error("${fields[name]}：留空跟随，或填 显示 / 隐藏")
                 }
-                name == "symbolAlign" -> when {
+                name == "symbolAlign" || name == "hintAlign" -> when {
                     text.isBlank() -> JsonPrimitive("")
                     text == "靠左" || text == "left" -> JsonPrimitive("left")
                     text == "居中" || text == "center" -> JsonPrimitive("center")
                     text == "靠右" || text == "right" -> JsonPrimitive("right")
-                    else -> error("${fields[name]}：留空跟随，或填 靠左 / 居中 / 靠右")
+                    else -> throw IllegalArgumentException("${fields[name]}：留空跟随，或填 靠左 / 居中 / 靠右")
                 }
                 name == "popup" -> JsonArray(text.lines().filter { it.isNotEmpty() }.map(::JsonPrimitive))
                 old is JsonPrimitive && old.booleanOrNull != null -> JsonPrimitive(text.toBooleanStrict())

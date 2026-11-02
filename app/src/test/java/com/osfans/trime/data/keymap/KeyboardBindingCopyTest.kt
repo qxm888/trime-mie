@@ -48,7 +48,7 @@ class KeyboardBindingCopyTest : FunSpec({
 
     test("duplicates with identical copied fields can match despite different appearance") {
         val first = key(popup = listOf("a", "b"), sendBindings = false)
-        val second = first.copy(label = "another", width = 30f,
+        val second = first.copy(width = 30f,
             appearance = first.appearance.copy(keyTextColor = "#123456"))
         val result = plan(listOf(first, second))
         result.skipped shouldBe 0
@@ -69,5 +69,25 @@ class KeyboardBindingCopyTest : FunSpec({
             it.popup shouldBe listOf("b")
             it.sendBindings shouldBe true
         }
+    }
+    test("different main labels are ambiguous now that label display is copied") {
+        plan(listOf(key("one"), key("two"))).matches shouldBe emptyList()
+    }
+    test("binding copy carries label display and independent annotation alignment while preserving key colors") {
+        val source = key("复制").copy(appearance = KeyAppearance.Style(keyTextSize = 25f, keyTextOffsetX = 2f, keyTextOffsetY = 3f,
+            labelSymbol = "-", hint = "copy", symbolAlign = "right", hintAlign = "left", icon = "icons/copy.png", iconSize = 22, keyTextColor = "#112233"))
+        val target = key("C").copy(appearance = KeyAppearance.Style(keyTextColor = "#ABCDEF", keyBackColor = "#FFFFFF"))
+        val match = plan(listOf(source), target).matches.single()
+        val actual = KeyboardBindingCopy.copyKey(target, match)
+        actual.label shouldBe "复制"
+        actual.appearance.keyTextSize shouldBe 25f
+        actual.appearance.keyTextOffsetX shouldBe 2f
+        actual.appearance.keyTextOffsetY shouldBe 3f
+        actual.appearance.icon shouldBe "icons/copy.png"
+        actual.appearance.iconSize shouldBe 22
+        actual.appearance.symbolAlign shouldBe "right"
+        actual.appearance.hintAlign shouldBe "left"
+        actual.appearance.keyTextColor shouldBe "#ABCDEF"
+        actual.appearance.keyBackColor shouldBe "#FFFFFF"
     }
 })

@@ -567,6 +567,8 @@ class KeyboardWindow(di: DI) :
 
     override fun onAttached() {
         setVideoActive(true)
+        currentKeyboardView?.invalidateAllKeys()
+        com.osfans.trime.ime.appearance.BackdropBlur.invalidateBackground(keyboardView)
     }
 
     override fun onDetached() {

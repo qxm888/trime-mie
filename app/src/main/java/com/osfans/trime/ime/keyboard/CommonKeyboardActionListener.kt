@@ -222,11 +222,7 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
                         val current = com.osfans.trime.data.keymap.CustomKeyboards.resolveId(KeyboardWindow.lastAttachedId)
                         val root = runCatching { com.osfans.trime.data.keymap.CustomKeyboards.setRoot(current) }.getOrNull()
                         if (root != null) {
-                            val ids = com.osfans.trime.data.keymap.KeyboardSetOperations.ordered(root)
-                            service.showDialog(android.app.AlertDialog.Builder(context)
-                                .setTitle("选择布局").setItems(ids.map { com.osfans.trime.data.keymap.CustomKeyboards.get(it)?.name.orEmpty() }.toTypedArray()) { _, i ->
-                                    keyboardWindow.switchKeyboardFromAction(ids[i])
-                                }.setNegativeButton("取消", null).create())
+                            windowManager.attachWindow(KeyboardSetLayoutsWindow(di, root))
                         }
                     }
                     "__mie_symbols" -> windowManager.attachWindow(com.osfans.trime.ime.symbol.BuiltinSymbolsWindow(di, arg.ifEmpty { "emoji" }))

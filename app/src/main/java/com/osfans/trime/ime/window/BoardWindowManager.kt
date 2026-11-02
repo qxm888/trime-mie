@@ -30,6 +30,15 @@ class BoardWindowManager(override val di: DI) : DIAware {
 
     private var currentWindow: BoardWindow? = null
     private var currentView: View? = null
+    private fun redrawSurface() {
+        fun redraw(node: View) {
+            node.invalidate()
+            if(node is android.view.ViewGroup) for(i in 0 until node.childCount) redraw(node.getChildAt(i))
+        }
+        redraw(view)
+        (view.parent as? View)?.invalidate()
+        com.osfans.trime.ime.appearance.BackdropBlur.invalidateBackground(view)
+    }
 
     private fun prepareAnimation(
         exitAnimation: Transition?,
@@ -45,6 +54,10 @@ class BoardWindowManager(override val di: DI) : DIAware {
                 enterAnimation?.let { addTransition(it) }
                 exitAnimation?.let { addTransition(it) }
                 duration = 100
+                addListener(object : androidx.transition.TransitionListenerAdapter() {
+                    override fun onTransitionEnd(transition: Transition) { view.postOnAnimation { redrawSurface() } }
+                    override fun onTransitionCancel(transition: Transition) { view.postOnAnimation { redrawSurface() } }
+                })
             },
         )
     }
@@ -76,6 +89,7 @@ class BoardWindowManager(override val di: DI) : DIAware {
             Timber.d("Skip attaching $window")
             return
         }
+        TransitionManager.endTransitions(view)
         val newView =
             if (window is ResidentWindow) {
                 cachedResidentWindows[window.key]?.second ?: window
@@ -111,6 +125,7 @@ class BoardWindowManager(override val di: DI) : DIAware {
         window.onAttached()
         currentWindow = window
         broadcaster.onWindowAttached(window)
+        view.postOnAnimation { redrawSurface() }
     }
 
     /** Restyles the window currently on screen after a scheme switch. */

@@ -1,0 +1,5387 @@
+{
+  "": {
+    "rows": [
+      {
+        "keys": [
+          {
+            "label": "Q",
+            "bindings": {
+              "click": "q",
+              "longClick": "1"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "W",
+            "bindings": {
+              "click": "w",
+              "longClick": "2"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "E",
+            "bindings": {
+              "click": "e",
+              "longClick": "3"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "R",
+            "bindings": {
+              "click": "r",
+              "longClick": "4",
+              "doubleClick": "__mie_action:{\"command\":\"date\",\"option\":\"YYYY-MM-DD\",\"select\":\"\",\"toggle\":\"\",\"label\":\"日期时间 · YYYY-MM-DD\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"FUNCTION\"}"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "T",
+            "bindings": {
+              "click": "t",
+              "longClick": "5"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "Y",
+            "bindings": {
+              "click": "y",
+              "longClick": "6"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "U",
+            "bindings": {
+              "click": "u",
+              "longClick": "7"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "I",
+            "bindings": {
+              "click": "i",
+              "longClick": "8"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "O",
+            "bindings": {
+              "click": "o",
+              "longClick": "9"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "P",
+            "bindings": {
+              "click": "p",
+              "longClick": "0"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "A",
+            "bindings": {
+              "click": "a",
+              "longClick": "Control+a",
+              "swipeUp": "@",
+              "swipeDown": ";",
+              "swipeLeft": "Page_Up",
+              "swipeRight": "Page_Down"
+            },
+            "appearance": {
+              "labelSymbol": "@",
+              "hint": "全选",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "S",
+            "bindings": {
+              "click": "s",
+              "swipeUp": "__mie_action:{\"command\":\"commit\",\"option\":\"\\\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"直接上屏文本 · \\\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"FUNCTION\"}",
+              "swipeDown": ";",
+              "swipeLeft": "Page_Up",
+              "swipeRight": "Page_Down"
+            },
+            "appearance": {
+              "labelSymbol": "\"",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "D",
+            "bindings": {
+              "click": "d",
+              "swipeUp": "__mie_action:{\"command\":\"commit\",\"option\":\"'\",\"select\":\"\",\"toggle\":\"\",\"label\":\"直接上屏文本 · '\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"FUNCTION\"}",
+              "swipeDown": ";",
+              "swipeLeft": "Page_Up",
+              "swipeRight": "Page_Down"
+            },
+            "appearance": {
+              "labelSymbol": "'",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "F",
+            "bindings": {
+              "click": "f",
+              "swipeUp": ";",
+              "swipeDown": "Space",
+              "swipeLeft": "Page_Up",
+              "swipeRight": "Page_Down"
+            },
+            "appearance": {
+              "labelSymbol": ";",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "G",
+            "bindings": {
+              "click": "g",
+              "swipeUp": "&",
+              "swipeDown": "Space",
+              "swipeLeft": "Page_Up",
+              "swipeRight": "Page_Down"
+            },
+            "appearance": {
+              "labelSymbol": "&",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "H",
+            "bindings": {
+              "click": "h",
+              "swipeUp": "__mie_action:{\"command\":\"commit\",\"option\":\"_\",\"select\":\"\",\"toggle\":\"\",\"label\":\"直接上屏文本 · _\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"FUNCTION\"}",
+              "swipeDown": "Space",
+              "swipeLeft": "Page_Up",
+              "swipeRight": "Page_Down"
+            },
+            "appearance": {
+              "labelSymbol": "_",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "J",
+            "bindings": {
+              "click": "j",
+              "swipeUp": "#",
+              "swipeDown": "'",
+              "swipeLeft": "Page_Up",
+              "swipeRight": "Page_Down"
+            },
+            "appearance": {
+              "labelSymbol": "#",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "K",
+            "bindings": {
+              "click": "k",
+              "swipeUp": "__mie_action:{\"command\":\"commit\",\"option\":\"()\",\"select\":\"\",\"toggle\":\"\",\"label\":\"直接上屏文本 · ()\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"FUNCTION\"}",
+              "swipeDown": "'",
+              "swipeLeft": "Page_Up",
+              "swipeRight": "Page_Down"
+            },
+            "appearance": {
+              "labelSymbol": "()",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "L",
+            "bindings": {
+              "click": "l",
+              "swipeUp": ":",
+              "swipeDown": "'",
+              "swipeLeft": "Page_Up",
+              "swipeRight": "Page_Down"
+            },
+            "appearance": {
+              "labelSymbol": ":",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"Shift_L\"}",
+              "longClick": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"Caps_Lock\"}",
+              "doubleClick": "__mie_hide_bar"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "Z",
+            "bindings": {
+              "click": "z",
+              "longClick": "",
+              "swipeUp": "`"
+            },
+            "appearance": {
+              "labelSymbol": "`",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "X",
+            "bindings": {
+              "click": "x",
+              "longClick": "Control+x",
+              "swipeUp": "*"
+            },
+            "appearance": {
+              "labelSymbol": "*",
+              "hint": "剪切",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "C",
+            "bindings": {
+              "click": "c",
+              "longClick": "Control+c",
+              "swipeUp": "-"
+            },
+            "appearance": {
+              "labelSymbol": "-",
+              "hint": "复制",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "V",
+            "bindings": {
+              "click": "v",
+              "longClick": "Control+v",
+              "swipeUp": "__mie_action:{\"command\":\"commit\",\"option\":\"^\",\"select\":\"\",\"toggle\":\"\",\"label\":\"直接上屏文本 · ^\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"FUNCTION\"}"
+            },
+            "appearance": {
+              "labelSymbol": "^",
+              "hint": "粘贴",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "B",
+            "bindings": {
+              "click": "b",
+              "swipeUp": "%"
+            },
+            "appearance": {
+              "labelSymbol": "%",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "N",
+            "bindings": {
+              "click": "n",
+              "swipeUp": "="
+            },
+            "appearance": {
+              "labelSymbol": "=",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "M",
+            "bindings": {
+              "click": "m",
+              "longClick": "",
+              "swipeUp": "/"
+            },
+            "appearance": {
+              "labelSymbol": " /",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "",
+            "bindings": {
+              "click": "BackSpace",
+              "longClick": "",
+              "swipeUp": "__mie_action:{\"text\":\"{Control+a}{BackSpace}\",\"label\":\"清空\"}"
+            },
+            "appearance": {
+              "labelSymbol": "清",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "123",
+            "bindings": {
+              "click": "Keyboard_custom_frost_num",
+              "longClick": "__mie_action:{\"command\":\"__mie_symbols\",\"option\":\"english\",\"select\":\"\",\"toggle\":\"\",\"label\":\"表情与符号\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"FUNCTION\"}",
+              "doubleClick": "",
+              "swipeUp": "__mie_action:{\"text\":\"{__mie_hide_hints}{__mie_hide_symbols}\",\"label\":\"隐\"}"
+            },
+            "appearance": {
+              "labelSymbol": " 隐",
+              "hint": "符号",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": ",",
+            "bindings": {
+              "click": ",",
+              "longClick": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"？\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"\"}"
+            },
+            "appearance": {
+              "labelSymbol": "?",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "空格",
+            "bindings": {
+              "click": "space"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "。",
+            "bindings": {
+              "click": ".",
+              "longClick": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"！\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"\"}"
+            },
+            "appearance": {
+              "labelSymbol": "!",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "",
+            "bindings": {
+              "click": "Return"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      }
+    ],
+    "options": {
+      "symbolAlignment": "right",
+      "hintAlignment": "center"
+    }
+  },
+  "_9": {
+    "rows": [
+      {
+        "keys": [
+          {
+            "label": "，",
+            "bindings": {
+              "click": ","
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "@#",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"__mie_symbols\",\"option\":\"english\",\"select\":\"\",\"toggle\":\"\",\"label\":\"表情与符号\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"FUNCTION\"}"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "ABC",
+            "bindings": {
+              "click": "a",
+              "longClick": "b",
+              "swipeUp": "c"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "DEF",
+            "bindings": {
+              "click": "d",
+              "longClick": "e",
+              "swipeUp": "f"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "",
+            "bindings": {
+              "click": "BackSpace"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "。",
+            "bindings": {
+              "click": "."
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "GHI",
+            "bindings": {
+              "click": "g",
+              "longClick": "h",
+              "swipeUp": "i"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "JKL",
+            "bindings": {
+              "click": "j",
+              "longClick": "k",
+              "swipeUp": "l"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "MNO",
+            "bindings": {
+              "click": "m",
+              "longClick": "n",
+              "swipeUp": "o"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "重输",
+            "bindings": {
+              "click": "Escape"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "？",
+            "bindings": {
+              "click": "?"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "PQRS",
+            "bindings": {
+              "click": "p",
+              "longClick": "q",
+              "swipeUp": "r",
+              "swipeDown": "s"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "TUV",
+            "bindings": {
+              "click": "t",
+              "longClick": "u",
+              "swipeUp": "v"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "WXYZ",
+            "bindings": {
+              "click": "w",
+              "longClick": "x",
+              "swipeUp": "y",
+              "swipeDown": "z"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "符号",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"__mie_symbols\",\"option\":\"english\",\"select\":\"\",\"toggle\":\"\",\"label\":\"表情与符号\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"FUNCTION\"}"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "！",
+            "bindings": {
+              "click": "!"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "123",
+            "bindings": {
+              "click": "Keyboard_custom_frost_num"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "空格",
+            "bindings": {
+              "click": "space"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "中/英",
+            "bindings": {
+              "click": "Mode_switch"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "确定",
+            "bindings": {
+              "click": "Return"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      }
+    ],
+    "options": {
+      "symbolAlignment": "center",
+      "hintAlignment": "center"
+    }
+  },
+  "_14": {
+    "rows": [
+      {
+        "keys": [
+          {
+            "label": "QW",
+            "bindings": {
+              "click": "q",
+              "longClick": "w"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "ER",
+            "bindings": {
+              "click": "e",
+              "longClick": "r"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "TY",
+            "bindings": {
+              "click": "t",
+              "longClick": "y"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "UI",
+            "bindings": {
+              "click": "u",
+              "longClick": "i"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "OP",
+            "bindings": {
+              "click": "o",
+              "longClick": "p"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "AS",
+            "bindings": {
+              "click": "a",
+              "longClick": "s"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "DF",
+            "bindings": {
+              "click": "d",
+              "longClick": "f"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "GH",
+            "bindings": {
+              "click": "g",
+              "longClick": "h"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "JK",
+            "bindings": {
+              "click": "j",
+              "longClick": "k"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "L",
+            "bindings": {
+              "click": "l"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"Shift_L\"}",
+              "longClick": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"Caps_Lock\"}"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "ZX",
+            "bindings": {
+              "click": "z",
+              "longClick": "x"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "CV",
+            "bindings": {
+              "click": "c",
+              "longClick": "v"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "BN",
+            "bindings": {
+              "click": "b",
+              "longClick": "n"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "M",
+            "bindings": {
+              "click": "m"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "",
+            "bindings": {
+              "click": "BackSpace"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "123",
+            "bindings": {
+              "click": "Keyboard_custom_frost_num",
+              "longClick": "__mie_action:{\"command\":\"__mie_symbols\",\"option\":\"english\",\"select\":\"\",\"toggle\":\"\",\"label\":\"表情与符号\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"FUNCTION\"}"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": ",",
+            "bindings": {
+              "click": ",",
+              "longClick": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"？\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"\"}"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "空格",
+            "bindings": {
+              "click": "space"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "。",
+            "bindings": {
+              "click": ".",
+              "longClick": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"！\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"\"}"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "",
+            "bindings": {
+              "click": "Return"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      }
+    ],
+    "options": {
+      "symbolAlignment": "center",
+      "hintAlignment": "center"
+    }
+  },
+  "_18": {
+    "rows": [
+      {
+        "keys": [
+          {
+            "label": "Q",
+            "bindings": {
+              "click": "q"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "WE",
+            "bindings": {
+              "click": "w",
+              "longClick": "e"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "RT",
+            "bindings": {
+              "click": "r",
+              "longClick": "t"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "Y",
+            "bindings": {
+              "click": "y"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "U",
+            "bindings": {
+              "click": "u"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "IO",
+            "bindings": {
+              "click": "i",
+              "longClick": "o"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "P",
+            "bindings": {
+              "click": "p"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "A",
+            "bindings": {
+              "click": "a"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "SD",
+            "bindings": {
+              "click": "s",
+              "longClick": "d"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "FG",
+            "bindings": {
+              "click": "f",
+              "longClick": "g"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "H",
+            "bindings": {
+              "click": "h"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "JK",
+            "bindings": {
+              "click": "j",
+              "longClick": "k"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "L",
+            "bindings": {
+              "click": "l"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"Shift_L\"}",
+              "longClick": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"Caps_Lock\"}"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "Z",
+            "bindings": {
+              "click": "z"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "XC",
+            "bindings": {
+              "click": "x",
+              "longClick": "c"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "V",
+            "bindings": {
+              "click": "v"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "BN",
+            "bindings": {
+              "click": "b",
+              "longClick": "n"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "M",
+            "bindings": {
+              "click": "m"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "",
+            "bindings": {
+              "click": "BackSpace"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "123",
+            "bindings": {
+              "click": "Keyboard_custom_frost_num",
+              "longClick": "__mie_action:{\"command\":\"__mie_symbols\",\"option\":\"english\",\"select\":\"\",\"toggle\":\"\",\"label\":\"表情与符号\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"FUNCTION\"}"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": ",",
+            "bindings": {
+              "click": ",",
+              "longClick": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"？\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"\"}"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "空格",
+            "bindings": {
+              "click": "space"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "。",
+            "bindings": {
+              "click": ".",
+              "longClick": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"！\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"\"}"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "",
+            "bindings": {
+              "click": "Return"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      }
+    ],
+    "options": {
+      "symbolAlignment": "center",
+      "hintAlignment": "center"
+    }
+  },
+  "_num": {
+    "rows": [
+      {
+        "keys": [
+          {
+            "label": "+",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"+\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"\"}"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "1",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"1\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"\"}"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "2",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"2\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"\"}"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "3",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"3\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"\"}"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "",
+            "bindings": {
+              "click": "BackSpace"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "-",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"-\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"\"}"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "4",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"4\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"\"}"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "5",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"5\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"\"}"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "6",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"6\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"\"}"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "返回",
+            "bindings": {
+              "click": "Keyboard_default"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "*",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"*\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"\"}"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "7",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"7\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"\"}"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "8",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"8\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"\"}"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "9",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"9\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"\"}"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "符号",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"__mie_symbols\",\"option\":\"english\",\"select\":\"\",\"toggle\":\"\",\"label\":\"表情与符号\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"FUNCTION\"}"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "/",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"/\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"\"}"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": ".",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\".\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"\"}"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "0",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"0\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"\"}"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "=",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"=\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"\"}"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "",
+            "bindings": {
+              "click": "Return"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      }
+    ],
+    "options": {
+      "symbolAlignment": "center",
+      "hintAlignment": "center"
+    }
+  },
+  "_en": {
+    "rows": [
+      {
+        "keys": [
+          {
+            "label": "q",
+            "bindings": {
+              "click": "q"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "w",
+            "bindings": {
+              "click": "w"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "e",
+            "bindings": {
+              "click": "e"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "r",
+            "bindings": {
+              "click": "r"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "t",
+            "bindings": {
+              "click": "t"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "y",
+            "bindings": {
+              "click": "y"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "u",
+            "bindings": {
+              "click": "u"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "i",
+            "bindings": {
+              "click": "i"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "o",
+            "bindings": {
+              "click": "o"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "p",
+            "bindings": {
+              "click": "p"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "a",
+            "bindings": {
+              "click": "a"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "s",
+            "bindings": {
+              "click": "s"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "d",
+            "bindings": {
+              "click": "d"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "f",
+            "bindings": {
+              "click": "f"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "g",
+            "bindings": {
+              "click": "g"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "h",
+            "bindings": {
+              "click": "h"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "j",
+            "bindings": {
+              "click": "j"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "k",
+            "bindings": {
+              "click": "k"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "l",
+            "bindings": {
+              "click": "l"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "",
+            "bindings": {
+              "click": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"Shift_L\"}",
+              "longClick": "__mie_action:{\"command\":\"\",\"option\":\"\",\"select\":\"\",\"toggle\":\"\",\"label\":\"\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"Caps_Lock\"}"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "z",
+            "bindings": {
+              "click": "z"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "x",
+            "bindings": {
+              "click": "x"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "c",
+            "bindings": {
+              "click": "c"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "v",
+            "bindings": {
+              "click": "v"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "b",
+            "bindings": {
+              "click": "b"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "n",
+            "bindings": {
+              "click": "n"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "m",
+            "bindings": {
+              "click": "m"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "",
+            "bindings": {
+              "click": "BackSpace"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "123",
+            "bindings": {
+              "click": "Keyboard_custom_frost_num",
+              "longClick": "__mie_action:{\"command\":\"__mie_symbols\",\"option\":\"english\",\"select\":\"\",\"toggle\":\"\",\"label\":\"表情与符号\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"FUNCTION\"}"
+            },
+            "appearance": {
+              "labelSymbol": " ",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": ",",
+            "bindings": {
+              "click": ","
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "space",
+            "bindings": {
+              "click": "space"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": ".",
+            "bindings": {
+              "click": "."
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "",
+            "bindings": {
+              "click": "Return"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      }
+    ],
+    "options": {
+      "symbolAlignment": "center",
+      "hintAlignment": "center"
+    }
+  },
+  "_7_1": {
+    "rows": [
+      {
+        "keys": [
+          {
+            "label": "",
+            "bindings": {},
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "Q",
+            "bindings": {
+              "click": "q",
+              "longClick": "Up",
+              "swipeDown": "1"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "1",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "W",
+            "bindings": {
+              "click": "w",
+              "longClick": "Left",
+              "swipeDown": "2"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "2",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "E",
+            "bindings": {
+              "click": "e",
+              "swipeDown": "3"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "3",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "R",
+            "bindings": {
+              "click": "r",
+              "swipeDown": "4"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "4",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "I",
+            "bindings": {
+              "click": "i",
+              "swipeDown": "5"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "5",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "O",
+            "bindings": {
+              "click": "o",
+              "longClick": "Right",
+              "swipeDown": "6"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "6",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "P",
+            "bindings": {
+              "click": "p",
+              "longClick": "Down",
+              "swipeDown": "7"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "7",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "",
+            "bindings": {},
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "",
+            "bindings": {},
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "A",
+            "bindings": {
+              "click": "a",
+              "longClick": "Control+a"
+            },
+            "appearance": {
+              "labelSymbol": "全选",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "S",
+            "bindings": {
+              "click": "s",
+              "longClick": "^"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "T",
+            "bindings": {
+              "click": "t",
+              "longClick": "%"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "Y",
+            "bindings": {
+              "click": "y",
+              "longClick": "$"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "U",
+            "bindings": {
+              "click": "u",
+              "longClick": ":",
+              "swipeDown": "8"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "8",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "K",
+            "bindings": {
+              "click": "k",
+              "swipeDown": "9"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "9",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "L",
+            "bindings": {
+              "click": "l",
+              "longClick": "~",
+              "swipeDown": "0"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "0",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "",
+            "bindings": {},
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "",
+            "bindings": {},
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "Z",
+            "bindings": {
+              "click": "z",
+              "longClick": "`"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "D",
+            "bindings": {
+              "click": "d",
+              "longClick": "*"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "F",
+            "bindings": {
+              "click": "f",
+              "longClick": "&"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "G",
+            "bindings": {
+              "click": "g",
+              "longClick": "@"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "H",
+            "bindings": {
+              "click": "h",
+              "longClick": "_"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "J",
+            "bindings": {
+              "click": "j",
+              "longClick": "#"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "M",
+            "bindings": {
+              "click": "m",
+              "longClick": "/"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "",
+            "bindings": {},
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "",
+            "bindings": {},
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "",
+            "bindings": {
+              "click": "Shift_L"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "X",
+            "bindings": {
+              "click": "x",
+              "longClick": "Control+x"
+            },
+            "appearance": {
+              "labelSymbol": "剪切",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "C",
+            "bindings": {
+              "click": "c",
+              "longClick": "Control+c"
+            },
+            "appearance": {
+              "labelSymbol": "复制",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "V",
+            "bindings": {
+              "click": "v",
+              "longClick": "Control+v"
+            },
+            "appearance": {
+              "labelSymbol": "粘贴",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "B",
+            "bindings": {
+              "click": "b"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "N",
+            "bindings": {
+              "click": "n",
+              "longClick": ";"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "",
+            "bindings": {
+              "click": "BackSpace",
+              "longClick": "Control+BackSpace"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "",
+            "bindings": {},
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "",
+            "bindings": {},
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "123",
+            "bindings": {
+              "click": "Keyboard_custom_frost_num"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "，",
+            "bindings": {
+              "click": ",",
+              "longClick": "?"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "空格",
+            "bindings": {
+              "click": "space",
+              "longClick": "VOICE_ASSIST",
+              "swipeDown": "Hide"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "。",
+            "bindings": {
+              "click": ".",
+              "longClick": "!"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "",
+            "bindings": {
+              "click": "Return"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "",
+            "bindings": {},
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      }
+    ],
+    "options": {
+      "symbolAlignment": "center",
+      "hintAlignment": "center"
+    }
+  },
+  "_7_2": {
+    "rows": [
+      {
+        "keys": [
+          {
+            "label": "Q",
+            "bindings": {
+              "click": "q",
+              "longClick": "Up",
+              "swipeDown": "1"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "1",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "W",
+            "bindings": {
+              "click": "w",
+              "longClick": "Left",
+              "swipeDown": "2"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "2",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "E",
+            "bindings": {
+              "click": "e",
+              "swipeDown": "3"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "3",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "R",
+            "bindings": {
+              "click": "r",
+              "swipeDown": "4"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "4",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "I",
+            "bindings": {
+              "click": "i",
+              "swipeDown": "5"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "5",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "O",
+            "bindings": {
+              "click": "o",
+              "longClick": "Right",
+              "swipeDown": "6"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "6",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "P",
+            "bindings": {
+              "click": "p",
+              "longClick": "Down",
+              "swipeDown": "7"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "7",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "D",
+            "bindings": {
+              "click": "d",
+              "longClick": "*"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "F",
+            "bindings": {
+              "click": "f",
+              "longClick": "&"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "T",
+            "bindings": {
+              "click": "t",
+              "longClick": "%"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "Y",
+            "bindings": {
+              "click": "y",
+              "longClick": "$"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "U",
+            "bindings": {
+              "click": "u",
+              "longClick": ":",
+              "swipeDown": "8"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "8",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "G",
+            "bindings": {
+              "click": "g",
+              "longClick": "@",
+              "swipeDown": "9"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "9",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "H",
+            "bindings": {
+              "click": "h",
+              "longClick": "_",
+              "swipeDown": "0"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "0",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "A",
+            "bindings": {
+              "click": "a",
+              "longClick": "Control+a"
+            },
+            "appearance": {
+              "labelSymbol": "全选",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "S",
+            "bindings": {
+              "click": "s",
+              "longClick": "^"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "空格",
+            "bindings": {
+              "click": "space",
+              "longClick": "VOICE_ASSIST",
+              "swipeDown": "Hide"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "J",
+            "bindings": {
+              "click": "j",
+              "longClick": "#"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "K",
+            "bindings": {
+              "click": "k"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "L",
+            "bindings": {
+              "click": "l",
+              "longClick": "~"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "Z",
+            "bindings": {
+              "click": "z",
+              "longClick": "`"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "X",
+            "bindings": {
+              "click": "x",
+              "longClick": "Control+x"
+            },
+            "appearance": {
+              "labelSymbol": "剪切",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "C",
+            "bindings": {
+              "click": "c",
+              "longClick": "Control+c"
+            },
+            "appearance": {
+              "labelSymbol": "复制",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "V",
+            "bindings": {
+              "click": "v",
+              "longClick": "Control+v"
+            },
+            "appearance": {
+              "labelSymbol": "粘贴",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "B",
+            "bindings": {
+              "click": "b"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "N",
+            "bindings": {
+              "click": "n",
+              "longClick": ";"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "M",
+            "bindings": {
+              "click": "m",
+              "longClick": "/"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      },
+      {
+        "keys": [
+          {
+            "label": "123",
+            "bindings": {
+              "click": "Keyboard_custom_frost_num"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "",
+            "bindings": {
+              "click": "Shift_L"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "，",
+            "bindings": {
+              "click": ",",
+              "longClick": "?"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "。",
+            "bindings": {
+              "click": ".",
+              "longClick": "!"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "",
+            "bindings": {
+              "click": "BackSpace",
+              "longClick": "Control+BackSpace"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          },
+          {
+            "label": "",
+            "bindings": {
+              "click": "Return"
+            },
+            "appearance": {
+              "labelSymbol": "",
+              "hint": "",
+              "symbolTextSize": 0.0,
+              "hintTextSize": 0.0,
+              "keySymbolOffsetX": 0.0,
+              "keySymbolOffsetY": 0.0,
+              "keyHintOffsetX": 0.0,
+              "keyHintOffsetY": 0.0,
+              "showSymbol": null,
+              "showHint": null,
+              "symbolAlign": "",
+              "popup": [],
+              "sendBindings": null,
+              "hintAlign": ""
+            }
+          }
+        ]
+      }
+    ],
+    "options": {
+      "symbolAlignment": "center",
+      "hintAlignment": "center"
+    }
+  }
+}

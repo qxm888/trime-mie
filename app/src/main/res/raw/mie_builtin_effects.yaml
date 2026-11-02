@@ -10,7 +10,7 @@ preset_keyboards:
     ascii_keyboard: custom_porcelain_en
     lock: true
     keyboard_back_color: '#ECEAF0'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: Q
@@ -434,6 +434,7 @@ preset_keyboards:
       key_border_color: '#D7CFDF'
       icon_tint: '#FFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -670,7 +671,7 @@ preset_keyboards:
     ascii_keyboard: custom_porcelain_en
     lock: true
     keyboard_back_color: '#ECEAF0'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: ，
@@ -943,6 +944,7 @@ preset_keyboards:
       key_border: '0'
       key_border_color: '#D7CFDF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -1178,7 +1180,7 @@ preset_keyboards:
     ascii_keyboard: custom_porcelain_en
     lock: true
     keyboard_back_color: '#ECEAF0'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: QW
@@ -1480,6 +1482,7 @@ preset_keyboards:
       key_border_color: '#D7CFDF'
       icon_tint: '#FFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -1715,7 +1718,7 @@ preset_keyboards:
     ascii_keyboard: custom_porcelain_en
     lock: true
     keyboard_back_color: '#ECEAF0'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: Q
@@ -2057,6 +2060,7 @@ preset_keyboards:
       key_border_color: '#D7CFDF'
       icon_tint: '#FFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -2290,7 +2294,7 @@ preset_keyboards:
     ascii_mode: 1
     reset_ascii_mode: true
     keyboard_back_color: '#ECEAF0'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: +
@@ -2540,6 +2544,7 @@ preset_keyboards:
       key_border_color: '#D7CFDF'
       icon_tint: '#FFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -2773,7 +2778,7 @@ preset_keyboards:
     ascii_mode: 1
     reset_ascii_mode: true
     keyboard_back_color: '#ECEAF0'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: q
@@ -3189,6 +3194,7 @@ preset_keyboards:
       key_border_color: '#D7CFDF'
       icon_tint: '#FFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -3422,7 +3428,7 @@ preset_keyboards:
   custom_porcelain_symbols:
     name: 月白·瓷光 · 符号
     keyboard_back_color: '#ECEAF0'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: '!'
@@ -3873,6 +3879,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D7CFDF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -4104,7 +4111,7 @@ preset_keyboards:
   custom_porcelain_symbols_cn:
     name: 月白·瓷光 · 中文符号
     keyboard_back_color: '#ECEAF0'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: ，
@@ -4552,6 +4559,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D7CFDF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -4783,7 +4791,7 @@ preset_keyboards:
   custom_porcelain_symbols_math:
     name: 月白·瓷光 · 数学符号
     keyboard_back_color: '#ECEAF0'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: +
@@ -5231,6 +5239,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D7CFDF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -5462,7 +5471,7 @@ preset_keyboards:
   custom_porcelain_themes:
     name: 月白·瓷光 · 主题
     keyboard_back_color: '#ECEAF0'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 选择键盘主题
@@ -5597,6 +5606,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D7CFDF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -5828,7 +5838,7 @@ preset_keyboards:
   custom_porcelain_layouts:
     name: 月白·瓷光 · 布局
     keyboard_back_color: '#ECEAF0'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 选择布局
@@ -5927,6 +5937,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D7CFDF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -7654,7 +7665,7 @@ preset_keyboards:
   custom_porcelain_hub:
     name: 月白·瓷光 · 键盘中心
     keyboard_back_color: '#ECEAF0'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 选择键盘
@@ -7777,6 +7788,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D7CFDF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -8008,7 +8020,7 @@ preset_keyboards:
   custom_porcelain_symbols_more:
     name: 月白·瓷光 · 更多符号
     keyboard_back_color: '#ECEAF0'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 表情
@@ -8360,6 +8372,7 @@ preset_keyboards:
       key_border: '0'
       key_border_color: '#D7CFDF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -8596,7 +8609,7 @@ preset_keyboards:
     ascii_keyboard: custom_obsidian_en
     lock: true
     keyboard_back_color: '#18242D'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: Q
@@ -9020,6 +9033,7 @@ preset_keyboards:
       key_border_color: '#45606F'
       icon_tint: '#FFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -9255,7 +9269,7 @@ preset_keyboards:
     ascii_keyboard: custom_obsidian_en
     lock: true
     keyboard_back_color: '#18242D'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: ，
@@ -9528,6 +9542,7 @@ preset_keyboards:
       key_border: '0'
       key_border_color: '#45606F'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -9762,7 +9777,7 @@ preset_keyboards:
     ascii_keyboard: custom_obsidian_en
     lock: true
     keyboard_back_color: '#18242D'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: QW
@@ -10064,6 +10079,7 @@ preset_keyboards:
       key_border_color: '#45606F'
       icon_tint: '#FFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -10298,7 +10314,7 @@ preset_keyboards:
     ascii_keyboard: custom_obsidian_en
     lock: true
     keyboard_back_color: '#18242D'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: Q
@@ -10640,6 +10656,7 @@ preset_keyboards:
       key_border_color: '#45606F'
       icon_tint: '#FFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -10872,7 +10889,7 @@ preset_keyboards:
     ascii_mode: 1
     reset_ascii_mode: true
     keyboard_back_color: '#18242D'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: +
@@ -11122,6 +11139,7 @@ preset_keyboards:
       key_border_color: '#45606F'
       icon_tint: '#FFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -11354,7 +11372,7 @@ preset_keyboards:
     ascii_mode: 1
     reset_ascii_mode: true
     keyboard_back_color: '#18242D'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: q
@@ -11770,6 +11788,7 @@ preset_keyboards:
       key_border_color: '#45606F'
       icon_tint: '#FFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -12002,7 +12021,7 @@ preset_keyboards:
   custom_obsidian_symbols:
     name: 曜石·微光 · 符号
     keyboard_back_color: '#18242D'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: '!'
@@ -12453,6 +12472,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#45606F'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -12683,7 +12703,7 @@ preset_keyboards:
   custom_obsidian_symbols_cn:
     name: 曜石·微光 · 中文符号
     keyboard_back_color: '#18242D'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: ，
@@ -13131,6 +13151,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#45606F'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -13361,7 +13382,7 @@ preset_keyboards:
   custom_obsidian_symbols_math:
     name: 曜石·微光 · 数学符号
     keyboard_back_color: '#18242D'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: +
@@ -13809,6 +13830,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#45606F'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -14039,7 +14061,7 @@ preset_keyboards:
   custom_obsidian_themes:
     name: 曜石·微光 · 主题
     keyboard_back_color: '#18242D'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 选择键盘主题
@@ -14174,6 +14196,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#45606F'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -14404,7 +14427,7 @@ preset_keyboards:
   custom_obsidian_layouts:
     name: 曜石·微光 · 布局
     keyboard_back_color: '#18242D'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 选择布局
@@ -14503,6 +14526,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#45606F'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -16227,7 +16251,7 @@ preset_keyboards:
   custom_obsidian_hub:
     name: 曜石·微光 · 键盘中心
     keyboard_back_color: '#18242D'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 选择键盘
@@ -16350,6 +16374,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#45606F'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -16580,7 +16605,7 @@ preset_keyboards:
   custom_obsidian_symbols_more:
     name: 曜石·微光 · 更多符号
     keyboard_back_color: '#18242D'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 表情
@@ -16932,6 +16957,7 @@ preset_keyboards:
       key_border: '0'
       key_border_color: '#45606F'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -17167,7 +17193,7 @@ preset_keyboards:
     ascii_keyboard: custom_champagne_en
     lock: true
     keyboard_back_color: '#302B27'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: Q
@@ -17591,6 +17617,7 @@ preset_keyboards:
       key_border_color: '#806D55'
       icon_tint: '#FFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -17826,7 +17853,7 @@ preset_keyboards:
     ascii_keyboard: custom_champagne_en
     lock: true
     keyboard_back_color: '#302B27'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: ，
@@ -18099,6 +18126,7 @@ preset_keyboards:
       key_border: '0'
       key_border_color: '#806D55'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -18333,7 +18361,7 @@ preset_keyboards:
     ascii_keyboard: custom_champagne_en
     lock: true
     keyboard_back_color: '#302B27'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: QW
@@ -18635,6 +18663,7 @@ preset_keyboards:
       key_border_color: '#806D55'
       icon_tint: '#FFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -18869,7 +18898,7 @@ preset_keyboards:
     ascii_keyboard: custom_champagne_en
     lock: true
     keyboard_back_color: '#302B27'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: Q
@@ -19211,6 +19240,7 @@ preset_keyboards:
       key_border_color: '#806D55'
       icon_tint: '#FFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -19443,7 +19473,7 @@ preset_keyboards:
     ascii_mode: 1
     reset_ascii_mode: true
     keyboard_back_color: '#302B27'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: +
@@ -19693,6 +19723,7 @@ preset_keyboards:
       key_border_color: '#806D55'
       icon_tint: '#FFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -19925,7 +19956,7 @@ preset_keyboards:
     ascii_mode: 1
     reset_ascii_mode: true
     keyboard_back_color: '#302B27'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: q
@@ -20341,6 +20372,7 @@ preset_keyboards:
       key_border_color: '#806D55'
       icon_tint: '#FFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -20573,7 +20605,7 @@ preset_keyboards:
   custom_champagne_symbols:
     name: 暮金·缎光 · 符号
     keyboard_back_color: '#302B27'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: '!'
@@ -21024,6 +21056,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#806D55'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -21254,7 +21287,7 @@ preset_keyboards:
   custom_champagne_symbols_cn:
     name: 暮金·缎光 · 中文符号
     keyboard_back_color: '#302B27'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: ，
@@ -21702,6 +21735,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#806D55'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -21932,7 +21966,7 @@ preset_keyboards:
   custom_champagne_symbols_math:
     name: 暮金·缎光 · 数学符号
     keyboard_back_color: '#302B27'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: +
@@ -22380,6 +22414,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#806D55'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -22610,7 +22645,7 @@ preset_keyboards:
   custom_champagne_themes:
     name: 暮金·缎光 · 主题
     keyboard_back_color: '#302B27'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 选择键盘主题
@@ -22745,6 +22780,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#806D55'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -22975,7 +23011,7 @@ preset_keyboards:
   custom_champagne_layouts:
     name: 暮金·缎光 · 布局
     keyboard_back_color: '#302B27'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 选择布局
@@ -23074,6 +23110,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#806D55'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -24798,7 +24835,7 @@ preset_keyboards:
   custom_champagne_hub:
     name: 暮金·缎光 · 键盘中心
     keyboard_back_color: '#302B27'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 选择键盘
@@ -24921,6 +24958,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#806D55'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -25151,7 +25189,7 @@ preset_keyboards:
   custom_champagne_symbols_more:
     name: 暮金·缎光 · 更多符号
     keyboard_back_color: '#302B27'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 表情
@@ -25503,6 +25541,7 @@ preset_keyboards:
       key_border: '0'
       key_border_color: '#806D55'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -25738,7 +25777,7 @@ preset_keyboards:
     ascii_keyboard: custom_frost_en
     lock: true
     keyboard_back_color: backgrounds/frost.png
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: Q
@@ -26162,6 +26201,7 @@ preset_keyboards:
       key_border_color: '#ADFFFFFF'
       icon_tint: '#FFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -26400,7 +26440,7 @@ preset_keyboards:
     ascii_keyboard: custom_frost_en
     lock: true
     keyboard_back_color: backgrounds/frost.png
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: ，
@@ -26673,6 +26713,7 @@ preset_keyboards:
       key_border: '0'
       key_border_color: '#ADFFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -26910,7 +26951,7 @@ preset_keyboards:
     ascii_keyboard: custom_frost_en
     lock: true
     keyboard_back_color: backgrounds/frost.png
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: QW
@@ -27212,6 +27253,7 @@ preset_keyboards:
       key_border_color: '#ADFFFFFF'
       icon_tint: '#FFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -27449,7 +27491,7 @@ preset_keyboards:
     ascii_keyboard: custom_frost_en
     lock: true
     keyboard_back_color: backgrounds/frost.png
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: Q
@@ -27791,6 +27833,7 @@ preset_keyboards:
       key_border_color: '#ADFFFFFF'
       icon_tint: '#FFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -28026,7 +28069,7 @@ preset_keyboards:
     ascii_mode: 1
     reset_ascii_mode: true
     keyboard_back_color: backgrounds/frost.png
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: +
@@ -28276,6 +28319,7 @@ preset_keyboards:
       key_border_color: '#ADFFFFFF'
       icon_tint: '#FFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -28511,7 +28555,7 @@ preset_keyboards:
     ascii_mode: 1
     reset_ascii_mode: true
     keyboard_back_color: backgrounds/frost.png
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: q
@@ -28927,6 +28971,7 @@ preset_keyboards:
       key_border_color: '#ADFFFFFF'
       icon_tint: '#FFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -29162,7 +29207,7 @@ preset_keyboards:
   custom_frost_symbols:
     name: 雾凇·半透 · 符号
     keyboard_back_color: backgrounds/frost.png
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: '!'
@@ -29613,6 +29658,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#ADFFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -29846,7 +29892,7 @@ preset_keyboards:
   custom_frost_symbols_cn:
     name: 雾凇·半透 · 中文符号
     keyboard_back_color: backgrounds/frost.png
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: ，
@@ -30294,6 +30340,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#ADFFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -30527,7 +30574,7 @@ preset_keyboards:
   custom_frost_symbols_math:
     name: 雾凇·半透 · 数学符号
     keyboard_back_color: backgrounds/frost.png
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: +
@@ -30975,6 +31022,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#ADFFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -31208,7 +31256,7 @@ preset_keyboards:
   custom_frost_themes:
     name: 雾凇·半透 · 主题
     keyboard_back_color: backgrounds/frost.png
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 选择键盘主题
@@ -31343,6 +31391,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#ADFFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -31576,7 +31625,7 @@ preset_keyboards:
   custom_frost_layouts:
     name: 雾凇·半透 · 布局
     keyboard_back_color: backgrounds/frost.png
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 选择布局
@@ -31675,6 +31724,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#ADFFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -33408,7 +33458,7 @@ preset_keyboards:
   custom_frost_hub:
     name: 雾凇·半透 · 键盘中心
     keyboard_back_color: backgrounds/frost.png
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 选择键盘
@@ -33531,6 +33581,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#ADFFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -33764,7 +33815,7 @@ preset_keyboards:
   custom_frost_symbols_more:
     name: 雾凇·半透 · 更多符号
     keyboard_back_color: backgrounds/frost.png
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 表情
@@ -34116,6 +34167,7 @@ preset_keyboards:
       key_border: '0'
       key_border_color: '#ADFFFFFF'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36

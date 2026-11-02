@@ -185,6 +185,7 @@ class KeyboardSetActivity : AppCompatActivity() {
     private fun editGroup(group: String) {
         val kb = CustomKeyboards.get(scopeId) ?: return
         when(group) {
+            "geometry" -> editGeometry(kb)
             "background" -> MaterialAlertDialogBuilder(this).setTitle("整套背景").setItems(arrayOf("键盘背景", "工具栏共用背景与叠加")) { _, i ->
                 if(i == 1) SurfaceAppearanceEditor.show(this, true, scopeId) { render() }
                 else SkinPicker.show(this, "整套键盘背景", kb.resolvedBackground(), onPicked = { bg -> change { it.background = bg } },
@@ -210,6 +211,33 @@ class KeyboardSetActivity : AppCompatActivity() {
             "floating" -> FloatingCandidatesEditActivity.start(this, scopeId)
             "bindings" -> editBindings()
         }
+    }
+    private fun editGeometry(kb: CustomKeyboards.CustomKeyboard) {
+        val content = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(24), dp(8), dp(24), 0) }
+        val definitions = listOf("竖屏总高度 dp（0 自动，80–800）" to kb.keyboardHeightDp,
+            "横屏总高度 dp（0 跟随横屏设置，80–800）" to kb.landscapeHeightDp,
+            "行间距 dp（0–32）" to kb.rowSpacing, "行左右边距 dp（0–48）" to kb.rowMargin)
+        val inputs = definitions.map { (label, value) ->
+            val input = com.google.android.material.textfield.TextInputEditText(this).apply {
+                inputType = android.text.InputType.TYPE_CLASS_NUMBER; setText(value.toString())
+            }
+            content.addView(com.google.android.material.textfield.TextInputLayout(this).apply { hint = label; addView(input) })
+            input
+        }
+        val dialog = MaterialAlertDialogBuilder(this).setTitle("整套尺寸与间距").setView(ScrollView(this).apply { addView(content) })
+            .setMessage("跟随整套的页面一同更新，独立设置的页面保留。高度包含工具栏；行间距仍受各页行高限制。")
+            .setNegativeButton("取消", null).setPositiveButton("应用", null).create()
+        dialog.setOnShowListener { dialog.getButton(-1).setOnClickListener {
+            val values = inputs.map { it.text?.toString()?.toIntOrNull() }
+            val valid = values.mapIndexed { i, value -> value != null && when(i) {
+                0, 1 -> value == 0 || value in 80..800; 2 -> value in 0..32; else -> value in 0..48
+            } }
+            inputs.forEachIndexed { i, input -> input.error = if(valid[i]) null else "请输入范围内的整数" }
+            if(valid.all { it }) {
+                change { it.keyboardHeightDp = values[0]!!; it.landscapeHeightDp = values[1]!!; it.rowSpacing = values[2]!!; it.rowMargin = values[3]!! }
+                dialog.dismiss()
+            }
+        } }; dialog.show()
     }
     private fun editBindings() {
         val allKeys = KeyboardSetOperations.ordered(root).flatMap { CustomKeyboards.get(it)?.rows.orEmpty().flatMap { it.keys } }

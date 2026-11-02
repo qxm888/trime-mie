@@ -5,7 +5,7 @@ preset_keyboards:
   custom_mint_hub:
     name: 薄荷绿 · 键盘中心
     keyboard_back_color: '#F7F9F8'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 选择键盘
@@ -128,6 +128,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B8D0C3'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -332,7 +333,7 @@ preset_keyboards:
   custom_mint_symbols_more:
     name: 薄荷绿 · 更多符号
     keyboard_back_color: '#F7F9F8'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 表情
@@ -684,6 +685,7 @@ preset_keyboards:
       key_border: '0'
       key_border_color: '#B8D0C3'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -888,7 +890,7 @@ preset_keyboards:
   custom_pink_hub:
     name: 樱花粉 · 键盘中心
     keyboard_back_color: '#FBF7F8'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 选择键盘
@@ -1011,6 +1013,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E3C2C8'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -1215,7 +1218,7 @@ preset_keyboards:
   custom_pink_symbols_more:
     name: 樱花粉 · 更多符号
     keyboard_back_color: '#FBF7F8'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 表情
@@ -1567,6 +1570,7 @@ preset_keyboards:
       key_border: '0'
       key_border_color: '#E3C2C8'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -1771,7 +1775,7 @@ preset_keyboards:
   custom_blue_hub:
     name: 浅天蓝 · 键盘中心
     keyboard_back_color: '#F7F9FB'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 选择键盘
@@ -1894,6 +1898,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#B9D4E6'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -2098,7 +2103,7 @@ preset_keyboards:
   custom_blue_symbols_more:
     name: 浅天蓝 · 更多符号
     keyboard_back_color: '#F7F9FB'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 表情
@@ -2450,6 +2455,7 @@ preset_keyboards:
       key_border: '0'
       key_border_color: '#B9D4E6'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -2654,7 +2660,7 @@ preset_keyboards:
   custom_orange_hub:
     name: 杏子橙 · 键盘中心
     keyboard_back_color: '#FBF8F5'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 选择键盘
@@ -2777,6 +2783,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#E5C7AE'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -2981,7 +2988,7 @@ preset_keyboards:
   custom_orange_symbols_more:
     name: 杏子橙 · 更多符号
     keyboard_back_color: '#FBF8F5'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 表情
@@ -3333,6 +3340,7 @@ preset_keyboards:
       key_border: '0'
       key_border_color: '#E5C7AE'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -3537,7 +3545,7 @@ preset_keyboards:
   custom_purple_hub:
     name: 薰衣紫 · 键盘中心
     keyboard_back_color: '#F9F7FC'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 选择键盘
@@ -3660,6 +3668,7 @@ preset_keyboards:
       key_border: '1'
       key_border_color: '#D3BFE6'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36
@@ -3864,7 +3873,7 @@ preset_keyboards:
   custom_purple_symbols_more:
     name: 薰衣紫 · 更多符号
     keyboard_back_color: '#F9F7FC'
-    vertical_gap: 5
+    vertical_gap: 10
     horizontal_gap: 5
     keys:
     - label: 表情
@@ -4216,6 +4225,7 @@ preset_keyboards:
       key_border: '0'
       key_border_color: '#D3BFE6'
     mie:
+      keyboardHeightDp: 260
       rowMargin: 1
       toolbarAlignment: legacy
       toolbarHeightDp: 36

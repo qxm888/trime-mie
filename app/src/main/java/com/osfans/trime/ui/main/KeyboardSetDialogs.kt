@@ -56,9 +56,8 @@ object KeyboardSetDialogs {
     fun selectLayouts(activity: FragmentActivity, done: (List<String>) -> Unit) {
         val entries = KeyboardSetOperations.layoutNames.entries.toList()
         val selected = BooleanArray(entries.size) { entries[it].key in setOf("zh_26", "en", "num") }
-        val dialog = MaterialAlertDialogBuilder(activity).setTitle("选择布局")
+        val dialog = MaterialAlertDialogBuilder(activity).setTitle("选择布局 · 自动配置跳转")
             .setMultiChoiceItems(entries.map { it.value + if(it.key == "zh_9") "（需九键方案）" else "" }.toTypedArray(), selected) { _, i, checked -> selected[i] = checked }
-            .setMessage("自动配置工具栏、跳转和符号／表情面板入口。")
             .setPositiveButton("创建整套", null).setNegativeButton("取消", null).create()
         dialog.setOnShowListener { dialog.getButton(-1).setOnClickListener {
             val roles = entries.indices.filter { selected[it] }.map { entries[it].key }

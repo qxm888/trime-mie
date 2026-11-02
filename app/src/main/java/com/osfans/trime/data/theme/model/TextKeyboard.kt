@@ -42,6 +42,8 @@ data class TextKeyboard(
     /** 按键上方符号的水平对齐：left / center / right（空 = 居中）。 */
     val symbolAlign: String = "",
     val keys: List<TextKey> = emptyList(),
+    /** Empty keeps traditional themes' previous alignment. Custom layouts supply an independent value. */
+    val hintAlign: String = "",
 ) {
     enum class LabelTransform {
         NONE,
@@ -109,6 +111,7 @@ data class TextKeyboard(
         val paging: KeyActionToken? = null,
         val combo: KeyActionToken? = null,
         val ascii: KeyActionToken? = null,
+        @Transient val hintAlign: String? = null,
     ) {
         companion object {
             val DEFAULTS = TextKey()

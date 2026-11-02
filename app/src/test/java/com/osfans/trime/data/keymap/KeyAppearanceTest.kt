@@ -29,6 +29,24 @@ class KeyAppearanceTest : FunSpec({
         shouldThrow<IllegalArgumentException> { KeyAppearance.parse(mapOf("keyTextSize" to "NaN")) }
         shouldThrow<IllegalArgumentException> { KeyAppearance.parse(mapOf("keyBorder" to "1.5")) }
     }
+    test("upper symbol and lower hint align independently and survive YAML") {
+        val style = KeyAppearance.parse(mapOf("symbolAlign" to "靠右", "hintAlign" to "靠左"))
+        style.toTextKey().symbolAlign shouldBe "right"
+        style.toTextKey().hintAlign shouldBe "left"
+        val keyboard = CustomKeyboards.CustomKeyboard(options = KeyboardOptions(symbolAlignment = "right", hintAlignment = "center"),
+            rows = mutableListOf(CustomKeyboards.CustomRow(mutableListOf(CustomKeyboards.CustomKey("a", appearance = style)))))
+        val restored = CustomKeyboardYaml.decode(CustomKeyboardYaml.encode(mapOf("custom_alignment" to keyboard), emptyList())).getValue("custom_alignment")
+        restored.rows[0].keys[0].appearance shouldBe style
+        restored.options.effectiveHintAlignment shouldBe "center"
+        KeyAppearance.merge(TextKey(hintAlign = "right"), TextKey(hintAlign = "")).hintAlign shouldBe ""
+        shouldThrow<IllegalArgumentException> { KeyAppearance.parse(mapOf("hintAlign" to "invalid")) }
+    }
+    test("legacy shared alignment survives decoding and explicit independent choices do not follow changes") {
+        TextKey(symbolAlign = "right").toTextKey().hintAlign shouldBe "right"
+        TextKey(symbolAlign = "right", hintAlign = "center").copy(symbolAlign = "left").toTextKey().hintAlign shouldBe "center"
+        KeyboardOptions(symbolAlignment = "right").effectiveHintAlignment shouldBe "right"
+        KeyboardOptions(symbolAlignment = "right", hintAlignment = "left").copy(symbolAlignment = "center").effectiveHintAlignment shouldBe "left"
+    }
     test("individual bindings may explicitly override a disabled keyboard default") {
         KeyAppearance.merge(TextKey(sendBindings = false), TextKey()).toTextKey().sendBindings shouldBe false
         KeyAppearance.merge(TextKey(sendBindings = false), TextKey(sendBindings = true)).toTextKey().sendBindings shouldBe true

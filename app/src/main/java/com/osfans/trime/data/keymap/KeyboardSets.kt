@@ -21,10 +21,12 @@ import java.util.UUID
 object KeyboardSets {
     const val EDIT_PREFIX = "__mie_set:"
     val groups = linkedMapOf(
+        "geometry" to "尺寸与间距",
         "background" to "背景", "appearance" to "按键外观", "fonts" to "字体",
         "toolbar" to "工具栏", "menus" to "功能菜单", "floating" to "候选窗与悬浮球", "bindings" to "常用绑定",
     )
     val fields = mapOf(
+        "geometry" to setOf("keyboardHeightDp", "landscapeHeightDp", "rowSpacing", "rowMargin"),
         "background" to setOf("background", "toolbarBackground", "unifiedBackground"),
         "appearance" to setOf("surfaceAppearance", "keyAppearance", "allKeysBackground", "setKeyStyles"),
         "fonts" to setOf("typography"),
@@ -78,6 +80,37 @@ object KeyboardSets {
         return result
     }
     fun resolve(id: String, pages: Map<String, CustomKeyboard>, profiles: Map<String, KeyboardSharedProfile>): CustomKeyboard? {
+        val result = resolveOwn(id, pages, profiles) ?: return null
+        val root = runCatching { rootOf(id, pages) }.getOrNull() ?: return result
+        if (pageRole(id, root, result) != "en") return result
+        val primary = family(root, pages).firstOrNull { pageRole(it, root, pages.getValue(it)) == "zh_26" } ?: return result
+        if (primary == id) return result
+        val chinese = resolveOwn(primary, pages, profiles) ?: return result
+        val keys = chinese.rows.flatMap { it.keys }.groupBy(::identity)
+        return result.copy(importedActions = chinese.importedActions + result.importedActions,
+            rows = result.rows.map { row -> row.copy(keys = row.keys.map { key ->
+                val identity = identity(key)
+                if (!identity.startsWith("char:") && !identity.startsWith("key:")) return@map key
+                val source = keys[identity]?.singleOrNull()
+                val base = key.primaryBaseBindings ?: key.bindings.toMap()
+                val inherited = source?.bindings.orEmpty().filterKeys { it !in setOf("click", "ascii") && it !in key.primaryBindingOverrides }
+                val bindings = (base + inherited).toMutableMap()
+                key.primaryBindingOverrides.forEach { behavior ->
+                    if(behavior.startsWith('@')) return@forEach
+                    if (behavior in key.bindings) bindings[behavior] = key.bindings.getValue(behavior) else bindings.remove(behavior)
+                }
+                // English click/navigation and its own ASCII transition always stay local.
+                listOf("click", "ascii").forEach { behavior -> key.bindings[behavior]?.let { bindings[behavior] = it } }
+                val basePopup = if(key.primaryBaseBindings == null) key.appearance.popup else key.primaryBasePopup.orEmpty()
+                val baseSend = if(key.primaryBaseBindings == null) key.appearance.sendBindings else key.primaryBaseSendBindings
+                key.copy(bindings = bindings, primaryBaseBindings = base, primaryBasePopup = basePopup, primaryBaseSendBindings = baseSend,
+                    appearance = key.appearance.copy(
+                        popup = if("@popup" in key.primaryBindingOverrides) key.appearance.popup else source?.appearance?.popup ?: basePopup,
+                        sendBindings = if("@sendBindings" in key.primaryBindingOverrides) key.appearance.sendBindings else if(source != null) source.appearance.sendBindings else baseSend))
+            }.toMutableList()) }.toMutableList())
+    }
+
+    private fun resolveOwn(id: String, pages: Map<String, CustomKeyboard>, profiles: Map<String, KeyboardSharedProfile>): CustomKeyboard? {
         val raw = pages[id] ?: return null
         val root = runCatching { rootOf(id, pages) }.getOrNull() ?: return raw
         val config = pages[root]?.setConfig ?: return raw
@@ -87,8 +120,9 @@ object KeyboardSets {
             var next = key
             if (key.setStyleOverrides != null) {
                 val style = result.setKeyStyles[key.setRole] ?: KeyAppearance.Style()
-                val common = KeyAppearance.values(result.keyAppearance).filter { (field, value) -> value != emptyStyle[field] }
-                var styleValues = overlay(KeyAppearance.values(style), JsonObject(common))
+                // A role's accent color must win over the legacy all-key default.
+                var styleValues = overlay(KeyAppearance.values(result.keyAppearance),
+                    JsonObject(KeyAppearance.values(style).filter { (field, value) -> value != emptyStyle[field] }))
                 (raw.setOverrides?.get("keyAppearance") as? JsonObject)?.let { styleValues = overlay(styleValues, it) }
                 val resolvedStyle = json.decodeFromJsonElement(KeyAppearance.Style.serializer(), overlay(styleValues, key.setStyleOverrides))
                 val background = resolvedStyle.keyBackColor.takeIf { it.isNotBlank() }?.let { token ->
@@ -118,7 +152,7 @@ object KeyboardSets {
         val next = after.copy(setConfig = raw.setConfig)
         if (raw.setOverrides != null) next.setOverrides = overlay(raw.setOverrides!!, difference(values(before), values(after)))
         val oldKeys = before.rows.flatMap { it.keys }.filter { it.keyId.isNotBlank() }.associateBy { it.keyId }
-        next.rows.forEach { row -> row.keys.indices.forEach { index ->
+        next.rows.forEachIndexed { rowIndex, row -> row.keys.indices.forEach keys@ { index ->
             var key = row.keys[index]
             if(key.keyId.isEmpty()) {
                 var styleOverrides = JsonObject(KeyAppearance.values(key.appearance).filter { (name, value) -> value != emptyStyle[name] })
@@ -130,9 +164,15 @@ object KeyboardSets {
                     setBaseBindings = if(raw.setOverrides != null) key.setBaseBindings ?: key.bindings.toMap() else null)
                 row.keys[index] = key
             }
-            val old = oldKeys[key.keyId] ?: return@forEach
+            val old = oldKeys[key.keyId] ?: before.rows.getOrNull(rowIndex)?.keys?.getOrNull(index)?.takeIf {
+                it.keyId.isBlank() && (it.label == key.label || it.bindings["click"] == key.bindings["click"])
+            } ?: return@keys
             if(old.bindings["click"] != key.bindings["click"]) key = key.copy(identity = identity(key.copy(identity = "")), setRole = role(key))
             var updated = key
+            updated = updated.copy(primaryBindingOverrides = key.primaryBindingOverrides +
+                (old.bindings.keys + key.bindings.keys).filter { old.bindings[it] != key.bindings[it] } +
+                (if(old.appearance.popup != key.appearance.popup) setOf("@popup") else emptySet()) +
+                (if(old.appearance.sendBindings != key.appearance.sendBindings) setOf("@sendBindings") else emptySet()))
             if (key.setStyleOverrides != null && key.setStyleOverrides != JsonObject(mapOf("__mie_reset" to JsonPrimitive(true)))) {
                 var changes = difference(KeyAppearance.values(old.appearance), KeyAppearance.values(key.appearance))
                 if (old.background != key.background) changes = overlay(changes, JsonObject(mapOf("keyBackColor" to JsonPrimitive(backgroundToken(key.resolvedBackground())))))
@@ -141,7 +181,7 @@ object KeyboardSets {
             if (key.setBindingOverrides != null) updated = updated.copy(setBindingOverrides = key.setBindingOverrides +
                 (old.bindings.keys + key.bindings.keys).filter { old.bindings[it] != key.bindings[it] })
             if(key.setStyleOverrides == JsonObject(mapOf("__mie_reset" to JsonPrimitive(true)))) updated = updated.copy(setStyleOverrides = JsonObject(emptyMap()))
-            if(key.setBindingOverrides == setOf("__mie_reset")) updated = updated.copy(setBindingOverrides = emptySet())
+            if(key.setBindingOverrides == setOf("__mie_reset")) updated = updated.copy(setBindingOverrides = emptySet(), primaryBindingOverrides = emptySet())
             row.keys[index] = updated
         } }
         return next
@@ -228,6 +268,8 @@ object KeyboardSets {
             rows = kb.rows.map { row -> row.copy(keys = row.keys.map { key -> key.copy(
                 keyId = UUID.randomUUID().toString(), bindings = key.bindings.mapValues { token(it.value) }.toMutableMap(),
                 setBaseBindings = key.setBaseBindings?.mapValues { token(it.value) },
+                primaryBaseBindings = key.primaryBaseBindings?.mapValues { token(it.value) },
+                primaryBasePopup = key.primaryBasePopup?.map(::token),
                 appearance = key.appearance.copy(popup = key.appearance.popup.map(::token))) }.toMutableList()) }.toMutableList(),
             toolbar = kb.toolbar.map { entry -> entry.copy(action = token(entry.action), bindings = entry.bindings.mapValues { token(it.value) },
                 template = entry.template?.let { it.copy(action = token(it.action)) }) }.toMutableList(),

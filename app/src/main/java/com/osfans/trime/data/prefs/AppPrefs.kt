@@ -296,6 +296,8 @@ class AppPrefs(
             ) { floatingSettingsEnabled() }
 
         val oneHandMode = int(ONE_HAND_MODE, 0)
+        val oneHandBinding = string("one_hand_mode_binding", "")
+        val floatingBinding = string("floating_mode_binding", "")
         private val oneHandDefaultWidth = int("one_hand_default_width", floatingKeyboardWidth.getValue())
         val oneHandWidth = int(R.string.one_hand_keyboard_width, "one_hand_width",
             oneHandDefaultWidth.getValue(), 40, 100, "%", 1)
