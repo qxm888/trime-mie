@@ -181,6 +181,8 @@ class ThemeKeyboardImporter(private val context: Context) {
             keyTextSize=key.keyTextSize.takeIf { it>0 } ?: (FontOverrides.size("key").takeIf { includeAppOverrides && it>0 } ?: if(display.length>1 && !display.startsWith("ic@")) s.keyLongTextSize else s.keyTextSize),
             symbolTextSize=key.symbolTextSize.takeIf { it>0 } ?: (FontOverrides.size("symbol").takeIf { includeAppOverrides && it>0 } ?: s.symbolTextSize),
             hintTextSize=key.hintTextSize,
+            symbolInsetX=key.symbolInsetX,symbolInsetY=key.symbolInsetY,hintInsetX=key.hintInsetX,hintInsetY=key.hintInsetY,
+            symbolAlign=key.symbolAlign,hintAlign=key.hintAlign,
             roundCorner=key.roundCorner.takeIf { it>=0 } ?: kb.roundCorner.takeIf { it>=0 } ?: s.roundCorner,
             keyBorder=key.keyBorder.takeIf { it>=0 } ?: kb.keyBorder.takeIf { it>=0 } ?: s.keyBorder,
             keyBackColor=normal,keyTextColor=raw(key.keyTextColor,"key_text_color"),keySymbolColor=raw(key.keySymbolColor,"key_symbol_color"),

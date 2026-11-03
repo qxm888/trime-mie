@@ -14,6 +14,9 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.osfans.trime.data.keymap.CustomKeyboards
 import com.osfans.trime.data.symbols.BuiltinSymbolCatalog
+import com.osfans.trime.data.symbols.SymbolOrder
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.DefaultItemAnimator
 import com.osfans.trime.data.theme.ThemeScope
 import com.osfans.trime.ime.core.TrimeInputMethodService
 import com.osfans.trime.ime.keyboard.CommonKeyboardActionListener
@@ -38,7 +41,12 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
     private lateinit var grid: RecyclerView
     private lateinit var count: TextView
     private var categories = emptyList<BuiltinSymbolCatalog.Category>()
-    private var items = emptyList<String>()
+    private var items = mutableListOf<String>()
+    private var sorting = false
+    private var orderDirty = false
+    private lateinit var sortButton: TextView
+    private lateinit var resetButton: TextView
+    private val orderNamespace get() = "builtin-items:$selectedId"
     private var selectedId = initialCategory
     private var wide = false
     private var emoji = false
@@ -76,8 +84,9 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
                 typeface = if (emoji) Typeface.DEFAULT else scope.theme.fonts.key
                 maxLines = if (wide) 2 else 1
                 TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(this, if (wide) 9 else 12, if (wide) 16 else 25, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
-                setOnClickListener { commitSymbol(value) }
+                setOnClickListener { if (!sorting) commitSymbol(value) }
                 setOnLongClickListener {
+                    if (sorting) return@setOnLongClickListener false
                     val points = mutableListOf<String>()
                     var offset = 0
                     while (offset < value.length) {
@@ -92,6 +101,7 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
         }
     }
     private class Cell(val text: TextView) : RecyclerView.ViewHolder(text)
+    private class CategoryCell(val frame: com.osfans.trime.ime.keyboard.GestureFrame, val text: TextView) : RecyclerView.ViewHolder(frame)
     override fun onCreateView(): View {
         selector = TextView(context).apply {
             gravity = Gravity.CENTER_VERTICAL; textSize = 16f; setTextColor(ink)
@@ -108,7 +118,49 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
                 if (right - left != oldRight - oldLeft) resizeColumns(right - left)
             }
         }
-        root.addView(count, LinearLayout.LayoutParams(-1, -2))
+        sortButton = TextView(context).apply {
+            text = "排序"; gravity = Gravity.CENTER; textSize = 13f; setTextColor(ink)
+            contentDescription = "调整当前分类内的符号表情顺序"
+            setOnClickListener {
+                if (categories.isEmpty()) return@setOnClickListener
+                saveItemOrder(); sorting = !sorting
+                grid.itemAnimator = if (sorting) DefaultItemAnimator().apply { moveDuration = 120 } else null
+                updateSortHeader()
+            }
+        }
+        resetButton = TextView(context).apply {
+            text = "重置"; gravity = Gravity.CENTER; textSize = 13f; setTextColor(ink); visibility = View.GONE
+            setOnClickListener {
+                SymbolOrder.reset(orderNamespace); orderDirty = false
+                items = categories.first { it.id == selectedId }.items.toMutableList()
+                cells.notifyDataSetChanged(); grid.scrollToPosition(0)
+            }
+        }
+        root.addView(LinearLayout(context).apply {
+            gravity = Gravity.CENTER_VERTICAL
+            count.maxLines = 1; count.ellipsize = android.text.TextUtils.TruncateAt.END
+            addView(count, LinearLayout.LayoutParams(0, dp(32), 1f))
+            addView(resetButton, LinearLayout.LayoutParams(dp(48), dp(32)))
+            addView(sortButton, LinearLayout.LayoutParams(dp(48), dp(32)))
+        })
+        ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP or ItemTouchHelper.DOWN or ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT, 0) {
+            override fun isLongPressDragEnabled() = sorting
+            override fun onMove(rv: RecyclerView, from: RecyclerView.ViewHolder, to: RecyclerView.ViewHolder): Boolean {
+                val a = from.bindingAdapterPosition; val b = to.bindingAdapterPosition
+                if (!sorting || a !in items.indices || b !in items.indices) return false
+                items.add(b, items.removeAt(a)); cells.notifyItemMoved(a,b); orderDirty = true
+                return true
+            }
+            override fun onSwiped(holder: RecyclerView.ViewHolder, direction: Int) = Unit
+            override fun onSelectedChanged(holder: RecyclerView.ViewHolder?, state: Int) {
+                super.onSelectedChanged(holder,state)
+                if (state == ItemTouchHelper.ACTION_STATE_DRAG) holder?.itemView?.apply { scaleX = 1.08f; scaleY = 1.08f; alpha = .85f }
+            }
+            override fun clearView(rv: RecyclerView, holder: RecyclerView.ViewHolder) {
+                super.clearView(rv,holder); holder.itemView.apply { scaleX=1f; scaleY=1f; alpha=1f }; saveItemOrder()
+            }
+        }).attachToRecyclerView(grid)
         root.addView(grid, LinearLayout.LayoutParams(-1, 0, 1f))
         val bottom = LinearLayout(context)
         listOf("返回键盘" to "", "空格" to "space", "删除" to "BackSpace", "回车" to "Return").forEach { (label, action) ->
@@ -137,12 +189,21 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
     }
     private fun select(index: Int) {
         val category = categories.getOrNull(index) ?: return
+        saveItemOrder(); sorting = false; grid.itemAnimator = null
         selectedId = category.id; selector.text = "${category.name}  ▾"
-        items = category.items; wide = category.wide
+        items = SymbolOrder.ordered(orderNamespace, category.items) { it }.toMutableList(); wide = category.wide
         emoji = category.id in setOf("emoji", "people", "components", "animals", "food", "travel", "activities", "objects", "emoji_symbols", "flags", "emoji_full") || category.id.endsWith("_tones")
         resizeColumns(grid.width.takeIf { it > 0 } ?: context.resources.displayMetrics.widthPixels)
-        count.text = "${category.name} · ${items.size} 项 · 上下滑动浏览"
+        updateSortHeader()
         cells.notifyDataSetChanged(); grid.scrollToPosition(0)
+    }
+    private fun saveItemOrder() {
+        if (orderDirty) { SymbolOrder.save(orderNamespace,items) { it }; orderDirty = false }
+    }
+    private fun updateSortHeader() {
+        sortButton.text = if(sorting) "完成" else "排序"
+        resetButton.visibility = if(sorting) View.VISIBLE else View.GONE
+        count.text = "${categories.firstOrNull { it.id == selectedId }?.name.orEmpty()} · ${items.size} 项 · " + if(sorting) "长按拖动排序" else "上下滑动浏览"
     }
     private fun showCategories() {
         val working = categories.toMutableList()
@@ -151,45 +212,65 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
             setPadding(dp(8), dp(4), dp(8), dp(4))
         }
         lateinit var dialog: AlertDialog
-        val rows = object : RecyclerView.Adapter<Cell>() {
+        lateinit var categoryDrag: ItemTouchHelper
+        var categoryOrderDirty = false
+        val rows = object : RecyclerView.Adapter<CategoryCell>() {
             override fun getItemCount() = working.size
-            override fun onCreateViewHolder(parent: ViewGroup, type: Int) = Cell(TextView(context).apply {
-                gravity = Gravity.CENTER; textSize = 14f; setPadding(dp(8), dp(6), dp(8), dp(6))
-                layoutParams = RecyclerView.LayoutParams(-1, dp(56)).apply { setMargins(dp(3), dp(3), dp(3), dp(3)) }
-            })
-            override fun onBindViewHolder(holder: Cell, index: Int) {
+            override fun onCreateViewHolder(parent: ViewGroup, type: Int): CategoryCell {
+                val label = TextView(context).apply { gravity = Gravity.CENTER; textSize = 14f; setPadding(dp(8), dp(6), dp(8), dp(6)) }
+                val frame = com.osfans.trime.ime.keyboard.GestureFrame(context).apply {
+                    layoutParams = RecyclerView.LayoutParams(-1, dp(56)).apply { setMargins(dp(3), dp(3), dp(3), dp(3)) }
+                    addView(label, FrameLayout.LayoutParams(-1,-1))
+                }
+                return CategoryCell(frame,label)
+            }
+            override fun onBindViewHolder(holder: CategoryCell, index: Int) {
                 val category = working[index]
                 holder.text.apply {
                     text = (if (category.id == selectedId) "✓ " else "") + category.name
-                    setTextColor(ink); background = this@BuiltinSymbolsWindow.background()
+                    setTextColor(ink)
+                }
+                holder.frame.apply {
+                    background = this@BuiltinSymbolsWindow.background()
+                    contentDescription = "${category.name}；长按拖动调整顺序"
                     setOnClickListener {
                         categories = working.toList()
                         select(categories.indexOfFirst { it.id == category.id }); dialog.dismiss()
                     }
+                    setOnLongClickListener { categoryDrag.startDrag(holder); true }
                 }
             }
         }
         chooser.adapter = rows
-        androidx.recyclerview.widget.ItemTouchHelper(object : androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback(
+        categoryDrag = androidx.recyclerview.widget.ItemTouchHelper(object : androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback(
             androidx.recyclerview.widget.ItemTouchHelper.UP or androidx.recyclerview.widget.ItemTouchHelper.DOWN or
                 androidx.recyclerview.widget.ItemTouchHelper.LEFT or androidx.recyclerview.widget.ItemTouchHelper.RIGHT, 0) {
+            override fun isLongPressDragEnabled() = false
             override fun onMove(recycler: RecyclerView, from: RecyclerView.ViewHolder, to: RecyclerView.ViewHolder): Boolean {
                 val a = from.bindingAdapterPosition; val b = to.bindingAdapterPosition
                 if (a !in working.indices || b !in working.indices) return false
                 working.add(b, working.removeAt(a)); rows.notifyItemMoved(a, b)
                 categories = working.toList()
-                com.osfans.trime.data.symbols.SymbolCategoryOrder.save(working.map { it.id })
+                categoryOrderDirty = true
                 return true
             }
             override fun onSwiped(holder: RecyclerView.ViewHolder, direction: Int) = Unit
-        }).attachToRecyclerView(chooser)
+            override fun clearView(rv: RecyclerView, holder: RecyclerView.ViewHolder) {
+                super.clearView(rv,holder)
+                if (categoryOrderDirty) com.osfans.trime.data.symbols.SymbolCategoryOrder.save(working.map { it.id })
+                categoryOrderDirty = false
+            }
+        })
+        categoryDrag.attachToRecyclerView(chooser)
         val height = (context.resources.displayMetrics.heightPixels * .55f).toInt()
         val container = FrameLayout(context).apply { addView(chooser, FrameLayout.LayoutParams(-1, height)) }
         dialog = AlertDialog.Builder(context).setTitle("选择分类 · 长按拖动排序").setView(container)
             .setNeutralButton("恢复默认顺序") { _, _ ->
                 com.osfans.trime.data.symbols.SymbolCategoryOrder.reset()
+                categoryOrderDirty = false
                 categories = BuiltinSymbolCatalog.categories
             }.setNegativeButton("关闭", null).create()
+        dialog.setOnDismissListener { if(categoryOrderDirty) com.osfans.trime.data.symbols.SymbolCategoryOrder.save(working.map { it.id }) }
         service.showDialog(dialog)
     }
 
@@ -197,11 +278,11 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
         (grid.layoutManager as GridLayoutManager).spanCount =
             (width / dp(if (wide) 84 else 44)).coerceIn(if (wide) 2 else 3, 12)
     }
-    override fun onDetached() { job?.cancel(); job = null }
+    override fun onDetached() { saveItemOrder(); job?.cancel(); job = null }
     override fun refreshColors() {
         if (::root.isInitialized) {
             root.setBackgroundColor(color(layout?.bgColor, scope.colors.textBackColor))
-            count.setTextColor(ink); cells.notifyDataSetChanged()
+            count.setTextColor(ink); selector.setTextColor(ink); sortButton.setTextColor(ink); resetButton.setTextColor(ink); cells.notifyDataSetChanged()
         }
     }
 }

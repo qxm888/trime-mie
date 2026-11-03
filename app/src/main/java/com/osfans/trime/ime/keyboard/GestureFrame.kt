@@ -185,6 +185,7 @@ open class GestureFrame(context: Context) : FrameLayout(context) {
                 }
 
                 if (isLongPressed) {
+                    if(hasPopup) onMove?.invoke(x,y,true)
                     dispatchBehavior(KeyBehavior.LONG_CLICK, true)
                     return true
                 }

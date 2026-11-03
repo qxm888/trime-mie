@@ -34,6 +34,9 @@ object KeyAppearance {
         val iconOffsetX: Float = 0f, val iconOffsetY: Float = 0f,
         /** Null or empty follows the independent hint default. */
         val hintAlign: String? = null,
+        /** Null inherits; nonnegative values shrink the annotation area inside the cap. */
+        val symbolInsetX: Float? = null, val symbolInsetY: Float? = null,
+        val hintInsetX: Float? = null, val hintInsetY: Float? = null,
     ) {
         fun toTextKey() = TextKey(labelSymbol = labelSymbol, hint = hint,
             keyTextSize = keyTextSize, symbolTextSize = symbolTextSize, hintTextSize = hintTextSize, roundCorner = roundCorner, keyBorder = keyBorder,
@@ -46,7 +49,8 @@ object KeyAppearance {
             keyHintOffsetX = keyHintOffsetX, keyHintOffsetY = keyHintOffsetY,
             keyPressOffsetX = keyPressOffsetX, keyPressOffsetY = keyPressOffsetY, popup = popup, sendBindings = sendBindings ?: true,
             showSymbol = showSymbol, showHint = showHint, symbolAlign = symbolAlign, hintAlign = hintAlign ?: "",
-            icon = icon, iconSize = iconSize, iconTint = iconTint, iconOffsetX = iconOffsetX, iconOffsetY = iconOffsetY)
+            icon = icon, iconSize = iconSize, iconTint = iconTint, iconOffsetX = iconOffsetX, iconOffsetY = iconOffsetY,
+            symbolInsetX=symbolInsetX,symbolInsetY=symbolInsetY,hintInsetX=hintInsetX,hintInsetY=hintInsetY)
     }
     val fields = linkedMapOf(
         "labelSymbol" to "符号文字", "hint" to "提示文字",
@@ -67,6 +71,10 @@ object KeyAppearance {
         "showSymbol" to "符号显示（留空跟随全局）", "showHint" to "注解显示（留空跟随全局）",
         "symbolAlign" to "上方符号对齐（留空跟随全局）",
         "hintAlign" to "下方注解对齐（留空跟随全局）",
+        "symbolInsetX" to "上方符号横向内边距 dp（留空继承）",
+        "symbolInsetY" to "上方符号纵向内边距 dp（留空继承）",
+        "hintInsetX" to "下方注解横向内边距 dp（留空继承）",
+        "hintInsetY" to "下方注解纵向内边距 dp（留空继承）",
         "icon" to "前景图标（留空显示文字）", "iconSize" to "图标尺寸 dp（0 自动）",
         "iconTint" to "图标颜色（留空保留图片原色）",
         "iconOffsetX" to "图标横向偏移 dp", "iconOffsetY" to "图标纵向偏移 dp",
@@ -90,6 +98,11 @@ object KeyAppearance {
             require(name in fields)
             val old = prototype.getValue(name)
             result[name] = when {
+                name in setOf("symbolInsetX","symbolInsetY","hintInsetX","hintInsetY") -> if(text.isBlank()) JsonNull else {
+                    val value=text.toFloatOrNull()
+                    require(value!=null && value.isFinite() && value in 0f..48f) { "${fields[name]}：请输入 0 至 48，或留空继承" }
+                    JsonPrimitive(value)
+                }
                 name == "sendBindings" -> if (text.isBlank()) JsonNull else JsonPrimitive(text.toBooleanStrict())
                 name == "showSymbol" || name == "showHint" -> when {
                     text.isBlank() -> JsonNull

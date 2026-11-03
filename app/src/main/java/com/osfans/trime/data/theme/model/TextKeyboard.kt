@@ -112,6 +112,8 @@ data class TextKeyboard(
         val combo: KeyActionToken? = null,
         val ascii: KeyActionToken? = null,
         @Transient val hintAlign: String? = null,
+        val symbolInsetX: Float? = null, val symbolInsetY: Float? = null,
+        val hintInsetX: Float? = null, val hintInsetY: Float? = null,
     ) {
         companion object {
             val DEFAULTS = TextKey()

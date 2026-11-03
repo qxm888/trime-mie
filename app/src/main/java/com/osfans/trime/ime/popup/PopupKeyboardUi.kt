@@ -72,7 +72,7 @@ class PopupKeyboardUi(
 
         val textView = view(::AutoScaleTextView) {
             scaleMode = AutoScaleTextView.Mode.Proportional
-            textSize = com.osfans.trime.data.keymap.LayoutTypography.size("popup", theme.style.popupTextSize)
+            textSize = com.osfans.trime.data.keymap.LayoutTypography.size("popup", theme.style.popupTextSize).let { if(!theme.isCustom && it <= 0f) 22f else it }
             setTextColor(scope.colors.popupTextColor)
             typeface = theme.fonts.popup
         }
@@ -98,7 +98,7 @@ class PopupKeyboardUi(
             if (text.isIconFont) {
                 imageView.setImageDrawable(
                     IconicsDrawable(ctx, text.toIconName()).apply {
-                        sizeDp = com.osfans.trime.data.keymap.LayoutTypography.size("popup", theme.style.popupTextSize).toInt()
+                        sizeDp = com.osfans.trime.data.keymap.LayoutTypography.size("popup", theme.style.popupTextSize).let { if(!theme.isCustom && it <= 0f) 22f else it }.toInt()
                         colorFilter = PorterDuffColorFilter(scope.colors.popupTextColor, PorterDuff.Mode.SRC_IN)
                     },
                 )
@@ -132,7 +132,7 @@ class PopupKeyboardUi(
     init {
         val keyCount: Float = keys.size.toFloat()
         rowCount = ceil(keyCount / 5).toInt()
-        columnCount = (keyCount / rowCount).roundToInt()
+        columnCount = if(theme.isCustom) (keyCount / rowCount).roundToInt() else ceil(keyCount / rowCount).toInt()
 
         focusRow = 0
         focusColumn = calcInitialFocusedColumn(columnCount, keyWidth, outerBounds, triggerBounds)
@@ -199,7 +199,7 @@ class PopupKeyboardUi(
                 theme.resolveAction(label).getLabel(KeyboardWindow.currentKeyboard).let {
                     when {
                         it.isIconFont -> it
-                        it.isNotEmpty() -> String(Character.toChars(it.codePointAt(0)))
+                        it.isNotEmpty() -> if(theme.isCustom) String(Character.toChars(it.codePointAt(0))) else it
                         else -> ""
                     }
                 }

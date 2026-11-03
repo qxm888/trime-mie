@@ -71,7 +71,10 @@ object KeyboardSetOperations {
                     resetAsciiMode = true, asciiKeyboard = if (role.startsWith("zh_")) ids["en"].orEmpty() else ""),
                 rows = kb.rows.map { row -> row.copy(keys = row.keys.map { key ->
                     val type = KeyboardSets.role(key)
-                    val local = KeyAppearance.values(key.appearance).filterKeys { it in setOf("labelSymbol", "hint", "popup", "sendBindings", "icon", "iconSize", "showSymbol", "showHint", "symbolAlign", "hintAlign") }
+                    val local = KeyAppearance.values(key.appearance).filter { (name, value) ->
+                        name in setOf("labelSymbol", "hint", "popup", "sendBindings", "icon", "iconSize", "showSymbol", "showHint", "symbolAlign", "hintAlign") ||
+                            (name in setOf("symbolInsetX", "symbolInsetY", "hintInsetX", "hintInsetY") && value != JsonNull)
+                    }
                     val bindings = key.bindings.mapValues { (behavior, value) ->
                         if (behavior == "click" && key.label.contains("返回")) "Keyboard_default" else clean(value)
                     }

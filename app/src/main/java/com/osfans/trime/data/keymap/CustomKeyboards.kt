@@ -46,7 +46,7 @@ object CustomKeyboards {
     const val BUILTIN_DEFAULT_ID = "custom_pink"
 
     /** 内置五色键盘的版本；改过内置 YAML 后 +1，升级时自动刷新内置 id。 */
-    private const val BUILTIN_VERSION = 15
+    private const val BUILTIN_VERSION = 18
     private var builtinBindings: BuiltinBindingDefaults? = null
 
     @Serializable
@@ -326,8 +326,18 @@ object CustomKeyboards {
 
     /** 扩展内置键盘（表情/符号分类页）放后台补，避免首次启动主线程卡住。 */
     private fun seedBuiltinExtrasInBackground(context: android.content.Context) {
-        if (synchronized(lock) { store.builtinExtrasVersion >= BUILTIN_VERSION || builtinExtrasJob?.isActive == true }) return
+        if (synchronized(lock) { builtinExtrasJob?.isActive == true }) return
         builtinExtrasJob = ioScope.launch {
+            // Repair missing stock textures off the UI thread even when layout migration is current.
+            val installed = try { BuiltinPremiumAssets.install(context) }
+            catch (error: Exception) {
+                Timber.w(error, "CustomKeyboards: premium material installation failed; retaining current layouts")
+                return@launch
+            }
+            if (synchronized(lock) { store.builtinExtrasVersion >= BUILTIN_VERSION }) {
+                if (installed) com.osfans.trime.data.theme.ThemeManager.requestCustomizationRefresh()
+                return@launch
+            }
             val extras = (decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_extra) ?: return@launch) +
                 (decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_effects) ?: return@launch)
             val hasLegacy = synchronized(lock) { store.keyboards.keys.any { "_cat_" in it } }
@@ -462,17 +472,39 @@ object CustomKeyboards {
 
     internal fun upgradeSymbols(existing: CustomKeyboard, template: CustomKeyboard, existingIds: Set<String>, preservedGeometry: JsonObject? = null): CustomKeyboard {
         val updated = normalizedCopy(existing)
+        updated.rows.forEach { row -> row.keys.replaceAll(BuiltinRDoubleTapDefaults::upgrade) }
+        updated.setBindings = BuiltinRDoubleTapDefaults.rules(updated.setBindings)
+        updated.setConfig = updated.setConfig?.let { it.copy(defaults = BuiltinRDoubleTapDefaults.settings(it.defaults)) }
+        updated.setOverrides = updated.setOverrides?.let(BuiltinRDoubleTapDefaults::settings)
+        // Add only newly introduced annotation bounds. Never replace a user's explicit values.
+        val insetDefaults = KeyAppearance.values(template.keyAppearance).filter { (field, value) ->
+            field in setOf("symbolInsetX", "symbolInsetY", "hintInsetX", "hintInsetY") && value != JsonNull
+        }
+        if (insetDefaults.isNotEmpty()) {
+            fun fill(style: JsonObject) = JsonObject(style + insetDefaults.filterKeys { style[it] == null || style[it] == JsonNull })
+            updated.keyAppearance = json.decodeFromJsonElement(KeyAppearance.Style.serializer(), fill(KeyAppearance.values(updated.keyAppearance)))
+            fun fillSettings(values: JsonObject): JsonObject {
+                val style = values["keyAppearance"] as? JsonObject ?: return values
+                return JsonObject(values + ("keyAppearance" to fill(style)))
+            }
+            updated.setConfig = updated.setConfig?.let { it.copy(defaults = fillSettings(it.defaults)) }
+            updated.setOverrides = updated.setOverrides?.let(::fillSettings)
+        }
         updated.rows.forEach { row -> row.keys.replaceAll(BuiltinPunctuationDefaults::upgrade) }
         if (updated.options.asciiKeyboard.isBlank() && template.options.asciiKeyboard in existingIds) {
             updated.options = updated.options.copy(asciiKeyboard = template.options.asciiKeyboard)
         }
-        if (template.keyboardHeightDp == 260) {
-            if (updated.keyboardHeightDp == 0) updated.keyboardHeightDp = 260
-            if (updated.rowSpacing in setOf(4, 5)) updated.rowSpacing = 10
+        if (template.keyboardHeightDp in setOf(251,260)) {
+            val targetHeight = template.keyboardHeightDp
+            val targetGap = if(targetHeight == 251) 8 else 10
+            val previousHeights = if(targetHeight == 251) setOf(0,260) else setOf(0)
+            val previousGaps = if(targetHeight == 251) setOf(4,5,10) else setOf(4,5)
+            if (updated.keyboardHeightDp in previousHeights) updated.keyboardHeightDp = targetHeight
+            if (updated.rowSpacing in previousGaps) updated.rowSpacing = targetGap
             // Adopted sets read defaults/overrides instead of raw page fields.
             fun migrate(values: JsonObject) = JsonObject(values.toMutableMap().apply {
-                if (get("keyboardHeightDp") == JsonPrimitive(0)) put("keyboardHeightDp", JsonPrimitive(260))
-                if ((get("rowSpacing") as? JsonPrimitive)?.intOrNull in setOf(4, 5)) put("rowSpacing", JsonPrimitive(10))
+                if ((get("keyboardHeightDp") as? JsonPrimitive)?.intOrNull in previousHeights) put("keyboardHeightDp", JsonPrimitive(targetHeight))
+                if ((get("rowSpacing") as? JsonPrimitive)?.intOrNull in previousGaps) put("rowSpacing", JsonPrimitive(targetGap))
             })
             updated.setConfig = updated.setConfig?.let { it.copy(defaults = migrate(it.defaults)) }
             updated.setOverrides = updated.setOverrides?.let(::migrate)
@@ -668,7 +700,8 @@ object CustomKeyboards {
     internal fun portableLayouts(ids: List<String>): Map<String, CustomKeyboard> = synchronized(lock) {
         ids.associateWith { id ->
             val kb = get(id) ?: error("键盘已删除")
-            kb.copy(setConfig = kb.setConfig?.let { config -> config.copy(defaults = KeyboardSets.defaults(config, store.sharedProfiles), profiles = emptyMap()) })
+            kb.copy(setPageRole = kb.setPageRole.ifBlank { KeyboardSets.pageRole(id, KeyboardSets.rootOf(id, store.keyboards), kb) },
+                setConfig = kb.setConfig?.let { config -> config.copy(defaults = KeyboardSets.defaults(config, store.sharedProfiles), profiles = emptyMap()) })
         }
     }
 
@@ -1103,6 +1136,7 @@ object CustomKeyboards {
     /** Restore missing stock pages, or reset only known built-in ids. User-created ids survive. */
     fun restoreBuiltins(reset: Boolean): Int {
         val context = appContext ?: error("键盘尚未初始化")
+        BuiltinPremiumAssets.install(context)
         val templates = decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_keyboards).orEmpty() +
             decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_extra).orEmpty() +
             decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_effects).orEmpty()
@@ -1128,6 +1162,7 @@ object CustomKeyboards {
     }
     fun resetBuiltinSet(root: String) {
         val context = appContext ?: error("键盘尚未初始化")
+        BuiltinPremiumAssets.install(context)
         val templates = decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_keyboards).orEmpty() +
             decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_extra).orEmpty() +
             decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_effects).orEmpty()

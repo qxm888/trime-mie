@@ -63,10 +63,18 @@ object KeyAppearanceEditor {
             "pressed" to drawers.section("按下颜色与背景"),
             "on" to drawers.section("锁定态颜色（长按大写等）"),
             "offset" to drawers.section("位置偏移"),
+            "range" to drawers.section("符号与注解显示范围"),
             "action" to drawers.section("弹出备选与手势绑定"),
         )
+        if (fields.any { it in setOf("symbolInsetX", "symbolInsetY", "hintInsetX", "hintInsetY") }) {
+            groups.getValue("range").addView(android.widget.TextView(context).apply {
+                text = "数值越大，显示范围越向按键内部收缩。上方符号和下方注解分别设置；留空继承整套/键盘默认值，范围 0–48 dp。"
+                setPadding(24, 8, 24, 12)
+            })
+        }
         KeyAppearance.fields.filterKeys { it in fields }.forEach { (name, label) ->
             val group = when {
+                name.contains("Inset") -> "range"
                 name == "popup" || name == "sendBindings" -> "action"
                 name.contains("Offset") -> "offset"
                 name.startsWith("hilited") -> "pressed"
@@ -111,8 +119,9 @@ object KeyAppearanceEditor {
                 body.addView(field)
             } else {
                 val input = TextInputEditText(context).apply {
-                    setText(if (value is JsonArray) value.joinToString("\n") { it.jsonPrimitive.content } else value.jsonPrimitive.content)
+                    setText(if(value==JsonNull) "" else if (value is JsonArray) value.joinToString("\n") { it.jsonPrimitive.content } else value.jsonPrimitive.content)
                     if (name != "popup") setSingleLine(true)
+                    if (name.contains("Inset")) inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
                 }
                 body.addView(TextInputLayout(context).apply {
                     hint = label

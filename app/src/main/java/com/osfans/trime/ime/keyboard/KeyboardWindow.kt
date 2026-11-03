@@ -589,7 +589,14 @@ class KeyboardWindow(di: DI) :
                     visibleKeyboard?.resetShift()
                     asciiKeyboardPair?.let { (origin, english) ->
                         asciiKeyboardPair = null
-                        if (currentKeyboardId == english) switchKeyboard(origin)
+                        if (currentKeyboardId == english) {
+                            // The English option arrives before detaching the Chinese page.
+                            // A page with reset_ascii_mode=false therefore remembers true
+                            // on detach. Honour the explicit switch back to Chinese instead
+                            // of restoring that stale value and reopening the English page.
+                            cachedKeyboards[origin]?.first?.lastAsciiMode = false
+                            switchKeyboard(origin)
+                        }
                     }
                 }
             }

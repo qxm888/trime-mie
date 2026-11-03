@@ -391,11 +391,52 @@ class KeyEditActivity : AppCompatActivity() {
             refreshRow(rowTokens, behavior, index)
         }
 
+        if(!com.osfans.trime.data.theme.ThemeManager.activeTheme.isCustom) {
+            container.addView(com.google.android.material.button.MaterialButton(this).apply {
+                text="长按滑选符号…"
+                setOnClickListener { showPopupEditor(index,keyLabel) }
+            })
+        }
+
         MaterialAlertDialogBuilder(this)
             .setTitle(keyLabel)
-            .setView(container)
+            .setView(android.widget.ScrollView(this).apply { addView(container) })
             .setPositiveButton(R.string.ok, null)
             .show()
+    }
+
+    private fun showPopupEditor(index: Int,keyLabel: String) {
+        val defaults=resolveConfig(currentKeyboardId)?.keys?.getOrNull(index)?.popup.orEmpty()
+        val input=android.widget.EditText(this).apply {
+            hint="每行一个符号、表情或主题动作名"; minLines=4; maxLines=8
+            setText((KeyBindingOverrides.popup(currentKeyboardId,index) ?: defaults).joinToString("\n"))
+        }
+        val body=LinearLayout(this).apply {
+            orientation=LinearLayout.VERTICAL; setPadding(dp(20),dp(8),dp(20),0)
+            addView(TextView(this@KeyEditActivity).apply { text="长按后滑动选取，松手输入。留空关闭小窗，恢复默认沿用主题 popup 配置。" })
+            addView(input)
+            addView(com.google.android.material.button.MaterialButton(this@KeyEditActivity).apply {
+                text="选择常用符号组"
+                setOnClickListener {
+                    val groups=linkedMapOf(
+                        "括号与引号" to listOf("[","(","「","“","『","【","{","'","《","\"","】","』","”","」",")","]","}"),
+                        "常用标点" to listOf("，","。","、","？","！","：","；","…","—","·"),
+                        "数学符号" to listOf("+","−","×","÷","=","≠","≈","≤","≥","±","∞"),
+                        "常用表情" to listOf("😀","😊","😂","🥰","👍","🙏","❤️","💕","✨","🎉"))
+                    MaterialAlertDialogBuilder(this@KeyEditActivity).setTitle("选择符号组").setItems(groups.keys.toTypedArray()) { _,which -> input.setText(groups.values.elementAt(which).joinToString("\n")) }.show()
+                }
+            })
+        }
+        val dialog=MaterialAlertDialogBuilder(this).setTitle("$keyLabel · 长按滑选").setView(body)
+            .setNeutralButton("恢复主题默认") { _,_ -> KeyBindingOverrides.setPopup(currentKeyboardId,index,null); rebuildPreview(); KeyBindingOverrides.flush() }
+            .setNegativeButton("取消",null).setPositiveButton("保存",null).create()
+        dialog.setOnShowListener {
+            dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE).setOnClickListener {
+                runCatching { KeyBindingOverrides.setPopup(currentKeyboardId,index,input.text.toString().lines().filter { it.isNotBlank() }); check(KeyBindingOverrides.flush()) { "保存失败，请检查数据目录" }; rebuildPreview() }
+                    .onSuccess { dialog.dismiss() }.onFailure { input.error=it.message }
+            }
+        }
+        dialog.show()
     }
 
     /** Updates one behavior row's value text ("token · 已定制" or the theme default). */

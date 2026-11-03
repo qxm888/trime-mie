@@ -363,6 +363,11 @@ $RECYCLE.BIN/
 *.ap_
 *.aab
 
+# Shipped artwork archive (not a generated delivery ZIP).
+!/app/src/main/res/raw/mie_premium_materials.zip
+/tools/premium/__pycache__/
+/tools/__pycache__/
+
 # Files for the ART/Dalvik VM
 *.dex
 

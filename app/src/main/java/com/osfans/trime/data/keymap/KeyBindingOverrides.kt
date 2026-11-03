@@ -19,6 +19,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
 import timber.log.Timber
 import java.io.File
 import com.osfans.trime.util.readAtomicText
@@ -123,6 +125,16 @@ object KeyBindingOverrides {
         behavior: String,
     ): String? = synchronized(lock) { store.keyboards[keyboard]?.get(index)?.get(behavior) }
 
+    private fun decodePopup(raw: String): List<String>? = runCatching {
+        json.decodeFromString(ListSerializer(String.serializer()),raw).takeIf { validPopup(it) }
+    }.getOrNull()
+    private fun validPopup(entries: List<String>) = entries.size <= 64 && entries.all { it.isNotBlank() && it.length <= 512 }
+    fun popup(keyboard: String, index: Int): List<String>? = binding(keyboard,index,"popup")?.let(::decodePopup)
+    fun setPopup(keyboard: String,index: Int,entries: List<String>?) {
+        require(entries == null || validPopup(entries)) { "最多 64 个备选，每项不超过 512 字符" }
+        setBinding(keyboard,index,"popup",entries?.let { json.encodeToString(ListSerializer(String.serializer()),it) })
+    }
+
     /**
      * Set an override. `token == null` removes the override (theme default);
      * `token == ""` explicitly unbinds the behavior.
@@ -191,6 +203,7 @@ object KeyBindingOverrides {
             val t: KeyActionToken? = if (token.isEmpty()) null else KeyActionToken.Plain(token)
             result =
                 when (behavior) {
+                    "popup" -> decodePopup(token)?.let { result.copy(popup=it) } ?: result
                     "click" -> result.copy(click = t)
                     "doubleClick" -> result.copy(doubleClick = t)
                     "lazyDoubleClick" -> result.copy(lazyDoubleClick = t)

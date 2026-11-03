@@ -37,6 +37,7 @@ import com.osfans.trime.ime.popup.PopupDelegate
 import com.osfans.trime.util.sp
 import splitties.dimensions.dp
 import kotlin.math.hypot
+import kotlin.math.sqrt
 
 @SuppressLint("ClickableViewAccessibility", "ViewConstructor")
 class KeyView(
@@ -99,6 +100,8 @@ class KeyView(
     }
     private val labelMetrics = Paint.FontMetrics()
     private val symbolMetrics = Paint.FontMetrics()
+    private val annotationArea = RectF()
+    private val annotationInk = Rect()
     private val punctuationBounds = android.graphics.Rect()
     private var punctuationLabel = ""
     private var punctuationSize = 0f
@@ -208,8 +211,8 @@ class KeyView(
                     popup.listener.onPopupAction(triggerAction)
                     triggerAction.outAction?.let { action ->
                         keyboardActionListener.onAction(theme.resolveAction(action))
-                        dismissPopupPreview()
                     }
+                    dismissPopupPreview()
                     setPressedState(false)
                 } else if (isRepeatable) {
                     key.getAction(KeyBehavior.CLICK)?.let { processKeyAction(it, KeyBehavior.CLICK) }
@@ -867,6 +870,100 @@ class KeyView(
         }
     }
 
+    // Keep legacy theme offsets intact unless a display area is explicitly configured.
+    private fun constrainAnnotation(isTop: Boolean) = theme.isCustom ||
+        key.annotationInsetX(isTop) != null || key.annotationInsetY(isTop) != null
+
+    private fun annotationArea(isTop: Boolean): RectF {
+        annotationArea.set(backgroundClipBounds)
+        val x = dpf(key.annotationInsetX(isTop) ?: 4f).coerceAtMost((annotationArea.width() / 2 - .5f).coerceAtLeast(0f))
+        val y = dpf(key.annotationInsetY(isTop) ?: 2f).coerceAtMost((annotationArea.height() / 2 - .5f).coerceAtLeast(0f))
+        annotationArea.inset(x, y)
+        return annotationArea
+    }
+
+    /** Horizontal clearance for the round cap at the ink's top/bottom, in view coordinates. */
+    private fun roundedClearance(top: Float, bottom: Float): Float {
+        val radius = backgroundClipRadius.coerceIn(0f, minOf(backgroundClipBounds.width(), backgroundClipBounds.height()) / 2)
+        if (radius <= 0f) return 0f
+        val distance = minOf(top - backgroundClipBounds.top, backgroundClipBounds.bottom - bottom).coerceIn(0f, radius)
+        return radius - sqrt((radius * radius - (radius - distance) * (radius - distance)).coerceAtLeast(0f))
+    }
+
+    private fun annotationX(area: RectF, inkLeft: Float, inkRight: Float, top: Float, bottom: Float, isTop: Boolean, offset: Float): Float {
+        val clearance = roundedClearance(top, bottom)
+        val left = maxOf(area.left, backgroundClipBounds.left + clearance)
+        val right = minOf(area.right, backgroundClipBounds.right - clearance)
+        val align = if (isTop) key.symbolAlign.ifBlank { keyboard.symbolAlign } else key.hintAlign.ifBlank { keyboard.hintAlign }
+        val x = when (align) {
+            "left" -> left - inkLeft
+            "right" -> right - inkRight
+            else -> (left + right - inkLeft - inkRight) / 2
+        } + offset
+        return if (right - left >= inkRight - inkLeft) x.coerceIn(left - inkLeft, right - inkRight)
+            else (left + right - inkLeft - inkRight) / 2
+    }
+
+    private fun drawConstrainedAnnotation(canvas: Canvas, text: String, isTop: Boolean, textSize: Float, color: Int, offsetX: Float, offsetY: Float) {
+        val area = annotationArea(isTop)
+        if (area.width() <= 0f || area.height() <= 0f) return
+        val dx = sp(offsetX) * keyboardView.keyTextScale
+        val dy = sp(offsetY) * keyboardView.keyTextScale
+        val saved = canvas.save()
+        canvas.clipPath(backgroundClip)
+        canvas.clipRect(area)
+        if (text.isIconFont) {
+            val size = minOf(textSize, area.width(), area.height()).coerceAtLeast(1f)
+            val y = (if (isTop) area.top + size / 2 else area.bottom - size / 2) + dy
+            val cy = y.coerceIn(area.top + size / 2, area.bottom - size / 2)
+            val cmd = text.toIconName()
+            val icon = if (cachedIconName == cmd) cachedIcon!! else IconicsDrawable(context, cmd).also { cachedIcon = it; cachedIconName = cmd }
+            val cx = annotationX(area, -size / 2, size / 2, cy - size / 2, cy + size / 2, isTop, dx)
+            icon.colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN)
+            icon.setBounds((cx-size/2).toInt(), (cy-size/2).toInt(), (cx+size/2).toInt(), (cy+size/2).toInt())
+            icon.draw(canvas)
+        } else {
+            symbolPaint.color = color
+            symbolPaint.typeface = if (isTop) theme.fonts.symbol else theme.fonts.hint
+            symbolPaint.textSize = textSize
+            applyTextShadow(symbolPaint)
+            val lines = text.split('\n')
+            symbolPaint.getFontMetrics(symbolMetrics)
+            val rawLineHeight = symbolMetrics.descent - symbolMetrics.ascent
+            var inkTop = 0f; var inkBottom = 0f; var inkWidth = 0f
+            lines.forEachIndexed { i, line ->
+                symbolPaint.getTextBounds(line, 0, line.length, annotationInk)
+                if (i == 0) inkTop = annotationInk.top.toFloat()
+                inkBottom = maxOf(inkBottom, annotationInk.bottom + i * rawLineHeight)
+                inkWidth = maxOf(inkWidth, annotationInk.width().toFloat())
+            }
+            val scale = minOf(1f, area.width() / inkWidth.coerceAtLeast(1f), area.height() / (inkBottom-inkTop).coerceAtLeast(1f))
+            val fittedSize = textSize * scale
+            symbolPaint.textSize = fittedSize
+            val lineHeight = rawLineHeight * scale
+            inkTop *= scale; inkBottom *= scale
+            val baseline = ((if (isTop) area.top - inkTop else area.bottom - inkBottom) + dy)
+                .coerceIn(area.top - inkTop, maxOf(area.top - inkTop, area.bottom - inkBottom))
+            lines.forEachIndexed { i, line ->
+                symbolPaint.textSize = fittedSize
+                symbolPaint.getTextBounds(line, 0, line.length, annotationInk)
+                val y = baseline + i * lineHeight
+                // A pill has less width near its tips. Fit the actual glyph, not just its advance.
+                val clearance = roundedClearance(y + annotationInk.top, y + annotationInk.bottom)
+                val available = minOf(area.right, backgroundClipBounds.right-clearance) - maxOf(area.left, backgroundClipBounds.left+clearance)
+                if (annotationInk.width() > available && available > 0) {
+                    symbolPaint.textSize *= available / annotationInk.width()
+                    symbolPaint.getTextBounds(line, 0, line.length, annotationInk)
+                }
+                val advance = symbolPaint.measureText(line)
+                val x = annotationX(area, annotationInk.left - advance/2, annotationInk.right - advance/2,
+                    y + annotationInk.top, y + annotationInk.bottom, isTop, dx)
+                canvas.drawText(line, x, y, symbolPaint)
+            }
+        }
+        canvas.restoreToCount(saved)
+    }
+
     private fun drawSymbol(canvas: Canvas, text: String, isTop: Boolean = true) {
         // 按键级覆盖优先于全局开关：showSymbol/showHint 三态（null 跟随全局）。
         val hide =
@@ -878,6 +975,11 @@ class KeyView(
         val textSize = sp((if (isTop) key.symbolTextSize else key.hintTextSize).takeIf { it > 0f } ?: com.osfans.trime.data.keymap.LayoutTypography.size(if (isTop) "symbol" else "hint", keyboardView.symbolTextSize)) * keyboardView.keyTextScale
         val offsetX = if (isTop) key.keySymbolOffsetX else key.keyHintOffsetX
         val offsetY = if (isTop) key.keySymbolOffsetY else key.keyHintOffsetY
+
+        if (constrainAnnotation(isTop)) {
+            drawConstrainedAnnotation(canvas, text, isTop, textSize, textColor, offsetX, offsetY)
+            return
+        }
 
         if (text.isIconFont) {
             drawIcon(canvas, text, textSize.toInt(), textColor, offsetX, offsetY, isTop)

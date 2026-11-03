@@ -35,6 +35,8 @@ class Key(
     /** 按键级符号对齐覆盖；空 = 跟随键盘级设置。 */
     val symbolAlign: String get() = keyDef?.symbolAlign.orEmpty()
     val hintAlign: String get() = keyDef?.hintAlign ?: symbolAlign
+    fun annotationInsetX(top: Boolean) = (if(top) keyDef?.symbolInsetX else keyDef?.hintInsetX)?.takeIf { it.isFinite() }?.coerceIn(0f,48f)
+    fun annotationInsetY(top: Boolean) = (if(top) keyDef?.symbolInsetY else keyDef?.hintInsetY)?.takeIf { it.isFinite() }?.coerceIn(0f,48f)
 
     /** 独立前景图标配置。 */
     fun icon(): String = keyDef?.icon.orEmpty()
@@ -96,7 +98,10 @@ class Key(
     private val label = keyDef?.label ?: ""
     private val labelSymbol = keyDef?.labelSymbol ?: ""
     val hint: String = keyDef?.hint ?: ""
-    val popup = keyDef?.popup ?: emptyList()
+    val popup = keyDef?.popup.orEmpty().let { alternatives ->
+        if(theme.isCustom || alternatives.isEmpty()) alternatives
+        else ((keyDef?.click as? KeyActionToken.Plain)?.token?.takeIf { it.isNotBlank() }?.let(::listOf).orEmpty() + alternatives).distinct()
+    }
 
     val keyTextSize: Float = keyDef?.keyTextSize ?: 0f
     val symbolTextSize: Float = keyDef?.symbolTextSize ?: 0f

@@ -76,8 +76,7 @@
             "label": "R",
             "bindings": {
               "click": "r",
-              "longClick": "4",
-              "doubleClick": "__mie_action:{\"command\":\"date\",\"option\":\"YYYY-MM-DD\",\"select\":\"\",\"toggle\":\"\",\"label\":\"日期时间 · YYYY-MM-DD\",\"preview\":null,\"shiftLock\":\"\",\"commit\":\"\",\"text\":\"\",\"sticky\":false,\"repeatable\":false,\"slideCursor\":false,\"slideDelete\":false,\"functional\":false,\"states\":[],\"send\":\"FUNCTION\"}"
+              "longClick": "4"
             },
             "appearance": {
               "labelSymbol": "",

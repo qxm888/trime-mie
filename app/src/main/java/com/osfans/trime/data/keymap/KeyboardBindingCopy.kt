@@ -13,16 +13,20 @@ object KeyboardBindingCopy {
         val showSymbol: Boolean? = null, val showHint: Boolean? = null,
         val symbolAlign: String = "",
         val hintAlign: String? = null,
+        val symbolInsetX: Float? = null, val symbolInsetY: Float? = null,
+        val hintInsetX: Float? = null, val hintInsetY: Float? = null,
     ) {
         constructor(style: KeyAppearance.Style) : this(style.labelSymbol, style.hint,
             style.symbolTextSize, style.hintTextSize, style.keySymbolOffsetX, style.keySymbolOffsetY,
-            style.keyHintOffsetX, style.keyHintOffsetY, style.showSymbol, style.showHint, style.symbolAlign, style.hintAlign ?: "")
+            style.keyHintOffsetX, style.keyHintOffsetY, style.showSymbol, style.showHint, style.symbolAlign, style.hintAlign ?: "",
+            style.symbolInsetX, style.symbolInsetY, style.hintInsetX, style.hintInsetY)
 
         fun applyTo(style: KeyAppearance.Style) = style.copy(labelSymbol = labelSymbol, hint = hint,
             symbolTextSize = symbolTextSize, hintTextSize = hintTextSize,
             keySymbolOffsetX = symbolOffsetX, keySymbolOffsetY = symbolOffsetY,
             keyHintOffsetX = hintOffsetX, keyHintOffsetY = hintOffsetY,
-            showSymbol = showSymbol, showHint = showHint, symbolAlign = symbolAlign, hintAlign = hintAlign)
+            showSymbol = showSymbol, showHint = showHint, symbolAlign = symbolAlign, hintAlign = hintAlign,
+            symbolInsetX = symbolInsetX, symbolInsetY = symbolInsetY, hintInsetX = hintInsetX, hintInsetY = hintInsetY)
     }
     data class LabelDisplay(val label: String, val size: Float, val offsetX: Float, val offsetY: Float,
                             val icon: String, val iconSize: Int, val iconTint: String, val iconOffsetX: Float, val iconOffsetY: Float) {
@@ -38,6 +42,7 @@ object KeyboardBindingCopy {
     private val copiedAppearanceFields = setOf("labelSymbol", "hint", "symbolTextSize", "hintTextSize",
         "keySymbolOffsetX", "keySymbolOffsetY", "keyHintOffsetX", "keyHintOffsetY",
         "showSymbol", "showHint", "symbolAlign", "hintAlign", "popup", "sendBindings",
+        "symbolInsetX", "symbolInsetY", "hintInsetX", "hintInsetY",
         "keyTextSize", "keyTextOffsetX", "keyTextOffsetY", "icon", "iconSize", "iconTint", "iconOffsetX", "iconOffsetY")
     private fun match(key: CustomKeyboards.CustomKey, row: Int = 0, column: Int = 0) =
         Match(row, column, key.bindings.toMap(), key.appearance.popup.toList(), key.appearance.sendBindings, Annotations(key.appearance), LabelDisplay(key))
@@ -80,7 +85,10 @@ object KeyboardBindingCopy {
         return Plan(sourceId, targetId, matches, skipped, version)
     }
     internal fun matchPages(source: CustomKeyboards.CustomKeyboard, target: CustomKeyboards.CustomKeyboard): Pair<List<Match>, Int> {
-        val keys = source.rows.flatMap { it.keys }.filter { it.bindings.values.any(String::isNotBlank) }
+        val keys = source.rows.flatMap { it.keys }.filter { it.bindings.values.any(String::isNotBlank) }.map {
+            // Copy the source's visible annotation settings, including inherited display-area defaults.
+            it.copy(appearance = KeyAppearance.merge(source.keyAppearance, it.appearance))
+        }
         val byClick = keys.filter { click(it).isNotBlank() }.groupBy(::click)
         val byLabel = keys.filter { label(it).isNotBlank() }.groupBy(::label)
         fun unambiguous(values: List<CustomKeyboards.CustomKey>?): CustomKeyboards.CustomKey? = values?.takeIf {
