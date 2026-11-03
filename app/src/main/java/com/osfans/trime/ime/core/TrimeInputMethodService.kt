@@ -78,6 +78,34 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
     private lateinit var contentView: FrameLayout
     private lateinit var lastKnownConfig: Configuration
     private var inputView: InputView? = null
+    private val petCompanionDelegate=lazy { com.osfans.trime.ui.pets.PetCompanionController(this) }
+    private fun syncPetCompanion() {
+        val current=inputView ?: return
+        val state=com.osfans.trime.data.pets.PetHouse.state.value
+        if(!petCompanionDelegate.isInitialized() && (!state.started || state.mode==0)) return
+        if(isInputViewShown) petCompanionDelegate.value.showForInput(current,currentInputEditorInfo)
+        else if(petCompanionDelegate.isInitialized()) petCompanionDelegate.value.hideInput()
+    }
+    fun preparePetCompanion() { if(!petCompanionDelegate.isInitialized() && isInputViewShown) syncPetCompanion() }
+    fun togglePetCompanion() { syncPetCompanion();petCompanionDelegate.value.toggle() }
+    fun notifyPetKey(keyboard:com.osfans.trime.ime.keyboard.Keyboard,key:com.osfans.trime.ime.keyboard.Key,down:Boolean,cancel:Boolean=false) {
+        if(petCompanionDelegate.isInitialized()) petCompanionDelegate.value.key(keyboard,key,down,cancel)
+    }
+    fun notifyPetKeyboard(keyboard:com.osfans.trime.ime.keyboard.Keyboard) {
+        if(petCompanionDelegate.isInitialized()) petCompanionDelegate.value.keyboardChanged(keyboard)
+    }
+    fun petKeyboardTopOnScreen():Int {
+        val view=inputView?.keyboardView ?: return (resources.displayMetrics.heightPixels*.72f).toInt()
+        val location=IntArray(2);view.getLocationOnScreen(location);return location[1]
+    }
+    override fun onWindowShown() {
+        super.onWindowShown()
+        inputView?.post { syncPetCompanion() }
+    }
+    override fun onWindowHidden() {
+        if(petCompanionDelegate.isInitialized()) petCompanionDelegate.value.hideInput()
+        super.onWindowHidden()
+    }
 
     /** 输入栏（悬浮收起态工具栏）拖动移动键盘的入口。 */
     fun dragKeyboardFromToolbar(event: MotionEvent): Boolean =
@@ -272,7 +300,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         when (it) {
             is RimeMessage.CommitTextMessage -> {
                 if (!it.data.text.isNullOrEmpty()) {
-                    commitText(it.data.text)
+                    commitText(it.data.text, fromEngine = true)
                 }
             }
 
@@ -369,6 +397,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         setInputView(newInputView)
         inputDeviceManager.setInputView(newInputView)
         inputView = newInputView
+        newInputView.post { if(inputView===newInputView) syncPetCompanion() }
         previous?.let(newInputView::restoreInputState)
         requestInputInsetsUpdate()
         com.osfans.trime.util.DiagnosticLog.event("keyboard", "rebuilt", "ms=${android.os.SystemClock.elapsedRealtime() - began}")
@@ -457,6 +486,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
     }
 
     override fun onDestroy() {
+        if(petCompanionDelegate.isInitialized()) petCompanionDelegate.value.dispose()
         com.osfans.trime.data.sync.ClipboardSync.stop()
         disposeVoiceIfInitialized()
         com.osfans.trime.data.stats.InputStats.endSession()
@@ -807,6 +837,8 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         restarting: Boolean,
     ) {
         com.osfans.trime.data.stats.InputStats.setWordCloudEditor(attribute)
+        com.osfans.trime.data.pets.PetHouse.editor(attribute)
+        if(petCompanionDelegate.isInitialized()) petCompanionDelegate.value.editor(attribute)
         cancelVoiceIfActive()
         composingText = ""
         Timber.d("onStartInput: restarting=$restarting")
@@ -842,6 +874,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         attribute: EditorInfo,
         restarting: Boolean,
     ) {
+        inputView?.post { syncPetCompanion() }
         isRestartingInputView = restarting
         Timber.d("onStartInputView: restarting=$restarting")
         com.osfans.trime.data.sync.ClipboardSync.setWindowVisible(true)
@@ -875,6 +908,9 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
 
     override fun onFinishInputView(finishingInput: Boolean) {
         com.osfans.trime.data.stats.InputStats.setWordCloudEditor(null)
+        com.osfans.trime.data.pets.PetHouse.editor(null)
+        if(petCompanionDelegate.isInitialized()) petCompanionDelegate.value.hideInput()
+        com.osfans.trime.data.pets.PetHouse.requestFlush()
         com.osfans.trime.data.sync.ClipboardSync.setWindowVisible(false)
         com.osfans.trime.ime.keyboard.KeyboardWindow.instance?.setVideoActive(false)
         inputView?.setUnifiedVideoActive(false)
@@ -898,7 +934,8 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         InputFeedbackManager.finishInput()
     }
 
-    fun commitText(text: String) {
+    fun commitText(text: String, fromEngine: Boolean = false) {
+        if (!fromEngine) com.osfans.trime.data.pets.PetHouse.clearProof()
         if (com.osfans.trime.ime.clipboard.ClipboardSearchBridge.acceptText(text)) return
         val ic = currentInputConnection ?: return
 
@@ -1064,6 +1101,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         event: KeyEvent,
     ): Boolean {
         cancelVoiceIfActive()
+        if(petCompanionDelegate.isInitialized()) petCompanionDelegate.value.physicalKey(keyCode,true)
         if (keyCode == KeyEvent.KEYCODE_BACK && com.osfans.trime.ime.clipboard.ClipboardSearchBridge.exit()) return true
         if (inputDeviceManager.evaluateOnKeyDown(event, this)) {
             decorLocationUpdated = false
@@ -1075,7 +1113,10 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
     override fun onKeyUp(
         keyCode: Int,
         event: KeyEvent,
-    ): Boolean = forwardKeyEvent(event) || super.onKeyUp(keyCode, event)
+    ): Boolean {
+        if(petCompanionDelegate.isInitialized()) petCompanionDelegate.value.physicalKey(keyCode,false)
+        return forwardKeyEvent(event) || super.onKeyUp(keyCode, event)
+    }
 
     // Added in API level 14, deprecated in 29
     // it's needed because editors still use it even on API 36

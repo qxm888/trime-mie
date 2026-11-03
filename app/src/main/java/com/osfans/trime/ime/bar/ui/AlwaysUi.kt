@@ -66,6 +66,8 @@ class AlwaysUi(
     val buttonsUi = ButtonsBarUi(ctx, scope, onButtonClick, toolBar)
     private var alignedUi: ButtonsBarUi? = null
 
+    private val petButton = com.osfans.trime.ui.pets.PetToolbarView(ctx)
+
     val clipboardUi = ClipboardSuggestionUi(ctx, scope)
 
     val inlineSuggestionsUi = InlineSuggestionsUi(ctx)
@@ -138,11 +140,15 @@ class AlwaysUi(
                 centerVertically()
             },
         )
+        add(petButton, lParams((36 * ctx.resources.displayMetrics.density).toInt(), (36 * ctx.resources.displayMetrics.density).toInt()) {
+            before(rightMostButton)
+            centerVertically()
+        })
         add(
             animator,
             lParams(matchConstraints, matchParent) {
                 after(leftMostButton)
-                before(rightMostButton)
+                before(petButton)
                 centerVertically()
             },
         )
@@ -162,7 +168,7 @@ class AlwaysUi(
         if (config.alignment == "legacy") return
         if (alignedUi == null) {
             alignedUi = ButtonsBarUi(ctx, scope, onButtonClick, config, allButtons = true).also { ui ->
-                root.run { add(ui.viewport, lParams(matchConstraints, matchParent) { after(collapseButton); endOfParent(); centerVertically() }) }
+                root.run { add(ui.viewport, lParams(matchConstraints, matchParent) { after(collapseButton); before(petButton); centerVertically() }) }
             }
         } else alignedUi?.applyToolbar(config)
     }
@@ -231,6 +237,7 @@ class AlwaysUi(
         leftMostButton.visibility = if (hideButtons || !toolBar.primaryVisible) android.view.View.GONE else android.view.View.VISIBLE
         rightMostButton.visibility = if (clipboard) android.view.View.GONE else android.view.View.VISIBLE
         if (hideButtons) rightMostButton.displayedChild = 0 else updateRightMostButton(currentState)
+        petButton.showWithToolbar(currentState == State.Toolbar && !hideButtons)
         val aligned = toolBar.alignment != "legacy" && currentState == State.Toolbar && !hideButtons
         alignedUi?.viewport?.visibility = if (aligned) android.view.View.VISIBLE else android.view.View.GONE
         if (aligned) {

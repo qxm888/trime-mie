@@ -241,6 +241,7 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
                     "select_candidate" -> handleSelectCandidate(arg)
                     "switch_hide_key_symbol" -> switchHideKeySymbol()
                     "switch_hide_key_hint" -> switchHideKeyHint()
+                    "pet_house" -> com.osfans.trime.ui.main.PetHouseActivity.start(service)
                     "input_stats" -> InputStatsActivity.start(service)
                     // 窗口/模式命令只认 __mie_* 内部名：主题里写旧参数（switch_* /
                     // floating_keyboard / one_hand_mode）不再触发这些功能。

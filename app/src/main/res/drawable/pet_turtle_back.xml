@@ -1,0 +1,12 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<vector xmlns:aapt="http://schemas.android.com/aapt" xmlns:android="http://schemas.android.com/apk/res/android" android:width="128dp" android:height="128dp" android:viewportWidth="128" android:viewportHeight="128">
+  <path android:pathData="M27,85 a37,27 0 1,0 74,0 a37,27 0 1,0 -74,0" android:strokeColor="#617069" android:strokeWidth="1.25" android:strokeLineCap="round" android:strokeLineJoin="round">
+    <aapt:attr name="android:fillColor">
+      <gradient android:type="linear" android:startX="30" android:startY="24" android:endX="90" android:endY="113">
+        <item android:offset="0" android:color="#a8c1b0" />
+        <item android:offset="0.5" android:color="#6E9B84" />
+        <item android:offset="1" android:color="#6b8b7d" />
+      </gradient>
+    </aapt:attr>
+  </path>
+</vector>

@@ -273,6 +273,7 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
             "voice" -> VoiceSettingsActivity::class.java
             "layout" -> CustomKeyboardActivity::class.java
             "fonts" -> FontSettingsActivity::class.java
+            "pets" -> PetHouseActivity::class.java
             "stats" -> InputStatsActivity::class.java
             "transfer" -> DataTransferActivity::class.java
             "personal_data" -> PersonalDataActivity::class.java

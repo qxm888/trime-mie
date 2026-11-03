@@ -12,7 +12,7 @@ import com.osfans.trime.data.theme.ThemeManager
 /** Stable ids keep schema switches independent from their changing display labels. */
 object FunctionMenuEditor {
     val builtins = linkedMapOf("ThemeList" to "键盘样式", "SchemaList" to "方案", "UpdateConfig" to "更新配置",
-        "Keyboard" to "系统键盘设置", "InputStats" to "输入统计", "FloatingKeyboard" to "悬浮键盘",
+        "Keyboard" to "系统键盘设置", "InputStats" to "输入统计", "PetHouse" to "键灵小屋", "FloatingKeyboard" to "悬浮键盘",
         "OneHandMode" to "单手模式", "CandidatesWindow" to "悬浮候选栏", "FloatingBall" to "悬浮球", "HideInputBar" to "隐藏状态栏")
     fun build(context: Context, id: String, onSaved: () -> Unit): Dialog {
         val keyboard = id.takeIf { it.isNotBlank() }?.let { CustomKeyboards.get(it) ?: error("自定义键盘不存在") }

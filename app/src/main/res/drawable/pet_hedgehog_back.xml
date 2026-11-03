@@ -1,0 +1,21 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<vector xmlns:aapt="http://schemas.android.com/aapt" xmlns:android="http://schemas.android.com/apk/res/android" android:width="128dp" android:height="128dp" android:viewportWidth="128" android:viewportHeight="128">
+  <path android:pathData="M24,44 a40,22 0 1,0 80,0 a40,22 0 1,0 -80,0" android:strokeColor="#90746a" android:strokeWidth="1.25" android:strokeLineCap="round" android:strokeLineJoin="round">
+    <aapt:attr name="android:fillColor">
+      <gradient android:type="linear" android:startX="30" android:startY="24" android:endX="90" android:endY="113">
+        <item android:offset="0" android:color="#dfc6b1" />
+        <item android:offset="0.5" android:color="#C9A487" />
+        <item android:offset="1" android:color="#b1927f" />
+      </gradient>
+    </aapt:attr>
+  </path>
+  <path android:pathData="M32,42 L22,28 L40,36 Z M96,42 L106,28 L88,36 Z M46,30 L40,14 L56,28 Z M82,30 L88,14 L72,28 Z M64,26 L64,10 L74,24 Z" android:strokeColor="#90746a" android:strokeWidth="1.25" android:strokeLineCap="round" android:strokeLineJoin="round">
+    <aapt:attr name="android:fillColor">
+      <gradient android:type="linear" android:startX="30" android:startY="24" android:endX="90" android:endY="113">
+        <item android:offset="0" android:color="#dfc6b1" />
+        <item android:offset="0.5" android:color="#C9A487" />
+        <item android:offset="1" android:color="#b1927f" />
+      </gradient>
+    </aapt:attr>
+  </path>
+</vector>

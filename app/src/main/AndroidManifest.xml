@@ -31,6 +31,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
         android:requestLegacyExternalStorage="true"
         tools:targetApi="29">
 
+        <activity android:name=".ui.main.PetHouseActivity" android:exported="false" />
         <activity android:name=".ui.main.CreatedWordsActivity" android:exported="false" />
         <activity android:name=".ui.main.WordCreationActivity" android:exported="false" />
         <activity android:name=".ui.main.FloatingCandidatesEditActivity" android:exported="false" />

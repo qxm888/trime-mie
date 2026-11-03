@@ -513,7 +513,46 @@ SPDX-License-Identifier: GPL-3.0-or-later
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 字词云 -->
+            <!-- 字云 -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/stats_card_character_cloud"
+                style="?attr/materialCardViewOutlinedStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="?attr/colorSurface"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="0dp"
+                app:strokeColor="?attr/colorOutlineVariant"
+                app:strokeWidth="1dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="字云"
+                        android:textColor="?attr/colorPrimary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="单字使用频次 · 随当前统计周期更新"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="12sp" />
+                    <com.osfans.trime.ui.main.WordCloudView
+                        android:id="@+id/stats_character_cloud"
+                        android:layout_width="match_parent"
+                        android:layout_height="280dp"
+                        android:importantForAccessibility="yes" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 词云 -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/stats_card_cloud"
                 style="?attr/materialCardViewOutlinedStyle"
@@ -533,7 +572,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="字词云"
+                        android:text="词云"
                         android:textColor="?attr/colorPrimary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -541,7 +580,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="常用字词的片刻缩影 · 随当前统计周期更新"
+                        android:text="多字上屏词条 · 随当前统计周期更新"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="12sp" />
                     <com.osfans.trime.ui.main.WordCloudView

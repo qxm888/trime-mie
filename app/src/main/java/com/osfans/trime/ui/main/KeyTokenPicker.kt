@@ -146,6 +146,7 @@ object KeyTokenPicker {
         return listOf(
             "自定义功能" to com.osfans.trime.data.keymap.NamedFunctions.list().map { e(it.name, com.osfans.trime.data.keymap.NamedFunctions.PREFIX + it.id) },
             "键盘跳转" to (listOf(".default" to "返回主键盘", ".last" to "返回上个键盘", ".prior" to "上一个键盘", ".next" to "下一个键盘", ".last_lock" to "返回锁定键盘") + CustomKeyboards.list().map { it.id to it.name }).map { (id,name) -> e(name, com.osfans.trime.data.keymap.BindingActions.keyboard(id, name)) },
+            "键灵小屋" to listOf(e("打开键灵小屋", "__mie_pet_house")),
             "整套键盘" to listOf(
                 e("本套数字布局", com.osfans.trime.data.keymap.BindingActions.command("__mie_set_page", "num", "本套数字布局")),
                 e("本套英文布局", com.osfans.trime.data.keymap.BindingActions.command("__mie_set_page", "en", "本套英文布局")),

@@ -388,6 +388,7 @@ class KeyboardWindow(di: DI) :
                 add(it, lParams(matchParent, matchParent))
             }
         }
+        service.notifyPetKeyboard(keyboard)
     }
 
     private fun evalKeyboard(id: String): String = navigation.select(

@@ -72,6 +72,7 @@ class SwitchOptionWindow(di: DI) :
                 R.drawable.ic_baseline_bar_chart_24,
                 SwitchOptionEntry.Static.Type.InputStats,
             ),
+            SwitchOptionEntry.Static("键灵小屋", R.drawable.pet_sheep, SwitchOptionEntry.Static.Type.PetHouse),
             SwitchOptionEntry.Static(context.getString(R.string.floating_keyboard),
                 R.drawable.ic_mode_floating_24, SwitchOptionEntry.Static.Type.FloatingKeyboard),
             SwitchOptionEntry.Static(context.getString(R.string.one_hand_mode),
@@ -141,6 +142,7 @@ class SwitchOptionWindow(di: DI) :
 
                         SwitchOptionEntry.Static.Type.Keyboard -> AppUtils.launchMainToKeyboard(context)
 
+                        SwitchOptionEntry.Static.Type.PetHouse -> com.osfans.trime.ui.main.PetHouseActivity.start(context)
                         SwitchOptionEntry.Static.Type.InputStats -> InputStatsActivity.start(context)
                         SwitchOptionEntry.Static.Type.FloatingKeyboard -> service.toggleFloatingKeyboard()
                         SwitchOptionEntry.Static.Type.OneHandMode -> service.toggleOneHandMode()

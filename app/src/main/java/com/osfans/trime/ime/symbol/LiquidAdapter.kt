@@ -16,6 +16,9 @@ class LiquidAdapter(
 ) : RecyclerView.Adapter<LiquidAdapter.ViewHolder>() {
     private val data = mutableListOf<LiquidKeyboard.KeyItem>()
     var sorting = false
+    var deleting = false
+    var onDeleteItem: ((LiquidKeyboard.KeyItem) -> Unit)? = null
+    var onItemLongClick: ((LiquidKeyboard.KeyItem) -> Unit)? = null
     var onStartDrag: ((ViewHolder) -> Unit)? = null
     inner class ViewHolder(val ui: LiquidItemUi) : RecyclerView.ViewHolder(ui.root)
     override fun getItemCount() = data.size
@@ -30,13 +33,23 @@ class LiquidAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = data[position]
         holder.ui.refreshColors(); holder.ui.mainText.text = item.text
+        holder.ui.mainText.importantForAccessibility=android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO
+        holder.ui.deleteBadge.visibility = if(deleting) android.view.View.VISIBLE else android.view.View.GONE
+        holder.ui.root.contentDescription = if(deleting) "${item.text}，点击删除" else item.text
         holder.ui.root.setOnClickListener {
             val at = holder.bindingAdapterPosition
-            if(!sorting && at in data.indices) onItemClick.invoke(data[at],at)
+            if(at in data.indices) {
+                if(deleting) onDeleteItem?.invoke(data[at]) else if(!sorting) onItemClick.invoke(data[at],at)
+            }
         }
         holder.ui.root.setOnLongClickListener(if(sorting) android.view.View.OnLongClickListener {
             onStartDrag?.invoke(holder); true
-        } else null)
+        } else android.view.View.OnLongClickListener {
+            val at=holder.bindingAdapterPosition
+            if(!deleting && at in data.indices && onItemLongClick!=null) {
+                onItemLongClick?.invoke(data[at]); true
+            } else false
+        })
     }
     fun submitList(items: List<LiquidKeyboard.KeyItem>) { data.clear(); data.addAll(items); notifyDataSetChanged() }
     fun snapshot() = data.toList()

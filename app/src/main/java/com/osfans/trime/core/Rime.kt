@@ -283,6 +283,7 @@ class Rime :
     }
 
     override suspend fun simulateKeySequence(sequence: String): Boolean = withRimeContext {
+        com.osfans.trime.data.pets.PetHouse.clearProof()
         Timber.d("simulateKeySequence: $sequence")
         if (simulateRimeKeySequence(sequence)) {
             val commit = getRimeCommit()
@@ -439,7 +440,10 @@ class Rime :
 
     override suspend fun selectedSchemaId(): String = withRimeContext { getCurrentRimeSchema() }
 
-    override suspend fun selectSchema(schemaId: String) = withRimeContext { selectRimeSchema(schemaId) }
+    override suspend fun selectSchema(schemaId: String) = withRimeContext {
+        com.osfans.trime.data.pets.PetHouse.clearProof()
+        selectRimeSchema(schemaId)
+    }
 
     override suspend fun currentSchema(): RimeSchema = withRimeContext {
         RimeSchema(getCurrentRimeSchema())
@@ -451,6 +455,7 @@ class Rime :
     }
 
     override suspend fun clearComposition() = withRimeContext {
+        com.osfans.trime.data.pets.PetHouse.clearProof()
         clearRimeComposition()
         emitResponse()
         Unit
@@ -462,6 +467,7 @@ class Rime :
         if (commitRimeComposition()) emitResponse(rawInputBefore = rawInputBefore)
         // Both commits travel through the same message flow in engine order.
         // Direct editor commits can overtake the pending composition response.
+        com.osfans.trime.data.pets.PetHouse.clearProof()
         emitResponse(CommitProto(text))
         Unit
     }
@@ -527,6 +533,7 @@ class Rime :
         lastAsciiTipsText = asciiTipsText(status)
         val rawInputBefore = getRimeRawInput()
         InputStats.onKeyDown(status.schemaId)
+        if (!com.osfans.trime.ime.clipboard.ClipboardSearchBridge.active) com.osfans.trime.data.pets.PetHouse.manualKey(value, modifiers)
         if (candidateProjection != null && modifiers == 0 && rawInputBefore == projectionCode) {
             val offset = if (pagingMode) personalPage else 0
             val digit = if (value in '1'.code..'9'.code && !schemaCached.alphabet.contains(value.toChar())) value - '1'.code else -1
@@ -561,6 +568,7 @@ class Rime :
             }
         }
         if (!handled) {
+            if (!com.osfans.trime.ime.clipboard.ClipboardSearchBridge.active) com.osfans.trime.data.pets.PetHouse.directKey(value, modifiers)
             handleRimeMessage(
                 10, // RimeMessage.MessageType.Key,
                 arrayOf(value, modifiers, isVirtual),
@@ -585,6 +593,7 @@ class Rime :
         val commitProto = commit ?: projectedCommit ?: response.commit
         projectedCommit = null
         val commitText = commitProto.text
+        if (!commitText.isNullOrEmpty() && !com.osfans.trime.ime.clipboard.ClipboardSearchBridge.active) com.osfans.trime.data.pets.PetHouse.engineCommit(commitText)
         handleRimeMessage(4, arrayOf(commitProto))
         handlePreedit(response.composition)
         if (response.composition.length <= 0 && lastAsciiTipsText != asciiTipsText(response.status)) {

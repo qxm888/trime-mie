@@ -200,6 +200,7 @@ class TrimeApplication : Application() {
             CollectionHelper.init(ctx)
             CategoryHelper.init(ctx)
             InputStats.init(ctx)
+            com.osfans.trime.data.pets.PetHouse.init(ctx)
             KeyBindingOverrides.init(ctx)
             CustomKeyboards.init(ctx)
             ToolbarOverrides.init(ctx)

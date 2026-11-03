@@ -1,0 +1,506 @@
+[
+  {
+    "id": "sheep",
+    "name": "绵绵",
+    "rarity": 0,
+    "rarityLabel": "普通",
+    "description": "把每一个字，织成柔软的云。",
+    "color": "#E9D9D1",
+    "kotlin": "0xffe9d9d1.toInt()",
+    "files": {
+      "svg": "svg/pet_sheep.svg",
+      "drawable": "drawable/pet_sheep.xml"
+    },
+    "status": "existing"
+  },
+  {
+    "id": "cat",
+    "name": "奶盖",
+    "rarity": 0,
+    "rarityLabel": "普通",
+    "description": "喜欢趴在空格上打盹的小猫。",
+    "color": "#EAD8B8",
+    "kotlin": "0xffead8b8.toInt()",
+    "files": {
+      "svg": "svg/pet_cat.svg",
+      "drawable": "drawable/pet_cat.xml"
+    },
+    "status": "existing"
+  },
+  {
+    "id": "rabbit",
+    "name": "糯糯",
+    "rarity": 0,
+    "rarityLabel": "普通",
+    "description": "收集标点，也收集你的好心情。",
+    "color": "#EDD0D7",
+    "kotlin": "0xffedd0d7.toInt()",
+    "files": {
+      "svg": "svg/pet_rabbit.svg",
+      "drawable": "drawable/pet_rabbit.xml"
+    },
+    "status": "existing"
+  },
+  {
+    "id": "dog",
+    "name": "布丁",
+    "rarity": 0,
+    "rarityLabel": "普通",
+    "description": "听见键盘声，就会摇起尾巴。",
+    "color": "#DCBF97",
+    "kotlin": "0xffdcbf97.toInt()",
+    "files": {
+      "svg": "svg/pet_dog.svg",
+      "drawable": "drawable/pet_dog.xml"
+    },
+    "status": "existing"
+  },
+  {
+    "id": "hamster",
+    "name": "栗子",
+    "rarity": 0,
+    "rarityLabel": "普通",
+    "description": "把今天的小收获藏进腮帮。",
+    "color": "#DFC5AD",
+    "kotlin": "0xffdfc5ad.toInt()",
+    "files": {
+      "svg": "svg/pet_hamster.svg",
+      "drawable": "drawable/pet_hamster.xml"
+    },
+    "status": "existing"
+  },
+  {
+    "id": "bird",
+    "name": "青团",
+    "rarity": 0,
+    "rarityLabel": "普通",
+    "description": "停在指尖，唱一首小小的歌。",
+    "color": "#BFD6C8",
+    "kotlin": "0xffbfd6c8.toInt()",
+    "files": {
+      "svg": "svg/pet_bird.svg",
+      "drawable": "drawable/pet_bird.xml"
+    },
+    "status": "existing"
+  },
+  {
+    "id": "fox",
+    "name": "暮暮",
+    "rarity": 1,
+    "rarityLabel": "稀有",
+    "description": "尾巴里藏着黄昏的最后一束光。",
+    "color": "#DDA98E",
+    "kotlin": "0xffdda98e.toInt()",
+    "files": {
+      "svg": "svg/pet_fox.svg",
+      "drawable": "drawable/pet_fox.xml"
+    },
+    "status": "existing"
+  },
+  {
+    "id": "otter",
+    "name": "泡泡",
+    "rarity": 1,
+    "rarityLabel": "稀有",
+    "description": "抱着小石头，等待下一次相逢。",
+    "color": "#B6C7D8",
+    "kotlin": "0xffb6c7d8.toInt()",
+    "files": {
+      "svg": "svg/pet_otter.svg",
+      "drawable": "drawable/pet_otter.xml"
+    },
+    "status": "existing"
+  },
+  {
+    "id": "panda",
+    "name": "竹墨",
+    "rarity": 1,
+    "rarityLabel": "稀有",
+    "description": "一半是墨，一半是温柔。",
+    "color": "#BDC8BA",
+    "kotlin": "0xffbdc8ba.toInt()",
+    "files": {
+      "svg": "svg/pet_panda.svg",
+      "drawable": "drawable/pet_panda.xml"
+    },
+    "status": "existing"
+  },
+  {
+    "id": "dragon",
+    "name": "云芽",
+    "rarity": 2,
+    "rarityLabel": "珍奇 SR",
+    "description": "从一颗句号里孵化的小云龙。",
+    "color": "#B2CEC9",
+    "kotlin": "0xffb2cec9.toInt()",
+    "files": {
+      "svg": "svg/pet_dragon.svg",
+      "drawable": "drawable/pet_dragon.xml"
+    },
+    "status": "existing"
+  },
+  {
+    "id": "moon",
+    "name": "望舒",
+    "rarity": 2,
+    "rarityLabel": "珍奇 SR",
+    "description": "把月亮折成一枚安静的书签。",
+    "color": "#C9C3DF",
+    "kotlin": "0xffc9c3df.toInt()",
+    "files": {
+      "svg": "svg/pet_moon.svg",
+      "drawable": "drawable/pet_moon.xml"
+    },
+    "status": "existing"
+  },
+  {
+    "id": "whale",
+    "name": "星眠",
+    "rarity": 3,
+    "rarityLabel": "星耀 SSR",
+    "description": "载着你的字句，游过漫长星河。",
+    "color": "#A9BEDB",
+    "kotlin": "0xffa9bedb.toInt()",
+    "files": {
+      "svg": "svg/pet_whale.svg",
+      "drawable": "drawable/pet_whale.xml"
+    },
+    "status": "existing"
+  },
+  {
+    "id": "duck",
+    "name": "蛋挞",
+    "rarity": 0,
+    "rarityLabel": "普通",
+    "description": "摇摇摆摆，把回车键踩得咔咔响。",
+    "color": "#F2D47E",
+    "kotlin": "0xfff2d47e.toInt()",
+    "files": {
+      "svg": "svg/pet_duck.svg",
+      "drawable": "drawable/pet_duck.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "frog",
+    "name": "抹茶",
+    "rarity": 0,
+    "rarityLabel": "普通",
+    "description": "在雨天的按键上，蹦出绿色的小音符。",
+    "color": "#B5CFA4",
+    "kotlin": "0xffb5cfa4.toInt()",
+    "files": {
+      "svg": "svg/pet_frog.svg",
+      "drawable": "drawable/pet_frog.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "penguin",
+    "name": "芝麻",
+    "rarity": 0,
+    "rarityLabel": "普通",
+    "description": "走路的姿势，像没对齐的缩进。",
+    "color": "#9AA6B8",
+    "kotlin": "0xff9aa6b8.toInt()",
+    "files": {
+      "svg": "svg/pet_penguin.svg",
+      "drawable": "drawable/pet_penguin.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "turtle",
+    "name": "墩墩",
+    "rarity": 0,
+    "rarityLabel": "普通",
+    "description": "慢一点也没关系，句子总会等到句号。",
+    "color": "#A3C6B2",
+    "kotlin": "0xffa3c6b2.toInt()",
+    "files": {
+      "svg": "svg/pet_turtle.svg",
+      "drawable": "drawable/pet_turtle.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "bear",
+    "name": "可可",
+    "rarity": 0,
+    "rarityLabel": "普通",
+    "description": "抱着键盘也能睡着的小熊。",
+    "color": "#C4A486",
+    "kotlin": "0xffc4a486.toInt()",
+    "files": {
+      "svg": "svg/pet_bear.svg",
+      "drawable": "drawable/pet_bear.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "cow",
+    "name": "奶糖",
+    "rarity": 0,
+    "rarityLabel": "普通",
+    "description": "斑纹是打翻的牛奶，呼噜里都是甜味。",
+    "color": "#EFE9DC",
+    "kotlin": "0xffefe9dc.toInt()",
+    "files": {
+      "svg": "svg/pet_cow.svg",
+      "drawable": "drawable/pet_cow.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "hedgehog",
+    "name": "球球",
+    "rarity": 0,
+    "rarityLabel": "普通",
+    "description": "把刺收起来的时候，最想被你摸摸。",
+    "color": "#D8BCA4",
+    "kotlin": "0xffd8bca4.toInt()",
+    "files": {
+      "svg": "svg/pet_hedgehog.svg",
+      "drawable": "drawable/pet_hedgehog.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "squirrel",
+    "name": "松果",
+    "rarity": 0,
+    "rarityLabel": "普通",
+    "description": "囤了满仓果实，最宝贝的是你打的字。",
+    "color": "#D2A679",
+    "kotlin": "0xffd2a679.toInt()",
+    "files": {
+      "svg": "svg/pet_squirrel.svg",
+      "drawable": "drawable/pet_squirrel.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "pig",
+    "name": "桃酥",
+    "rarity": 0,
+    "rarityLabel": "普通",
+    "description": "打个哈欠，鼻尖冒出一个粉色泡泡。",
+    "color": "#F2C9C0",
+    "kotlin": "0xfff2c9c0.toInt()",
+    "files": {
+      "svg": "svg/pet_pig.svg",
+      "drawable": "drawable/pet_pig.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "deer",
+    "name": "茸茸",
+    "rarity": 1,
+    "rarityLabel": "稀有",
+    "description": "新长的茸角上，停着一点清晨的光。",
+    "color": "#D9BC9C",
+    "kotlin": "0xffd9bc9c.toInt()",
+    "files": {
+      "svg": "svg/pet_deer.svg",
+      "drawable": "drawable/pet_deer.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "koala",
+    "name": "桉桉",
+    "rarity": 1,
+    "rarityLabel": "稀有",
+    "description": "抱着桉树枝，梦话都是软的。",
+    "color": "#B8BFC4",
+    "kotlin": "0xffb8bfc4.toInt()",
+    "files": {
+      "svg": "svg/pet_koala.svg",
+      "drawable": "drawable/pet_koala.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "raccoon",
+    "name": "浣月",
+    "rarity": 1,
+    "rarityLabel": "稀有",
+    "description": "在溪水里洗月亮，洗出一圈圈涟漪。",
+    "color": "#B3ACB8",
+    "kotlin": "0xffb3acb8.toInt()",
+    "files": {
+      "svg": "svg/pet_raccoon.svg",
+      "drawable": "drawable/pet_raccoon.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "redpanda",
+    "name": "焰焰",
+    "rarity": 1,
+    "rarityLabel": "稀有",
+    "description": "尾巴一圈一圈，是烧得刚刚好的小火。",
+    "color": "#E0966F",
+    "kotlin": "0xffe0966f.toInt()",
+    "files": {
+      "svg": "svg/pet_redpanda.svg",
+      "drawable": "drawable/pet_redpanda.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "seal",
+    "name": "汐汐",
+    "rarity": 1,
+    "rarityLabel": "稀有",
+    "description": "把潮汐声收进肚子里，拍手时放给你听。",
+    "color": "#BFD4DD",
+    "kotlin": "0xffbfd4dd.toInt()",
+    "files": {
+      "svg": "svg/pet_seal.svg",
+      "drawable": "drawable/pet_seal.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "alpaca",
+    "name": "云绒",
+    "rarity": 1,
+    "rarityLabel": "稀有",
+    "description": "剪下一小撮云，想织成你冬天的围巾。",
+    "color": "#F0E7DA",
+    "kotlin": "0xfff0e7da.toInt()",
+    "files": {
+      "svg": "svg/pet_alpaca.svg",
+      "drawable": "drawable/pet_alpaca.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "tiger",
+    "name": "山君",
+    "rarity": 2,
+    "rarityLabel": "珍奇 SR",
+    "description": "额头的“王”字，是揉皱又抚平的草稿。",
+    "color": "#F0BE7E",
+    "kotlin": "0xfff0be7e.toInt()",
+    "files": {
+      "svg": "svg/pet_tiger.svg",
+      "drawable": "drawable/pet_tiger.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "crane",
+    "name": "霜羽",
+    "rarity": 2,
+    "rarityLabel": "珍奇 SR",
+    "description": "单脚站着，把黄昏站成一首诗。",
+    "color": "#ECE8EF",
+    "kotlin": "0xffece8ef.toInt()",
+    "files": {
+      "svg": "svg/pet_crane.svg",
+      "drawable": "drawable/pet_crane.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "jellyfish",
+    "name": "浮灯",
+    "rarity": 2,
+    "rarityLabel": "珍奇 SR",
+    "description": "提着一盏小灯，照亮深夜的输入框。",
+    "color": "#D8C7E8",
+    "kotlin": "0xffd8c7e8.toInt()",
+    "files": {
+      "svg": "svg/pet_jellyfish.svg",
+      "drawable": "drawable/pet_jellyfish.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "koi",
+    "name": "锦鳞",
+    "rarity": 2,
+    "rarityLabel": "珍奇 SR",
+    "description": "尾巴一摆，好运就顺着一个词游来。",
+    "color": "#F2C9C1",
+    "kotlin": "0xfff2c9c1.toInt()",
+    "files": {
+      "svg": "svg/pet_koi.svg",
+      "drawable": "drawable/pet_koi.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "snowleopard",
+    "name": "雪隐",
+    "rarity": 2,
+    "rarityLabel": "珍奇 SR",
+    "description": "雪地里的脚印，是一行没人读过的句子。",
+    "color": "#CDD8E0",
+    "kotlin": "0xffcdd8e0.toInt()",
+    "files": {
+      "svg": "svg/pet_snowleopard.svg",
+      "drawable": "drawable/pet_snowleopard.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "unicorn",
+    "name": "云霓",
+    "rarity": 2,
+    "rarityLabel": "珍奇 SR",
+    "description": "鬃毛扫过的地方，会留下浅浅的虹。",
+    "color": "#E6D9F2",
+    "kotlin": "0xffe6d9f2.toInt()",
+    "files": {
+      "svg": "svg/pet_unicorn.svg",
+      "drawable": "drawable/pet_unicorn.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "phoenix",
+    "name": "青鸾",
+    "rarity": 3,
+    "rarityLabel": "星耀 SSR",
+    "description": "每一根羽色，都是重新开始的一行。",
+    "color": "#85C6BE",
+    "kotlin": "0xff85c6be.toInt()",
+    "files": {
+      "svg": "svg/pet_phoenix.svg",
+      "drawable": "drawable/pet_phoenix.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "qilin",
+    "name": "玉麟",
+    "rarity": 3,
+    "rarityLabel": "星耀 SSR",
+    "description": "踏过的每个字符，都轻轻发着光。",
+    "color": "#96D0BC",
+    "kotlin": "0xff96d0bc.toInt()",
+    "files": {
+      "svg": "svg/pet_qilin.svg",
+      "drawable": "drawable/pet_qilin.xml"
+    },
+    "status": "new"
+  },
+  {
+    "id": "ninefox",
+    "name": "涂山",
+    "rarity": 3,
+    "rarityLabel": "星耀 SSR",
+    "description": "九条尾巴，藏着九个没讲完的故事。",
+    "color": "#E8B25E",
+    "kotlin": "0xffe8b25e.toInt()",
+    "files": {
+      "svg": "svg/pet_ninefox.svg",
+      "drawable": "drawable/pet_ninefox.xml"
+    },
+    "status": "new"
+  }
+]

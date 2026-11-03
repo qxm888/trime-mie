@@ -21,11 +21,13 @@ class WordCloudView @JvmOverloads constructor(context: Context, attrs: Attribute
     private var placed=emptyList<Word>()
     private val density=resources.displayMetrics.density
     private val fontScale=resources.displayMetrics.scaledDensity
-    fun setWords(values:Map<String,Long>) {
+    private var cloudName = "词云"
+    fun setWords(values:Map<String,Long>, name:String = "词云") {
+        cloudName=name
         counts=values.filter { it.key.isNotBlank() && it.value>0 }.toMap()
         arrange();invalidate()
-        contentDescription=if(counts.isEmpty()) "字词云，开始输入后显示常用字词" else
-            "字词云："+counts.entries.sortedByDescending { it.value }.take(20).joinToString("、") { it.key }
+        contentDescription=if(counts.isEmpty()) "$cloudName，开始输入后显示常用${if(cloudName=="字云") "单字" else "词语"}" else
+            "$cloudName："+counts.entries.sortedByDescending { it.value }.take(20).joinToString("、") { it.key }
     }
     override fun onSizeChanged(w:Int,h:Int,oldw:Int,oldh:Int) { arrange() }
     private fun arrange() {
@@ -33,7 +35,7 @@ class WordCloudView @JvmOverloads constructor(context: Context, attrs: Attribute
         val primary=MaterialColors.getColor(context,androidx.appcompat.R.attr.colorPrimary,0xff446580.toInt())
         val ink=MaterialColors.getColor(context,com.google.android.material.R.attr.colorOnSurface,0xff283948.toInt())
         val palette=intArrayOf(primary,ColorUtils.blendARGB(primary,ink,.24f),ColorUtils.blendARGB(primary,ink,.48f),ink)
-        val sorted=counts.entries.sortedWith(compareByDescending<Map.Entry<String,Long>> { it.value.toDouble()*if(it.key.codePointCount(0,it.key.length)>1) 1.35 else 1.0 }.thenBy { it.key }).take(64)
+        val sorted=counts.entries.sortedWith(compareByDescending<Map.Entry<String,Long>> { it.value }.thenBy { it.key }).take(64)
         val max=sorted.maxOfOrNull { it.value }?.toDouble()?.coerceAtLeast(1.0) ?: 1.0
         val min=sorted.minOfOrNull { it.value }?.toDouble() ?: 0.0
         val result=mutableListOf<Word>();val glyph=Rect()
@@ -66,8 +68,10 @@ class WordCloudView @JvmOverloads constructor(context: Context, attrs: Attribute
         if(placed.isEmpty()) {
             paint.typeface=Typeface.DEFAULT;paint.textSize=14*fontScale
             paint.color=MaterialColors.getColor(context,com.google.android.material.R.attr.colorOnSurfaceVariant,0xff697681.toInt())
-            val label="开始输入，让常用字词在这里相遇"
-            canvas.drawText(label,(width-paint.measureText(label))/2,(height-paint.ascent()-paint.descent())/2,paint)
+            val label=if(cloudName=="字云") "开始输入，让常用单字在这里相遇" else "输入词语，让常用词在这里相遇"
+            val visible=android.text.TextUtils.ellipsize(label,android.text.TextPaint(paint),
+                (width-28*density).coerceAtLeast(0f),android.text.TextUtils.TruncateAt.END).toString()
+            canvas.drawText(visible,(width-paint.measureText(visible))/2,(height-paint.ascent()-paint.descent())/2,paint)
             return
         }
         placed.forEach { word -> paint.typeface=if(word.bold) Typeface.DEFAULT_BOLD else Typeface.DEFAULT

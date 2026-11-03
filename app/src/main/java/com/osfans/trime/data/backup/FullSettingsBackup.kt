@@ -22,8 +22,8 @@ import java.util.zip.ZipOutputStream
 
 /** Portable settings and resources. A restore is staged and applied before managers initialize. */
 object FullSettingsBackup {
-    private val prefNames=listOf("__default__","font_overrides","voice_settings","builtin_asr","named_functions","clipboard_sync")
-    private val stateNames=setOf("custom_keyboards.json","toolbar_overrides.json","key_binding_overrides.json","candidate_preferences.json","input_stats.json")
+    private val prefNames=listOf("__default__","font_overrides","voice_settings","builtin_asr","named_functions","clipboard_sync","stats-share-modules")
+    private val stateNames=setOf("custom_keyboards.json","toolbar_overrides.json","key_binding_overrides.json","candidate_preferences.json","input_stats.json",com.osfans.trime.data.pets.PetHouse.FILE)
     private val assetNames=setOf("键盘背景","字体","百度皮肤")
     /** 旧版英文素材目录：备份可读入，恢复时映射到新中文目录。 */
     private val legacyAssetNames=setOf("custom_fonts","custom_kb_bg","baidu_skins")
@@ -67,6 +67,7 @@ object FullSettingsBackup {
     @Synchronized fun create(context: Context,models: Boolean,secrets: Boolean): File {
         check(CustomKeyboards.flush() && KeyBindingOverrides.flush() && ToolbarOverrides.flush()) { "键盘设置未能保存" }
         InputStats.flush()
+        val petSnapshot=com.osfans.trime.data.pets.PetHouse.backupSnapshot()
         if(models) LocalAsrModels.migrateLegacy(context)
         val targets=roots(context)
         val folder=File(MieUserDirectory.directory(context),"备份").apply { check(mkdirs() || isDirectory) }
@@ -87,7 +88,8 @@ object FullSettingsBackup {
                 }
                 put("preferences.json",preferenceSnapshot(context,secrets).toString().byteInputStream())
                 put("state/candidate_preferences.json",JSONObject(CandidatePreferences.exportJson()).getJSONObject("rules").toString().byteInputStream())
-                stateNames.filterNot { it=="candidate_preferences.json" }.forEach { name -> File(context.filesDir,name).takeIf { it.isFile }?.let { put("state/$name",it.inputStream()) } }
+                petSnapshot?.let { put("state/${com.osfans.trime.data.pets.PetHouse.FILE}",it.byteInputStream()) }
+                stateNames.filterNot { it=="candidate_preferences.json" || it==com.osfans.trime.data.pets.PetHouse.FILE }.forEach { name -> File(context.filesDir,name).takeIf { it.isFile }?.let { put("state/$name",it.inputStream()) } }
                 fun tree(root: File,prefix: String,include: (File)->Boolean={ true }) {
                     if(!root.isDirectory) return
                     root.walkTopDown().onEnter { it.canonicalFile==File(root.canonicalFile,it.relativeTo(root).path) && include(it) }.forEach { file ->
@@ -153,6 +155,7 @@ object FullSettingsBackup {
                 }
                 validatePreferences(JSONObject(File(data,"preferences.json").readText()))
                 stateNames.forEach { name -> File(data,"state/$name").takeIf { it.isFile }?.let { JSONObject(it.readText()) } }
+                File(data,"state/${com.osfans.trime.data.pets.PetHouse.FILE}").takeIf { it.isFile }?.let { com.osfans.trime.data.pets.PetHouse.validateBackup(it.readText()) }
                 File(data,"manifest.json").writeText(manifest.toString())
                 val pending=stage(context)
                 discardPrepared(context)
@@ -265,6 +268,13 @@ object FullSettingsBackup {
             for(i in 0 until plan.length()) File(plan.getJSONObject(i).getString("prepared")).delete()
         }
     }
+    private fun finishPetRestore(context:Context,list:JSONArray) {
+        val account=File(context.filesDir,com.osfans.trime.data.pets.PetHouse.FILE)
+        if((0 until list.length()).any { list.getJSONObject(it).getString("target")==account.path }) {
+            File(account.path+".bak").delete()
+            File(account.path+".new").delete()
+        }
+    }
     /** Startup only switches prepared files by rename; large model copies happened on IO. */
     fun applyPending(context: Context) {
         val pending=stage(context)
@@ -276,6 +286,7 @@ object FullSettingsBackup {
                 .remove("deploy").putString("message","整包设置已恢复；请在设置菜单中手动选择部署，使方案和词典生效。").commit()
             if(journal.isFile) {
                 val list=JSONArray(journal.readText())
+                finishPetRestore(context,list)
                 for(i in 0 until list.length()) File(list.getJSONObject(i).getString("saved")).delete()
             }
             pending.deleteRecursively(); rollback.deleteRecursively(); return
@@ -313,6 +324,7 @@ object FullSettingsBackup {
             }
             writePreferences(context,JSONObject(File(pending,"prepared-preferences.json").readText())) { it }
             File(rollback,"committed").writeText("1")
+            finishPetRestore(context,recorded)
             result.edit().remove("deploy").putString("message","整包设置已恢复；请在设置菜单中手动选择部署，使方案和词典生效。剪贴板自动同步保持关闭，请按需重新开启。").commit()
             for(i in 0 until recorded.length()) File(recorded.getJSONObject(i).getString("saved")).delete()
             pending.deleteRecursively(); rollback.deleteRecursively()

@@ -62,6 +62,7 @@ data class Theme(
         // 内置功能键使用 __mie_ 前缀：主题 YAML 里写旧参数（switch_* / floating_keyboard /
         // one_hand_mode）不再绑定这些功能——执行端只认 __mie_* 命令，旧 token 一律落空。
         val BUILTIN_ACTIONS: Map<String, PresetKey> = mapOf(
+            "__mie_pet_house" to PresetKey(label = "键灵小屋", send = "FUNCTION", command = "pet_house"),
             "__mie_theme_picker" to PresetKey(label = "键盘样式", send = "FUNCTION", command = "theme"),
             "__mie_menu" to PresetKey(label = "功能菜单", send = "FUNCTION", command = "menu_keyboard"),
             "__mie_hide_symbols" to PresetKey(label = "符号显示开关", send = "FUNCTION", command = "switch_hide_key_symbol"),

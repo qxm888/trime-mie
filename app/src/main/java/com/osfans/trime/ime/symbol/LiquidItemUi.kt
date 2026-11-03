@@ -53,13 +53,16 @@ class LiquidItemUi(
         )
     }
 
+    val deleteBadge = symbolDeleteBadge(ctx)
     override val root = view(::GestureFrame) {
         add(content, lParams(matchParent, matchParent))
+        add(deleteBadge,android.widget.FrameLayout.LayoutParams(ctx.dp(14),ctx.dp(14),android.view.Gravity.TOP or android.view.Gravity.END))
     }
 
     /** Restyles the item after a scheme switch. */
     fun refreshColors() {
         mainText.setTextColor(scope.colors.keyTextColor)
+        deleteBadge.setTextColor(scope.colors.keyTextColor)
         content.background = scope.decorDrawable(
             "key_back_color",
             "key_border_color",

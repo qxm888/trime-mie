@@ -43,9 +43,11 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
     private var categories = emptyList<BuiltinSymbolCatalog.Category>()
     private var items = mutableListOf<String>()
     private var sorting = false
+    private var deleting = false
     private var orderDirty = false
     private lateinit var sortButton: TextView
     private lateinit var resetButton: TextView
+    private lateinit var deleteButton: TextView
     private val orderNamespace get() = "builtin-items:$selectedId"
     private var selectedId = initialCategory
     private var wide = false
@@ -76,25 +78,38 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
     }
     private val cells = object : RecyclerView.Adapter<Cell>() {
         override fun getItemCount() = items.size
-        override fun onCreateViewHolder(parent: ViewGroup, type: Int) = Cell(TextView(context).apply {
-            gravity = Gravity.CENTER
-            setPadding(dp(3), dp(3), dp(3), dp(3))
-            layoutParams = RecyclerView.LayoutParams(-1, dp(48)).apply { setMargins(dp(2), dp(2), dp(2), dp(2)) }
-        })
+        override fun onCreateViewHolder(parent: ViewGroup, type: Int): Cell {
+            val frame=FrameLayout(context).apply {
+                layoutParams = RecyclerView.LayoutParams(-1, dp(48)).apply { setMargins(dp(2), dp(2), dp(2), dp(2)) }
+            }
+            val label=TextView(context).apply {
+                gravity = Gravity.CENTER
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                setPadding(dp(3), dp(3), dp(3), dp(3))
+            }
+            val badge=symbolDeleteBadge(context)
+            frame.addView(label,FrameLayout.LayoutParams(-1,-1))
+            frame.addView(badge,FrameLayout.LayoutParams(dp(14),dp(14),Gravity.TOP or Gravity.END))
+            return Cell(frame,label,badge)
+        }
         override fun onBindViewHolder(holder: Cell, index: Int) {
             val value = items[index]
             holder.text.apply {
                 // A dotted circle makes combining marks selectable without altering committed text.
                 val combining = value.codePointAt(0).let { Character.getType(it) in listOf(6, 7, 8) }
                 text = if (combining) "◌$value" else value
-                contentDescription = value
-                setTextColor(ink); background = this@BuiltinSymbolsWindow.background()
+                holder.frame.contentDescription = if(deleting) "$value，点击删除" else value
+                holder.badge.visibility = if(deleting) View.VISIBLE else View.GONE
+                holder.badge.setTextColor(ink)
+                setTextColor(ink); holder.frame.background = this@BuiltinSymbolsWindow.background()
                 typeface = if (emoji) Typeface.DEFAULT else scope.theme.fonts.key
                 maxLines = if (wide) 2 else 1
                 TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(this, if (wide) 9 else 12, if (wide) 16 else 25, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
-                setOnClickListener { if (!sorting) commitSymbol(value) }
-                setOnLongClickListener {
-                    if (sorting) return@setOnLongClickListener false
+                holder.frame.setOnClickListener {
+                    if(deleting) deleteItem(value) else if(!sorting) commitSymbol(value)
+                }
+                holder.frame.setOnLongClickListener {
+                    if (sorting || deleting) return@setOnLongClickListener false
                     val points = mutableListOf<String>()
                     var offset = 0
                     while (offset < value.length) {
@@ -102,13 +117,14 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
                     }
                     val codes = points.joinToString(" ")
                     service.showDialog(AlertDialog.Builder(context).setTitle(value).setMessage(codes)
-                        .setPositiveButton("输入") { _, _ -> commitSymbol(value) }.setNegativeButton("取消", null).create())
+                        .setPositiveButton("输入") { _, _ -> commitSymbol(value) }
+                        .setNeutralButton("删除") { _, _ -> deleteItem(value) }.setNegativeButton("取消", null).create())
                     true
                 }
             }
         }
     }
-    private class Cell(val text: TextView) : RecyclerView.ViewHolder(text)
+    private class Cell(val frame:FrameLayout,val text: TextView,val badge:TextView) : RecyclerView.ViewHolder(frame)
     private class CategoryCell(val frame: com.osfans.trime.ime.keyboard.GestureFrame, val text: TextView) : RecyclerView.ViewHolder(frame)
     override fun onCreateView(): View {
         selector = TextView(context).apply {
@@ -131,17 +147,33 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
             contentDescription = "调整当前分类内的符号表情顺序"
             setOnClickListener {
                 if (categories.isEmpty()) return@setOnClickListener
-                saveItemOrder(); sorting = !sorting
+                saveItemOrder(); deleting = false; sorting = !sorting
+                cells.notifyDataSetChanged()
                 grid.itemAnimator = if (sorting) DefaultItemAnimator().apply { moveDuration = 120 } else null
                 updateSortHeader()
             }
         }
-        resetButton = TextView(context).apply {
-            text = "重置"; gravity = Gravity.CENTER; textSize = 13f; setTextColor(ink); visibility = View.GONE
+        deleteButton = TextView(context).apply {
+            text = "删除"; gravity = Gravity.CENTER; textSize = 13f; setTextColor(ink)
+            contentDescription = "删除不喜欢的符号或表情"
             setOnClickListener {
-                SymbolOrder.reset(orderNamespace); orderDirty = false
-                items = categories.first { it.id == selectedId }.items.toMutableList()
-                cells.notifyDataSetChanged(); grid.scrollToPosition(0)
+                if(categories.isEmpty()) return@setOnClickListener
+                saveItemOrder(); sorting = false; deleting = !deleting
+                grid.itemAnimator = null
+                updateSortHeader(); cells.notifyDataSetChanged()
+            }
+        }
+        resetButton = TextView(context).apply {
+            text = "恢复"; gravity = Gravity.CENTER; textSize = 13f; setTextColor(ink); visibility = View.GONE
+            setOnClickListener {
+                service.showDialog(AlertDialog.Builder(context).setTitle("恢复当前分类")
+                    .setItems(arrayOf("恢复已删除的符号 / 表情", "恢复默认顺序")) { _,which ->
+                        saveItemOrder()
+                        if(which==0) SymbolOrder.restoreDeleted(orderNamespace) else SymbolOrder.reset(orderNamespace)
+                        sorting=false; deleting=false; grid.itemAnimator=null
+                        items=SymbolOrder.ordered(orderNamespace,categories.first { it.id==selectedId }.items) { it }.toMutableList()
+                        updateSortHeader(); cells.notifyDataSetChanged(); grid.scrollToPosition(0)
+                    }.setNegativeButton("取消",null).create())
             }
         }
         root.addView(LinearLayout(context).apply {
@@ -149,6 +181,7 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
             count.maxLines = 1; count.ellipsize = android.text.TextUtils.TruncateAt.END
             addView(count, LinearLayout.LayoutParams(0, dp(32), 1f))
             addView(resetButton, LinearLayout.LayoutParams(dp(48), dp(32)))
+            addView(deleteButton, LinearLayout.LayoutParams(dp(48), dp(32)))
             addView(sortButton, LinearLayout.LayoutParams(dp(48), dp(32)))
         })
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
@@ -198,7 +231,7 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
     }
     private fun select(index: Int) {
         val category = categories.getOrNull(index) ?: return
-        saveItemOrder(); sorting = false; grid.itemAnimator = null
+        saveItemOrder(); sorting = false; deleting = false; grid.itemAnimator = null
         selectedId = category.id; selector.text = "${category.name}  ▾"
         items = SymbolOrder.ordered(orderNamespace, category.items) { it }.toMutableList(); wide = category.wide
         emoji = category.id in setOf("emoji", "people", "components", "animals", "food", "travel", "activities", "objects", "emoji_symbols", "flags", "emoji_full") || category.id.endsWith("_tones")
@@ -209,10 +242,22 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
     private fun saveItemOrder() {
         if (orderDirty) { SymbolOrder.save(orderNamespace,items) { it }; orderDirty = false }
     }
+    private fun deleteItem(value:String) {
+        saveItemOrder()
+        SymbolOrder.delete(orderNamespace,value)
+        items.removeAll { it==value }
+        cells.notifyDataSetChanged(); updateSortHeader()
+    }
     private fun updateSortHeader() {
         sortButton.text = if(sorting) "完成" else "排序"
-        resetButton.visibility = if(sorting) View.VISIBLE else View.GONE
-        count.text = "${categories.firstOrNull { it.id == selectedId }?.name.orEmpty()} · ${items.size} 项 · " + if(sorting) "长按拖动排序" else "上下滑动浏览"
+        deleteButton.text = if(deleting) "完成" else "删除"
+        resetButton.visibility = if(sorting || deleting || SymbolOrder.hasDeleted(orderNamespace)) View.VISIBLE else View.GONE
+        count.text = when {
+            deleting -> "点按删除 · ${items.size} 项 · 可恢复"
+            sorting -> "长按拖动 · ${items.size} 项"
+            items.isEmpty() -> "本分类已空 · 恢复可找回"
+            else -> "${categories.firstOrNull { it.id == selectedId }?.name.orEmpty()} · ${items.size} 项 · 上下滑动浏览"
+        }
     }
     private fun showCategories() {
         val working = categories.toMutableList()
@@ -287,12 +332,15 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
         (grid.layoutManager as GridLayoutManager).spanCount =
             (width / dp(if (wide) 84 else 44)).coerceIn(if (wide) 2 else 3, 12)
     }
-    override fun onDetached() { saveItemOrder(); job?.cancel(); job = null }
+    override fun onDetached() {
+        saveItemOrder(); sorting=false; deleting=false
+        job?.cancel(); job = null
+    }
     override fun refreshColors() {
         if (::root.isInitialized) {
             root.setBackgroundColor(palette.surface)
             footerButtons.forEach { it.setTextColor(ink); it.background=background() }
-            count.setTextColor(palette.surfaceText); selector.setTextColor(palette.surfaceText); sortButton.setTextColor(palette.surfaceText); resetButton.setTextColor(palette.surfaceText); cells.notifyDataSetChanged()
+            count.setTextColor(palette.surfaceText); selector.setTextColor(palette.surfaceText); sortButton.setTextColor(palette.surfaceText); deleteButton.setTextColor(palette.surfaceText); resetButton.setTextColor(palette.surfaceText); cells.notifyDataSetChanged()
         }
     }
 }

@@ -216,9 +216,9 @@ internal class Release325Checks(private val host:Instrumentation,private val edi
             main {
                 stats.javaClass.getDeclaredMethod("showShareDialog").apply { isAccessible=true }.invoke(stats)
                 val windows=android.view.inspector.WindowInspector.getGlobalWindowViews()
-                check(windows.flatMap(::views).filterIsInstance<ListView>().any { it.isShown && it.adapter.count==7 })
+                check(windows.flatMap(::views).filterIsInstance<ListView>().any { it.isShown && it.adapter.count==8 })
             }
-            pass("word-cloud real layout has no overlaps; password editor excluded; cloud-only/heat-only/combined share each produce one decoded PNG; seven-module picker shown")
+            pass("word-cloud real layout has no overlaps; password editor excluded; cloud-only/heat-only/combined share each produce one decoded PNG; eight-module picker shown")
         } finally { main { stats.finish() } }
     }
 }

@@ -63,6 +63,10 @@ class KeyView(
     private val deletedTextBuffer = ArrayDeque<String>()
 
     private var voiceHeld = false
+    private var petKeyHeld=false
+    private fun releasePetKey(cancel:Boolean=false) {
+        if(petKeyHeld) { petKeyHeld=false;service.notifyPetKey(keyboard,key,false,cancel) }
+    }
 
     // ---- 独立前景图标 ----
     private val iconPath: String
@@ -183,6 +187,7 @@ class KeyView(
 
         onPress = {
             val code = key.getCode(KeyBehavior.CLICK)
+            petKeyHeld=true;service.notifyPetKey(keyboard,key,true)
             if (code == KeyEvent.KEYCODE_VOICE_ASSIST) {
                 voiceHeld = true
                 service.voiceInput.start()
@@ -197,6 +202,7 @@ class KeyView(
         }
 
         onRelease = release@{ behavior, isFromLongPress ->
+            releasePetKey()
             if (voiceHeld) {
                 voiceHeld = false
                 service.voiceInput.release()
@@ -296,6 +302,7 @@ class KeyView(
         }
 
         onCancel = {
+            releasePetKey(cancel=true)
             if (voiceHeld) { voiceHeld = false; service.cancelVoiceIfActive() }
             deletedTextBuffer.clear()
             setPressedState(false)
@@ -311,6 +318,7 @@ class KeyView(
         who === paintedBackground || who === key.customBgDrawable || super.verifyDrawable(who)
 
     override fun onDetachedFromWindow() {
+        releasePetKey(cancel=true)
         keyPressed = false
         key.cancelPress()
         paintedBackground?.takeIf { it.callback === this }?.callback = null

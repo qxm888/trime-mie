@@ -21,7 +21,7 @@ class FullBackupActivity : PersonalizationActivity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState); page("整包备份与恢复")
-        note("备份应用设置、主题按键绑定、自定义键盘与功能、字体、图片/视频背景、Rime 配置与用户词典、统计和候选记录。存放在用户目录 rime/mie/备份/，卸载后可保留。剪贴板历史请使用原有历史导出功能。")
+        note("备份应用设置、主题按键绑定、自定义键盘与功能、字体、图片/视频背景、Rime 配置与用户词典、统计、候选记录和键灵小屋存档。存放在用户目录 rime/.mie/备份/，卸载后可保留。剪贴板历史请使用原有历史导出功能。")
         runCatching { MieUserDirectory.directory(this) }.onSuccess { note("目录：$it/备份") }.onFailure {
             note(it.message.orEmpty()); button("授权用户目录") { startActivity(android.content.Intent(this,ExternalDataActivity::class.java)) }
         }
@@ -30,7 +30,7 @@ class FullBackupActivity : PersonalizationActivity() {
         val models=MaterialSwitch(this).apply { text="备份包含本地语音模型（可能较大）" }; body.addView(models)
         val secrets=MaterialSwitch(this).apply { text="备份包含语音密钥与同步密码" }; body.addView(secrets)
         note("备份为未加密 ZIP；默认不包含服务密钥。导入会覆盖对应设置和同名资源，保留本机目录权限；剪贴板自动同步需重新开启。")
-        button("备份到 rime/mie") {
+        button("备份到 rime/.mie") {
             if(!busy) { busy=true; lifecycleScope.launch {
                 runCatching { withContext(Dispatchers.IO) { FullSettingsBackup.create(this@FullBackupActivity,models.isChecked,secrets.isChecked) } }
                     .onSuccess { MaterialAlertDialogBuilder(this@FullBackupActivity).setTitle("备份完成").setMessage(it.absolutePath).setPositiveButton("确定",null).show() }
@@ -38,7 +38,7 @@ class FullBackupActivity : PersonalizationActivity() {
                 busy=false
             } }
         }
-        button("从 rime/mie 选择备份恢复") {
+        button("从 rime/.mie 选择备份恢复") {
             val files=runCatching { File(MieUserDirectory.directory(this),"备份").listFiles().orEmpty().filter { it.extension=="zip" }.sortedByDescending { it.lastModified() } }.getOrElse { emptyList() }
             if(files.isEmpty()) Toast.makeText(this,"没有找到备份，可从文件选择器导入",1).show()
             else MaterialAlertDialogBuilder(this).setTitle("选择备份").setItems(files.map { it.name }.toTypedArray()) { _,i -> confirmImport { files[i].inputStream() } }.show()

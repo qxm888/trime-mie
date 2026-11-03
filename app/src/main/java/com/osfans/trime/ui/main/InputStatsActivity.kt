@@ -68,6 +68,7 @@ class InputStatsActivity : AppCompatActivity() {
     private lateinit var codeRows: LinearLayout
     private lateinit var heatGrid: LinearLayout
     private lateinit var wordCloud: WordCloudView
+    private lateinit var characterCloud: WordCloudView
 
     private enum class Period { DAY, WEEK, MONTH, YEAR }
 
@@ -118,6 +119,7 @@ class InputStatsActivity : AppCompatActivity() {
         codeRows = findViewById(R.id.stats_code_rows)
         heatGrid = findViewById(R.id.stats_heat_grid)
         wordCloud = findViewById(R.id.stats_word_cloud)
+        characterCloud = findViewById(R.id.stats_character_cloud)
 
         val toggle = findViewById<com.google.android.material.button.MaterialButtonToggleGroup>(R.id.stats_period_toggle)
         toggle.check(
@@ -291,7 +293,8 @@ class InputStatsActivity : AppCompatActivity() {
     private fun renderPeriod() {
         val snapshot = lastSnapshot ?: return
         val period = periodOf(snapshot)
-        wordCloud.setWords(period.wordCounts)
+        characterCloud.setWords(period.wordCounts.filterKeys { it.codePointCount(0,it.length)==1 }, "字云")
+        wordCloud.setWords(period.wordCounts.filterKeys { it.codePointCount(0,it.length)>1 }, "词云")
 
         val periodName = when (currentPeriod) {
             Period.DAY -> getString(R.string.stats_period_day)
@@ -484,11 +487,15 @@ class InputStatsActivity : AppCompatActivity() {
     private fun showShareDialog() {
         lastSnapshot = InputStats.read(currentSchema) { it }
         renderPeriod(); renderHeat()
-        val labels=arrayOf("输入概览", "输入速度", "字词云", "字词长度分布", "码长分布", "键盘热力图", "生涯卡片")
-        val ids=intArrayOf(R.id.stats_card_overview,R.id.stats_card_speed,R.id.stats_card_cloud,R.id.stats_card_length,
-            R.id.stats_card_code,R.id.stats_card_heat,R.id.stats_hero)
+        val labels=arrayOf("输入概览", "输入速度", "字云", "词云", "字词长度分布", "码长分布", "键盘热力图", "生涯卡片")
+        val ids=intArrayOf(R.id.stats_card_overview,R.id.stats_card_speed,R.id.stats_card_character_cloud,R.id.stats_card_cloud,
+            R.id.stats_card_length,R.id.stats_card_code,R.id.stats_card_heat,R.id.stats_hero)
+        val keys=arrayOf("overview","speed","characters","words","length","code","heat","career")
+        // Both clouds inherit the old combined-cloud selection; later modules retain their choices.
+        val legacy=intArrayOf(0,1,2,2,3,4,5,6)
         val prefs=getSharedPreferences("stats-share-modules",MODE_PRIVATE)
-        val checked=BooleanArray(labels.size) { prefs.getBoolean("module-$it",it in setOf(0,2,5)) }
+        val checked=BooleanArray(labels.size) { i -> prefs.getBoolean("module-${keys[i]}",
+            prefs.getBoolean("module-${legacy[i]}",legacy[i] in setOf(0,2,5))) }
         val dialog=MaterialAlertDialogBuilder(this).setTitle("选择分享模块")
             .setMultiChoiceItems(labels,checked) { _,which,on -> checked[which]=on }
             .setNegativeButton("取消",null)
@@ -497,7 +504,7 @@ class InputStatsActivity : AppCompatActivity() {
         dialog.setOnShowListener { dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
             val selected=ids.indices.filter { checked[it] }.map { findViewById<View>(ids[it]) }
             if(selected.isEmpty()) { Toast.makeText(this,"请至少选择一个模块",Toast.LENGTH_SHORT).show();return@setOnClickListener }
-            prefs.edit().apply { ids.indices.forEach { putBoolean("module-$it",checked[it]) } }.apply()
+            prefs.edit().apply { ids.indices.forEach { putBoolean("module-${keys[it]}",checked[it]) } }.apply()
             val periodLabel=when(currentPeriod) { Period.DAY -> "今日";Period.WEEK -> "本周";Period.MONTH -> "本月";Period.YEAR -> "今年" }
             StatsImageShare.shareModules(this,selected,"$periodLabel · ${currentSchemaView.text}")
             dialog.dismiss()

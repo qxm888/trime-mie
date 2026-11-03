@@ -46,9 +46,11 @@ class LiquidWindow(di: DI) :
     private val symbolHistory = SymbolHistory(180)
     private var sourceIndex = -1
     private var sorting = false
+    private var deleting = false
     private var orderDirty = false
     private lateinit var sortButton: TextView
     private lateinit var resetButton: TextView
+    private lateinit var deleteButton: TextView
     private val themeIdentity get() = scope.theme.fontConfigId.ifEmpty { scope.theme.name }
     private val orderNamespace get() = "liquid-items:$themeIdentity:${scope.theme.liquidKeyboard.keyboards.getOrNull(sourceIndex)?.id.orEmpty()}"
     private fun itemIdentity(item: LiquidKeyboard.KeyItem) = org.json.JSONArray().put(item.text).put(item.altText).toString()
@@ -120,6 +122,12 @@ class LiquidWindow(di: DI) :
         })
         helper.attachToRecyclerView(recyclerView)
         this@LiquidWindow.adapter.onStartDrag={ helper.startDrag(it) }
+        this@LiquidWindow.adapter.onDeleteItem={ deleteItem(it) }
+        this@LiquidWindow.adapter.onItemLongClick={ item ->
+            if(currentDataType!=LiquidKeyboard.DataType.TABS) service.showDialog(AlertDialog.Builder(context)
+                .setTitle(item.text).setMessage("从当前分类删除，可在“恢复”中找回。")
+                .setPositiveButton("删除") { _,_ -> deleteItem(item) }.setNegativeButton("取消",null).create())
+        }
     }
 
     override fun onCreateBarView(): View {
@@ -129,14 +137,27 @@ class LiquidWindow(di: DI) :
         }
         sortButton=button("排序").apply {
             contentDescription="调整当前分类内符号和表情的顺序"
-            setOnClickListener { saveItemOrder(); sorting=!sorting; updateSorting() }
+            setOnClickListener { saveItemOrder(); deleting=false; sorting=!sorting; updateSorting() }
         }
-        resetButton=button("重置").apply {
+        deleteButton=button("删除").apply {
+            contentDescription="点按删除当前分类的符号或表情"
+            setOnClickListener {
+                if(currentDataType==LiquidKeyboard.DataType.TABS) return@setOnClickListener
+                saveItemOrder(); sorting=false; deleting=!deleting; updateSorting()
+            }
+        }
+        resetButton=button("恢复").apply {
             visibility=View.GONE
             setOnClickListener {
-                service.showDialog(AlertDialog.Builder(context).setTitle("恢复默认顺序").setItems(arrayOf("当前分类内的符号/表情", "分类顺序")) { _,which ->
-                    if(which==1 || currentDataType==LiquidKeyboard.DataType.TABS) liquidLayout.tabsUi.resetOrder()
-                    else SymbolOrder.reset(orderNamespace)
+                val tabs=currentDataType==LiquidKeyboard.DataType.TABS
+                val options=if(tabs) arrayOf("恢复分类默认顺序") else arrayOf("恢复已删除的符号 / 表情", "恢复当前分类默认顺序", "恢复分类默认顺序")
+                service.showDialog(AlertDialog.Builder(context).setTitle("恢复").setItems(options) { _,which ->
+                    saveItemOrder()
+                    when {
+                        tabs || which==2 -> liquidLayout.tabsUi.resetOrder()
+                        which==0 -> SymbolOrder.restoreDeleted(orderNamespace)
+                        else -> SymbolOrder.reset(orderNamespace)
+                    }
                     orderDirty=false; setDataByIndex(sourceIndex)
                 }.setNegativeButton("取消",null).create())
             }
@@ -145,23 +166,28 @@ class LiquidWindow(di: DI) :
             gravity=Gravity.CENTER_VERTICAL
             addView(liquidLayout.tabsUi.root,LinearLayout.LayoutParams(0,-1,1f))
             addView(resetButton,LinearLayout.LayoutParams((48*density).toInt(),-1))
+            addView(deleteButton,LinearLayout.LayoutParams((48*density).toInt(),-1))
             addView(sortButton,LinearLayout.LayoutParams((48*density).toInt(),-1))
         }
     }
 
     override fun onAttached() {}
 
-    override fun onDetached() { saveItemOrder(); liquidLayout.tabsUi.saveOrder() }
+    override fun onDetached() {
+        saveItemOrder(); liquidLayout.tabsUi.saveOrder()
+        sorting=false; deleting=false; updateSorting()
+    }
 
     override fun refreshColors() {
         if (::liquidLayout.isInitialized) liquidLayout.refreshColors()
-        if (::sortButton.isInitialized) { sortButton.setTextColor(scope.colors.candidateTextColor); resetButton.setTextColor(scope.colors.candidateTextColor) }
+        if (::sortButton.isInitialized) { sortButton.setTextColor(scope.colors.candidateTextColor); resetButton.setTextColor(scope.colors.candidateTextColor); deleteButton.setTextColor(scope.colors.candidateTextColor) }
     }
 
     fun setDataByIndex(i: Int) {
         val tag = scope.theme.liquidKeyboard.getTagList().getOrNull(i) ?: return
-        saveItemOrder(); sorting=false; sourceIndex=i; updateSorting()
+        saveItemOrder(); sorting=false; deleting=false; sourceIndex=i
         currentDataType = tag.type
+        updateSorting()
         liquidLayout.tabsUi.activateTab(i)
         when (tag.type) {
             LiquidKeyboard.DataType.HISTORY -> {
@@ -183,9 +209,24 @@ class LiquidWindow(di: DI) :
     private fun tabItems() = liquidLayout.tabsUi.orderedSourceIndices().mapNotNull { index ->
         scope.theme.liquidKeyboard.keyboards.getOrNull(index)?.takeIf { it.type != LiquidKeyboard.DataType.TABS }?.let { LiquidKeyboard.KeyItem(it.name,it.id) }
     }
+    private fun deleteItem(item:LiquidKeyboard.KeyItem) {
+        if(currentDataType==LiquidKeyboard.DataType.TABS) return
+        saveItemOrder()
+        val id=itemIdentity(item)
+        SymbolOrder.delete(orderNamespace,id)
+        adapter.submitList(adapter.snapshot().filter { itemIdentity(it)!=id })
+        updateSorting()
+    }
     private fun updateSorting() {
-        adapter.sorting=sorting; adapter.notifyDataSetChanged()
-        if(::sortButton.isInitialized) { sortButton.text=if(sorting) "完成" else "排序"; resetButton.visibility=if(sorting) View.VISIBLE else View.GONE }
+        adapter.sorting=sorting; adapter.deleting=deleting; adapter.notifyDataSetChanged()
+        if(::sortButton.isInitialized) {
+            sortButton.text=if(sorting) "完成" else "排序"
+            deleteButton.text=if(deleting) "完成" else "删除"
+            deleteButton.contentDescription=if(deleting) "完成删除，返回正常输入" else "删除当前分类内不喜欢的符号或表情"
+            deleteButton.isEnabled=currentDataType!=LiquidKeyboard.DataType.TABS
+            deleteButton.alpha=if(deleteButton.isEnabled) 1f else .38f
+            resetButton.visibility=if(sorting || deleting || SymbolOrder.hasDeleted(orderNamespace)) View.VISIBLE else View.GONE
+        }
     }
     private fun saveItemOrder() {
         if(!orderDirty) return
