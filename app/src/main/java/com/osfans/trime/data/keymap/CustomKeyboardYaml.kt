@@ -42,6 +42,7 @@ object CustomKeyboardYaml {
         val toolbarHeightDp: Int = 0,
         val secondaryOf: String = "",
         val setPageRole: String = "",
+        val layoutDisplayName: String = "",
         val exportedHeight: Int = 0,
         val exportedBackground: String = "",
         val exportedRowSpacing: Int = 4,
@@ -139,7 +140,7 @@ object CustomKeyboardYaml {
                 "ascii_keyboard" to string(kb.options.asciiKeyboard), "landscape_keyboard" to string(kb.options.landscapeKeyboard),
                 "landscape_split_percent" to JsonPrimitive(layout.landscapeSplitPercent), "label_transform" to string(layout.labelTransform.name.lowercase()),
                 "keyboard_back_color" to string(bg),
-                "mie" to json.encodeToJsonElement(KeyboardInfo.serializer(), KeyboardInfo(hiddenMenuItems=kb.hiddenMenuItems, importedActions=kb.importedActions, toolbarAlignment=kb.toolbarAlignment, rowAlignments=kb.rows.mapIndexed { index,row -> index+1 to row.alignment }.toMap(), rowMargins=kb.rows.mapIndexed { index,row -> index+1 to (row.margin ?: -1) }.toMap(), surfaceAppearance=kb.surfaceAppearance, unifiedBackground=kb.unifiedBackground, typography=kb.typography, floatingCandidates=kb.floatingCandidates, toolbar=kb.toolbar, toolbarBackground=kb.toolbarBackground,
+                "mie" to json.encodeToJsonElement(KeyboardInfo.serializer(), KeyboardInfo(layoutDisplayName=kb.layoutDisplayName, hiddenMenuItems=kb.hiddenMenuItems, importedActions=kb.importedActions, toolbarAlignment=kb.toolbarAlignment, rowAlignments=kb.rows.mapIndexed { index,row -> index+1 to row.alignment }.toMap(), rowMargins=kb.rows.mapIndexed { index,row -> index+1 to (row.margin ?: -1) }.toMap(), surfaceAppearance=kb.surfaceAppearance, unifiedBackground=kb.unifiedBackground, typography=kb.typography, floatingCandidates=kb.floatingCandidates, toolbar=kb.toolbar, toolbarBackground=kb.toolbarBackground,
                     allKeysBackground = kb.allKeysBackground, importedSkin = kb.importedSkin, importedHeightPercent = kb.importedHeightPercent, keyboardHeightDp = kb.keyboardHeightDp, landscapeHeightDp = kb.landscapeHeightDp, toolbarHeightDp = kb.toolbarHeightDp, secondaryOf = kb.secondaryOf, setPageRole = kb.setPageRole, exportedHeight = portraitHeight, exportedBackground = bg, exportedRowSpacing = kb.rowSpacing, rowMargin = kb.rowMargin, keyAppearance = KeyAppearance.textValues(kb.keyAppearance), options = kb.options)), "keys" to JsonArray(keys))
         }
         val first = layouts.values.first()
@@ -279,7 +280,7 @@ object CustomKeyboardYaml {
             val keyboardRowMargin = info.rowMargin
             require(keyboardRowMargin in 0..48) { "行边距须为 0–48 dp" }
             require(info.rowMargins.values.all { it in -1..48 }) { "行边距须为 0–48 dp" }
-            result[id] = CustomKeyboard(name = node.pairs["name"]?.string ?: id, rows = rows, rowSpacing = spacing, rowMargin = keyboardRowMargin,
+            result[id] = CustomKeyboard(layoutDisplayName = info.layoutDisplayName, name = node.pairs["name"]?.string ?: id, rows = rows, rowSpacing = spacing, rowMargin = keyboardRowMargin,
                 hiddenMenuItems=info.hiddenMenuItems, importedActions=info.importedActions, toolbarAlignment=info.toolbarAlignment, surfaceAppearance=info.surfaceAppearance, unifiedBackground=info.unifiedBackground, typography=info.typography, floatingCandidates=info.floatingCandidates, background = background(bg), toolbar = info.toolbar.toMutableList(), toolbarBackground = info.toolbarBackground, allKeysBackground = info.allKeysBackground,
                 importedSkin = skin, importedHeightPercent = percent, keyboardHeightDp = heightDp, landscapeHeightDp = heightDpLand, toolbarHeightDp = toolbarHeight, secondaryOf = secondaryOf, setPageRole = info.setPageRole, keyAppearance = KeyAppearance.parse(info.keyAppearance), options = options)
         }

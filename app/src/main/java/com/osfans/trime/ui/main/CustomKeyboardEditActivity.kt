@@ -808,6 +808,14 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         })
 
         val gestureViews = mutableMapOf<String, TextView>()
+        root.addView(com.google.android.material.button.MaterialButton(this).apply {
+            text = "长按 popup · 滑选符号与功能"
+            setOnClickListener {
+                KeyPopupEditor.show(this@CustomKeyboardEditActivity, key.label.ifBlank { "按键" }, keyAppearance.popup) {
+                    keyAppearance = keyAppearance.copy(popup = it)
+                }
+            }
+        })
         KeyBindingOverrides.EDITABLE_BEHAVIORS.forEach { (behavior, meta) ->
             val row =
                 LinearLayout(this).apply {

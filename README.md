@@ -6,7 +6,18 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前正式版：**V3.2.4**，安装包 `trime-mie-v3.2.4.apk`；[下载 V3.2.4](https://github.com/qxm888/trime-mie/releases/tag/v3.2.4)。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+> 当前交接版本：**V3.2.5 / versionCode 20261230**，正式安装包 `trime-mie-v3.2.5.apk`。本轮按用户要求仅测试与准备交接，GitHub 发布由后续维护者执行；线上版本以 Releases 实际状态为准。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+
+## V3.2.5 日夜切换、popup 与统计字词云
+
+- 全部 14 套内置主题的悬浮图标统一为悬空键盘与底座，升级更新原图标，保留用户自行修改的精雕素材。
+- 跟随系统只在实际日夜变化时自动切换；之后可以手动选择其它皮肤或配色。
+- 修复底部留白背景、深空表情面板底部文字对比度，以及布局改名后选择页名称不同步。
+- 修复长按 popup 的备选数量、短标签、完整 emoji 和滑选命中；自定义按键也可编辑 popup。
+- 造词、候选调整和词典草稿分别导出字词/编码、字词/权重和字词/编码/权重；保留完整备份入口。
+- 输入统计增加有界本地字词云，密码框不记录字词云；分享可选择模块并生成一张 PNG。
+
+[更新说明](docs/v3.2.5/更新说明.md) · [测试与交接](docs/v3.2.5/交接说明.md)。
 
 ## V3.2.4 精雕主题、符号边界与拖动排序
 

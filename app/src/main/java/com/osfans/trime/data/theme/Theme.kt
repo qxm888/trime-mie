@@ -50,6 +50,14 @@ data class Theme(
 
     fun resolveAction(tokenString: String) = resolveAction(KeyActionToken.Plain(tokenString))
 
+    /** Literal Unicode popup choices must be committed intact, rather than simulated as key names. */
+    fun resolvePopupAction(value: String): KeyAction {
+        val named = value in presetKeys || value in BUILTIN_ACTIONS ||
+            com.osfans.trime.data.keymap.BindingActions.resolve(value) != null
+        return if (!named && value.any { it.code > 127 } && !value.contains('{'))
+            resolveAction(KeyActionToken.Inline(commit = value, label = value)) else resolveAction(value)
+    }
+
     companion object {
         // 内置功能键使用 __mie_ 前缀：主题 YAML 里写旧参数（switch_* / floating_keyboard /
         // one_hand_mode）不再绑定这些功能——执行端只认 __mie_* 命令，旧 token 一律落空。

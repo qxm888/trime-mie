@@ -26,7 +26,7 @@ class KeyboardColorGroupsActivity : PersonalizationActivity() {
     }
     private fun render() {
         body.removeAllViews()
-        note("每组选择日间和夜间主题。启用配色组并跟随系统夜间后，会自动切换；手动选择布局会退出配色组。")
+        note("系统日夜变化时自动应用一次；之后可手动换皮肤，直到下次系统切换。停用配色组可取消自动换肤。")
         body.addView(MaterialSwitch(this).apply {
             text = "跟随系统夜间切换"; isChecked = ThemeManager.prefs.followSystemDayNight.getValue()
             setOnCheckedChangeListener { _, checked -> ThemeManager.prefs.followSystemDayNight.setValue(checked) }

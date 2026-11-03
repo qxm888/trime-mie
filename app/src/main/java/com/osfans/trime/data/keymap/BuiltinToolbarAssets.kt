@@ -37,7 +37,7 @@ object BuiltinToolbarAssets {
     fun install(context: Context) {
         val dir = File(CustomKeyAssets.root(context), "icons")
         if (!dir.isDirectory) check(dir.mkdirs()) { "无法创建内置图标目录" }
-        val marker = File(dir, ".builtin_v3")
+        val marker = File(dir, ".builtin_v4")
         if (!marker.isFile || names.any { !File(dir, "mie2_tb_$it.png").isFile }) {
             context.resources.openRawResource(R.raw.mie_builtin_icons).use { input ->
                 ZipInputStream(input.buffered()).use { zip ->
@@ -56,12 +56,13 @@ object BuiltinToolbarAssets {
                 }
             }
             check(names.all { File(dir, "mie2_tb_$it.png").isFile })
-            marker.writeText("3\n")
+            marker.writeText("4\n")
         }
         // The resolver accepts these old relative names as aliases, including in
         // user copies/old exports. Unrelated or user-named assets stay untouched.
         replacements.keys.forEach { File(dir, it.substringAfterLast('/')).delete() }
         File(dir, ".builtin_v1").delete()
         File(dir, ".builtin_v2").delete()
+        File(dir, ".builtin_v3").delete()
     }
 }

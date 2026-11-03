@@ -271,6 +271,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
             <!-- 总览卡 -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/stats_card_overview"
                 style="?attr/materialCardViewFilledStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -402,6 +403,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
             <!-- 速度卡 -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/stats_card_speed"
                 style="?attr/materialCardViewElevatedStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -511,8 +513,48 @@ SPDX-License-Identifier: GPL-3.0-or-later
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- 字词云 -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/stats_card_cloud"
+                style="?attr/materialCardViewOutlinedStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="?attr/colorSurface"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="0dp"
+                app:strokeColor="?attr/colorOutlineVariant"
+                app:strokeWidth="1dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="字词云"
+                        android:textColor="?attr/colorPrimary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="常用字词的片刻缩影 · 随当前统计周期更新"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="12sp" />
+                    <com.osfans.trime.ui.main.WordCloudView
+                        android:id="@+id/stats_word_cloud"
+                        android:layout_width="match_parent"
+                        android:layout_height="280dp"
+                        android:importantForAccessibility="yes" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- 词长分布卡 -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/stats_card_length"
                 style="?attr/materialCardViewFilledStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -545,6 +587,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
             <!-- 码长分布卡 -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/stats_card_code"
                 style="?attr/materialCardViewFilledStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -577,6 +620,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
             <!-- 键盘热力卡 -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/stats_card_heat"
                 style="?attr/materialCardViewFilledStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

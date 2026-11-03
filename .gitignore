@@ -498,3 +498,6 @@ keystore.properties
 .env.*
 dist/
 *.aab
+
+# Public, debug-only fixture for verifying managed floating-icon upgrades
+!app/src/debug/assets/legacy-floating-icons.zip

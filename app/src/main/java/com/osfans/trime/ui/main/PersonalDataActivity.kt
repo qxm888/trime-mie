@@ -131,10 +131,11 @@ class PersonalDataActivity : AppCompatActivity() {
                 InputStats.restoreFromRime()
             } } },
         ))
-        card("候选调整", "可选 YAML、JSON、TXT，完整保存各方案、各编码的固定位置、前后调序、隐藏和造词；也可导入旧版 JSON。完整备份替换当前调整，仅造词备份合并词条，导入前保留原记录备份。原生 Control+Delete 忘词由 Rime 用户词典管理，请使用整包备份保存。", listOf(
+        card("候选调整", "数据表按“字词、权重”导出，权重由应用内顺序递减生成，并非 Rime 学习词频；造词按“字词、编码”导出。恢复应用设置请使用完整备份，保留方案、编码、隐藏等规则；数据表用于其它工具，不用于完整恢复。", listOf(
             "导出候选调整…" to { CandidateExportDialog.show(this) { format ->
                 exporting = "candidates"; candidateFormat = format; exportFile.launch("mie-candidate-order.${format.extension}")
             } },
+            "导出完整候选与造词备份 JSON…" to { exporting = "candidate-backup"; exportFile.launch("mie-candidate-backup.json") },
             "导入候选调整或造词…" to { importing = "candidates"; importFile.launch(arrayOf("*/*")) },
             "保存候选调整到 Rime 目录" to { task("已保存到 Rime 目录") {
                 check(UserDataManager.isStorageAvailable()) { "请先设置并授权数据目录" }
@@ -159,7 +160,11 @@ class PersonalDataActivity : AppCompatActivity() {
         outState.putString("candidateFormat", candidateFormat.name); super.onSaveInstanceState(outState)
     }
     private fun candidateFileName() = if (com.osfans.trime.BuildConfig.DEBUG) "mie_candidate_order-$packageName.json" else "mie_candidate_order.json"
-    private fun exportText(kind: String) = if (kind == "stats") InputStats.exportJson() else CandidatePreferences.export(candidateFormat)
+    private fun exportText(kind: String) = when(kind) {
+        "stats" -> InputStats.exportJson()
+        "candidate-backup" -> CandidatePreferences.exportJson()
+        else -> CandidatePreferences.exportTable(candidateFormat)
+    }
     private fun restore(kind: String, raw: String) = if (kind == "stats") InputStats.importJson(raw) else CandidatePreferences.importDocument(raw)
     private fun confirmRestore(kind: String, action: () -> Unit) {
         MaterialAlertDialogBuilder(this).setTitle(if (kind == "stats") "替换当前统计？" else "导入候选调整或造词？")

@@ -10,7 +10,7 @@ object CandidateExportDialog {
         val formats = CandidateRecordFormats.Format.entries
         MaterialAlertDialogBuilder(context)
             .setTitle(if (createdWordsOnly) "导出全部造词" else "导出候选调整")
-            .setItems(formats.map { it.title }.toTypedArray()) { _, index -> selected(formats[index]) }
+            .setItems(formats.map { it.title + if(createdWordsOnly) " · 字词 / 编码" else " · 字词 / 权重" }.toTypedArray()) { _, index -> selected(formats[index]) }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
     }

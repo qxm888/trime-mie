@@ -125,6 +125,9 @@ object CandidatePreferences {
         return CandidateRecordFormats.encode(snapshot, format, createdWordsOnly)
     }
 
+    fun exportTable(format: CandidateRecordFormats.Format, createdWordsOnly: Boolean = false): String =
+        CandidateTableExport.encode(synchronized(this) { data() }, format, createdWordsOnly)
+
     /** Kept for full-settings backups from previous versions. */
     fun importJson(raw: String): Int = importDocument(raw)
 
@@ -163,7 +166,7 @@ object CandidatePreferences {
                 java.security.MessageDigest.getInstance("SHA-256").digest(schema.toByteArray()).take(4).joinToString("") { "%02x".format(it) }
             name to buildString {
                 append("# Trime Mie 候选调序词典草稿\n# 记录的是输入编码；接入前请确认与方案词典编码一致。\n")
-                append("# 不包含隐藏规则和原生词频；应用调序另存JSON，原生忘词请备份Rime用户词典。\n---\nname: $name\nversion: \"1\"\nsort: by_weight\ncolumns: [text, code, weight]\n...\n")
+                append("# 不包含隐藏规则和原生词频；应用调序另存JSON，原生忘词请备份Rime用户词典。\n# 字词\t编码\t权重\n---\nname: $name\nversion: \"1\"\nsort: by_weight\ncolumns: [text, code, weight]\n...\n")
                 entries.forEach { (id, rule) ->
                     val code = json.decodeFromString<List<String>>(id)[1]
                     if (code.any { it.isWhitespace() }) return@forEach

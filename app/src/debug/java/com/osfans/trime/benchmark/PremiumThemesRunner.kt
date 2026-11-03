@@ -47,11 +47,12 @@ class PremiumThemesRunner : Instrumentation() {
         try { uiAutomation.injectInputEvent(event,true) } finally { event.recycle() }
     }
     private lateinit var picker: AlertDialog
+    private var checks325 = false
     private var exportOnly = false
     private var candidatesOnly = false
     private var featuresOnly = false
     private var interactionsOnly = false
-    override fun onCreate(args: Bundle?) { exportOnly=args?.getString("exportOnly")=="true"; candidatesOnly = args?.getString("candidatesOnly") == "true"; featuresOnly = args?.getString("featuresOnly") == "true"; interactionsOnly=args?.getString("interactionsOnly")=="true"; super.onCreate(args); start() }
+    override fun onCreate(args: Bundle?) { checks325=args?.getString("checks325")=="true"; exportOnly=args?.getString("exportOnly")=="true"; candidatesOnly = args?.getString("candidatesOnly") == "true"; featuresOnly = args?.getString("featuresOnly") == "true"; interactionsOnly=args?.getString("interactionsOnly")=="true"; super.onCreate(args); start() }
     private fun main(block: () -> Unit) {
         var error: Throwable? = null
         runOnMainSync { try { block() } catch (e: Throwable) { error = e } }
@@ -241,11 +242,17 @@ class PremiumThemesRunner : Instrumentation() {
                 nav(root); main { prefs.candidates.mode.setValue(com.osfans.trime.ime.candidates.popup.PopupCandidatesMode.ALWAYS_SHOW) }
                 rime.runOnReady { clearComposition(); setRuntimeOption("ascii_mode",false); check(simulateKeySequence("ni")) }
                 await("candidate composition missing") { rime.run { statusCached }.isComposing }
-                await("floating preedit is not visible; raw=${rime.runOnReady { getRawInput() }}") {
+                var preeditState=""
+                try { await("floating preedit readiness") {
                     val candidateView = member(currentIme(),"candidatesView")!!
                     val preedit = member(member(candidateView,"preeditUi")!!,"preedit") as TextView
-                    preedit.isShown && preedit.text.toString() == "ni"
-                }
+                    preeditState="shown=${preedit.isShown}, attached=${preedit.isAttachedToWindow}, text=${preedit.text.toString().map { it.code.toString(16) }}, windows="+
+                        WindowInspector.getGlobalWindowViews().flatMap(::views).filterIsInstance<com.osfans.trime.ime.composition.PreeditTextView>().map { "${it.isShown}/${it.text.toString().map { ch->ch.code.toString(16) }}" }
+                    // The engine may append its U+2038 caret marker after moving the
+                    // floating window. Assert exact engine output, not raw input bytes.
+                    val expected=rime.run { compositionCached.preedit }.orEmpty()
+                    preedit.isShown && expected.startsWith("ni") && preedit.text.toString()==expected
+                } } catch(t:Throwable) { error("Floating preedit: $preeditState; raw=${rime.runOnReady { getRawInput() }}; $t") }
                 main {
                     val preedit = member(member(member(currentIme(),"candidatesView")!!,"preeditUi")!!,"preedit") as TextView
                     val colors = CustomKeyboards.get(root)!!.floatingCandidates!!.colors
@@ -349,7 +356,8 @@ class PremiumThemesRunner : Instrumentation() {
             }
             if(!candidatesOnly) {
                 stage = "V3.2.4 annotation, drag, popup and portable archive checks"
-                Release324Checks(this@PremiumThemesRunner,activity!!,fixture!!).run(skipBounds=interactionsOnly)
+                Release324Checks(this@PremiumThemesRunner,activity!!,fixture!!).run(skipBounds=interactionsOnly,exportArchives=!checks325)
+                if(checks325) Release325Checks(this@PremiumThemesRunner,activity!!,fixture!!).run()
             }
             }
             result.putString("result","PASS")

@@ -55,16 +55,24 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
         CustomKeyboards.get(CustomKeyboards.resolveId(it))
     } else null
     private fun color(value: String?, fallback: Int) = value?.let { runCatching { ColorUtils.parseColor(it) }.getOrNull() } ?: fallback
-    private val ink get() = color(layout?.keyAppearance?.keyTextColor, scope.colors.keyTextColor)
+    private val footerButtons = mutableListOf<TextView>()
+    private val palette get() = com.osfans.trime.data.symbols.SymbolPanelColors.resolve(
+        color(layout?.keyAppearance?.keyTextColor,scope.colors.keyTextColor),
+        layout?.keyAppearance?.keyBackColor?.let { runCatching { ColorUtils.parseColor(it) }.getOrNull() }
+            ?: scope.colors.keyBackColor.takeIf { layout==null },
+        layout?.resolvedBackground()?.takeIf { it.type==com.osfans.trime.data.keymap.CustomBackground.Type.COLOR }?.color
+            ?.let { runCatching { ColorUtils.parseColor(it) }.getOrNull() } ?: scope.colors.backColor.takeIf { layout==null },
+        layout?.keyAppearance?.keyBorderColor?.let { runCatching { ColorUtils.parseColor(it) }.getOrNull() })
+    private val ink get() = palette.text
     private fun dp(value: Int) = (value * context.resources.displayMetrics.density).toInt()
     private fun commitSymbol(value: String) {
         service.cancelVoiceIfActive()
         service.postRimeJob { commitLiteralText(value) }
     }
     private fun background() = GradientDrawable().apply {
-        setColor(color(layout?.keyAppearance?.keyBackColor, scope.colors.keyBackColor))
+        setColor(palette.key)
         cornerRadius = dp(6).toFloat()
-        setStroke(dp(1), color(layout?.keyAppearance?.keyBorderColor, scope.colors.keyBorderColor))
+        setStroke(dp(1), palette.border)
     }
     private val cells = object : RecyclerView.Adapter<Cell>() {
         override fun getItemCount() = items.size
@@ -166,6 +174,7 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
         listOf("返回键盘" to "", "空格" to "space", "删除" to "BackSpace", "回车" to "Return").forEach { (label, action) ->
             bottom.addView(TextView(context).apply {
                 text = label; textSize = 14f; gravity = Gravity.CENTER; setTextColor(ink)
+                footerButtons.add(this)
                 background = this@BuiltinSymbolsWindow.background()
                 setOnClickListener {
                     if (action.isEmpty()) manager.attachWindow(KeyboardWindow)
@@ -281,8 +290,9 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
     override fun onDetached() { saveItemOrder(); job?.cancel(); job = null }
     override fun refreshColors() {
         if (::root.isInitialized) {
-            root.setBackgroundColor(color(layout?.bgColor, scope.colors.textBackColor))
-            count.setTextColor(ink); selector.setTextColor(ink); sortButton.setTextColor(ink); resetButton.setTextColor(ink); cells.notifyDataSetChanged()
+            root.setBackgroundColor(palette.surface)
+            footerButtons.forEach { it.setTextColor(ink); it.background=background() }
+            count.setTextColor(palette.surfaceText); selector.setTextColor(palette.surfaceText); sortButton.setTextColor(palette.surfaceText); resetButton.setTextColor(palette.surfaceText); cells.notifyDataSetChanged()
         }
     }
 }

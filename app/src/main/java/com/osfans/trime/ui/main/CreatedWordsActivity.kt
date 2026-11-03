@@ -50,7 +50,7 @@ class CreatedWordsActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 try {
                     withContext(Dispatchers.IO) {
-                        val text = CandidatePreferences.export(format, createdWordsOnly = true)
+                        val text = CandidatePreferences.exportTable(format, createdWordsOnly = true)
                         contentResolver.openOutputStream(uri, "wt")?.use { it.write(text.toByteArray(Charsets.UTF_8)) }
                             ?: error("无法写入目标文件")
                     }
@@ -91,7 +91,7 @@ class CreatedWordsActivity : AppCompatActivity() {
         actions.addView(MaterialButton(this).apply { text="新建词条";setOnClickListener { create() } },LinearLayout.LayoutParams(-2,-2).apply { leftMargin=dp(12) })
         top.addView(actions)
         top.addView(MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
-            text = "导出造词 · YAML / JSON / TXT"
+            text = "导出造词数据表 · 字词 / 编码"
             setOnClickListener {
                 if (!exporting) CandidateExportDialog.show(this@CreatedWordsActivity, createdWordsOnly = true) { format ->
                     exportFormat = format; exportFile.launch("mie-created-words.${format.extension}")

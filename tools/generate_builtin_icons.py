@@ -9,7 +9,7 @@ paths={
 'menu':'<g fill="currentColor" stroke="none"><rect x="3" y="3" width="7.5" height="7.5" rx="1.4"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.4"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.4"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.4"/></g>',
  'theme':'<path d="M7.2 3.5 1.8 6.8l2.8 5 2.2-1.4V21h10.4V10.4l2.2 1.4 2.8-5-5.4-3.3c-.7 1.8-2.4 2.8-4.8 2.8S7.9 5.3 7.2 3.5Z"/>',
  'layout':'<rect x="3" y="4" width="18" height="16" rx="2.3"/><path d="M7 8h1m3 0h6M7 12h1m3 0h6M7 16h1m3 0h6"/>',
- 'float':'<path d="M12 2v5m-2-3 2-2 2 2M5 5H2m2-2L2 5l2 2m15-2h3m-2-2 2 2-2 2"/><rect x="3" y="10" width="18" height="11" rx="2.2"/><path d="M6.5 13.5h.2m3.4 0h.2m3.4 0h.2m3.4 0h.2M7 17.5h10"/>',
+ 'float':'<rect x="2.5" y="3" width="19" height="12.5" rx="2.3"/><g fill="currentColor" stroke="none"><rect x="5.4" y="6.1" width="1.7" height="1.7" rx=".3"/><rect x="8.3" y="6.1" width="1.7" height="1.7" rx=".3"/><rect x="11.2" y="6.1" width="1.7" height="1.7" rx=".3"/><rect x="14.1" y="6.1" width="1.7" height="1.7" rx=".3"/><rect x="17" y="6.1" width="1.7" height="1.7" rx=".3"/><rect x="5.4" y="9.1" width="1.7" height="1.7" rx=".3"/><rect x="8.3" y="9.1" width="1.7" height="1.7" rx=".3"/><rect x="11.2" y="9.1" width="1.7" height="1.7" rx=".3"/><rect x="14.1" y="9.1" width="1.7" height="1.7" rx=".3"/><rect x="17" y="9.1" width="1.7" height="1.7" rx=".3"/></g><path d="M8.5 13h7M7 20.5h10"/>',
  'onehand':'<rect x="3" y="5" width="18" height="14" rx="2.3"/><path d="M6.5 9h3m4 0h4m-11 4h3m4 0h4M8 16h8"/>',
  'clipboard':'<rect x="5" y="5.5" width="14" height="15.5" rx="2"/><rect x="8.5" y="3" width="7" height="5" rx="1.3" /><path d="M9 12h6m-6 4h6"/>',
  'lang':'<path d="M3 6h9v7H3zM7.5 3v14M15 20l3.3-12 3.3 12M16 16h4.5"/>',

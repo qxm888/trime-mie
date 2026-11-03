@@ -67,6 +67,7 @@ class InputStatsActivity : AppCompatActivity() {
     private lateinit var wordRows: LinearLayout
     private lateinit var codeRows: LinearLayout
     private lateinit var heatGrid: LinearLayout
+    private lateinit var wordCloud: WordCloudView
 
     private enum class Period { DAY, WEEK, MONTH, YEAR }
 
@@ -116,6 +117,7 @@ class InputStatsActivity : AppCompatActivity() {
         wordRows = findViewById(R.id.stats_word_rows)
         codeRows = findViewById(R.id.stats_code_rows)
         heatGrid = findViewById(R.id.stats_heat_grid)
+        wordCloud = findViewById(R.id.stats_word_cloud)
 
         val toggle = findViewById<com.google.android.material.button.MaterialButtonToggleGroup>(R.id.stats_period_toggle)
         toggle.check(
@@ -289,6 +291,7 @@ class InputStatsActivity : AppCompatActivity() {
     private fun renderPeriod() {
         val snapshot = lastSnapshot ?: return
         val period = periodOf(snapshot)
+        wordCloud.setWords(period.wordCounts)
 
         val periodName = when (currentPeriod) {
             Period.DAY -> getString(R.string.stats_period_day)
@@ -480,28 +483,26 @@ class InputStatsActivity : AppCompatActivity() {
 
     private fun showShareDialog() {
         lastSnapshot = InputStats.read(currentSchema) { it }
-        val styles = arrayOf(getString(R.string.stats_share_short), getString(R.string.stats_share_long), "分享统计图片（含热力图）", "仅分享热力图")
-        var choice = 0
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.stats_share)
-            .setSingleChoiceItems(styles, 0) { dialog, which ->
-                choice = which
-                (dialog as? androidx.appcompat.app.AlertDialog)?.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEUTRAL)?.isEnabled = which < 2
-            }
-            .setPositiveButton(R.string.share) { _, _ ->
-                when (choice) {
-                    2 -> shareReportImages()
-                    3 -> StatsImageShare.share(this, heatGrid, "分享热力图")
-                    else -> dispatchReport(buildReport(choice == 1), share = true)
-                }
-            }
-            .setNeutralButton(R.string.stats_copy) { _, _ -> dispatchReport(buildReport(choice != 0), share = false) }
-            .show()
-    }
-
-    private fun shareReportImages() {
-        val scroll = findViewById<androidx.core.widget.NestedScrollView>(R.id.stats_scroll)
-        StatsImageShare.share(this, scroll.getChildAt(0))
+        renderPeriod(); renderHeat()
+        val labels=arrayOf("输入概览", "输入速度", "字词云", "字词长度分布", "码长分布", "键盘热力图", "生涯卡片")
+        val ids=intArrayOf(R.id.stats_card_overview,R.id.stats_card_speed,R.id.stats_card_cloud,R.id.stats_card_length,
+            R.id.stats_card_code,R.id.stats_card_heat,R.id.stats_hero)
+        val prefs=getSharedPreferences("stats-share-modules",MODE_PRIVATE)
+        val checked=BooleanArray(labels.size) { prefs.getBoolean("module-$it",it in setOf(0,2,5)) }
+        val dialog=MaterialAlertDialogBuilder(this).setTitle("选择分享模块")
+            .setMultiChoiceItems(labels,checked) { _,which,on -> checked[which]=on }
+            .setNegativeButton("取消",null)
+            .setNeutralButton("复制文字报告") { _,_ -> dispatchReport(buildReport(true),share=false) }
+            .setPositiveButton("生成并分享",null).create()
+        dialog.setOnShowListener { dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val selected=ids.indices.filter { checked[it] }.map { findViewById<View>(ids[it]) }
+            if(selected.isEmpty()) { Toast.makeText(this,"请至少选择一个模块",Toast.LENGTH_SHORT).show();return@setOnClickListener }
+            prefs.edit().apply { ids.indices.forEach { putBoolean("module-$it",checked[it]) } }.apply()
+            val periodLabel=when(currentPeriod) { Period.DAY -> "今日";Period.WEEK -> "本周";Period.MONTH -> "本月";Period.YEAR -> "今年" }
+            StatsImageShare.shareModules(this,selected,"$periodLabel · ${currentSchemaView.text}")
+            dialog.dismiss()
+        } }
+        dialog.show()
     }
 
     private fun dispatchReport(

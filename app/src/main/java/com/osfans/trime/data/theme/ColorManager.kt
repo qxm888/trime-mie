@@ -39,6 +39,13 @@ object ColorManager {
     private val prefs = ThemeManager.prefs
 
     private var isNightMode = false
+    private var listening = false
+    private val followListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key == ThemePrefs.FOLLOW_SYSTEM_DAY_NIGHT) {
+            prefs.manualColorScheme.setValue("")
+            activateScheme(notify = true)
+        }
+    }
 
     val activeColorScheme: ColorScheme
         get() = requireNotNull(requireScope().activeColorScheme) { "ColorManager is not initialized" }
@@ -74,6 +81,10 @@ object ColorManager {
 
     fun init(configuration: Configuration) {
         isNightMode = configuration.isNightMode()
+        if (!listening) {
+            prefs.selectedTheme.sharedPreferences.registerOnSharedPreferenceChangeListener(followListener)
+            listening = true
+        }
         activateScheme(notify = false)
 
         val maxMemory = Runtime.getRuntime().maxMemory() / 1024
@@ -88,7 +99,9 @@ object ColorManager {
     }
 
     fun onSystemNightModeChange(isNight: Boolean) {
+        if (isNightMode == isNight) return
         isNightMode = isNight
+        prefs.manualColorScheme.setValue("")
         activateScheme(notify = true)
     }
 
@@ -107,27 +120,35 @@ object ColorManager {
 
     /**
      * Switches to the scheme [schemeId] and remembers it as the user's choice.
-     * The scheme is resolved from the preference afterwards, so the day/night
-     * links a scheme may declare are honoured, like an automatic switch.
+     * Keep this exact choice until the next system day/night transition.
      */
     fun setColorScheme(schemeId: String) {
         if (requireScope().theme.isCustom) return
-        // 只有开启“跟随系统夜间模式”且当前为夜间时才写入夜间槽位；否则写日间槽位，
-        // 避免系统深色但未跟随时用户的选择被解析器忽略（用户反馈“只有开夜间跟随才能换配色”）。
-        if (prefs.followSystemDayNight.getValue() && isNightMode) prefs.nightModeColor.setValue(schemeId)
-        else prefs.normalModeColor.setValue(schemeId)
+        require(schemeId in requireScope().theme.presetColorSchemes)
+        KeyboardColorGroups.cancelPendingAutomaticSwitch()
+        prefs.manualColorTheme.setValue(requireScope().theme.let { it.fontConfigId.ifBlank { it.name } })
+        prefs.manualColorNight.setValue(isNightMode.toString())
+        prefs.manualColorScheme.setValue(schemeId)
+        // A temporary override must not replace the configured day/night pair.
+        if (!prefs.followSystemDayNight.getValue()) prefs.normalModeColor.setValue(schemeId)
         activateScheme(notify = true)
     }
 
     private fun requireScope(): ThemeScope = requireNotNull(scope) { "ColorManager is not initialized" }
 
-    private fun resolveActiveScheme(theme: Theme): ColorScheme = if (theme.isCustom) theme.presetColorSchemes.getValue("default") else ColorSchemeResolver.resolve(
+    private fun resolveActiveScheme(theme: Theme): ColorScheme {
+        if (theme.isCustom) return theme.presetColorSchemes.getValue("default")
+        val manual=if(prefs.manualColorTheme.getValue()==theme.fontConfigId.ifBlank { theme.name } &&
+            prefs.manualColorNight.getValue()==isNightMode.toString()) prefs.manualColorScheme.getValue() else null
+        return ColorSchemeResolver.resolve(
         schemes = theme.presetColorSchemes,
         selectedSchemeId = prefs.normalModeColor.getValue(),
         nightSchemeId = prefs.nightModeColor.getValue(),
+        manualSchemeId = manual,
         followSystemDayNight = prefs.followSystemDayNight.getValue(),
         isNightMode = isNightMode,
-    )
+        )
+    }
 
     /**
      * Re-resolves the active scheme from the prefs and current theme, or

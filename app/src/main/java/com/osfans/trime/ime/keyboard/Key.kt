@@ -98,10 +98,8 @@ class Key(
     private val label = keyDef?.label ?: ""
     private val labelSymbol = keyDef?.labelSymbol ?: ""
     val hint: String = keyDef?.hint ?: ""
-    val popup = keyDef?.popup.orEmpty().let { alternatives ->
-        if(theme.isCustom || alternatives.isEmpty()) alternatives
-        else ((keyDef?.click as? KeyActionToken.Plain)?.token?.takeIf { it.isNotBlank() }?.let(::listOf).orEmpty() + alternatives).distinct()
-    }
+    // A theme's popup is a complete ordered list, not a list missing the trigger key.
+    val popup = keyDef?.popup.orEmpty()
 
     val keyTextSize: Float = keyDef?.keyTextSize ?: 0f
     val symbolTextSize: Float = keyDef?.symbolTextSize ?: 0f

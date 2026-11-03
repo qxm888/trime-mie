@@ -32,9 +32,11 @@ internal object ColorSchemeResolver {
         followSystemDayNight: Boolean,
         isNightMode: Boolean,
         nightSchemeId: String? = null,
+        manualSchemeId: String? = null,
     ): ColorScheme {
         require(schemes.isNotEmpty()) { "The theme defines no color scheme" }
         fun scheme(id: String): ColorScheme? = schemes[id]
+        manualSchemeId?.let { schemes[it] }?.let { return it }
         fun linkedScheme(source: ColorScheme): ColorScheme? {
             val linkKey = if (isNightMode) DARK_SCHEME_KEY else LIGHT_SCHEME_KEY
             return source[linkKey]?.let { scheme(it) }

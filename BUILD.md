@@ -1,6 +1,6 @@
 # 构建同文输入法咩版
 
-当前版本为 **V3.2.4 / versionCode 20261229**，精雕主题与符号交互版。正式 APK 使用原发布证书。
+当前版本为 **V3.2.5 / versionCode 20261230**，日夜切换、popup 与统计字词云版。正式 APK 使用原发布证书。
 
 ## 1. 获取源码
 
@@ -9,7 +9,7 @@ git clone https://github.com/qxm888/trime-mie.git
 cd trime-mie
 ```
 
-获取本版时执行 `git checkout v3.2.4`，或从对应发布页下载 `trime-mie-v3.2.4-source.zip` 并进入 `repository/`。正式 APK、完整源码及交付说明使用同一发布标签。
+本版当前为本地交接：解压 `trime-mie-v3.2.5-source.zip` 并进入 `repository/`。维护者发布后可使用 `git checkout v3.2.5`；发布前不要假定该标签已存在。
 
 旧 mie.15 的初始标签仅包含文档，旧版完整源码需使用其附件或补充源码标签。
 

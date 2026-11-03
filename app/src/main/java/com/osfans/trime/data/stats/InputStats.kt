@@ -89,6 +89,8 @@ object InputStats {
         var avgGaps: MutableList<Double> = mutableListOf(),
         var avgCnts: MutableList<Int> = mutableListOf(),
         var avgCodeLens: MutableList<Int> = mutableListOf(),
+        /** Bounded local word-cloud vocabulary; absent in older statistics files. */
+        var wordCounts: MutableMap<String, Long> = mutableMapOf(),
     ) {
         /** 均速 = Σ段字数 / Σ段时长 × 60（与原脚本 statisticsCal 一致）。 */
         val avgSpd: Double
@@ -315,6 +317,7 @@ object InputStats {
 
     /** Copy collections directly; serialization never runs while input events wait on the lock. */
     private fun PeriodStats.snapshot(): PeriodStats = copy(fastest = fastest.copy(),
+        wordCounts = wordCounts.toMutableMap(),
         lengths = lengths.toMutableMap(), codeLengths = codeLengths.toMutableMap(), keyCounts = keyCounts.toMutableMap(),
         avgGaps = avgGaps.toMutableList(), avgCnts = avgCnts.toMutableList(), avgCodeLens = avgCodeLens.toMutableList())
 
@@ -391,6 +394,7 @@ object InputStats {
                 require(period.avgGaps.size <= SEGMENTS_LIMIT && period.avgGaps.size == period.avgCnts.size && period.avgGaps.size == period.avgCodeLens.size) { "速度记录不完整" }
                 require(period.avgGaps.all { it.isFinite() && it >= 0 } && period.avgCnts.all { it >= 0 } && period.avgCodeLens.all { it >= 0 }) { "速度记录无效" }
                 require(period.keyCounts.size <= HEAT_KEYS_LIMIT && period.lengths.size <= 4096 && period.codeLengths.size <= 4096 && period.keyCounts.values.all { it >= 0 }) { "统计分布无效" }
+                require(period.wordCounts.size <= 512 && period.wordCounts.all { (word,count) -> word.isNotEmpty() && word.length <= 48 && count > 0 }) { "词云记录无效" }
                 if (stats.logVer < SPEED_LOG_VERSION) { period.avgGaps.clear(); period.avgCnts.clear(); period.avgCodeLens.clear(); period.fastest = Fastest() }
             }
             stats.logVer = SPEED_LOG_VERSION
@@ -561,6 +565,11 @@ object InputStats {
         }
     }
 
+    @Volatile private var collectWords = false
+    fun setWordCloudEditor(info: android.view.inputmethod.EditorInfo?) {
+        collectWords=info!=null && WordCloudVocabulary.allows(info.inputType,info.imeOptions)
+    }
+
     /** Called when librime commits text. [rawInputBefore] is the composition that produced it. */
     fun onCommit(
         text: String,
@@ -574,6 +583,8 @@ object InputStats {
         if (rawInputBefore != null && rawInputBefore.startsWith("/")) return
         val rawLen = rawInputBefore?.length ?: 0
         val chars = text.codePointCount(0, text.length)
+        // Bound work on the typing path; cloud layout and sorting happen only in the dashboard.
+        val cloudWords=if(collectWords) WordCloudVocabulary.terms(text) else emptyList()
         synchronized(lock) {
             if (appContext == null) return
             switchSchema(schemaId)
@@ -597,6 +608,7 @@ object InputStats {
                 p.length += chars
                 p.lengths[chars.toString()] = (p.lengths[chars.toString()] ?: 0) + 1
                 p.codeLengths[codeLen.toString()] = (p.codeLengths[codeLen.toString()] ?: 0) + 1
+                WordCloudVocabulary.add(p.wordCounts,cloudWords)
             }
             pendingKeys = 0
             stats.careerTotal += chars.toLong()

@@ -15,7 +15,7 @@ internal object BuiltinPremiumAssets {
         val names = context.resources.openRawResource(R.raw.mie_premium_materials_manifest)
             .bufferedReader().use { it.readLines().filter(String::isNotBlank).toSet() }
         require(names.isNotEmpty() && names.all { it.startsWith(PREFIX) && it.endsWith(".png") })
-        val marker = File(root, "内置材质/.精雕一辑-v1")
+        val marker = File(root, "内置材质/.精雕一辑-v2")
         fun file(name: String): File = File(root, name).canonicalFile.also {
             require(it.path.startsWith(root.path + File.separator)) { "内置材质路径无效" }
         }
@@ -30,7 +30,10 @@ internal object BuiltinPremiumAssets {
                     require(!entry.isDirectory && entry.name in names && seen.add(entry.name))
                     val target = file(entry.name)
                     // User-edited material files are retained; missing stock files are repaired.
-                    if (!target.isFile) {
+                    val oldStockIcon = target.isFile && entry.name in BuiltinFloatingIconUpgrade.originalHashes &&
+                        BuiltinFloatingIconUpgrade.shouldReplace(entry.name, java.security.MessageDigest.getInstance("SHA-256")
+                            .digest(target.readBytes()).joinToString("") { "%02x".format(it) })
+                    if (!target.isFile || oldStockIcon) {
                         check(target.parentFile?.isDirectory == true || target.parentFile?.mkdirs() == true)
                         val atomic = AtomicFile(target)
                         val output = atomic.startWrite()
@@ -52,8 +55,9 @@ internal object BuiltinPremiumAssets {
         check(seen == names && names.all { file(it).isFile })
         val atomic = AtomicFile(marker)
         val output = atomic.startWrite()
-        try { output.write("1\n".toByteArray()); atomic.finishWrite(output) }
+        try { output.write("2\n".toByteArray()); atomic.finishWrite(output) }
         catch (error: Exception) { atomic.failWrite(output); throw error }
+        File(root, "内置材质/.精雕一辑-v1").delete()
         return installed
     }
 }

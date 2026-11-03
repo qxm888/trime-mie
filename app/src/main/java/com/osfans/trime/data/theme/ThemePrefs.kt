@@ -17,6 +17,9 @@ class ThemePrefs(
 ) : PreferenceDelegateOwner(sharedPrefs, R.string.theme) {
     val keyboardColorGroups = string("keyboard_color_groups", "[]")
     val activeKeyboardColorGroup = string("keyboard_color_group_active", "")
+    val manualColorTheme = string("manual_color_theme", "")
+    val manualColorScheme = string("manual_color_scheme", "")
+    val manualColorNight = string("manual_color_night", "")
 
     val selectedTheme =
         string(

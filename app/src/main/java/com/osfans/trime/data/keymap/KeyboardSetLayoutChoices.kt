@@ -11,8 +11,11 @@ object KeyboardSetLayoutChoices {
             if(id != root && (suffix in helpers || suffix.startsWith("symbols") || suffix.startsWith("cat_") || suffix.startsWith("emoji"))) return@mapNotNull null
             val role = KeyboardSets.pageRole(id, root, page)
             if(role == "en" || role == "num") return@mapNotNull null
-            Choice(id, KeyboardSetOperations.layoutNames[role]?.let { if(role == "zh_26") "26键 主键盘" else it }
-                ?: page.name.removePrefix(pages[root]?.name.orEmpty()).trim(' ', '·').ifBlank { page.name })
+            val pageName = page.name.removePrefix(pages[root]?.name.orEmpty()).trim(' ', '·')
+            val defaultLabel = KeyboardSetOperations.layoutNames[role]?.let { if(role == "zh_26") "26键 主键盘" else it }
+            // Older files have no explicit-name marker. Keep a renamed secondary page too.
+            val customName = pageName.takeIf { id != root && it.isNotBlank() && it.replace(" ", "") != KeyboardSetOperations.layoutNames[role]?.replace(" ", "") }
+            Choice(id, page.layoutDisplayName.ifBlank { customName ?: defaultLabel ?: pageName.ifBlank { page.name } })
         }
     }
 }

@@ -18,6 +18,49 @@ import kotlinx.coroutines.withContext
 
 /** Full report in ONE long image. Only a small rendering tile is held in memory. */
 object StatsImageShare {
+    /** Draw selected measured modules into one independent image without detaching the live UI. */
+    internal fun composeModules(activity: FragmentActivity, modules: List<View>, subtitle: String): View {
+        require(modules.isNotEmpty())
+        check(modules.all { it.width>0 && it.height>0 }) { "统计页面尚未显示，请稍后重试" }
+        val density=activity.resources.displayMetrics.density
+        val gap=16*density
+        val moduleWidth=modules.maxOf { it.width }
+        val header=112*density
+        val height=kotlin.math.ceil(header+gap+modules.sumOf { it.height.toDouble() }+gap*modules.size).toInt()
+        val ink=com.google.android.material.color.MaterialColors.getColor(activity,
+            com.google.android.material.R.attr.colorOnSurface,Color.DKGRAY)
+        val accent=com.google.android.material.color.MaterialColors.getColor(activity,
+            androidx.appcompat.R.attr.colorPrimary,ink)
+        val paint=android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+        val sheet=object: View(activity) {
+            override fun onDraw(canvas:Canvas) {
+                paint.color=accent;paint.typeface=android.graphics.Typeface.DEFAULT_BOLD;paint.textSize=24*density
+                canvas.drawText("输入的日常",gap,40*density,paint)
+                paint.color=ink;paint.typeface=android.graphics.Typeface.DEFAULT;paint.textSize=12*density
+                // Bound long schema names to the image width.
+                val caption=android.text.TextUtils.ellipsize(subtitle,android.text.TextPaint(paint),
+                    moduleWidth.toFloat(),android.text.TextUtils.TruncateAt.END).toString()
+                canvas.drawText(caption,gap,64*density,paint)
+                paint.textSize=10*density;canvas.drawText("同文咩版 · "+java.text.SimpleDateFormat("yyyy.MM.dd",java.util.Locale.getDefault()).format(java.util.Date()),gap,85*density,paint)
+                var y=header
+                modules.forEach { module ->
+                    val saved=canvas.save();canvas.translate(gap+(moduleWidth-module.width)/2f,y)
+                    canvas.clipRect(0,0,module.width,module.height);module.draw(canvas);canvas.restoreToCount(saved)
+                    y+=module.height+gap
+                }
+            }
+        }
+        val width=moduleWidth+(gap*2).toInt()
+        sheet.measure(View.MeasureSpec.makeMeasureSpec(width,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(height,View.MeasureSpec.EXACTLY))
+        sheet.layout(0,0,width,height)
+        return sheet
+    }
+
+    fun shareModules(activity: FragmentActivity, modules: List<View>, subtitle: String) {
+        runCatching { composeModules(activity,modules,subtitle) }
+            .onSuccess { share(activity,it,"分享输入统计图片") }
+            .onFailure { Toast.makeText(activity,it.message ?: "图片生成失败",Toast.LENGTH_SHORT).show() }
+    }
     suspend fun render(activity: FragmentActivity, content: View): File {
         check(content.width > 0 && content.height > 0) { "统计页面尚未显示，请稍后重试" }
         val folder = File(activity.cacheDir, "stats-share").apply { check(mkdirs() || isDirectory) }
@@ -61,6 +104,8 @@ object StatsImageShare {
     }
     fun share(activity: FragmentActivity, content: View, title: String = "分享输入统计长图") {
         activity.lifecycleScope.launch {
+            val progress=com.google.android.material.dialog.MaterialAlertDialogBuilder(activity)
+                .setMessage("正在生成分享图片…").setCancelable(false).show()
             runCatching {
                 val file = render(activity, content)
                 val uri = FileProvider.getUriForFile(activity, "${activity.packageName}.fileprovider", file)
@@ -70,8 +115,9 @@ object StatsImageShare {
                     putExtra(Intent.EXTRA_STREAM, uri)
                     clipData = ClipData.newUri(activity.contentResolver, title, uri)
                 }
-                activity.startActivity(Intent.createChooser(intent, title))
-            }.exceptionOrNull()?.let { Toast.makeText(activity, it.message ?: "图片分享失败", Toast.LENGTH_LONG).show() }
+                intent
+            }.also { progress.dismiss() }.onSuccess { activity.startActivity(Intent.createChooser(it, title)) }
+                .exceptionOrNull()?.let { Toast.makeText(activity, it.message ?: "图片分享失败", Toast.LENGTH_LONG).show() }
         }
     }
 }

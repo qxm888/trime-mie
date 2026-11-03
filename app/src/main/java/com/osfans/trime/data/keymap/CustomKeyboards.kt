@@ -126,6 +126,8 @@ object CustomKeyboards {
         var importedSkin: com.osfans.trime.data.baiduskin.ImportedSkin? = null,
         /** BDS coordinates define key positions, not the physical keyboard height. */
         var importedHeightPercent: Int = 100,
+        /** Explicit layout name chosen in the editor, independent of its navigation role. */
+        var layoutDisplayName: String = "",
     ) {
         fun importedKeyboardHeight(context: Context): Int {
             val landscape = context.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
@@ -783,11 +785,13 @@ object CustomKeyboards {
         synchronized(lock) {
             store.keyboards[id]?.let {
                 it.name = name
+                it.layoutDisplayName = name
                 store.version++
                 dirty = true
                 scheduleSaveLocked()
             }
         }
+        com.osfans.trime.data.theme.ThemeManager.requestCustomizationRefresh()
     }
 
     fun createSecondary(name: String, primaryId: String): String = synchronized(lock) {

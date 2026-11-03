@@ -177,6 +177,8 @@ class InputView(
             setOnClickListener(placeholderListener)
         }
 
+    private var dockedNavigationInset = 0
+
     private val updateWindowViewHeightJob: Job
 
     override val di = DI {
@@ -253,6 +255,11 @@ class InputView(
         keyboardBackground.imageDrawable = background?.drawable(context, resources.displayMetrics.widthPixels)
             ?: floatingCardOverride()
             ?: scope.drawable("keyboard_background")
+        // The navigation inset belongs to the painted strip, not an unpainted bottom margin.
+        // Keep the toolbar's independent background when unified backgrounds are disabled.
+        bottomPaddingSpace.background = if (!enabled && theme.isCustom)
+            keyboardWindow.currentBackground?.drawable(context, resources.displayMetrics.widthPixels)
+            else null
         com.osfans.trime.ime.appearance.BackdropBlur.invalidateBackground(keyboardView)
         val path = background?.takeIf { it.type == com.osfans.trime.data.keymap.CustomBackground.Type.VIDEO }?.image
         if (path == unifiedVideoPath && unifiedVideo != null) return
@@ -1136,7 +1143,7 @@ class InputView(
             inputBar.view.setPadding(0, 0, 0, 0)
             return
         }
-        bottomPaddingSpace.updateLayoutParams { height = keyboardBottomPaddingPx }
+        bottomPaddingSpace.updateLayoutParams { height = keyboardBottomPaddingPx + dockedNavigationInset }
         val (left, right) = com.osfans.trime.ime.keyboard.KeyboardPrefs.run { context.oneHandPadding(theme) }
         leftPaddingSpace.visibility = if (left == 0) View.GONE else View.VISIBLE
         rightPaddingSpace.visibility = if (right == 0) View.GONE else View.VISIBLE
@@ -1155,9 +1162,12 @@ class InputView(
     override fun onApplyWindowInsets(insets: WindowInsets): WindowInsets {
         // 悬浮键盘忽略系统底部边距：卡片由拖拽/缩放自行定位，不随导航栏避让。
         if (!isFloatingKeyboardEnabled) {
+            dockedNavigationInset = getNavBarBottomInset(insets)
             bottomPaddingSpace.updateLayoutParams<LayoutParams> {
-                bottomMargin = getNavBarBottomInset(insets)
+                height = keyboardBottomPaddingPx + dockedNavigationInset
+                bottomMargin = 0
             }
+            bottomPaddingSpace.invalidate()
         } else {
             floatingSystemBottomInset = WindowInsetsCompat.toWindowInsetsCompat(insets).getInsets(
                 WindowInsetsCompat.Type.navigationBars() or WindowInsetsCompat.Type.mandatorySystemGestures(),

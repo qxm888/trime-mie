@@ -210,7 +210,7 @@ class KeyView(
                     val triggerAction = PopupAction.TriggerAction(id)
                     popup.listener.onPopupAction(triggerAction)
                     triggerAction.outAction?.let { action ->
-                        keyboardActionListener.onAction(theme.resolveAction(action))
+                        keyboardActionListener.onAction(theme.resolvePopupAction(action))
                     }
                     dismissPopupPreview()
                     setPressedState(false)

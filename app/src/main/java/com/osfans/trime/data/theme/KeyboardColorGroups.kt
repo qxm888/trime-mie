@@ -50,6 +50,10 @@ object KeyboardColorGroups {
     }
     fun isNight() = effectiveNight(if (initialized) systemNight else reportedNight()) && prefs.followSystemDayNight.getValue()
     fun init(configuration: Configuration) {
+        if (initialized) {
+            onNightModeChanged(configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES)
+            return
+        }
         systemNight = effectiveNight(configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES)
         if (!initialized) { initialized = true; prefs.selectedTheme.sharedPreferences.registerOnSharedPreferenceChangeListener(listener) }
         schedule()
@@ -69,6 +73,7 @@ object KeyboardColorGroups {
         prefs.keyboardColorGroups.setValue(json.encodeToString(values))
     }
     fun deactivate() { automaticJob?.cancel(); write { prefs.activeKeyboardColorGroup.setValue("") } }
+    fun cancelPendingAutomaticSwitch() { automaticJob?.cancel() }
     fun delete(id: String) {
         automaticJob?.cancel()
         write { if (activeId() == id) prefs.activeKeyboardColorGroup.setValue("")
@@ -102,13 +107,10 @@ object KeyboardColorGroups {
         currentCoroutineContext().ensureActive()
         write { prefs.activeKeyboardColorGroup.setValue(group.id) }
     }
-    /** Selecting a layout explicitly exits group mode; filtering the picker does not. */
+    /** Manual choices remain active until the next system transition; keep the selected group. */
     suspend fun selectLayout(target: KeyboardStyleTarget) = withContext(Dispatchers.Main.immediate) {
-        val previous = activeId()
         automaticJob?.cancel()
-        write { prefs.activeKeyboardColorGroup.setValue("") }
-        try { apply(target, preservePage = false) }
-        catch (error: Throwable) { write { if (activeId().isEmpty()) prefs.activeKeyboardColorGroup.setValue(previous) }; throw error }
+        apply(target, preservePage = false)
     }
     private suspend fun apply(target: KeyboardStyleTarget, preservePage: Boolean) {
         if (target.source == KeyboardLayoutCatalog.THEME) {

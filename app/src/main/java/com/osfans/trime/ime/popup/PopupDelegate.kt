@@ -121,10 +121,10 @@ class PopupDelegate(override val di: DI) : DIAware {
     private fun reallyShowKeyboard(viewId: Int, keys: List<String>, bounds: Rect) {
         if(keys.isEmpty()) return
         val labels = keys
-        val width = if(theme.isCustom) popupWidth else minOf(
+        val width = minOf(
             popupWidth.takeIf { it > 0 } ?: context.dp(48),
             (rootBounds.width().takeIf { it > 0 } ?: context.resources.displayMetrics.widthPixels) / minOf(5,keys.size)).coerceAtLeast(1)
-        val height = if(theme.isCustom) popupKeyHeight else (popupKeyHeight.takeIf { it > 0 } ?: context.dp(48))
+        val height = popupKeyHeight.takeIf { it > 0 } ?: context.dp(48)
         val keyboardUi = PopupKeyboardUi(
             context,
             scope,
@@ -135,7 +135,7 @@ class PopupDelegate(override val di: DI) : DIAware {
             width,
             height,
             // position popup keyboard higher, because of [^1]
-            if(theme.isCustom) popupHeight + popupBottomMargin else (popupHeight.takeIf { it > 0 } ?: height) + popupBottomMargin,
+            (popupHeight.takeIf { it > 0 } ?: height) + popupBottomMargin,
             keys,
             labels,
         )

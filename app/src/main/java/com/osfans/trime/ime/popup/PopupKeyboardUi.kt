@@ -72,7 +72,7 @@ class PopupKeyboardUi(
 
         val textView = view(::AutoScaleTextView) {
             scaleMode = AutoScaleTextView.Mode.Proportional
-            textSize = com.osfans.trime.data.keymap.LayoutTypography.size("popup", theme.style.popupTextSize).let { if(!theme.isCustom && it <= 0f) 22f else it }
+            textSize = com.osfans.trime.data.keymap.LayoutTypography.size("popup", theme.style.popupTextSize).let { if(it <= 0f) 22f else it }
             setTextColor(scope.colors.popupTextColor)
             typeface = theme.fonts.popup
         }
@@ -98,7 +98,7 @@ class PopupKeyboardUi(
             if (text.isIconFont) {
                 imageView.setImageDrawable(
                     IconicsDrawable(ctx, text.toIconName()).apply {
-                        sizeDp = com.osfans.trime.data.keymap.LayoutTypography.size("popup", theme.style.popupTextSize).let { if(!theme.isCustom && it <= 0f) 22f else it }.toInt()
+                        sizeDp = com.osfans.trime.data.keymap.LayoutTypography.size("popup", theme.style.popupTextSize).let { if(it <= 0f) 22f else it }.toInt()
                         colorFilter = PorterDuffColorFilter(scope.colors.popupTextColor, PorterDuff.Mode.SRC_IN)
                     },
                 )
@@ -131,8 +131,8 @@ class PopupKeyboardUi(
 
     init {
         val keyCount: Float = keys.size.toFloat()
-        rowCount = ceil(keyCount / 5).toInt()
-        columnCount = if(theme.isCustom) (keyCount / rowCount).roundToInt() else ceil(keyCount / rowCount).toInt()
+        rowCount = PopupChoices.rows(keys.size)
+        columnCount = PopupChoices.columns(keys.size)
 
         focusRow = 0
         focusColumn = calcInitialFocusedColumn(columnCount, keyWidth, outerBounds, triggerBounds)
@@ -195,11 +195,15 @@ class PopupKeyboardUi(
         val displayLabel =
             if (label.length == 1 && label[0].code < 128) {
                 label
+            } else if (label !in theme.presetKeys && label !in Theme.BUILTIN_ACTIONS &&
+                com.osfans.trime.data.keymap.BindingActions.resolve(label) == null) {
+                // Literal emoji/ZWJ sequences and user-entered text are one choice.
+                label
             } else {
                 theme.resolveAction(label).getLabel(KeyboardWindow.currentKeyboard).let {
                     when {
                         it.isIconFont -> it
-                        it.isNotEmpty() -> if(theme.isCustom) String(Character.toChars(it.codePointAt(0))) else it
+                        it.isNotEmpty() -> PopupChoices.compactActionLabel(it)
                         else -> ""
                     }
                 }
@@ -265,8 +269,9 @@ class PopupKeyboardUi(
     }
 
     override fun onChangeFocus(x: Float, y: Float): Boolean {
-        // move to next row when gesture moves above 30% from bottom of current row
-        var newRow = rowCount - (y / keyHeight - 0.2).roundToInt()
+        // Hit-test the displayed cells. The previous rounded formula selected the row above
+        // when the finger was at the centre of the bottom row.
+        var newRow = PopupChoices.rowAt(y,keyHeight,rowCount)
         // move to next column when gesture moves out of current column
         var newColumn = floor(x / keyWidth).toInt()
         // retain focus when gesture moves between ±2 rows/columns of range

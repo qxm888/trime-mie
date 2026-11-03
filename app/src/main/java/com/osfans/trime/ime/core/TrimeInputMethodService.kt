@@ -806,6 +806,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         attribute: EditorInfo,
         restarting: Boolean,
     ) {
+        com.osfans.trime.data.stats.InputStats.setWordCloudEditor(attribute)
         cancelVoiceIfActive()
         composingText = ""
         Timber.d("onStartInput: restarting=$restarting")
@@ -873,6 +874,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
     }
 
     override fun onFinishInputView(finishingInput: Boolean) {
+        com.osfans.trime.data.stats.InputStats.setWordCloudEditor(null)
         com.osfans.trime.data.sync.ClipboardSync.setWindowVisible(false)
         com.osfans.trime.ime.keyboard.KeyboardWindow.instance?.setVideoActive(false)
         inputView?.setUnifiedVideoActive(false)

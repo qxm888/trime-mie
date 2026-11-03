@@ -119,7 +119,7 @@ internal class Release324Checks(private val host: Instrumentation, private val a
         check(count>0) { "No annotation draw calls on $label" }; pass("$label: $count actual symbol/hint draw calls stay inside inset area and round cap")
     }
 
-    suspend fun run(skipBounds: Boolean = false) {
+    suspend fun run(skipBounds: Boolean = false, exportArchives: Boolean = true) {
         main { AppPrefs.defaultInstance().keyboard.longPressTimeout.setValue(250) }
         for(root in (if(skipBounds) emptyList() else listOf("silver","titanium","cloudsea","inkweave","celadon")).map { "custom_$it" }) {
             nav(root); bounds(root); shot("$root-insets")
@@ -237,17 +237,17 @@ internal class Release324Checks(private val host: Instrumentation, private val a
         val popupRoot=member(ui,"root") as View
         val emoji=views(popupRoot).filterIsInstance<TextView>().first { it.text.toString()=="💕" }
         val displayed=views(popupRoot).filterIsInstance<TextView>().map { it.text.toString() }
-        check(displayed.size==9 && displayed.contains("😀")) { "Popup dropped an alternative or split emoji: $displayed" }
+        check(displayed.size==8 && displayed.contains("😀")) { "Popup dropped an alternative or split emoji: $displayed" }
         shot("theme-popup-slide")
         val (ex,ey)=center(emoji)
         repeat(12) { i -> val f=(i+1)/12f; event(down,MotionEvent.ACTION_MOVE,x+(ex-x)*f,y+(ey-y)*f); SystemClock.sleep(30) }
         event(down,MotionEvent.ACTION_UP,ex,ey)
         await("Popup slide did not commit full emoji") { views(activity.window.decorView).filterIsInstance<EditText>().single().text.toString()=="💕" }
         await("Popup did not dismiss") { (member(popup,"showingContainerUi") as Map<*,*>).isEmpty() }
-        pass("theme popup: zero dimensions fallback, all 9 alternatives, full emoji, real long-press/slide/release commit and dismiss")
+        pass("theme popup: zero dimensions fallback, all 8 configured alternatives, full emoji, real long-press/slide/release commit and dismiss")
 
         nav("custom_silver"); main { check(ThemeManager.activeTheme.isCustom) }
-        exportAndImport()
+        if(exportArchives) exportAndImport()
     }
 
     private suspend fun exportAndImport() {

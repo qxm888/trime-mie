@@ -7,13 +7,15 @@ import kotlin.random.Random
 
 class InputStatsRegressionTest : FunSpec({
     test("snapshot mutations cannot change stored statistics") {
-        val original = InputStats.Stats().apply { daily.avgGaps += 12.0; daily.avgCnts += 10; daily.avgCodeLens += 25; daily.keyCounts["a"] = 7 }
+        val original = InputStats.Stats().apply { daily.avgGaps += 12.0; daily.avgCnts += 10; daily.avgCodeLens += 25; daily.keyCounts["a"] = 7; daily.wordCounts["你好"] = 3 }
         val snapshot = InputStats.run { original.snapshot() }
         snapshot.daily.avgCnts[0] = 999
         snapshot.daily.keyCounts["a"] = 999
+        snapshot.daily.wordCounts["你好"] = 999
         snapshot.daily.fastest.spd = 999.0
         original.daily.avgCnts[0] shouldBe 10
         original.daily.keyCounts["a"] shouldBe 7L
+        original.daily.wordCounts["你好"] shouldBe 3L
         original.daily.fastest.spd shouldBe 0.0
     }
     test("incremental fastest equals the full historical endpoint scan") {
