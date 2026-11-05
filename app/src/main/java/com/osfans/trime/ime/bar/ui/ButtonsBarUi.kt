@@ -28,7 +28,6 @@ class ButtonsBarUi(
     private val allButtons: Boolean = false,
 ) : Ui {
     private val theme: Theme get() = scope.theme
-    private val floating = com.osfans.trime.ime.keyboard.KeyboardPrefs.run { ctx.isFloatingEffective() }
 
     /** 用户编辑过的工具栏（顺序/启停），主题文件不受影响 */
     private var toolBar: ToolBar = initialToolBar
@@ -39,13 +38,20 @@ class ButtonsBarUi(
         flexDirection = FlexDirection.ROW_REVERSE
     }
 
-    val viewport: android.view.View = if (floating) android.widget.HorizontalScrollView(ctx).apply {
+    /**
+     * 按钮一律按设定的尺寸绘制，放不下就横向滑动，不再挤压。
+     *
+     * 贴底模式下以前直接拿 [root] 当视口、也没关掉 flexShrink，图标一多每个按钮就
+     * 被压窄，图标跟着缩小（悬浮模式反而是对的：可滑动 + 不压缩）。现在两种模式
+     * 共用同一套视口，图标数量和圆角让位都不会再改变图标大小。
+     */
+    val viewport: android.view.View = android.widget.HorizontalScrollView(ctx).apply {
         isHorizontalScrollBarEnabled = false
         isFillViewport = true
         overScrollMode = android.view.View.OVER_SCROLL_NEVER
         clipToPadding = true
         addView(root, android.widget.FrameLayout.LayoutParams(-2, -1))
-    } else root
+    }
 
     var firstButton: ToolButton? = null
         private set
@@ -100,7 +106,8 @@ class ButtonsBarUi(
             val size = getButtonSize(buttonConfig)
             root.addView(button, FlexboxLayout.LayoutParams(size.first, size.second).apply {
                 marginEnd = if (allButtons && index == buttons.lastIndex) 0 else ctx.dp(toolBar.buttonSpacing)
-                if (floating) flexShrink = 0f
+                // 不参与压缩：挤不下的部分由视口滚动承担，否则图标会被压小。
+                flexShrink = 0f
             })
         }
     }

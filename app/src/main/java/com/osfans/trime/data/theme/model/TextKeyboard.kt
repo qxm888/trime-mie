@@ -58,6 +58,12 @@ data class TextKeyboard(
         val height: Float = 0f,
         val roundCorner: Float = -1f,
         val keyBorder: Int = -1,
+        /**
+         * 圆角/边框是不是这个按键自己设的。单键设置优先于页面统一值和表面外观，
+         * 否则「全局外观 · 按键」里的圆角会永远压住单个按键自己的选择。
+         */
+        @Transient val ownRoundCorner: Boolean = false,
+        @Transient val ownKeyBorder: Boolean = false,
         val label: String = "",
         val labelSymbol: String = "",
         val hint: String = "",

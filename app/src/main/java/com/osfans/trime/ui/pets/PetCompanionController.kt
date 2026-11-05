@@ -16,6 +16,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.osfans.trime.data.pets.PetHouse
+import com.osfans.trime.ime.game.TypingGame
 import com.osfans.trime.data.stats.WordCloudVocabulary
 import com.osfans.trime.ime.core.TrimeInputMethodService
 import com.osfans.trime.ime.keyboard.Key
@@ -119,8 +120,9 @@ class PetCompanionController(private val service:TrimeInputMethodService) {
         val area=bounds()
         if(area.width()<40 || area.height()<40) { dismiss();return }
         val density=service.resources.displayMetrics.density
-        popupWidth=minOf((154*density*state.miniScale/100f).roundToInt(),area.width(),(area.height()*212f/160f).toInt()).coerceAtLeast(1)
-        popupHeight=(popupWidth*160f/212f).roundToInt().coerceAtLeast(1)
+        val sceneHeight=PetMiniScene.HEIGHT
+        popupWidth=minOf((154*density*state.miniScale/100f*PetMiniScene.WIDTH/212f).roundToInt(),area.width(),(area.height()*PetMiniScene.WIDTH/sceneHeight).toInt()).coerceAtLeast(1)
+        popupHeight=(popupWidth*sceneHeight/PetMiniScene.WIDTH).roundToInt().coerceAtLeast(1)
         val land=landscape()
         val nx=if(land) state.miniLandscapeX else state.miniX
         val ny=if(land) state.miniLandscapeY else state.miniY
@@ -185,6 +187,7 @@ class PetCompanionController(private val service:TrimeInputMethodService) {
             menu.add(0,3,5,"缩小").isEnabled=scale>60
             menu.add(0,4,6,"重置位置")
             menu.add(0,5,7,"打开键灵小屋")
+            menu.add(0,9,8,if(TypingGame.isRunning) "退出打字游戏" else "打字游戏")
             setOnMenuItemClickListener {
                 when(it.itemId) {
                     6 -> mini.playInteraction(PetInteraction.PLAY)
@@ -195,6 +198,7 @@ class PetCompanionController(private val service:TrimeInputMethodService) {
                     3 -> action("mini_scale",(scale-15).coerceAtLeast(60).toString())
                     4 -> action("mini_reset")
                     5 -> PetHouseActivity.start(service)
+                    9 -> { TypingGame.attach(service, mini); TypingGame.toggle() }
                 };true
             }
             runCatching { show() }

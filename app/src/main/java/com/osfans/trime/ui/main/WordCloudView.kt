@@ -68,7 +68,7 @@ class WordCloudView @JvmOverloads constructor(context: Context, attrs: Attribute
         if(placed.isEmpty()) {
             paint.typeface=Typeface.DEFAULT;paint.textSize=14*fontScale
             paint.color=MaterialColors.getColor(context,com.google.android.material.R.attr.colorOnSurfaceVariant,0xff697681.toInt())
-            val label=if(cloudName=="字云") "开始输入，让常用单字在这里相遇" else "输入词语，让常用词在这里相遇"
+            val label=if(cloudName=="字云") "开始输入，让常用单字在这里相遇" else if(cloudName=="字词云") "开始输入，让常用字词在这里相遇" else "输入词语，让常用词在这里相遇"
             val visible=android.text.TextUtils.ellipsize(label,android.text.TextPaint(paint),
                 (width-28*density).coerceAtLeast(0f),android.text.TextUtils.TruncateAt.END).toString()
             canvas.drawText(visible,(width-paint.measureText(visible))/2,(height-paint.ascent()-paint.descent())/2,paint)

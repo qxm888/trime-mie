@@ -42,6 +42,7 @@ import com.osfans.trime.core.RimeKeyMapping
 import com.osfans.trime.core.RimeMessage
 import com.osfans.trime.daemon.RimeDaemon
 import com.osfans.trime.daemon.RimeSession
+import com.osfans.trime.data.keymap.ComboKeys
 import com.osfans.trime.data.prefs.AppPrefs
 import com.osfans.trime.data.prefs.PreferenceDelegate
 import com.osfans.trime.data.prefs.PreferenceDelegateProvider
@@ -101,6 +102,8 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
     override fun onWindowShown() {
         super.onWindowShown()
         inputView?.post { syncPetCompanion() }
+        // 窗口记录每次显示都可能被系统重建，底色和轮廓要按当前设置重新落一遍。
+        inputView?.post { inputView?.refreshSurfaceCorners() }
     }
     override fun onWindowHidden() {
         if(petCompanionDelegate.isInitialized()) petCompanionDelegate.value.hideInput()
@@ -135,6 +138,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         prefs.keyboard.landscapeWidth,
         prefs.keyboard.landscapeHeight,
         prefs.keyboard.landscapePosition,
+        prefs.keyboard.landscapeOpacity,
         prefs.keyboard.expandKeypressArea,
         prefs.keyboard.floatingKeyboard,
         prefs.keyboard.floatingKeyboardAutoLandscape,
@@ -254,6 +258,30 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
             intentFilter,
             ContextCompat.RECEIVER_NOT_EXPORTED,
         )
+    }
+
+    private var transparentBackdrop = false
+
+    /**
+     * 输入法窗口的底色。
+     *
+     * 「键盘四角」是把键盘容器本身裁成圆角，裁掉的那四块只有露出后面的应用才像圆角；
+     * 而 IME 窗口默认带主题的 windowBackground（不透明），裁完露的是窗口底色，和键盘
+     * 底色接近，表现出来就是「这个开关没生效」。所以开圆角时把窗口底色清成透明，
+     * 关掉时再还原主题里的那一份，避免把原本靠窗口底色兜底的区域变成透空。
+     */
+    fun setInputWindowBackdropTransparent(transparent: Boolean, force: Boolean = false) {
+        if (!force && transparentBackdrop == transparent) return
+        val win = window?.window ?: return
+        transparentBackdrop = transparent
+        if (transparent) {
+            win.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
+        } else {
+            val attrs = theme.obtainStyledAttributes(intArrayOf(android.R.attr.windowBackground))
+            val backdrop = attrs.getDrawable(0)
+            attrs.recycle()
+            win.setBackgroundDrawable(backdrop)
+        }
     }
 
     override fun onCreate() {
@@ -1103,6 +1131,14 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         cancelVoiceIfActive()
         if(petCompanionDelegate.isInitialized()) petCompanionDelegate.value.physicalKey(keyCode,true)
         if (keyCode == KeyEvent.KEYCODE_BACK && com.osfans.trime.ime.clipboard.ClipboardSearchBridge.exit()) return true
+        // User-defined combos (Ctrl+Enter, ...) fire before the app or Rime sees the key.
+        ComboKeys.match(event.metaState, keyCode)?.let { combo ->
+            val view = inputView
+            if (view != null) {
+                view.performToolbarAction(combo.action)
+                return true
+            }
+        }
         if (inputDeviceManager.evaluateOnKeyDown(event, this)) {
             decorLocationUpdated = false
             forceShowSelf()
@@ -1115,6 +1151,8 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         event: KeyEvent,
     ): Boolean {
         if(petCompanionDelegate.isInitialized()) petCompanionDelegate.value.physicalKey(keyCode,false)
+        // Consume the matching key-up so the app never sees a key-down-less release.
+        if (ComboKeys.match(event.metaState, keyCode) != null) return true
         return forwardKeyEvent(event) || super.onKeyUp(keyCode, event)
     }
 

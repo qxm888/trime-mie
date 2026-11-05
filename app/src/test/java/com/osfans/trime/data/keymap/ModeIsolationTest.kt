@@ -28,7 +28,9 @@ class ModeIsolationTest : FunSpec({
         CustomKeyboards.mergeInto(a).presetKeys.containsKey("a") shouldBe false
         CustomKeyboards.setMode(CustomKeyboards.MODE_THEME)
         CustomKeyboards.mergeInto(a) shouldBe a
-        CustomKeyboards.resolveId("default") shouldBe "default"
+        // 键盘库修复后：强制内置的字段也保留自定义皮肤，"default" 会解析到库里已有的键盘；
+        // 模式隔离仍由 isCustom 的 MODE 门控保证，不再靠 resolveId 回退。
+        CustomKeyboards.resolveId("default") shouldBe id
         CustomKeyboards.isCustom("default") shouldBe false
         CustomKeyboards.isCustom(id) shouldBe false
     }

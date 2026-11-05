@@ -59,6 +59,28 @@ object KeyboardBindingCopy {
                 JsonObject(overrides + KeyAppearance.values(appearance).filterKeys { it in copiedAppearanceFields })
             }, appearance = appearance)
     }
+    /**
+     * 只搬手势与符号：主输入（click）、主标签、宽度、背景和图标一律保留目标原样。
+     * 来源没有的手势会在目标上被清掉，也就是整份覆盖而不是新旧混合。
+     */
+    internal fun copyGestures(target: CustomKeyboards.CustomKey, source: CustomKeyboards.CustomKey,
+                              sourceStyle: KeyAppearance.Style): CustomKeyboards.CustomKey {
+        val bindings = linkedMapOf<String, String>()
+        source.bindings.forEach { (behavior, value) ->
+            // 图片/图标类取值依赖素材目录，搬过去会变成破图，直接跳过。
+            if (behavior == "click" || value.startsWith("/") || value.startsWith("ic@")) return@forEach
+            bindings[behavior] = value
+        }
+        target.bindings["click"]?.let { bindings["click"] = it }
+        val appearance = Annotations(sourceStyle).applyTo(target.appearance)
+            .copy(popup = sourceStyle.popup.toList(), sendBindings = sourceStyle.sendBindings)
+        return target.copy(bindings = bindings,
+            primaryBindingOverrides = target.primaryBindingOverrides + target.bindings.keys + bindings.keys + setOf("@popup", "@sendBindings"),
+            setBindingOverrides = target.setBindingOverrides?.plus(target.bindings.keys + bindings.keys),
+            setStyleOverrides = target.setStyleOverrides?.let { overrides ->
+                JsonObject(overrides + KeyAppearance.values(appearance).filterKeys { it in copiedAppearanceFields })
+            }, appearance = appearance)
+    }
     private fun click(key: CustomKeyboards.CustomKey): String {
         val identity = KeyboardSets.identity(key)
         if(identity.startsWith("group:")) return identity

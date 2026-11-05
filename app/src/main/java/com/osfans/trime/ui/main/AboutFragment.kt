@@ -9,8 +9,11 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.preference.Preference
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.osfans.trime.BuildConfig
 import com.osfans.trime.R
 import com.osfans.trime.ui.common.PaddingPreferenceFragment
@@ -18,8 +21,11 @@ import com.osfans.trime.util.Const
 import com.osfans.trime.util.addCategory
 import com.osfans.trime.util.addPreference
 import com.osfans.trime.util.formatDateTime
+import kotlinx.coroutines.launch
 
 class AboutFragment : PaddingPreferenceFragment() {
+
+    private lateinit var versionPref: Preference
 
     @SuppressLint("UseKtx")
     override fun onCreatePreferences(
@@ -27,14 +33,16 @@ class AboutFragment : PaddingPreferenceFragment() {
         rootKey: String?,
     ) {
         preferenceScreen = preferenceManager.createPreferenceScreen(requireContext()).apply {
-            addPreference(R.string.current_version, Const.VERSION_NAME) {
-                startActivity(
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse("${BuildConfig.BUILD_GIT_REPO}/commit/${BuildConfig.BUILD_COMMIT_HASH}"),
-                    ),
-                )
+            versionPref = Preference(requireContext()).apply {
+                isIconSpaceReserved = false
+                setTitle(R.string.current_version)
+                summary = Const.VERSION_NAME
+                setOnPreferenceClickListener {
+                    onVersionClicked()
+                    true
+                }
             }
+            addPreference(versionPref)
             // 咩版基于上游 osfans/trime 的版本：3.3.13-mie.17 → 上游基线 3.3.13。
             addPreference(R.string.upstream_trime_version, upstreamBaseVersion()) {
                 startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(Const.UPSTREAM_TRIME_URL)))
@@ -138,6 +146,59 @@ class AboutFragment : PaddingPreferenceFragment() {
                     )
                 }
             }
+        }
+    }
+
+    /** 点"当前版本"：查更新 → 发现新版后再次点击开始下载 → 下载完成拉起系统安装。 */
+    private fun onVersionClicked() {
+        val pref = versionPref
+        val busy = "正在检查更新…"
+        if (pref.summary == busy) return
+        pref.summary = busy
+        viewLifecycleOwner.lifecycleScope.launch {
+            val context = requireContext()
+            when (val result = com.osfans.trime.data.update.AppUpdater.checkLatest()) {
+                is com.osfans.trime.data.update.AppUpdater.CheckResult.UpToDate -> {
+                    pref.summary = "已是最新版本（${result.versionName}）"
+                }
+                is com.osfans.trime.data.update.AppUpdater.CheckResult.Failed -> {
+                    pref.summary = Const.VERSION_NAME
+                    Toast.makeText(context, "检查更新失败：${result.message}", Toast.LENGTH_LONG).show()
+                }
+                is com.osfans.trime.data.update.AppUpdater.CheckResult.UpdateAvailable -> {
+                    val release = result.release
+                    MaterialAlertDialogBuilder(context)
+                        .setTitle("发现新版本 ${release.tag}")
+                        .setMessage(release.notes.takeIf { it.isNotBlank() }?.take(1200)
+                            ?: "新版本 ${release.versionName} 可用。")
+                        .setPositiveButton("下载并安装") { _, _ -> startDownload(pref, release) }
+                        .setNegativeButton("以后再说", null)
+                        .show()
+                    pref.summary = "发现新版本 ${release.versionName} · 点击更新"
+                }
+            }
+        }
+    }
+
+    private fun startDownload(
+        pref: Preference,
+        release: com.osfans.trime.data.update.AppUpdater.Release,
+    ) {
+        val context = requireContext()
+        pref.summary = "下载中 0%"
+        viewLifecycleOwner.lifecycleScope.launch {
+            com.osfans.trime.data.update.AppUpdater.downloadApk(context, release) { progress ->
+                lifecycleScope.launch { pref.summary = "下载中 $progress%" }
+            }.fold(
+                onSuccess = { apk ->
+                    pref.summary = "下载完成 · 点击安装"
+                    com.osfans.trime.data.update.AppUpdater.install(context, apk)
+                },
+                onFailure = {
+                    pref.summary = "发现新版本 ${release.versionName} · 点击重试"
+                    Toast.makeText(context, "下载失败：${it.message}", Toast.LENGTH_LONG).show()
+                },
+            )
         }
     }
 

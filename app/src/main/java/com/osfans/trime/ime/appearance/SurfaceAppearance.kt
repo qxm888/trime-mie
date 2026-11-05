@@ -193,6 +193,20 @@ object SurfaceAppearance {
     @Volatile
     var version: Long = 0
         private set
+
+    /**
+     * 键盘最近一次真正用上的四角圆角（dp）。
+     *
+     * 设置面板拿它做一行回显：如果这里已经是 40 而键盘还是直角，问题在绘制；
+     * 如果这里还是 0，说明值没被读到。省得再去猜是哪一头。
+     */
+    @Volatile
+    var lastAppliedCorners: List<Float> = emptyList()
+        private set
+
+    fun recordAppliedCorners(corners: List<Float>) {
+        lastAppliedCorners = corners
+    }
     private var cacheKey: Pair<String, String>? = null
     private var cached = SurfaceAppearanceConfig()
     private var layoutVersion = -1L
@@ -235,6 +249,35 @@ object SurfaceAppearance {
         return cached
     }
     fun isCustomMode() = com.osfans.trime.data.keymap.CustomKeyboards.mode == com.osfans.trime.data.keymap.CustomKeyboards.MODE_CUSTOM
+
+    /**
+     * 整块键盘面板的四角圆角。
+     *
+     * 和按键圆角不同，它不是「某一页」的属性：裁的是键盘外框，换到英文页、数字页
+     * 还是同一块面板。但 [current] 只认当前显示的那一页，而用户往往是在主页面
+     * （「某某键盘 · 外观」）里调这个值——两页不是同一个 id，于是读回来永远是空，
+     * 表现出来就是「设置了但键盘没变」。
+     *
+     * 所以这里按「主页面 → 当前整套的活动页 → 正在显示的那页」的顺序找，第一个
+     * 真正设过四角的就用它。
+     */
+    fun keyboardCorners(customMode: Boolean = isCustomMode(), id: String? = null): List<Float> {
+        if (!customMode) return current(false).keyboardCorners
+        val page = id ?: com.osfans.trime.ime.keyboard.KeyboardWindow.lastAttachedId
+        val sources = buildList {
+            page?.takeIf { it.isNotBlank() }?.let { runCatching { com.osfans.trime.data.keymap.CustomKeyboards.setRoot(it.removePrefix(com.osfans.trime.data.keymap.KeyboardSets.EDIT_PREFIX)) }.getOrNull() }?.let(::add)
+            com.osfans.trime.data.keymap.CustomKeyboards.activeId.takeIf { it.isNotBlank() }?.let(::add)
+            page?.takeIf { it.isNotBlank() }?.let(::add)
+        }
+        sources.distinct().forEach { candidate ->
+            val corners = runCatching {
+                com.osfans.trime.data.keymap.CustomKeyboards.get(candidate)?.surfaceAppearance?.keyboardCorners
+            }.getOrNull()
+            if (corners != null && corners.size == 4 && corners.any { it > 0f }) return corners
+        }
+        return current(true, page).keyboardCorners
+    }
+
     fun unifiedBackground(customMode: Boolean = isCustomMode(), id: String? = null): Boolean {
         if (customMode) currentLayout(id ?: com.osfans.trime.ime.keyboard.KeyboardWindow.lastAttachedId)?.unifiedBackground?.let { return it }
         val prefs = AppPrefs.defaultInstance().keyboard

@@ -210,7 +210,7 @@ class PetHouseActivity:AppCompatActivity() {
     private fun collection() {
         title("相遇图鉴","已相遇 ${data.pets.size} / ${PetCatalog.species.size} 位伙伴 · 点选伙伴即可切换陪伴")
         val filters=com.google.android.material.chip.ChipGroup(this).apply { isSingleSelection=true;isSelectionRequired=true }
-        listOf("全部","普通","稀有","SR","SSR").forEachIndexed { i,label ->
+        listOf("全部","普通","稀有","SR","SSR","UR").forEachIndexed { i,label ->
             filters.addView(com.google.android.material.chip.Chip(this).apply {
                 text=label;isCheckable=true;isChecked=rarityFilter==i-1
                 setOnClickListener { rarityFilter=i-1;scroll.scrollTo(0,0);render() }
@@ -238,13 +238,13 @@ class PetHouseActivity:AppCompatActivity() {
         card {
             gravity=Gravity.CENTER_HORIZONTAL
             addView(PetPortraitView(this@PetHouseActivity).apply { bind(PetHouse.Pet("moon")) },lp(180,180))
-            addView(text("星光孵化池",24,ink,true));addView(text("${PetCatalog.species.size} 位伙伴 · 常驻开放",13,muted),lp().apply { bottomMargin=dp(18) })
+            addView(text("星光孵化池",24,ink,true));addView(text("${PetCatalog.hatchPool.size} 位伙伴 · 常驻孵化",13,muted),lp().apply { bottomMargin=dp(18) })
             buttons("孵化一次 · 100" to { confirmDraw(1) },"孵化十次 · 900" to { confirmDraw(10) })
-            addView(text("再 ${10-data.pitySR} 次必得 SR 或以上\n再 ${50-data.pitySSR} 次必得 SSR",14,primary),lp().apply { topMargin=dp(16) })
+            addView(text("再 ${10-data.pitySR} 次必得 SR 或以上\n再 ${50-data.pitySSR} 次必得 SSR 或以上\n再 ${200-data.pityUR} 次必得 UR",14,primary),lp().apply { topMargin=dp(16) })
         }
         card {
             addView(text("基础概率与保底",17,ink,true))
-            addView(text("普通 60% · 稀有 28% · SR 10% · SSR 2%\n保底连续累计，单次与十次共用进度；出现对应品质时重置计数。\n重复伙伴转为 3 / 5 / 10 / 20 枚同名碎片。",13,muted),lp().apply { topMargin=dp(10) })
+            addView(text("普通 60% · 稀有 28% · SR 10% · SSR 1.5% · UR 猴哥 0.5%\nUR 猴哥直接入池；另有专属兑换码可直领，UR 200 次保底。\n保底连续累计，单次与十次共用进度；出现对应品质或以上时重置计数。\n重复伙伴转为 3 / 5 / 10 / 20 / 50 枚同名碎片。",13,muted),lp().apply { topMargin=dp(10) })
             addView(button("查看相遇记录") { history(true) },lp())
         }
     }
@@ -258,25 +258,38 @@ class PetHouseActivity:AppCompatActivity() {
         } }
         card {
             addView(text("兑换口",20,ink,true))
-            addView(text("输入兑换码，从全图鉴中任选一位伙伴直接带回家。",13,muted),lp().apply { topMargin=dp(8);bottomMargin=dp(12) })
-            if(data.redeemed) addView(text("兑换码已使用，感谢你的支持。",13,muted))
-            else buttons("输入兑换码" to { redeemCode() })
+            addView(text("输入兑换码，领取对应伙伴；小咩和猴哥支持专属兑换。",13,muted),lp().apply { topMargin=dp(8);bottomMargin=dp(12) })
+            if(data.redeemed) addView(text("任选伙伴兑换已领取，可继续输入其它兑换码。",13,muted))
+            if(data.xiaomieRedeemed) addView(text("小咩专属兑换已领取。",13,muted))
+            if(data.monkeyRedeemed) addView(text("猴哥专属兑换已领取。",13,muted))
+            buttons("输入兑换码" to { redeemCode() })
         }
         content.addView(text("离线时饱腹每天降低 30，最低保留 20；伙伴不会死亡或离开。",12,muted))
     }
     private fun redeemCode() {
-        val field=TextInputEditText(this).apply { setSingleLine(true);filters=arrayOf(android.text.InputFilter.LengthFilter(24)) }
-        val wrap=TextInputLayout(this).apply { hint="兑换码";addView(field);setPadding(dp(22),dp(12),dp(22),0) }
-        MaterialAlertDialogBuilder(this).setTitle("兑换口").setMessage("输入有效兑换码后，可从图鉴中任选一位伙伴直接带回家。每个兑换码只能使用一次。")
+        val field=TextInputEditText(this).apply {
+            setSingleLine(true);filters=arrayOf(android.text.InputFilter.LengthFilter(24))
+            // 兑换码是纯 ASCII：VISIBLE_PASSWORD 变体促使输入法直通字母，避免被中文模式组词。
+            inputType=android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+        }
+        val wrap=TextInputLayout(this).apply { hint="兑换码（英文与数字，需在英文状态输入）";addView(field);setPadding(dp(22),dp(12),dp(22),0) }
+        MaterialAlertDialogBuilder(this).setTitle("兑换口").setMessage("输入有效兑换码，领取指定伙伴或选择对应图鉴伙伴。每个兑换码只能使用一次。若被转成中文，请把键盘切到英文后重输。")
             .setView(wrap).setNegativeButton("取消",null)
             .setPositiveButton("下一步") { _,_ ->
                 val code=field.text?.toString()?.trim() ?: ""
-                if(code.isEmpty()) Toast.makeText(this,"请先输入兑换码",Toast.LENGTH_SHORT).show() else redeemPick(code)
+                val account=PetHouse.state.value
+                if(code.isEmpty()) Toast.makeText(this,"请先输入兑换码",Toast.LENGTH_SHORT).show()
+                else if(code=="qxm520" && account.xiaomieRedeemed || code=="qxm888" && account.redeemed || code=="qxm555" && account.monkeyRedeemed)
+                    Toast.makeText(this,"这个兑换码已经用过了，可以输入其它兑换码",Toast.LENGTH_SHORT).show()
+                else if(code=="qxm520") redeemConfirm(code,"xiaomie","小咩")
+                else if(code=="qxm555") redeemConfirm(code,"monkey","猴哥")
+                else if(code=="qxm888") redeemPick(code)
+                else Toast.makeText(this,"兑换码无效",Toast.LENGTH_SHORT).show()
             }.show()
     }
     private fun redeemPick(code:String) {
         val grid=android.widget.GridLayout(this).apply { columnCount=3 }
-        PetCatalog.species.forEach { sp ->
+        PetCatalog.species.filter { it.rarity<4 }.forEach { sp ->
             val cell=LinearLayout(this).apply { orientation=LinearLayout.VERTICAL;gravity=Gravity.CENTER;setPadding(dp(6),dp(10),dp(6),dp(10));isClickable=true;isFocusable=true }
             cell.addView(PetPortraitView(this).apply { halo=false;bind(PetHouse.Pet(sp.id)) },LinearLayout.LayoutParams(dp(64),dp(64)))
             cell.addView(text(sp.name,12,ink,true))
@@ -284,7 +297,7 @@ class PetHouseActivity:AppCompatActivity() {
             grid.addView(cell,android.widget.GridLayout.LayoutParams().apply { width=dp(110);height=LinearLayout.LayoutParams.WRAP_CONTENT })
         }
         val scroll=ScrollView(this).apply { addView(grid);setPadding(dp(8),dp(4),dp(8),0) }
-        MaterialAlertDialogBuilder(this).setTitle("选择你的伙伴 · 共 ${PetCatalog.species.size} 位").setView(scroll).setNegativeButton("取消",null).show()
+        MaterialAlertDialogBuilder(this).setTitle("选择你的伙伴 · 共 ${PetCatalog.species.count { it.rarity<4 }} 位").setView(scroll).setNegativeButton("取消",null).show()
     }
     private fun redeemConfirm(code:String,petId:String,name:String) {
         MaterialAlertDialogBuilder(this).setTitle("确认兑换").setMessage("使用兑换码直接获得「$name」？每个兑换码只能使用一次。")

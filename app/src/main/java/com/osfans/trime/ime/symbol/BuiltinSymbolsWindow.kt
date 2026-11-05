@@ -37,7 +37,8 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
     private val manager: BoardWindowManager by instance()
     private val actions: CommonKeyboardActionListener by instance()
     private lateinit var root: LinearLayout
-    private lateinit var selector: TextView
+    private lateinit var barView: LinearLayout
+    private lateinit var moreButton: TextView
     private lateinit var grid: RecyclerView
     private lateinit var count: TextView
     private var categories = emptyList<BuiltinSymbolCatalog.Category>()
@@ -50,6 +51,22 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
     private lateinit var deleteButton: TextView
     private val orderNamespace get() = "builtin-items:$selectedId"
     private var selectedId = initialCategory
+    /**
+     * 顶栏常驻分类：六个两字短名一键直达，不用每次点开「选择分类」再选。
+     * 顺序即顶栏从左到右的顺序；它们也不再出现在「选择分类」对话框里
+     * （避免同一分类出现两次），对话框底部会提示这几个已经常驻。
+     */
+    private val pinned = listOf(
+        "english" to "英文",
+        "chinese" to "中文",
+        "emoji_full" to "表情",
+        "common" to "常用",
+        "punctuation" to "通用",
+        "math" to "数学",
+    )
+    private val pinnedIds get() = pinned.mapTo(HashSet()) { it.first }
+    private val pinnedButtons = LinkedHashMap<String, TextView>()
+    private val pinnedMarks = LinkedHashMap<String, View>()
     private var wide = false
     private var emoji = false
     private var job: Job? = null
@@ -127,12 +144,7 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
     private class Cell(val frame:FrameLayout,val text: TextView,val badge:TextView) : RecyclerView.ViewHolder(frame)
     private class CategoryCell(val frame: com.osfans.trime.ime.keyboard.GestureFrame, val text: TextView) : RecyclerView.ViewHolder(frame)
     override fun onCreateView(): View {
-        selector = TextView(context).apply {
-            gravity = Gravity.CENTER_VERTICAL; textSize = 16f; setTextColor(ink)
-            setPadding(dp(12), 0, dp(12), 0); text = "选择分类  ▾"
-            contentDescription = "选择符号分类；长按分类可拖动排序"
-            setOnClickListener { if (categories.isNotEmpty()) showCategories() }
-        }
+        barView = buildBar()
         root = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(4), 0, dp(4), dp(2)) }
         count = TextView(context).apply { text = "正在载入表情与符号…"; textSize = 11f; setPadding(dp(8), dp(2), dp(8), dp(2)); setTextColor(ink) }
         grid = RecyclerView(context).apply {
@@ -219,7 +231,68 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
         refreshColors()
         return root
     }
-    override fun onCreateBarView(): View = selector
+    override fun onCreateBarView(): View = barView
+
+    /**
+     * 顶栏：六个常驻分类各占一格（等宽、点一下直接切），末尾一个「⋯」开完整分类列表。
+     * 顶栏宽度就是整条状态栏宽度，短名两字在 320dp 屏上也有 47dp/格，够放。
+     */
+    private fun buildBar(): LinearLayout {
+        pinnedButtons.clear(); pinnedMarks.clear()
+        val bar = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(2), 0, dp(2), 0)
+        }
+        pinned.forEach { (id, label) ->
+            val tv = TextView(context).apply {
+                text = label; textSize = 14f; gravity = Gravity.CENTER; maxLines = 1
+                ellipsize = android.text.TextUtils.TruncateAt.END
+            }
+            // 底部指示条：选中时才显示，不用实心底块，顶栏不会被一格粗块顶得高低不齐。
+            val mark = View(context).apply { visibility = View.INVISIBLE }
+            val cell = FrameLayout(context).apply {
+                contentDescription = "切换到「$label」分类"
+                setOnClickListener {
+                    val index = categories.indexOfFirst { it.id == id }
+                    if (index >= 0) select(index)
+                }
+                addView(tv, FrameLayout.LayoutParams(-1, -1))
+                addView(mark, FrameLayout.LayoutParams(dp(16), dp(2),
+                    Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL).apply { bottomMargin = dp(3) })
+            }
+            pinnedButtons[id] = tv; pinnedMarks[id] = mark
+            bar.addView(cell, LinearLayout.LayoutParams(0, -1, 1f).apply { setMargins(dp(1), dp(2), dp(1), dp(2)) })
+        }
+        moreButton = TextView(context).apply {
+            text = "⋯"; textSize = 16f; gravity = Gravity.CENTER; maxLines = 1
+            contentDescription = "选择更多分类；长按可拖动排序"
+            setOnClickListener { if (categories.isNotEmpty()) showCategories() }
+        }
+        bar.addView(moreButton, LinearLayout.LayoutParams(dp(34), -1).apply { setMargins(dp(1), dp(2), dp(2), dp(2)) })
+        return bar
+    }
+
+    /** 当前分类那格：只加深文字 + 底部一条短指示条；其它格是普通淡色文字，整条栏保持同一高度。 */
+    private fun stylePinned() {
+        pinnedButtons.forEach { (id, tv) ->
+            val active = id == selectedId
+            tv.setTextColor(if (active) ink else palette.surfaceText)
+            tv.setTypeface(null, if (active) Typeface.BOLD else Typeface.NORMAL)
+            tv.background = null
+            pinnedMarks[id]?.apply {
+                visibility = if (active) View.VISIBLE else View.INVISIBLE
+                background = if (active) GradientDrawable().apply {
+                    setColor(ink)
+                    cornerRadius = dp(1).toFloat()
+                } else null
+            }
+        }
+        if (::moreButton.isInitialized) {
+            moreButton.setTextColor(palette.surfaceText)
+            moreButton.background = null
+        }
+    }
     override fun onAttached() {
         job = service.lifecycleScope.launch {
             try {
@@ -232,7 +305,7 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
     private fun select(index: Int) {
         val category = categories.getOrNull(index) ?: return
         saveItemOrder(); sorting = false; deleting = false; grid.itemAnimator = null
-        selectedId = category.id; selector.text = "${category.name}  ▾"
+        selectedId = category.id; stylePinned()
         items = SymbolOrder.ordered(orderNamespace, category.items) { it }.toMutableList(); wide = category.wide
         emoji = category.id in setOf("emoji", "people", "components", "animals", "food", "travel", "activities", "objects", "emoji_symbols", "flags", "emoji_full") || category.id.endsWith("_tones")
         resizeColumns(grid.width.takeIf { it > 0 } ?: context.resources.displayMetrics.widthPixels)
@@ -259,8 +332,21 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
             else -> "${categories.firstOrNull { it.id == selectedId }?.name.orEmpty()} · ${items.size} 项 · 上下滑动浏览"
         }
     }
+    /**
+     * 把对话框里的新顺序合并回 [categories]：常驻分类排在末尾（顶栏按 id 取，顺序无关），
+     * 这样「选择分类」里拖动排序既不会把它们弄丢，也不会影响顶栏的固定顺序。
+     */
+    private fun commitCategoryOrder(visibleOrder: List<String>) {
+        val byId = categories.associateBy { it.id }
+        val merged = (visibleOrder + pinned.map { it.first } + categories.map { it.id })
+            .distinct().mapNotNull(byId::get)
+        categories = merged
+        com.osfans.trime.data.symbols.SymbolCategoryOrder.save(merged.map { it.id })
+    }
+
     private fun showCategories() {
-        val working = categories.toMutableList()
+        // 顶栏常驻的六个分类不再列出（同一分类不必出现两次），其余分类仍可长按拖动排序。
+        val working = categories.filterNot { it.id in pinnedIds }.toMutableList()
         val chooser = RecyclerView(context).apply {
             layoutManager = GridLayoutManager(context, 2); itemAnimator = null
             setPadding(dp(8), dp(4), dp(8), dp(4))
@@ -288,7 +374,6 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
                     background = this@BuiltinSymbolsWindow.background()
                     contentDescription = "${category.name}；长按拖动调整顺序"
                     setOnClickListener {
-                        categories = working.toList()
                         select(categories.indexOfFirst { it.id == category.id }); dialog.dismiss()
                     }
                     setOnLongClickListener { categoryDrag.startDrag(holder); true }
@@ -304,27 +389,34 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
                 val a = from.bindingAdapterPosition; val b = to.bindingAdapterPosition
                 if (a !in working.indices || b !in working.indices) return false
                 working.add(b, working.removeAt(a)); rows.notifyItemMoved(a, b)
-                categories = working.toList()
                 categoryOrderDirty = true
                 return true
             }
             override fun onSwiped(holder: RecyclerView.ViewHolder, direction: Int) = Unit
             override fun clearView(rv: RecyclerView, holder: RecyclerView.ViewHolder) {
                 super.clearView(rv,holder)
-                if (categoryOrderDirty) com.osfans.trime.data.symbols.SymbolCategoryOrder.save(working.map { it.id })
+                if (categoryOrderDirty) commitCategoryOrder(working.map { it.id })
                 categoryOrderDirty = false
             }
         })
         categoryDrag.attachToRecyclerView(chooser)
         val height = (context.resources.displayMetrics.heightPixels * .55f).toInt()
         val container = FrameLayout(context).apply { addView(chooser, FrameLayout.LayoutParams(-1, height)) }
-        dialog = AlertDialog.Builder(context).setTitle("选择分类 · 长按拖动排序").setView(container)
+        dialog = AlertDialog.Builder(context).setTitle("选择分类 · 长按拖动排序")
+            .setMessage("顶栏常驻：${pinned.joinToString(" · ") { it.second }}，这里不再列出")
+            .setView(container)
             .setNeutralButton("恢复默认顺序") { _, _ ->
                 com.osfans.trime.data.symbols.SymbolCategoryOrder.reset()
                 categoryOrderDirty = false
                 categories = BuiltinSymbolCatalog.categories
+                working.clear()
+                working.addAll(categories.filterNot { it.id in pinnedIds })
+                rows.notifyDataSetChanged()
             }.setNegativeButton("关闭", null).create()
-        dialog.setOnDismissListener { if(categoryOrderDirty) com.osfans.trime.data.symbols.SymbolCategoryOrder.save(working.map { it.id }) }
+        dialog.setOnDismissListener {
+            if (categoryOrderDirty) commitCategoryOrder(working.map { it.id })
+            categoryOrderDirty = false
+        }
         service.showDialog(dialog)
     }
 
@@ -340,7 +432,8 @@ class BuiltinSymbolsWindow(di: DI, private val initialCategory: String = "emoji"
         if (::root.isInitialized) {
             root.setBackgroundColor(palette.surface)
             footerButtons.forEach { it.setTextColor(ink); it.background=background() }
-            count.setTextColor(palette.surfaceText); selector.setTextColor(palette.surfaceText); sortButton.setTextColor(palette.surfaceText); deleteButton.setTextColor(palette.surfaceText); resetButton.setTextColor(palette.surfaceText); cells.notifyDataSetChanged()
+            count.setTextColor(palette.surfaceText); sortButton.setTextColor(palette.surfaceText); deleteButton.setTextColor(palette.surfaceText); resetButton.setTextColor(palette.surfaceText)
+            stylePinned(); cells.notifyDataSetChanged()
         }
     }
 }

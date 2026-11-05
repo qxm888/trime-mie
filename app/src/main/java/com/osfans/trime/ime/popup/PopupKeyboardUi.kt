@@ -191,26 +191,38 @@ class PopupKeyboardUi(
 
     private var focusedIndex = keyOrders[focusRow][focusColumn]
 
-    private val keyUis = labels.map { label ->
-        val displayLabel =
-            if (label.length == 1 && label[0].code < 128) {
-                label
-            } else if (label !in theme.presetKeys && label !in Theme.BUILTIN_ACTIONS &&
-                com.osfans.trime.data.keymap.BindingActions.resolve(label) == null) {
-                // Literal emoji/ZWJ sequences and user-entered text are one choice.
-                label
-            } else {
-                theme.resolveAction(label).getLabel(KeyboardWindow.currentKeyboard).let {
-                    when {
-                        it.isIconFont -> it
-                        it.isNotEmpty() -> PopupChoices.compactActionLabel(it)
-                        else -> ""
-                    }
-                }
-            }
+    private val keyUis = labels.map { label -> PopupKeyUi(displayLabel(label)) }
 
-        PopupKeyUi(displayLabel)
+    /**
+     * 备选项可能是符号、表情、动作名，也可能是 `[]{Left}`、`""{Left}` 这种「打一段字再把光标退回去」
+     * 的键序列。键序列只能显示可见文字，绝不能把 `{Left}` 这类占位符当成标签画出来。
+     */
+    private fun displayLabel(raw: String): String {
+        if (raw.isEmpty()) return ""
+        val keyboard = KeyboardWindow.currentKeyboard
+        val named = raw in theme.presetKeys || raw in Theme.BUILTIN_ACTIONS ||
+            com.osfans.trime.data.keymap.BindingActions.resolve(raw) != null
+        // 动作名、绑定 token、带占位符的键序列都交给 KeyAction 取标签（它会把 {…} 去掉）
+        if (named || raw.contains('{')) {
+            val resolved = runCatching { theme.resolveAction(raw).getLabel(keyboard) }.getOrNull().orEmpty()
+            if (resolved.isIconFont) return resolved
+            if (resolved.isNotEmpty()) return shorten(resolved)
+            // 整条就是一个占位符，例如 `{Left}`：退回占位符本身的名字
+            val inner = PopupChoices.BRACED.matchEntire(raw)?.groupValues?.get(1)
+            if (inner != null) {
+                val label = runCatching { theme.resolveAction(inner).getLabel(keyboard) }.getOrNull().orEmpty()
+                if (label.isIconFont) return label
+                if (label.isNotEmpty()) return shorten(label)
+            }
+            return shorten(raw.replace(PopupChoices.BRACED, ""))
+        }
+        // 纯字面量（中文、表情、用户自己输入的文字）
+        return shorten(raw)
     }
+
+    /** 超过 4 个字符就只留一个字素，避免一格塞不下糊成一片。 */
+    private fun shorten(text: String): String =
+        if (text.length <= 4) text else PopupChoices.compactActionLabel(text)
 
     init {
         markFocus(focusedIndex)
@@ -268,14 +280,23 @@ class PopupKeyboardUi(
         }
     }
 
+    /** 按下点（相对弹窗左上角），用来把「手指位移」换算成「走了几格」。 */
+    private var anchorX = Float.NaN
+    private var anchorY = Float.NaN
+
     override fun onChangeFocus(x: Float, y: Float): Boolean {
-        // Hit-test the displayed cells. The previous rounded formula selected the row above
-        // when the finger was at the centre of the bottom row.
-        var newRow = PopupChoices.rowAt(y,keyHeight,rowCount)
-        // move to next column when gesture moves out of current column
-        var newColumn = floor(x / keyWidth).toInt()
-        // retain focus when gesture moves between ±2 rows/columns of range
-        if (newRow < -2 || newRow > rowCount + 1 || newColumn < -2 || newColumn > columnCount + 1) {
+        // 跟手滑选：以按下点为原点算位移，手指移动半格就切一格，
+        // 不会因为按在键面偏上/偏下的位置而一上来就选错行。
+        if (anchorX.isNaN()) {
+            anchorX = x
+            anchorY = y
+        }
+        val stepColumn = ((x - anchorX) / keyWidth).roundToInt()
+        val stepRow = ((anchorY - y) / keyHeight).roundToInt()
+        var newColumn = focusColumn + stepColumn
+        var newRow = focusRow + stepRow
+        // 滑出格子太多才关闭，避免稍微甩一下就断；留一格余量方便回拉。
+        if (newRow < -3 || newRow > rowCount + 3 || newColumn < -3 || newColumn > columnCount + 3) {
             onDismissSelf(this)
             return true
         }

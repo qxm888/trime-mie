@@ -485,7 +485,7 @@
     <string name="custom_kb_row_spacing">行间距</string>
     <string name="custom_kb_row_spacing_value">行间距 · %1$d dp</string>
     <string name="custom_kb_row_spacing_range">间距（0–%1$d dp）</string>
-    <string name="custom_kb_row_spacing_hint">保持行高不变，0 表示无间距。最大不超过最小行高的一半，且不超过 32dp。</string>
+    <string name="custom_kb_row_spacing_hint">保持行高不变，0 表示无间距。上限 32dp，不随行高变化；间距越大按键越扁，行数多时会被挤压。</string>
     <string name="import_baidu_skin">导入百度皮肤（.bds）</string>
     <string name="custom_kb_keyboard_height">键盘高度</string>
     <string name="custom_kb_keyboard_height_value">键盘高度：%1$d dp</string>

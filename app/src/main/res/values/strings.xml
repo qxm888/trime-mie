@@ -486,7 +486,7 @@
     <string name="custom_kb_row_spacing">Row spacing</string>
     <string name="custom_kb_row_spacing_value">Row spacing · %1$d dp</string>
     <string name="custom_kb_row_spacing_range">Spacing (0–%1$d dp)</string>
-    <string name="custom_kb_row_spacing_hint">Keeps row heights unchanged. Zero removes the gap. The maximum is half the shortest row height, up to 32dp.</string>
+    <string name="custom_kb_row_spacing_hint">Keeps row heights unchanged. Zero removes the gap. Up to 32dp regardless of row height; larger gaps flatten the keys.</string>
     <string name="import_baidu_skin">Import Baidu skin (.bds)</string>
     <string name="custom_kb_keyboard_height">Keyboard height</string>
     <string name="custom_kb_keyboard_height_value">Keyboard height: %1$d dp</string>
@@ -559,5 +559,6 @@
     <string name="landscape_size_summary">统一应用到所有主题和自定义键盘；仅横屏生效，支持停靠与悬浮。关闭后跟随原布局，不影响竖屏尺寸。</string>
     <string name="landscape_width">宽度（占屏幕宽度）</string>
     <string name="landscape_height">按键高度（占屏幕高度）</string>
+    <string name="landscape_opacity">横屏键盘不透明度</string>
     <string name="landscape_position">左右位置（0 靠左 · 50 居中 · 100 靠右）</string>
 </resources>

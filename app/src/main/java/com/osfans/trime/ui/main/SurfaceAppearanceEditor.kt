@@ -27,6 +27,12 @@ import kotlin.math.roundToInt
 
 /** Staged appearance settings. Sections stay folded until requested; Apply commits all changes. */
 object SurfaceAppearanceEditor {
+    /** 与 SurfaceAppearanceConfig.sanitized() 的上限保持一致。 */
+    private const val MAX_KEYBOARD_CORNER_DP = 64f
+
+    /** 打开「自定义键盘四角」时的落值，保证一开就能看见效果。 */
+    private const val DEFAULT_KEYBOARD_CORNER_DP = 12f
+
     fun show(context: Context, customMode: Boolean = SurfaceAppearance.isCustomMode(), layoutId: String? = null, initialEffects: KeyEffects? = null, onEffects: ((KeyEffects) -> Unit)? = null, changed: () -> Unit = {}): androidx.appcompat.app.AlertDialog {
         var draft = SurfaceAppearance.current(customMode, layoutId).let { if(initialEffects == null) it else it.copy(effects=initialEffects) }
         var unified = SurfaceAppearance.unifiedBackground(customMode, layoutId)
@@ -35,7 +41,28 @@ object SurfaceAppearanceEditor {
             SurfaceAppearance.save(config, customMode, layoutId)
             val prefs = com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard
             if (customMode && layoutId != null) {
-                com.osfans.trime.data.keymap.CustomKeyboards.mutate(layoutId) { it.unifiedBackground = unified }
+                com.osfans.trime.data.keymap.CustomKeyboards.mutate(layoutId) {
+                    it.unifiedBackground = unified
+                    // 圆角/边框只有一个参数，这里和「按键默认外观」是两个入口，保存时写到同一个数上。
+                    val radius = config.keys.radius
+                    val border = config.keys.borderWidth
+                    val before = it.keyAppearance
+                    if (radius != null || border != null) it.keyAppearance = before.copy(
+                        roundCorner = radius ?: before.roundCorner,
+                        keyBorder = border?.toInt() ?: before.keyBorder)
+                    // 这是本页的统一值：改了就推下去，26 个键（含单独调过的）一起变。
+                    // 整套作用域由整套推送统一处理每一页，这里只处理单页。
+                    if (!layoutId.startsWith(com.osfans.trime.data.keymap.KeyboardSets.EDIT_PREFIX)) {
+                        val touched = buildList {
+                            if (radius != null && radius != before.roundCorner) add("roundCorner")
+                            if (border != null && border.toInt() != before.keyBorder) add("keyBorder")
+                        }
+                        if (touched.isNotEmpty()) {
+                            val pushed = com.osfans.trime.data.keymap.KeyboardSetOperations.pushAppearance(it, touched)
+                            it.rows.clear(); it.rows.addAll(pushed.rows)
+                        }
+                    }
+                }
                 com.osfans.trime.data.keymap.CustomKeyboards.flush()
             } else (if (customMode) prefs.customUnifiedBackground else prefs.unifiedBackground).setValue(unified)
             com.osfans.trime.data.theme.ThemeManager.requestCustomizationRefresh()
@@ -202,17 +229,39 @@ object SurfaceAppearanceEditor {
         destination=overallPage
         val shape = drawer("键盘整体 · 四角圆角")
         val corners = draft.keyboardCorners.takeIf { it.size == 4 }?.toMutableList() ?: MutableList(4) { 0f }
-        val cornerControls = column().apply { visibility = if (draft.keyboardCorners.isEmpty()) View.GONE else View.VISIBLE }
-        toggle(shape, "自定义键盘四角", draft.keyboardCorners.isNotEmpty()) {
+        // 全 0 的圆角裁出来和直角没有区别，等于没开：历史配置存成 [0,0,0,0] 时
+        // 开关要显示成关闭，重新打开才会落一个有值的圆角。
+        val cornersActive = draft.keyboardCorners.isNotEmpty() && corners.any { it > 0f }
+        val cornerControls = column().apply { visibility = if (cornersActive) View.VISIBLE else View.GONE }
+        // 四个角的滑杆都攥在手里：拖动「统一圆角」时一起改写，单角滑杆也跟着回显。
+        val cornerSliders = mutableListOf<Slider>()
+        var syncingCorners = false
+        toggle(shape, "自定义键盘四角", cornersActive) {
+            if (it) for (i in 0 until 4) if (corners[i] <= 0f) corners[i] = DEFAULT_KEYBOARD_CORNER_DP
             draft = draft.copy(keyboardCorners = if (it) corners.toList() else emptyList())
             cornerControls.visibility = if (it) View.VISIBLE else View.GONE
         }
         shape.addView(cornerControls)
+        slider(cornerControls, "定义键盘圆角", corners.max(), 0f, MAX_KEYBOARD_CORNER_DP, 1f, " dp") { value ->
+            if (syncingCorners) return@slider
+            for (i in 0 until 4) corners[i] = value
+            draft = draft.copy(keyboardCorners = corners.toList())
+            syncingCorners = true
+            cornerSliders.forEach { if (it.value != value) it.value = value }
+            syncingCorners = false
+        }
         listOf("左上角", "右上角", "右下角", "左下角").forEachIndexed { index, title ->
-            slider(cornerControls, title, corners[index], 0f, 64f, 1f, " dp") {
-                corners[index] = it; draft = draft.copy(keyboardCorners = corners.toList())
+            cornerSliders += slider(cornerControls, title, corners[index], 0f, MAX_KEYBOARD_CORNER_DP, 1f, " dp") { value ->
+                if (syncingCorners) return@slider
+                corners[index] = value; draft = draft.copy(keyboardCorners = corners.toList())
             }
         }
+        val applied = SurfaceAppearance.lastAppliedCorners
+        note(
+            cornerControls,
+            "「定义键盘圆角」一次改四个角；下面四个滑杆可以单独调某一个角。圆角把整块键盘面板（含工具栏）裁成圆角，四角之外透出后面的应用。\n" +
+                "键盘当前实际使用：" + if (applied.isEmpty()) "未读到（先点「应用」，再回键盘看一眼）" else applied.joinToString(" / ") { "${it.toInt()} dp" },
+        )
         destination=keyPage
         val keyStyles=drawer("按键 · 背景、边框与模糊")
         fun renderKeyStyles() { keyStyles.removeAllViews(); styleControls(keyStyles,draft.keys) { draft=draft.copy(keys=it) } }

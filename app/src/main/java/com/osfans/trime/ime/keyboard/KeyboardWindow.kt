@@ -124,6 +124,27 @@ class KeyboardWindow(di: DI) :
     private var lastKeyboardId = ""
     private var lastLockKeyboardId = ""
     private var tempAsciiMode: Boolean? = null
+
+    /**
+     * 最近一次「由 ascii_mode 变化驱动自动切页」的时间戳。
+     *
+     * 这两条路径互为因果时会形成死循环：
+     *   1. `onStartInput()` 对数字/密码/邮箱框强制 `ascii_mode = true`；
+     *   2. `onRimeOptionUpdated()` 看到 true → 自动切到该键盘的 `ascii_keyboard`；
+     *   3. `attachKeyboard()` 末尾又按**新页**的 `reset_ascii_mode / lastAsciiMode` 反向写一次
+     *      `ascii_mode`（此时 `statusCached` 往往还没刷新，读到的是切页前的旧值 false）；
+     *   4. 于是又切回中文页，再写回 true …… 无限来回，用户看到的就是中英自己疯狂切换。
+     *
+     * 这个时间窗内的 attach 一律不再回写 `ascii_mode`：谁发起的切换，谁决定模式。
+     */
+    @Volatile
+    private var asciiAutoSwitchAt = 0L
+    /** 那次自动切页的目标键盘 id：即使时间窗过期，只要目标一致也不回写。 */
+    @Volatile
+    private var asciiAutoSwitchTarget = ""
+    private val asciiAutoSwitchGraceMs = 700L
+    /** 上一次处理过的 ascii_mode 值：同一值重复广播时不再重复切页。 */
+    private var lastAsciiOption: Boolean? = null
     /** 自动切到 ascii_keyboard 时的 (来源键盘, 英文键盘)；切回中文时恢复来源。 */
     private var colorGroupInputRestartPending = false
     private var asciiKeyboardPair: Pair<String, String>? = null
@@ -263,14 +284,33 @@ class KeyboardWindow(di: DI) :
     }
     fun setVideoActive(active: Boolean) { videoBackground?.setActive(active) }
 
+    /**
+     * 取皮肤用的键盘 id：优先自身，其次回退到「当前活动自定义键盘」。
+     *
+     * `onStartInput()` 会把数字/电话/日期框切到内置 `number`、把密码/邮箱框切到 `.ascii`。
+     * 这些内置页在自定义键盘库里通常没有同名条目，`get()` 返回 null，
+     * 旧代码就把 `keyboardView.background` 置成 null → 整块键盘底色/主题色全部丢失（全透明）；
+     * 顶栏同时因为没有 toolbar 配置而塌成一两个按钮。**同一个根因。**
+     * 内置页本来就应该沿用当前键盘的皮肤，所以这里做一次回退解析。
+     */
+    private fun skinIdFor(target: String): String {
+        val direct = CustomKeyboards.resolveId(target)
+        if (CustomKeyboards.get(direct) != null) return direct
+        val fallback = CustomKeyboards.resolveId("default")
+        return if (CustomKeyboards.get(fallback) != null) fallback else direct
+    }
+
     private fun applyKeyboardSkin(target: String, width: Int) {
-        val custom = if (theme.isCustom) CustomKeyboards.get(CustomKeyboards.resolveId(target)) else null
+        val skinId = if (theme.isCustom) skinIdFor(target) else target
+        val custom = if (theme.isCustom) CustomKeyboards.get(skinId) else null
         val background = if (theme.isCustom) custom?.backgroundFor(context) else
             com.osfans.trime.data.prefs.AppPrefs.defaultInstance().keyboard.videoBackground.getValue().takeIf { it.isNotBlank() }
                 ?.let { com.osfans.trime.data.keymap.CustomBackground(com.osfans.trime.data.keymap.CustomBackground.Type.VIDEO, image = it) }
         currentBackground = background
         onBackgroundChanged?.invoke()
-        val unified = com.osfans.trime.ime.appearance.SurfaceAppearance.unifiedBackground(theme.isCustom)
+        // 「统一背景」也按解析后的皮肤 id 判断：沿用原逻辑走全局偏好时，
+        // 数字键盘会退回另一套设置，与主键盘画出不一致的底。
+        val unified = com.osfans.trime.ime.appearance.SurfaceAppearance.unifiedBackground(theme.isCustom, skinId)
         keyboardView.background = if (unified) null else background?.drawable(context, width.coerceAtLeast(1))
         val videoPath = background?.takeIf { !unified && it.type == com.osfans.trime.data.keymap.CustomBackground.Type.VIDEO }?.image
         if (videoPath == videoBackgroundPath && videoBackground != null) return
@@ -331,6 +371,29 @@ class KeyboardWindow(di: DI) :
 
     private fun selectKeyboardConfig(name: String): TextKeyboard? = selectKeyboardPreset(theme.presetKeyboards, name)
 
+    /**
+     * 输入框类型请求的键盘页 → 实际布局 id。
+     *
+     * 数字/电话/日期框请求的是 `"number"`，密码/邮箱/网址框请求 `".ascii"`，
+     * 但自定义键盘集里通常没有叫 "number" 的布局：`selectKeyboardPreset()` 找不到
+     * 就会静默退回第一个布局（也就是用户当时那把键盘），于是点数字框看起来
+     * 「根本没有自动切换」。这里在当前键盘所属的那一套里找对应的角色页
+     * （数字页 `num`、英文页 `en`），找不到才把请求原样交回给上游逻辑。
+     */
+    private fun resolveInputPage(request: String): String {
+        if (request != "number" && request != ".ascii") return request
+        val role = if (request == "number") "num" else "en"
+        val current = CustomKeyboards.resolveId(currentKeyboardId)
+        val root = runCatching { CustomKeyboards.setRoot(current) }.getOrNull()
+        if (!root.isNullOrEmpty()) {
+            CustomKeyboards.setPageIds(root)
+                .firstOrNull { CustomKeyboards.pageRole(it) == role }
+                ?.let { return it }
+        }
+        if (request == "number" && "number" in theme.presetKeyboards) return "number"
+        return request
+    }
+
     private fun attachKeyboard(target: String) {
         if (instance !== this || !presentation.owns(this)) return
         if (currentKeyboardId.isNotEmpty() && currentKeyboardId != target) lastKeyboardId = currentKeyboardId
@@ -370,7 +433,12 @@ class KeyboardWindow(di: DI) :
             val currentMode = rime.run { statusCached }.isAsciiMode
             val targetMode = if (it.resetAsciiMode) it.asciiMode else it.lastAsciiMode
 
-            if (currentMode != targetMode) {
+            // 由 ascii_mode 变化驱动的那次切页，绝不反过来再写 ascii_mode（见 asciiAutoSwitchAt 注释）。
+            val autoSwitchHit = target == asciiAutoSwitchTarget
+            if (autoSwitchHit) asciiAutoSwitchTarget = ""   // 一次性标记，用完即清
+            val autoSwitched = autoSwitchHit ||
+                android.os.SystemClock.uptimeMillis() - asciiAutoSwitchAt < asciiAutoSwitchGraceMs
+            if (currentMode != targetMode && !autoSwitched) {
                 service.postRimeJob {
                     if (instance !== this@KeyboardWindow || currentKeyboardId != target) return@postRimeJob
                     commitComposition()
@@ -500,18 +568,20 @@ class KeyboardWindow(di: DI) :
         val inputTarget = KeyboardNavigation.inputRequest(targetKeyboard, currentKeyboardId,
             service.isRestartingInputView, colorGroupInputRestartPending)
         colorGroupInputRestartPending = false
-        switchKeyboard(inputTarget)
+        switchKeyboard(resolveInputPage(inputTarget))
         val isAsciiMode = rime.run { statusCached }.isAsciiMode
         if (targetKeyboard == ".ascii" || targetKeyboard == "number") {
             if (tempAsciiMode == null) {
                 tempAsciiMode = isAsciiMode
             }
             if (!isAsciiMode) {
+                asciiAutoSwitchAt = android.os.SystemClock.uptimeMillis()
                 service.postRimeJob { setRuntimeOption("ascii_mode", true) }
             }
         } else {
             tempAsciiMode?.let { saved ->
                 if (isAsciiMode != saved) {
+                    asciiAutoSwitchAt = android.os.SystemClock.uptimeMillis()
                     service.postRimeJob { setRuntimeOption("ascii_mode", saved) }
                 }
                 tempAsciiMode = null
@@ -519,6 +589,7 @@ class KeyboardWindow(di: DI) :
                 if (theme.style.resetAsciiModeOnFocusChange) {
                     val targetMode = if (it.resetAsciiMode) it.asciiMode else it.lastAsciiMode
                     if (isAsciiMode != targetMode) {
+                        asciiAutoSwitchAt = android.os.SystemClock.uptimeMillis()
                         service.postRimeJob { setRuntimeOption("ascii_mode", targetMode) }
                     }
                 }
@@ -575,6 +646,11 @@ class KeyboardWindow(di: DI) :
             }
 
             option == "ascii_mode" -> {
+                // 同一值重复广播不再重复切页。
+                if (lastAsciiOption == value.value) return
+                lastAsciiOption = value.value
+                // 标记：接下来这次切页由选项驱动，attachKeyboard 不得反向回写 ascii_mode。
+                asciiAutoSwitchAt = android.os.SystemClock.uptimeMillis()
                 if (value.value) {
                     // 当前键盘声明了 ascii_keyboard（如 9 键 → 英文 26 键），切英文时自动过去。
                     val english = visibleKeyboard?.asciiKeyboard.orEmpty()
@@ -582,6 +658,7 @@ class KeyboardWindow(di: DI) :
                         val target = evalKeyboard(english)
                         if (target.isNotEmpty() && target != currentKeyboardId) {
                             asciiKeyboardPair = currentKeyboardId to target
+                            asciiAutoSwitchTarget = target
                             switchKeyboard(target)
                         }
                     }
@@ -596,6 +673,7 @@ class KeyboardWindow(di: DI) :
                             // on detach. Honour the explicit switch back to Chinese instead
                             // of restoring that stale value and reopening the English page.
                             cachedKeyboards[origin]?.first?.lastAsciiMode = false
+                            asciiAutoSwitchTarget = origin
                             switchKeyboard(origin)
                         }
                     }

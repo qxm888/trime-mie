@@ -33,6 +33,7 @@ internal object PetPremiumFaces {
         "dragonfly" to Spec(0xff7a4e0e.toInt(), 0xffc9862e.toInt(), 0xfffff3c4.toInt()),
         "axolotl" to Spec(0xffa63060.toInt(), 0xffe86a9e.toInt(), 0xffffffff.toInt()),
         "hummingbird" to Spec(0xff6e1e96.toInt(), 0xffa64ec9.toInt(), 0xfffde8ff.toInt(), beak=true),
+        "monkey" to Spec(0xff8e4e14.toInt(), 0xffd9862e.toInt(), 0xffffe9b0.toInt()),
     )
     private class Spec(val top:Int,val mid:Int,val bottom:Int,val beak:Boolean=false,val trunk:Boolean=false,val fangs:Boolean=false,val tooth:Boolean=false)
     private val paint=Paint(Paint.ANTI_ALIAS_FLAG)
@@ -81,7 +82,9 @@ internal object PetPremiumFaces {
         }
         val mouthY=if(spec.trunk) 87f else 83f
         paint.color=0xff49353e.toInt();paint.alpha=alpha
-        if(!spec.beak && !spec.trunk) {
+        if(id=="monkey") {
+            paint.color=0xff9d694d.toInt();paint.alpha=alpha;canvas.drawOval(60.8f,74.5f,67.2f,78f,paint)
+        } else if(!spec.beak && !spec.trunk) {
             path.reset();path.moveTo(60.5f,76f);path.quadTo(64f,73.3f,67.5f,76f);path.quadTo(67f,79f,64f,80f);path.quadTo(61f,79f,60.5f,76f)
             canvas.drawPath(path,paint)
             paint.color=0xffb89499.toInt();paint.alpha=alpha;canvas.drawOval(61f,75f,64f,76.1f,paint)

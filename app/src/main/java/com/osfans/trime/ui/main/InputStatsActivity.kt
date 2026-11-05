@@ -69,6 +69,7 @@ class InputStatsActivity : AppCompatActivity() {
     private lateinit var heatGrid: LinearLayout
     private lateinit var wordCloud: WordCloudView
     private lateinit var characterCloud: WordCloudView
+    private lateinit var combinedCloud: WordCloudView
 
     private enum class Period { DAY, WEEK, MONTH, YEAR }
 
@@ -120,6 +121,7 @@ class InputStatsActivity : AppCompatActivity() {
         heatGrid = findViewById(R.id.stats_heat_grid)
         wordCloud = findViewById(R.id.stats_word_cloud)
         characterCloud = findViewById(R.id.stats_character_cloud)
+        combinedCloud = findViewById(R.id.stats_combined_cloud)
 
         val toggle = findViewById<com.google.android.material.button.MaterialButtonToggleGroup>(R.id.stats_period_toggle)
         toggle.check(
@@ -293,6 +295,7 @@ class InputStatsActivity : AppCompatActivity() {
     private fun renderPeriod() {
         val snapshot = lastSnapshot ?: return
         val period = periodOf(snapshot)
+        combinedCloud.setWords(period.wordCounts, "字词云")
         characterCloud.setWords(period.wordCounts.filterKeys { it.codePointCount(0,it.length)==1 }, "字云")
         wordCloud.setWords(period.wordCounts.filterKeys { it.codePointCount(0,it.length)>1 }, "词云")
 
@@ -487,15 +490,15 @@ class InputStatsActivity : AppCompatActivity() {
     private fun showShareDialog() {
         lastSnapshot = InputStats.read(currentSchema) { it }
         renderPeriod(); renderHeat()
-        val labels=arrayOf("输入概览", "输入速度", "字云", "词云", "字词长度分布", "码长分布", "键盘热力图", "生涯卡片")
-        val ids=intArrayOf(R.id.stats_card_overview,R.id.stats_card_speed,R.id.stats_card_character_cloud,R.id.stats_card_cloud,
+        val labels=arrayOf("输入概览", "输入速度", "字云", "词云", "字词云", "字词长度分布", "码长分布", "键盘热力图", "生涯卡片")
+        val ids=intArrayOf(R.id.stats_card_overview,R.id.stats_card_speed,R.id.stats_card_character_cloud,R.id.stats_card_cloud,R.id.stats_card_combined_cloud,
             R.id.stats_card_length,R.id.stats_card_code,R.id.stats_card_heat,R.id.stats_hero)
-        val keys=arrayOf("overview","speed","characters","words","length","code","heat","career")
+        val keys=arrayOf("overview","speed","characters","words","combined","length","code","heat","career")
         // Both clouds inherit the old combined-cloud selection; later modules retain their choices.
-        val legacy=intArrayOf(0,1,2,2,3,4,5,6)
+        val legacy=intArrayOf(0,1,2,2,2,3,4,5,6)
         val prefs=getSharedPreferences("stats-share-modules",MODE_PRIVATE)
         val checked=BooleanArray(labels.size) { i -> prefs.getBoolean("module-${keys[i]}",
-            prefs.getBoolean("module-${legacy[i]}",legacy[i] in setOf(0,2,5))) }
+            if(keys[i]=="combined") false else prefs.getBoolean("module-${legacy[i]}",legacy[i] in setOf(0,2,5))) }
         val dialog=MaterialAlertDialogBuilder(this).setTitle("选择分享模块")
             .setMultiChoiceItems(labels,checked) { _,which,on -> checked[which]=on }
             .setNegativeButton("取消",null)

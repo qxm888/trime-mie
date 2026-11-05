@@ -103,6 +103,58 @@ object KeyboardSetOperations {
         CustomKeyboards.editSets { pages, _ -> pages[id] = page }
         return id
     }
+    /**
+     * 圆角与边框宽度各是一个参数、两个入口：「按键默认外观」和「全局外观 · 按键」，各存一份；
+     * 画的时候 KeyView 取「键自己的（单键显式）→ surface → 本页统一值」，两份不一致就必然读到旧值。
+     * 这里不互相读取，只保证保存时两份写同一个数。
+     * 页面还没有表面外观时只写按键默认外观：硬造一份只有圆角的空配置会把它其余外观冲掉。
+     */
+    fun shapeKeys(kb: CustomKeyboard, roundCorner: Float, keyBorder: Int): CustomKeyboard {
+        val key = kb.keyAppearance.copy(roundCorner = roundCorner, keyBorder = keyBorder)
+        val surface = kb.surfaceAppearance ?: return kb.copy(keyAppearance = key)
+        return kb.copy(keyAppearance = key, surfaceAppearance = surface.copy(keys = surface.keys.copy(
+            radius = roundCorner.takeIf { it >= 0f }?.coerceIn(0f, 64f),
+            borderWidth = keyBorder.takeIf { it >= 0 }?.toFloat()?.coerceIn(0f, 32f))))
+    }
+
+    /**
+     * 这些是按键的「内容」，不是统一外观：批量推送时不能把每个键自己的符号文字、提示、
+     * 长按备选、手势绑定和图标一起冲掉。
+     */
+    private val contentFields = setOf(
+        "labelSymbol", "hint", "popup", "sendBindings",
+        "icon", "iconSize", "iconTint", "iconOffsetX", "iconOffsetY",
+    )
+
+    /**
+     * 把一次外观修改推下去：清掉这些字段在**每个按键**上的独立副本，按键重新跟随本页统一值。
+     * 这就是「点一次，26 个键全变成一样」——包括之前单独调过的键；没动过的字段各自保留。
+     */
+    fun pushAppearance(kb: CustomKeyboard, changed: Collection<String>): CustomKeyboard {
+        val fields = changed.toSet() - contentFields
+        if (fields.isEmpty()) return kb
+        val empty = KeyAppearance.values(KeyAppearance.Style())
+        val reset = JsonObject(fields.filter { it in empty }.associateWith { empty.getValue(it) })
+        if (reset.isEmpty()) return kb
+        return kb.copy(rows = kb.rows.map { row ->
+            row.copy(keys = row.keys.map { key ->
+                // 差量表被清空后 resolve 会用角色样式重建整个 appearance，那样这个键自己的
+                // 符号文字、弹出备选、图标就丢了；所以最后至少把内容字段固化进去。
+                val kept = key.setStyleOverrides?.filterKeys { name -> name !in fields }
+                val overrides = when {
+                    key.setStyleOverrides == null -> null
+                    !kept.isNullOrEmpty() -> JsonObject(kept)
+                    else -> JsonObject(KeyAppearance.values(key.appearance).filterKeys { it in contentFields })
+                }
+                key.copy(
+                    appearance = KeyboardSets.json.decodeFromJsonElement(KeyAppearance.Style.serializer(),
+                        KeyboardSets.overlay(KeyAppearance.values(key.appearance), reset)),
+                    setStyleOverrides = overrides,
+                )
+            }.toMutableList())
+        }.toMutableList())
+    }
+
     fun addBlank(root: String, name: String): String {
         val id = KeyboardSets.newId()
         CustomKeyboards.editSets { pages, profiles ->

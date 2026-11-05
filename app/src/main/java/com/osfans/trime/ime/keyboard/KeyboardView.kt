@@ -80,11 +80,17 @@ class KeyboardView(
         translationX = (key.x - key.extraWidthLeft).toFloat()
         translationY = key.y.toFloat()
 
+        // 行间距就是键体上下留白：间距设多大，键就被压多扁（间距不再受行高上限约束）。
+        // 只保留 1px 内容高度，避免间距拉满时整行键彻底消失、连缝都看不见。
+        val maxInset = ((key.height - 1).coerceAtLeast(0)) / 2
+        val gapTop = (keyboard.verticalGap / 2).coerceAtMost(maxInset)
+        val gapBottom = (keyboard.verticalGap - keyboard.verticalGap / 2).coerceAtMost(maxInset)
+
         setPadding(
             (if (key.importedStyle != null) 0 else keyboard.horizontalGap / 2) + key.extraWidthLeft,
-            keyboard.verticalGap / 2,
+            gapTop,
             (if (key.importedStyle != null) 0 else keyboard.horizontalGap / 2) + key.extraWidthRight,
-            keyboard.verticalGap - keyboard.verticalGap / 2,
+            gapBottom,
         )
     }
 

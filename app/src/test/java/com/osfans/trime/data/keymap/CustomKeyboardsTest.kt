@@ -36,7 +36,11 @@ class CustomKeyboardsTest : FunSpec({
         text.verticalGap shouldBe 16
         text.keyboardHeight shouldBe 120
         keyboard.rowSpacing = 999
-        CustomKeyboards.run { keyboard.toTextKeyboard() }.verticalGap shouldBe 20
+        CustomKeyboards.run { keyboard.toTextKeyboard() }.verticalGap shouldBe 32
+        // 间距上限只由绝对上限决定，不和最小行高绑定：6dp 的行也能设到 32dp
+        CustomKeyboards.run {
+            CustomKeyboard(rows = mutableListOf(CustomRow(height = 6))).maxRowSpacing()
+        } shouldBe 32
     }
 
     test("row spacing persists in JSON and old layouts keep the four dp default") {

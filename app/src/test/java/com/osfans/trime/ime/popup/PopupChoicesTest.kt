@@ -18,4 +18,15 @@ class PopupChoicesTest : FunSpec({
         PopupChoices.compactActionLabel("刷新主题") shouldBe "刷"
         listOf("👩🏽‍💻","❤️","🇨🇳","💕").forEach { PopupChoices.compactActionLabel(it+"动作") shouldBe it }
     }
+    test("key sequence popups never expose placeholders") {
+        fun visible(raw: String) = raw.replace(PopupChoices.BRACED, "")
+        visible("[]{Left}") shouldBe "[]"
+        visible("\"\"{Left}") shouldBe "\"\""
+        visible("«»{Left}") shouldBe "«»"
+        visible("(){Left}") shouldBe "()"
+        visible("{}{Left}") shouldBe "{}"
+        visible("{Left}") shouldBe ""
+        visible("，") shouldBe "，"
+        visible("😀") shouldBe "😀"
+    }
 })

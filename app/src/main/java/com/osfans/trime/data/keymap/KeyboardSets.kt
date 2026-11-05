@@ -56,6 +56,85 @@ object KeyboardSets {
         }
     })
     fun withoutGroup(value: JsonObject, group: String) = JsonObject(value.filterKeys { it !in fields.getValue(group) })
+
+    /**
+     * 从页面的独立设置里删掉 [patch] 涉及到的字段，让这些字段重新跟随整套。
+     * 对象只删到子字段：整套只改了圆角，页面自己的按键背景不会被一起抹掉。
+     */
+    fun prune(value: JsonObject, patch: JsonObject): JsonObject {
+        if (value.isEmpty() || patch.isEmpty()) return value
+        val out = value.toMutableMap()
+        patch.forEach { (name, changed) ->
+            val current = out[name] ?: return@forEach
+            when {
+                changed is JsonObject && "__mie_replace" in changed -> out.remove(name)
+                current is JsonObject && changed is JsonObject -> {
+                    val nested = prune(current, changed)
+                    if (nested.isEmpty()) out.remove(name) else out[name] = nested
+                }
+                else -> out.remove(name)
+            }
+        }
+        return JsonObject(out)
+    }
+
+    fun style(value: JsonObject): KeyAppearance.Style = json.decodeFromJsonElement(KeyAppearance.Style.serializer(), value)
+
+    /**
+     * 圆角与边框宽度各是「一条参数、两处存储」：按键默认外观的 roundCorner / keyBorder，
+     * 和全局外观 · 按键的 surface.radius / surface.borderWidth。KeyView 取
+     * `surface.radius ?: k.roundCorner`、`surface.borderWidth ?: k.keyBorder`，
+     * 所以推送时要两处写成同一个数，否则页面会按另一处的旧值渲染。
+     * 键为 surface 上的字段名，值为 null 表示回到继承（清掉覆盖）。
+     */
+    private val shapeTwins = listOf("roundCorner" to "radius", "keyBorder" to "borderWidth")
+
+    /** 本次推送改到的形状参数；空表示这一项没动。 */
+    fun pushedShape(patch: JsonObject, after: CustomKeyboard): Map<String, Float?> = buildMap {
+        val keyAppearance = patch["keyAppearance"] as? JsonObject
+        val surfaceKeys = (patch["surfaceAppearance"] as? JsonObject)?.get("keys") as? JsonObject
+        if (keyAppearance != null) {
+            if ("roundCorner" in keyAppearance) put("radius", after.keyAppearance.roundCorner.takeIf { it >= 0f })
+            if ("keyBorder" in keyAppearance) put("borderWidth", after.keyAppearance.keyBorder.takeIf { it >= 0 }?.toFloat())
+        } else if (surfaceKeys != null) {
+            if ("radius" in surfaceKeys) put("radius", after.surfaceAppearance?.keys?.radius)
+            if ("borderWidth" in surfaceKeys) put("borderWidth", after.surfaceAppearance?.keys?.borderWidth)
+        }
+    }
+
+    /** 只清页面里这些形状参数的存储，值不参与推送（仅供 prune 用）。 */
+    fun shapeProbe(shape: Map<String, Float?>): JsonObject {
+        val keyFields = shapeTwins.filter { it.second in shape }.associate { (key, _) -> key to JsonPrimitive(0) }
+        val surfaceFields = shape.filterKeys { name -> shapeTwins.any { it.second == name } }.mapValues { JsonPrimitive(0) }
+        return JsonObject(mapOf(
+            "keyAppearance" to JsonObject(keyFields),
+            "surfaceAppearance" to JsonObject(mapOf("keys" to JsonObject(surfaceFields)))))
+    }
+
+    /** 表面层的形状字段名换回按键默认外观里的名字，用来清掉各键自己那份旧值。 */
+    fun keyShapeFields(shape: Map<String, Float?>): Set<String> =
+        shapeTwins.filter { it.second in shape }.map { it.first }.toSet()
+
+    /** 把同一层的两处存储写成同一个值；null 表示回到继承。 */
+    fun syncShape(values: JsonObject, shape: Map<String, Float?>): JsonObject {
+        val keyAppearance = (values["keyAppearance"] as? JsonObject ?: JsonObject(emptyMap())).toMutableMap()
+        val surface = values["surfaceAppearance"] as? JsonObject
+        val keys = (surface?.get("keys") as? JsonObject ?: JsonObject(emptyMap())).toMutableMap()
+        shapeTwins.forEach { (keyField, surfaceField) ->
+            if (surfaceField !in shape) return@forEach
+            val value = shape[surfaceField]
+            // keyBorder 是 Int，写 -1.0 这样的浮点字面量会解码失败。
+            keyAppearance[keyField] = if (keyField == "keyBorder") JsonPrimitive((value ?: -1f).toInt())
+            else JsonPrimitive(value ?: -1f)
+            if (value == null) keys.remove(surfaceField) else keys[surfaceField] = JsonPrimitive(value.coerceIn(0f, 64f))
+        }
+        // 这一层本来就没有表面外观时不硬造一份：只有圆角的空配置会把它原本的按键背景、模糊等设置挡掉。
+        if (surface == null) return JsonObject(values + ("keyAppearance" to JsonObject(keyAppearance)))
+        return JsonObject(values +
+            ("keyAppearance" to JsonObject(keyAppearance)) +
+            ("surfaceAppearance" to JsonObject(surface + ("keys" to JsonObject(keys)))))
+    }
+
     fun rootOf(id: String, pages: Map<String, CustomKeyboard>): String {
         var current = id.removePrefix(EDIT_PREFIX); val seen = mutableSetOf<String>()
         while (seen.add(current)) {

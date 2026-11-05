@@ -229,15 +229,43 @@ object ToolbarOverrides {
         return toolBar.copy(primaryButton = primary, primaryVisible = primaryVisible, buttons = result)
     }
 
+    /**
+     * 该列表是否只是「从未配置过」的占位值。
+     *
+     * 新建/导入键盘时 toolbar 会落成 [StandaloneKeyboardTheme.defaultToolbar]
+     * （只有 中/EN + 粘贴 两项）。若照单全收，切到这把键盘的瞬间顶栏就只剩两个按钮，
+     * 用户看到的现象就是「图标全没了、状态丢了」。
+     * 真正配过的列表不会与占位值逐字段相等（icon / 顺序 / 外观总有一处不同），
+     * 所以用值比较即可，不必新增持久化标记、也不会误伤旧配置。
+     */
+    private fun isToolbarUnset(custom: CustomKeyboards.CustomKeyboard?): Boolean {
+        val entries = custom?.toolbar ?: return true
+        return entries.isEmpty() || entries == StandaloneKeyboardTheme.defaultToolbar()
+    }
+
     /** Mode-aware selection: fully custom layouts never consult the theme overlay store. */
     fun forKeyboard(theme: Theme, runtimeId: String = "default"): ToolBar =
         withoutModeButtons(if (theme.isCustom) {
-            val custom = CustomKeyboards.get(CustomKeyboards.resolveId(runtimeId))
-            val bar = applyForCustomKeyboard(theme.toolBar, custom?.toolbar ?: StandaloneKeyboardTheme.defaultToolbar()).copy(alignment = custom?.toolbarAlignment ?: "legacy")
-            val textColor = custom?.toolbarTextColor()
-            if (textColor == null) bar else bar.copy(buttons = bar.buttons.map { button ->
-                button.copy(foreground = button.foreground.copy(normal = button.appearance.keyTextColor.ifBlank { textColor }, highlight = button.appearance.hilitedKeyTextColor.ifBlank { textColor }))
-            })
+            // 数字/密码/邮箱输入框会被切到内置 `number` / `.ascii` 页，这些页在
+            // 自定义键盘库里通常没有同名条目。取不到就回退到当前活动自定义键盘，
+            // 让内置页沿用同一套工具栏；再取不到才落到主题完整工具栏。
+            val resolved = CustomKeyboards.resolveId(runtimeId).let {
+                if (CustomKeyboards.get(it) != null) it else CustomKeyboards.resolveId("default")
+            }
+            val custom = CustomKeyboards.get(resolved)
+            val entries = custom?.toolbar
+            if (custom == null || entries == null || isToolbarUnset(custom)) {
+                // 未配置专属工具栏 → 继承主题完整工具栏（内置 9 个按钮）。
+                // 宁可多显示几个按钮，也不能让顶栏塌成一两个 —— 那才是真正的「丢状态」。
+                theme.toolBar.copy(alignment = custom?.toolbarAlignment ?: "legacy")
+            } else {
+                val bar = applyForCustomKeyboard(theme.toolBar, entries)
+                    .copy(alignment = custom.toolbarAlignment)
+                val textColor = custom.toolbarTextColor()
+                if (textColor == null) bar else bar.copy(buttons = bar.buttons.map { button ->
+                    button.copy(foreground = button.foreground.copy(normal = button.appearance.keyTextColor.ifBlank { textColor }, highlight = button.appearance.hilitedKeyTextColor.ifBlank { textColor }))
+                })
+            }
         } else {
             apply(theme.toolBar)
         }, theme)

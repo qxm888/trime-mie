@@ -17,6 +17,7 @@ import android.graphics.PathMeasure
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewOutlineProvider
 import androidx.constraintlayout.widget.ConstraintLayout
 import splitties.dimensions.dp
 import kotlin.math.abs
@@ -27,6 +28,14 @@ import kotlin.math.roundToInt
  * Height of the floating keyboard surface, whose drop shadow renders at this Z.
  */
 internal const val FLOATING_KEYBOARD_ELEVATION_DP = 8f
+
+/**
+ * 工具栏图标上沿到工具栏上沿的距离。
+ *
+ * 用来算圆角弧线在图标高度处吃掉多少横向空间：图标行高度相同，留白越小，
+ * 需要让开的宽度越大。6dp 偏保守，宁可多让一点也不要切到图标。
+ */
+internal const val TOOLBAR_ICON_TOP_GAP_DP = 6f
 
 /**
  * Z of the key popup layer (popup preview + popup keyboard).
@@ -167,16 +176,63 @@ internal class FloatingKeyboardContainer(
     private val clipPath = Path()
     private var radii = FloatArray(8)
     fun setCornerRadii(corners: List<Float>) {
-        radii = FloatArray(8) { corners.getOrElse(it / 2) { 0f } }
-        rebuildClip(); invalidate()
+        val next = FloatArray(8) { corners.getOrElse(it / 2) { 0f } }
+        if (next.contentEquals(radii)) return
+        radii = next
+        rebuildClip(); rebuildOutline(); invalidate()
     }
     private fun rebuildClip() {
         clipPath.reset()
-        clipPath.addRoundRect(RectF(0f, 0f, width.toFloat(), height.toFloat()), radii, Path.Direction.CW)
+        if (radii.any { it > 0 }) {
+            clipPath.addRoundRect(RectF(0f, 0f, width.toFloat(), height.toFloat()), radii, Path.Direction.CW)
+        }
     }
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        super.onSizeChanged(w, h, oldw, oldh); rebuildClip()
+        super.onSizeChanged(w, h, oldw, oldh); rebuildClip(); rebuildOutline()
     }
+
+    /**
+     * 圆角的系统级裁剪。
+     *
+     * `canvas.clipPath` 要经过整条绘制链（容器 → 子视图 → 背景 ImageView → drawable），
+     * 中间任何一层建立离屏缓冲或硬件层都可能把 clip 丢掉，表现成「值设进去了但键盘还是直角」。
+     * [View.setClipToOutline] 是渲染节点自己的 outline，由系统在合成时裁剪，不依赖画布状态，
+     * 顺带让阴影也贴着圆角走。
+     */
+    private fun rebuildOutline() {
+        if (radii.none { it > 0f }) {
+            clipToOutline = false
+            outlineProvider = ViewOutlineProvider.BACKGROUND
+            invalidateOutline()
+            return
+        }
+        outlineProvider = object : ViewOutlineProvider() {
+            override fun getOutline(view: View, outline: android.graphics.Outline) {
+                if (android.os.Build.VERSION.SDK_INT >= 30) {
+                    outline.setPath(Path().apply {
+                        addRoundRect(
+                            RectF(0f, 0f, view.width.toFloat(), view.height.toFloat()),
+                            radii, Path.Direction.CW,
+                        )
+                    })
+                } else {
+                    // 旧系统只支持四角同半径。
+                    outline.setRoundRect(0, 0, view.width, view.height, radii.maxOrNull() ?: 0f)
+                }
+            }
+        }
+        clipToOutline = true
+        invalidateOutline()
+    }
+
+    /**
+     * 四角圆角在这里裁：背景、工具栏、键区和底部留白都是本容器的子视图，
+     * 一个 clipPath 就能把整块面板削成圆角面板。
+     *
+     * 只有窗口背景是透明的时候才看得见——否则削掉的四角露的是窗口底色，
+     * 和键盘底色接近，表现成「设置不生效」。见 TrimeInputMethodService
+     * .setInputWindowBackdropTransparent。
+     */
     override fun draw(canvas: Canvas) {
         val save = canvas.save()
         if (radii.any { it > 0 }) canvas.clipPath(clipPath)

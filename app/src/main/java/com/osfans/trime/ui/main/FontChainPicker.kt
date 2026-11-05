@@ -70,6 +70,7 @@ object FontChainPicker {
             }
         })
         if (onImport != null) body.addView(MaterialButton(activity).apply { text = "导入字体文件…"; setOnClickListener { dialog.dismiss(); onImport() } })
+        body.addView(MaterialButton(activity).apply { text = "管理导入字体"; setOnClickListener { manageImported(activity) { deleted -> if (selected.removeAll { it == deleted }) render() } } })
         val scroll = ScrollView(activity).apply { addView(body) }
         dialog = MaterialAlertDialogBuilder(activity).setTitle("$title · 多字体")
             .setView(scroll).setPositiveButton("保存", null).setNegativeButton("取消", null)
@@ -85,5 +86,52 @@ object FontChainPicker {
             }
         }
         render(); dialog.show()
+    }
+
+    /** 导入字体的删除管理：列出 custom_fonts 与 rime fonts 目录里的字体文件，逐个删除。 */
+    private fun manageImported(activity: FragmentActivity, onDeleted: (String) -> Unit) {
+        fun dp(v: Int) = (v * activity.resources.displayMetrics.density + 0.5f).toInt()
+        fun imported(): List<java.io.File> = (FontOverrides.folder().listFiles().orEmpty().filter { it.isFile } +
+            com.osfans.trime.data.theme.DirectoryFontFallback.files)
+            .filter { it.extension.lowercase() in setOf("ttf", "otf", "ttc", "otc") }
+            .distinctBy { it.absolutePath }.sortedBy { it.name.lowercase() }
+        val container = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(20), dp(8), dp(20), dp(8)) }
+        fun render() {
+            container.removeAllViews()
+            val files = imported()
+            if (files.isEmpty()) container.addView(TextView(activity).apply {
+                text = "还没有导入字体。用「导入字体文件…」添加 TTF / OTF / TTC，或把字体放进 rime 的 fonts 目录。"
+                setPadding(0, dp(8), 0, dp(8))
+            })
+            files.forEach { file ->
+                val sizeMb = "%.1f MB".format(file.length() / 1048576f)
+                val row = LinearLayout(activity).apply { gravity = Gravity.CENTER_VERTICAL }
+                row.addView(TextView(activity).apply {
+                    text = "${file.name}\n$sizeMb"; setPadding(0, dp(8), 0, dp(8))
+                }, LinearLayout.LayoutParams(0, -2, 1f))
+                row.addView(MaterialButton(activity, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+                    text = "删除"; minWidth = 0; minimumWidth = 0; contentDescription = "删除字体 ${file.name}"
+                    setOnClickListener {
+                        MaterialAlertDialogBuilder(activity).setTitle("删除字体")
+                            .setMessage("删除「${file.name}」？正在使用它的字体链会自动移除该文件，删除后不可恢复。")
+                            .setPositiveButton("删除") { _, _ ->
+                                val ok = file.delete()
+                                if (!ok) {
+                                    android.widget.Toast.makeText(activity, "删除失败：文件可能被占用", android.widget.Toast.LENGTH_SHORT).show()
+                                    return@setPositiveButton
+                                }
+                                FontOverrides.purge(file.absolutePath)
+                                com.osfans.trime.data.theme.DirectoryFontFallback.refresh()
+                                onDeleted(file.absolutePath)
+                                render()
+                            }.setNegativeButton("取消", null).show()
+                    }
+                }, LinearLayout.LayoutParams(dp(72), -2))
+                container.addView(row)
+            }
+        }
+        render()
+        MaterialAlertDialogBuilder(activity).setTitle("管理导入字体")
+            .setView(ScrollView(activity).apply { addView(container) }).setPositiveButton("完成", null).show()
     }
 }

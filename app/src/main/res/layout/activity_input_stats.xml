@@ -591,6 +591,45 @@ SPDX-License-Identifier: GPL-3.0-or-later
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- 字词云合集 -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/stats_card_combined_cloud"
+                style="?attr/materialCardViewOutlinedStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="?attr/colorSurface"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="0dp"
+                app:strokeColor="?attr/colorOutlineVariant"
+                app:strokeWidth="1dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="字词云"
+                        android:textColor="?attr/colorPrimary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="字与词共同展示 · 随当前统计周期更新"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="12sp" />
+                    <com.osfans.trime.ui.main.WordCloudView
+                        android:id="@+id/stats_combined_cloud"
+                        android:layout_width="match_parent"
+                        android:layout_height="280dp"
+                        android:importantForAccessibility="yes" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- 词长分布卡 -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/stats_card_length"

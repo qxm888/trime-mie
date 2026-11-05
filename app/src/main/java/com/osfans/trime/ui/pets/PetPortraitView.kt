@@ -20,6 +20,10 @@ class PetPortraitView(context:Context):View(context) {
     private val star=Path()
     private var back:Drawable?=null
     private var body:Drawable?=null
+    private var front:Drawable?=null
+    private val urArms=PetUrArms(context)
+    private val miniLimbs=PetMiniLimbs()
+    private val stepAim=PetUrAim()
     private var pet=PetHouse.Pet("sheep")
     private var color=PetCatalog.get("sheep").color
     private var eyeShader:Shader=makeEyeShader(64f)
@@ -38,28 +42,52 @@ class PetPortraitView(context:Context):View(context) {
         beak=value.id in listOf("bird","duck","penguin","crane","phoenix")
         muzzle=value.id in listOf("pig","cow","koala")
         blushY=if(value.id=="frog" || value.id=="jellyfish") 74f else 77f
-        back=AppCompatResources.getDrawable(context,PetArtwork.back(value.id))?.mutate()?.also { it.setBounds(0,0,128,128) }
-        body=AppCompatResources.getDrawable(context,PetArtwork.body(value.id))?.mutate()?.also { it.setBounds(0,0,128,128) }
+        back=if(value.id=="xiaomie") null else AppCompatResources.getDrawable(context,PetArtwork.back(value.id))?.mutate()?.also { it.setBounds(0,0,128,128) }
+        body=if(value.id=="xiaomie") null else AppCompatResources.getDrawable(context,PetArtwork.body(value.id))?.mutate()?.also { it.setBounds(0,0,128,128) }
+        front=if(value.id=="monkey") AppCompatResources.getDrawable(context,com.osfans.trime.R.drawable.pet_monkey_front)?.mutate()?.also { it.setBounds(0,0,128,128) } else null
         eyeShader=makeEyeShader(if(value.id=="frog") 31.5f else 64f)
         if(changed) player.species(value.id)
         contentDescription="${value.nickname.ifBlank { species.name }}，${PetCatalog.rarities[species.rarity]}，${PetCatalog.level(value.exp)} 级"
         invalidate()
     }
     override fun onDraw(canvas:Canvas) { super.onDraw(canvas);drawAt(canvas,width.toFloat(),height.toFloat(),player.pose) }
-    internal fun drawAt(canvas:Canvas,width:Float,height:Float,pose:PetPose) {
+    internal fun drawAt(canvas:Canvas,width:Float,height:Float,pose:PetPose,miniature:Boolean=false,urAim:PetUrAim?=null,step:PetMiniStance?=null) {
         val side=minOf(width,height);canvas.save();canvas.translate((width-side)/2,(height-side)/2);canvas.scale(side/128f,side/128f)
         resetPaint()
         if(halo) { paint.color=(color and 0xffffff) or 0x28000000;canvas.drawCircle(64f,65f,53f,paint) }
-        if(!PetPremiumFaces.handles(pet.id)) { paint.color=0x162f3742;canvas.drawOval(30f,109f,98f,117f,paint) }
-        canvas.save();canvas.translate(0f,pose.y);canvas.rotate(pose.angle,64f,87f);canvas.scale(1+pose.squash,1-pose.squash,64f,88f)
-        canvas.save();if(pet.id!="frog") canvas.rotate(pose.backAngle,64f,75f);back?.draw(canvas);canvas.restore()
-        body?.draw(canvas)
-        face(canvas,PetFace.CALM,1-pose.amount,pose.gaze)
-        if(pose.amount>.001f) face(canvas,pose.face,pose.amount,pose.gaze)
+        if(!miniature && !PetPremiumFaces.handles(pet.id)) { paint.color=0x162f3742;canvas.drawOval(30f,109f,98f,117f,paint) }
+        canvas.save()
+        if(miniature && step!=null) {
+            val footX=step.soleX(pet.id)
+            // No seated squash / nod translation: the supporting sole stays on its cap.
+            canvas.rotate(step.lean+pose.angle*.18f,footX,step.soleY)
+            if(PetUrRig.profile(pet.id)==null) canvas.scale(1f,1f-step.bend*.035f,footX,step.soleY)
+            stepAim.leftActive=pose.interaction==null || pose.amount<.01f;stepAim.rightActive=stepAim.leftActive
+            stepAim.leftAngle=step.armAngle(true,pose);stepAim.rightAngle=step.armAngle(false,pose)
+        } else {
+            canvas.translate(0f,pose.y);canvas.rotate(pose.angle,64f,87f)
+            if(PetUrRig.profile(pet.id)==null) canvas.scale(1+pose.squash,1-pose.squash,64f,88f)
+        }
+        if(pet.id=="xiaomie") {
+            PetUrArtwork.draw(canvas,pose,if(miniature) step else null)
+            urArms.draw(canvas,pet.id,pose,if(miniature) stepAim else urAim,miniature)
+        } else {
+            canvas.save();if(pet.id!="frog") canvas.rotate(pose.backAngle,64f,75f);back?.draw(canvas);canvas.restore()
+            if(miniature && step!=null) {
+                val fur=PetMiniPalette.body(pet.id,color)
+                miniLimbs.legs(canvas,pet.id,fur,step)
+                canvas.save();canvas.clipRect(0f,0f,128f,99f);body?.draw(canvas);canvas.restore()
+                if(PetUrRig.profile(pet.id)==null) miniLimbs.arms(canvas,fur,pose,step)
+            } else body?.draw(canvas)
+            urArms.draw(canvas,pet.id,pose,if(miniature) stepAim else urAim,miniature)
+            front?.draw(canvas)
+            face(canvas,PetFace.CALM,1-pose.amount,pose.gaze)
+            if(pose.amount>.001f) face(canvas,pose.face,pose.amount,pose.gaze)
+        }
         accessories(canvas)
         canvas.restore()
         effects(canvas,pose)
-        if(pet.stage>0) { resetPaint();paint.color=0xffc6a470.toInt();repeat(pet.stage) { drawStar(canvas,56f+it*8,120f,2.2f) } }
+        if(!miniature && pet.stage>0) { resetPaint();paint.color=0xffc6a470.toInt();repeat(pet.stage) { drawStar(canvas,56f+it*8,120f,2.2f) } }
         canvas.restore()
     }
     private fun resetPaint() { paint.shader=null;paint.alpha=255;paint.style=Paint.Style.FILL;paint.strokeCap=Paint.Cap.ROUND;paint.strokeJoin=Paint.Join.ROUND }

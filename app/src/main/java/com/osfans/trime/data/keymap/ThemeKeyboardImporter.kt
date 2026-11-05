@@ -22,9 +22,54 @@ import java.util.UUID
 class ThemeKeyboardImporter(private val context: Context) {
     data class Result(val primaryId: String, val ids: List<String>, val warnings: List<String>)
 
+    private data class Built(
+        val layouts: Map<String, CustomKeyboards.CustomKeyboard>,
+        val ids: Map<String, String>,
+        val warnings: List<String>,
+        val directory: File,
+    )
+
+    /**
+     * 只解析、不保存：给「从主题键盘复制按键」用。
+     * 不会新建布局、不写素材目录，主题模式与当前布局都不受影响。
+     */
+    suspend fun parse(theme: Theme, sourceId: String, name: String = "", appearance: SurfaceAppearanceConfig,
+        unified: Boolean, includeAppOverrides: Boolean = true): CustomKeyboards.CustomKeyboard {
+        val built = build(theme, sourceId, name.ifBlank { sourceId }, appearance, unified, includeAppOverrides)
+        try {
+            // layouts 以生成的布局 id 为键，主题里的键盘名要先经 ids 映射
+            val id = built.ids[sourceId] ?: error("无法解析键盘：$sourceId")
+            val layout = built.layouts[id] ?: error("无法解析键盘：$sourceId")
+            // 主题里的「切换布局」「宏」都指向这次临时生成的布局；这些布局不会落库，
+            // 搬过去就是死引用（按键变哑巴或打出 {…} 字面量），只在本次复制时剔掉。
+            layout.rows.forEach { row ->
+                row.keys.forEachIndexed { index, key ->
+                    if (key.bindings.values.none(::danglingRef)) return@forEachIndexed
+                    row.keys[index] = key.copy(bindings = key.bindings.filterValues { !danglingRef(it) }.toMutableMap())
+                }
+            }
+            return layout
+        } finally {
+            built.directory.deleteRecursively()
+        }
+    }
+
+    private val generatedId = Regex(CustomKeyboards.ID_PREFIX + "[0-9a-fA-F-]{36}")
+
+    /** 绑定里引用了库里不存在的布局（含其宏）。 */
+    private fun danglingRef(value: String): Boolean =
+        generatedId.findAll(value).any { CustomKeyboards.get(it.value) == null }
+
     suspend fun import(theme: Theme, sourceId: String, name: String, appearance: SurfaceAppearanceConfig,
         unified: Boolean, includeAppOverrides:Boolean=true): Result {
         require(name.isNotBlank() && name.length <= 80) { "键盘名称须为1–80个字符" }
+        val built = build(theme, sourceId, name, appearance, unified, includeAppOverrides)
+        CustomKeyboards.addImported(built.layouts)
+        return Result(built.ids.getValue(sourceId), built.layouts.keys.toList(), built.warnings)
+    }
+
+    private suspend fun build(theme: Theme, sourceId: String, name: String, appearance: SurfaceAppearanceConfig,
+        unified: Boolean, includeAppOverrides:Boolean=true): Built {
         val directory = File(DirectExternalStorage.resources(context, "custom_kb_bg"), "theme-${UUID.randomUUID()}")
         val warnings = linkedSetOf<String>()
         val owner=currentCoroutineContext()
@@ -121,7 +166,7 @@ class ThemeKeyboardImporter(private val context: Context) {
                     require(weight.isFinite() && weight in 0f..100f) { "键盘 $keyboard 含无效键宽" }
                     if(key.newRow && width>0 || columns>=maxColumns || width+weight>100.01f) finish()
                     if(weight==0f) return@forEachIndexed
-                    if(row.keys.isEmpty()) row.height=(key.height.takeIf { it>0 } ?: rowHeight).toInt().coerceIn(24,160)
+                    if(row.keys.isEmpty()) row.height=(key.height.takeIf { it>0 } ?: rowHeight).toInt().coerceIn(1,160)
                     val ownBindings=bindings(key)
                     val spacer=key.label.isEmpty() && ownBindings.values.all { it.isEmpty() }
                     val clickPreset=(key.click as? KeyActionToken.Plain)?.token?.let { BindingActions.resolve(it) ?: presets[it] }
@@ -165,8 +210,7 @@ class ThemeKeyboardImporter(private val context: Context) {
                         uppercaseLabels=config.labelTransform==TextKeyboard.LabelTransform.UPPERCASE,landscapeSplitPercent=config.landscapeSplitPercent.coerceIn(0,100)))
             }
             currentCoroutineContext().ensureActive()
-            CustomKeyboards.addImported(layouts)
-            return Result(ids.getValue(sourceId),layouts.keys.toList(),warnings.toList())
+            return Built(layouts, ids, warnings.toList(), directory)
         } catch(error:Throwable) { directory.deleteRecursively();throw error }
     }
 

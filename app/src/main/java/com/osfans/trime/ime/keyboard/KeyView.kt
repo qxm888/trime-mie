@@ -557,8 +557,11 @@ class KeyView(
         val config = frameAppearance
         val surface = config.keys
         val effects = config.effects
-        val corner = (surface.radius ?: k.roundCorner).coerceAtLeast(0f)
+        // 三层取值：单键自己设的 > 「全局外观 · 按键」的自定义值 > 本页统一值。
+        // 只让单键显式值越过表面层，其余按键仍然跟着统一设置走。
+        val corner = (if (k.ownRoundCorner) k.roundCorner else surface.radius ?: k.roundCorner).coerceAtLeast(0f)
         val cornerPx = dpf(corner)
+        val surfaceBorder = surface.overridesBorder && !k.ownKeyBorder
 
         val bg = k.getBackgroundDrawable()
         if (paintedBackground !== bg) {
@@ -570,8 +573,8 @@ class KeyView(
 
         if (bg is GradientDrawable) {
             backgroundStyle.apply(bg, cornerPx,
-                if (surface.overridesBorder) 0 else dp(k.keyBorder.coerceAtLeast(0)),
-                if (surface.overridesBorder || k.keyBorder <= 0) 0 else k.getBorderColor())
+                if (surfaceBorder) 0 else dp(k.keyBorder.coerceAtLeast(0)),
+                if (surfaceBorder || k.keyBorder <= 0) 0 else k.getBorderColor())
         }
 
         bg?.setBounds(
@@ -616,7 +619,7 @@ class KeyView(
         }
         if (effects.ripple) drawRipple(canvas, body, effects)
         canvas.restoreToCount(saved)
-        if (surface.overridesBorder) {
+        if (surfaceBorder) {
             val stroke = dp(surface.borderWidth ?: k.keyBorder.toFloat())
             if (stroke > 0f) {
                 surfaceBorderBounds.set(backgroundClipBounds); surfaceBorderBounds.inset(stroke / 2, stroke / 2)

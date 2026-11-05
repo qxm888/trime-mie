@@ -86,6 +86,7 @@ import splitties.views.imageDrawable
 import kotlin.math.abs
 
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 /**
  * Successor of the old InputRoot
@@ -252,12 +253,16 @@ class InputView(
     private fun updateUnifiedBackground() {
         val enabled = com.osfans.trime.ime.appearance.SurfaceAppearance.unifiedBackground(theme.isCustom)
         val background = keyboardWindow.currentBackground.takeIf { enabled }
-        keyboardBackground.imageDrawable = background?.drawable(context, resources.displayMetrics.widthPixels)
-            ?: floatingCardOverride()
-            ?: scope.drawable("keyboard_background")
+        keyboardBackground.imageDrawable = roundedBackground(
+            background?.drawable(context, resources.displayMetrics.widthPixels)
+                ?: floatingCardOverride()
+                ?: scope.drawable("keyboard_background"),
+        )
         // The navigation inset belongs to the painted strip, not an unpainted bottom margin.
         // Keep the toolbar's independent background when unified backgrounds are disabled.
-        bottomPaddingSpace.background = if (!enabled && theme.isCustom)
+        // 这块是铺在键盘最底下的一整条底图，会把背景层刚裁好的两个下圆角重新盖成直角。
+        // 开了四角圆角就让它空着，交给下面那层已经带圆角的背景。
+        bottomPaddingSpace.background = if (!enabled && theme.isCustom && keyboardCornerRadii.none { it > 0f })
             keyboardWindow.currentBackground?.drawable(context, resources.displayMetrics.widthPixels)
             else null
         com.osfans.trime.ime.appearance.BackdropBlur.invalidateBackground(keyboardView)
@@ -767,7 +772,10 @@ class InputView(
             inputViewLocation[1] + visualHeight,
         )
         val preeditRoot = preedit.ui.root
-        if (preeditRoot.visibility == View.VISIBLE && preeditRoot.width > 0 && preeditRoot.height > 0) {
+        // 编码栏槽位无论可见与否都计入悬浮边界：编码出现/消失不再改变上报高度，
+        // 应用窗口不会随之顶起/回落，输入框与键盘（含候选栏）始终保持贴合。
+        // INVISIBLE 视图仍参与布局，此处位置/尺寸有效。
+        if (preeditRoot.width > 0 && preeditRoot.height > 0) {
             preeditRoot.getLocationInWindow(preeditViewLocation)
             outBounds.union(
                 preeditViewLocation[0],
@@ -850,60 +858,119 @@ class InputView(
         }
     }
 
+    /** 键盘面板四角圆角（像素，TL/TR/BR/BL 各两个分量）；0 表示不裁。 */
+    private var keyboardCornerRadii = FloatArray(8)
+
+    /** 工具栏为躲开上圆弧线而让出的左右宽度（像素）。 */
+    private var cornerSideInset = 0
+
+    /** 工具栏自身的左右留白（单手模式），与圆角让位分开记，互不覆盖。 */
+    private var inputBarBasePaddingLeft = 0
+    private var inputBarBasePaddingRight = 0
+
+    /**
+     * 图标行高度处，圆角矩形被弧线吃掉的横向宽度。
+     *
+     * 圆心在 (r, r)：越过 y = r - [iconTopGapPx] 之后左边界才内收，
+     * 内收量 = r - sqrt(r² - (r - y)²)。两端各让这么多，图标就不会被弧线切到。
+     */
+    private fun cornerSideInsetPx(radiusPx: Float, iconTopGapPx: Float): Int {
+        if (radiusPx <= 0f) return 0
+        val dy = radiusPx - iconTopGapPx
+        if (dy <= 0f) return 0
+        val inner = radiusPx * radiusPx - dy * dy
+        if (inner <= 0f) return radiusPx.toInt()
+        return (radiusPx - sqrt(inner)).toInt()
+    }
+
+    /** 工具栏左右内边距 = 单手模式留白 + 圆角让位。两处都在改它，走同一个出口。 */
+    private fun applyInputBarPadding() {
+        inputBar.view.setPadding(
+            inputBarBasePaddingLeft + cornerSideInset,
+            inputBar.view.paddingTop,
+            inputBarBasePaddingRight + cornerSideInset,
+            inputBar.view.paddingBottom,
+        )
+    }
+
+    /**
+     * 给键盘背景套上四角圆角。
+     *
+     * 容器那层 clipPath 是主路径，这一层是兜底：背景自己画成圆的，就不怕某条
+     * 绘制链路上把 clip 吃掉（见 [com.osfans.trime.ime.appearance.CornerClipDrawable]）。
+     */
+    private fun roundedBackground(drawable: android.graphics.drawable.Drawable?): android.graphics.drawable.Drawable? {
+        if (drawable == null) return null
+        return com.osfans.trime.ime.appearance.CornerClipDrawable(drawable).apply { radii = keyboardCornerRadii }
+    }
+
     private fun fallbackFloatingBackColor(): Int = if (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES) {
         0xFF1C1B1F.toInt()
     } else {
         0xFFFFFBFE.toInt()
     }
 
+    /**
+     * 把「键盘四角」落到三处：容器裁剪、背景 drawable 的圆角、窗口底色。
+     *
+     * 单独抽出来是因为它要跑不止一次：InputView 重建时键盘还没挂上，
+     * `KeyboardWindow.lastAttachedId` 可能还是空的，那一刻读到的永远是一套默认值。
+     * 等键盘真正挂载、布局尺寸定下来之后必须再读一次，否则设置就白存了。
+     */
+    private fun applyKeyboardCorners(forceWindowBackdrop: Boolean = false) {
+        val corners = com.osfans.trime.ime.appearance.SurfaceAppearance.keyboardCorners(theme.isCustom)
+        val resolved = corners.ifEmpty {
+            List(4) { if (isFloatingKeyboardEnabled) keyboardPrefs.floatingKeyboardCornerRadius.getValue().toFloat() else 0f }
+        }
+        com.osfans.trime.util.DiagnosticLog.event("keyboard", "corners", "floating=$isFloatingKeyboardEnabled custom=${theme.isCustom} raw=$corners resolved=$resolved")
+        com.osfans.trime.ime.appearance.SurfaceAppearance.recordAppliedCorners(resolved)
+        val pixelCorners = resolved.map { dp(it) }
+        keyboardCornerRadii = FloatArray(8) { pixelCorners.getOrElse(it / 2) { 0f } }
+        (keyboardBackground.imageDrawable as? com.osfans.trime.ime.appearance.CornerClipDrawable)?.radii = keyboardCornerRadii
+        (keyboardView as? FloatingKeyboardContainer)?.setCornerRadii(pixelCorners)
+        // 工具栏两端不能压在弧线上。整行下移（加高上边）会把键盘顶出可视区：
+        // 实测工具栏被整条裁掉、圆角跟着消失，编辑框还悬在半空——输入法窗口的高度
+        // 由内容决定，键盘自己长高只会向上溢出。所以改成横向让位：只把两端 Icon
+        // 从弧线里挪出来，高度、键区、候选词位置全都不动。
+        //
+        // 直角坐标里圆心是 (r, r)，图标上沿在 y0 时，圆角矩形的左边界内收到
+        // r - sqrt(r² - (r - y0)²)，这就是两端各自要让开的宽度。
+        val sideInset = cornerSideInsetPx(
+            maxOf(pixelCorners.getOrElse(0) { 0f }, pixelCorners.getOrElse(1) { 0f }),
+            dp(TOOLBAR_ICON_TOP_GAP_DP).toFloat(),
+        )
+        if (sideInset != cornerSideInset) {
+            cornerSideInset = sideInset
+            applyInputBarPadding()
+        }
+        // 圆角裁掉的那四个角必须露出后面的应用，所以窗口底色要跟着透明化。
+        // 只在真的开了圆角时才透明：关掉时恢复主题的 windowBackground，
+        // 免得把原本靠窗口底色兜底的区域变成透空。
+        service.setInputWindowBackdropTransparent(resolved.any { it > 0f }, forceWindowBackdrop)
+    }
+
+    /** 窗口每次显示都调一次：此时窗口记录是新的，底色和轮廓要重新落。 */
+    fun refreshSurfaceCorners() = applyKeyboardCorners(forceWindowBackdrop = true)
+
     /** Styles the floating card and resize handles; docked mode strips both. */
     private fun configureFloatingSurface(enabled: Boolean) {
         val surface = keyboardView as FloatingKeyboardContainer
-        val corners = com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom).keyboardCorners
-        val resolvedCorners = if (corners.isNotEmpty()) corners else List(4) { if (enabled) keyboardPrefs.floatingKeyboardCornerRadius.getValue().toFloat() else 0f }
-        com.osfans.trime.util.DiagnosticLog.event("keyboard", "corners", "floating=$enabled custom=${theme.isCustom} raw=$corners resolved=$resolvedCorners")
-        surface.setCornerRadii(resolvedCorners.map { dp(it) })
-        // Docked keyboards draw their background/toolbar from sibling layers inside this
-        // view; clip the whole input view so the four-corner setting also works when the
-        // keyboard is not floating.
-        if (!enabled && resolvedCorners.any { it > 0f }) {
-            val pixelCorners = resolvedCorners.map { dp(it) }
-            clipToOutline = true
-            outlineProvider = object : android.view.ViewOutlineProvider() {
-                override fun getOutline(view: android.view.View, outline: android.graphics.Outline) {
-                    if (android.os.Build.VERSION.SDK_INT >= 30) {
-                        val path = android.graphics.Path().apply {
-                            addRoundRect(
-                                android.graphics.RectF(0f, 0f, view.width.toFloat(), view.height.toFloat()),
-                                FloatArray(8) { pixelCorners.getOrElse(it / 2) { 0 }.toFloat() },
-                                android.graphics.Path.Direction.CW,
-                            )
-                        }
-                        outline.setPath(path)
-                    } else {
-                        outline.setRoundRect(0, 0, view.width, view.height, pixelCorners.maxOrNull()?.toFloat() ?: 0f)
-                    }
-                }
-            }
-        } else {
-            clipToOutline = false
-        }
+        applyKeyboardCorners()
         if (enabled) {
             val cardOverride = floatingCardOverride()
             val backColor = resolveFloatingBackColor()
             surface.background = cardOverride ?: GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
-                cornerRadii = resolvedCorners.flatMap { listOf(dp(it), dp(it)) }.toFloatArray()
+                cornerRadii = keyboardCornerRadii.copyOf()
                 setColor(backColor)
             }
-            surface.clipToOutline = false // Four independent corners are clipped by the container path.
+            // clipToOutline 由 applyKeyboardCorners 按四角设置，这里不要覆盖。
             surface.elevation = dp(FLOATING_KEYBOARD_ELEVATION_DP)
             surface.isClickable = true
             surface.contentDescription = context.getString(R.string.floating_keyboard_drag_handle)
             surface.setOnClickListener { }
         } else {
             surface.background = null
-            surface.clipToOutline = false
             surface.elevation = 0f
             surface.isClickable = false
             surface.contentDescription = null
@@ -957,6 +1024,7 @@ class InputView(
                 context,
                 isFloatingKeyboardEnabled,
             ).apply {
+                alpha = if (resources.configuration.isLandscape()) keyboardPrefs.landscapeOpacity.getValue().coerceIn(20, 100) / 100f else 1f
                 isMotionEventSplittingEnabled = true
                 add(
                     keyboardBackground,
@@ -1021,6 +1089,9 @@ class InputView(
             }
         }
         configureFloatingSurface(isFloatingKeyboardEnabled)
+        // 这时键盘往往还没挂上，lastAttachedId 指向的不是这一页，四角会读成默认值。
+        // 等尺寸定下来再读一次，才是真正的「显示中的这一页」。
+        keyboardView.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> applyKeyboardCorners() }
 
         updateWindowViewHeightJob =
             service.lifecycleScope.launch {
@@ -1140,7 +1211,9 @@ class InputView(
                 endOfParent()
             }
             preedit.ui.root.setPadding(0, 0, 0, 0)
-            inputBar.view.setPadding(0, 0, 0, 0)
+            inputBarBasePaddingLeft = 0
+            inputBarBasePaddingRight = 0
+            applyInputBarPadding()
             return
         }
         bottomPaddingSpace.updateLayoutParams { height = keyboardBottomPaddingPx + dockedNavigationInset }
@@ -1156,7 +1229,9 @@ class InputView(
             endToStartOf(rightPaddingSpace)
         }
         preedit.ui.root.setPadding(left, 0, right, 0)
-        inputBar.view.setPadding(left, 0, right, 0)
+        inputBarBasePaddingLeft = left
+        inputBarBasePaddingRight = right
+        applyInputBarPadding()
     }
 
     override fun onApplyWindowInsets(insets: WindowInsets): WindowInsets {

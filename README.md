@@ -6,7 +6,17 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前交接版本：**V3.3.0 / versionCode 20270101**，正式安装包 `trime-mie-v3.3.0.apk`。新增内容以 Releases 实际状态为准。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+> 当前版本：**V3.3.2 / versionCode 20270103**，正式安装包 `trime-mie-v3.3.2.apk`。新增内容以 Releases 实际状态为准。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+
+## V3.3.2 键灵蹦跳踩键与 UR 伙伴
+
+- 58 位键灵统一改为站姿蹦跳、左右脚交替踩迷你键盘，手部做挥手和平衡动作；小咩新增站立四表情，猴哥优化完整形象。
+- 收紧迷你键盘底部留白，同键连按重新起跳，快速输入自适应缩短动作；拖动、缩放和回位继续可用。
+- 新增 UR 小咩、猴哥及独立兑换记录；小咩专属兑换，其余 UR 入池，总基础概率 0.5%，增加 200 次 UR 保底。
+- 横屏键盘增加透明度；符号面板改为四列导航；输入统计增加合并字词云；键盘 YAML 改为分区、每键一行的易读格式。
+- 6 项本地测试及 .33 手机咩2专项通过，58 位角色各检查 3 个落脚点。正式 APK 已完成构建和原签名核对。
+
+[更新说明](docs/v3.3.2/更新说明.md) · [验证范围](docs/v3.3.2/验证记录.md)。
 
 ## V3.3.0 典藏伙伴与商店兑换口
 
@@ -163,7 +173,7 @@
 
 ## 下载与安装
 
-1. 已发布版本可在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 下载；当前本地交付包为 `trime-mie-v3.1.13.apk`。
+1. 已发布版本可在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 下载；当前正式安装包为 `trime-mie-v3.3.2.apk`。
 2. 允许浏览器或文件管理器安装该 APK，安装后在系统设置启用“同文输入法咩版”并选为当前输入法。
 3. 配置 Rime 方案与词库并部署。需要沿用旧目录时，按[使用指南](docs/使用指南.md)切换外部目录。
 

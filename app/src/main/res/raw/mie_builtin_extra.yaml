@@ -1,132 +1,40 @@
+# 同文咩版内置布局 · UTF-8
+# 参考夜澜听雨十列主题：分区说明、每键一行、按行留白。
+# width 为百分比，height 为行高；mie.row 是编辑器行号。
+# 修改绑定和符号请保留原 ID、导航、配色、mie 元数据。
+
 mie:
   format: trime-custom-keyboards-yaml
   version: 1
+
+# ── 键盘布局 ──
 preset_keyboards:
+
+  # ── 薄荷绿 · 键盘中心 ──
   custom_mint_hub:
     name: 薄荷绿 · 键盘中心
     keyboard_back_color: '#F7F9F8'
     vertical_gap: 8
     horizontal_gap: 5
     keys:
-    - label: 选择键盘
-      width: 100
-      key_back_color: '#00000000'
-      key_text_color: '#3F5A4E'
-      key_text_size: '12'
-      height: 36
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '0'
-      key_border_color: '#B8D0C3'
-    - label: 26键
-      click: Keyboard_custom_mint
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 9键
-      click: Keyboard_custom_mint_9
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 14键
-      click: Keyboard_custom_mint_14
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 18键
-      click: Keyboard_custom_mint_18
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 数字
-      click: Keyboard_custom_mint_num
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 符号
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 表情
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 英文
-      click: Keyboard_custom_mint_en
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 返回
-      click: Keyboard_default
-      width: 100
-      key_back_color: '#E6F2EA'
-      key_text_color: '#3F5A4E'
-      key_text_size: '15'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
+
+    # 第 1 行
+    - {label: 选择键盘, width: 100, key_back_color: '#00000000', key_text_color: '#3F5A4E', key_text_size: '12', height: 36, mie: {row: 1}, round_corner: '6', key_border: '0', key_border_color: '#B8D0C3'}
+
+    # 第 2 行
+    - {label: 26键, click: Keyboard_custom_mint, width: 25, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '17', height: 52, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 9键, click: Keyboard_custom_mint_9, width: 25, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '17', height: 52, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 14键, click: Keyboard_custom_mint_14, width: 25, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '17', height: 52, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 18键, click: Keyboard_custom_mint_18, width: 25, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '17', height: 52, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+
+    # 第 3 行
+    - {label: 数字, click: Keyboard_custom_mint_num, width: 25, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '17', height: 52, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 符号, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}', width: 25, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '17', height: 52, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 表情, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}', width: 25, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '17', height: 52, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 英文, click: Keyboard_custom_mint_en, width: 25, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '17', height: 52, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+
+    # 第 4 行
+    - {label: 返回, click: Keyboard_default, width: 100, key_back_color: '#E6F2EA', key_text_color: '#3F5A4E', key_text_size: '15', height: 52, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
     mie:
       keyboardHeightDp: 251
       rowMargin: 1
@@ -330,360 +238,55 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_mint
+
+  # ── 薄荷绿 · 更多符号 ──
   custom_mint_symbols_more:
     name: 薄荷绿 · 更多符号
     keyboard_back_color: '#F7F9F8'
     vertical_gap: 8
     horizontal_gap: 5
     keys:
-    - label: 表情
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 全emoji
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji_full","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 数学
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 英文
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 中文
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 常用
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 符号表
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"symbollist","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 列表
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"list","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: IDS
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"ids","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 特殊
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"special","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 拼音
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"pinyin","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 拉丁
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"latin","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 假名
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"kana","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 希腊
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"greek","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 俄语
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"russian","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 韩文
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"korean","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 音标
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"phonetic","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 单位
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"unit","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 颜文字
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"kaomoji","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 组合
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"combo","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 箭头
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"arrows","label":"表情与符号"}
-      width: 25.0
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 5
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 几何
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"geometry","label":"表情与符号"}
-      width: 25.0
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 5
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 天气
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"weather","label":"表情与符号"}
-      width: 25.0
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 5
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 货币
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"currency","label":"表情与符号"}
-      width: 25.0
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 5
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 返回
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
-      width: 20
-      key_back_color: '#E6F2EA'
-      key_text_color: '#3F5A4E'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 更多
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
-      width: 20
-      key_back_color: '#E6F2EA'
-      key_text_color: '#3F5A4E'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 空格
-      click: space
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#3F5A4E'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 删除
-      click: BackSpace
-      width: 20
-      key_back_color: '#E6F2EA'
-      key_text_color: '#3F5A4E'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B8D0C3'
-    - label: 回车
-      click: Return
-      width: 20
-      key_back_color: '#7BC8A4'
-      key_text_color: '#FFFFFF'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '0'
-      key_border_color: '#B8D0C3'
+
+    # 第 1 行
+    - {label: 表情, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 全emoji, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji_full","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 数学, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 英文, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 中文, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+
+    # 第 2 行
+    - {label: 常用, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 符号表, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"symbollist","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 列表, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"list","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: IDS, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"ids","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 特殊, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"special","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+
+    # 第 3 行
+    - {label: 拼音, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"pinyin","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 拉丁, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"latin","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 假名, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"kana","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 希腊, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"greek","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 俄语, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"russian","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+
+    # 第 4 行
+    - {label: 韩文, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"korean","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 音标, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"phonetic","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 单位, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"unit","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 颜文字, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"kaomoji","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 组合, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"combo","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+
+    # 第 5 行
+    - {label: 箭头, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"arrows","label":"表情与符号"}', width: 25.0, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 5}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 几何, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"geometry","label":"表情与符号"}', width: 25.0, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 5}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 天气, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"weather","label":"表情与符号"}', width: 25.0, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 5}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 货币, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"currency","label":"表情与符号"}', width: 25.0, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '14', height: 46, mie: {row: 5}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+
+    # 第 6 行
+    - {label: 返回, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}', width: 20, key_back_color: '#E6F2EA', key_text_color: '#3F5A4E', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 更多, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}', width: 20, key_back_color: '#E6F2EA', key_text_color: '#3F5A4E', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 空格, click: space, width: 20, key_back_color: '#FFFFFF', key_text_color: '#3F5A4E', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 删除, click: BackSpace, width: 20, key_back_color: '#E6F2EA', key_text_color: '#3F5A4E', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '1', key_border_color: '#B8D0C3'}
+    - {label: 回车, click: Return, width: 20, key_back_color: '#7BC8A4', key_text_color: '#FFFFFF', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '0', key_border_color: '#B8D0C3'}
     mie:
       keyboardHeightDp: 251
       rowMargin: 1
@@ -887,131 +490,32 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_mint
+
+  # ── 樱花粉 · 键盘中心 ──
   custom_pink_hub:
     name: 樱花粉 · 键盘中心
     keyboard_back_color: '#FBF7F8'
     vertical_gap: 8
     horizontal_gap: 5
     keys:
-    - label: 选择键盘
-      width: 100
-      key_back_color: '#00000000'
-      key_text_color: '#5E4B50'
-      key_text_size: '12'
-      height: 36
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '0'
-      key_border_color: '#E3C2C8'
-    - label: 26键
-      click: Keyboard_custom_pink
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 9键
-      click: Keyboard_custom_pink_9
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 14键
-      click: Keyboard_custom_pink_14
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 18键
-      click: Keyboard_custom_pink_18
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 数字
-      click: Keyboard_custom_pink_num
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 符号
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 表情
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 英文
-      click: Keyboard_custom_pink_en
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 返回
-      click: Keyboard_default
-      width: 100
-      key_back_color: '#FCEBED'
-      key_text_color: '#5E4B50'
-      key_text_size: '15'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
+
+    # 第 1 行
+    - {label: 选择键盘, width: 100, key_back_color: '#00000000', key_text_color: '#5E4B50', key_text_size: '12', height: 36, mie: {row: 1}, round_corner: '6', key_border: '0', key_border_color: '#E3C2C8'}
+
+    # 第 2 行
+    - {label: 26键, click: Keyboard_custom_pink, width: 25, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '17', height: 52, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 9键, click: Keyboard_custom_pink_9, width: 25, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '17', height: 52, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 14键, click: Keyboard_custom_pink_14, width: 25, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '17', height: 52, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 18键, click: Keyboard_custom_pink_18, width: 25, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '17', height: 52, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+
+    # 第 3 行
+    - {label: 数字, click: Keyboard_custom_pink_num, width: 25, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '17', height: 52, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 符号, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}', width: 25, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '17', height: 52, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 表情, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}', width: 25, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '17', height: 52, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 英文, click: Keyboard_custom_pink_en, width: 25, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '17', height: 52, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+
+    # 第 4 行
+    - {label: 返回, click: Keyboard_default, width: 100, key_back_color: '#FCEBED', key_text_color: '#5E4B50', key_text_size: '15', height: 52, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
     mie:
       keyboardHeightDp: 251
       rowMargin: 1
@@ -1215,360 +719,55 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_pink
+
+  # ── 樱花粉 · 更多符号 ──
   custom_pink_symbols_more:
     name: 樱花粉 · 更多符号
     keyboard_back_color: '#FBF7F8'
     vertical_gap: 8
     horizontal_gap: 5
     keys:
-    - label: 表情
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 全emoji
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji_full","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 数学
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 英文
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 中文
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 常用
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 符号表
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"symbollist","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 列表
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"list","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: IDS
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"ids","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 特殊
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"special","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 拼音
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"pinyin","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 拉丁
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"latin","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 假名
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"kana","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 希腊
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"greek","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 俄语
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"russian","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 韩文
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"korean","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 音标
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"phonetic","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 单位
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"unit","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 颜文字
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"kaomoji","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 组合
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"combo","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 箭头
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"arrows","label":"表情与符号"}
-      width: 25.0
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 5
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 几何
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"geometry","label":"表情与符号"}
-      width: 25.0
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 5
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 天气
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"weather","label":"表情与符号"}
-      width: 25.0
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 5
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 货币
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"currency","label":"表情与符号"}
-      width: 25.0
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 5
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 返回
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FCEBED'
-      key_text_color: '#5E4B50'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 更多
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FCEBED'
-      key_text_color: '#5E4B50'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 空格
-      click: space
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#5E4B50'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 删除
-      click: BackSpace
-      width: 20
-      key_back_color: '#FCEBED'
-      key_text_color: '#5E4B50'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E3C2C8'
-    - label: 回车
-      click: Return
-      width: 20
-      key_back_color: '#F4AEB8'
-      key_text_color: '#FFFFFF'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '0'
-      key_border_color: '#E3C2C8'
+
+    # 第 1 行
+    - {label: 表情, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 全emoji, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji_full","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 数学, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 英文, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 中文, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+
+    # 第 2 行
+    - {label: 常用, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 符号表, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"symbollist","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 列表, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"list","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: IDS, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"ids","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 特殊, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"special","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+
+    # 第 3 行
+    - {label: 拼音, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"pinyin","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 拉丁, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"latin","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 假名, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"kana","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 希腊, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"greek","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 俄语, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"russian","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+
+    # 第 4 行
+    - {label: 韩文, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"korean","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 音标, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"phonetic","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 单位, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"unit","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 颜文字, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"kaomoji","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 组合, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"combo","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+
+    # 第 5 行
+    - {label: 箭头, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"arrows","label":"表情与符号"}', width: 25.0, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 5}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 几何, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"geometry","label":"表情与符号"}', width: 25.0, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 5}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 天气, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"weather","label":"表情与符号"}', width: 25.0, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 5}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 货币, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"currency","label":"表情与符号"}', width: 25.0, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '14', height: 46, mie: {row: 5}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+
+    # 第 6 行
+    - {label: 返回, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}', width: 20, key_back_color: '#FCEBED', key_text_color: '#5E4B50', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 更多, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}', width: 20, key_back_color: '#FCEBED', key_text_color: '#5E4B50', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 空格, click: space, width: 20, key_back_color: '#FFFFFF', key_text_color: '#5E4B50', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 删除, click: BackSpace, width: 20, key_back_color: '#FCEBED', key_text_color: '#5E4B50', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '1', key_border_color: '#E3C2C8'}
+    - {label: 回车, click: Return, width: 20, key_back_color: '#F4AEB8', key_text_color: '#FFFFFF', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '0', key_border_color: '#E3C2C8'}
     mie:
       keyboardHeightDp: 251
       rowMargin: 1
@@ -1772,131 +971,32 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_pink
+
+  # ── 浅天蓝 · 键盘中心 ──
   custom_blue_hub:
     name: 浅天蓝 · 键盘中心
     keyboard_back_color: '#F7F9FB'
     vertical_gap: 8
     horizontal_gap: 5
     keys:
-    - label: 选择键盘
-      width: 100
-      key_back_color: '#00000000'
-      key_text_color: '#43586B'
-      key_text_size: '12'
-      height: 36
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '0'
-      key_border_color: '#B9D4E6'
-    - label: 26键
-      click: Keyboard_custom_blue
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 9键
-      click: Keyboard_custom_blue_9
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 14键
-      click: Keyboard_custom_blue_14
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 18键
-      click: Keyboard_custom_blue_18
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 数字
-      click: Keyboard_custom_blue_num
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 符号
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 表情
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 英文
-      click: Keyboard_custom_blue_en
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 返回
-      click: Keyboard_default
-      width: 100
-      key_back_color: '#E7F3FC'
-      key_text_color: '#43586B'
-      key_text_size: '15'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
+
+    # 第 1 行
+    - {label: 选择键盘, width: 100, key_back_color: '#00000000', key_text_color: '#43586B', key_text_size: '12', height: 36, mie: {row: 1}, round_corner: '6', key_border: '0', key_border_color: '#B9D4E6'}
+
+    # 第 2 行
+    - {label: 26键, click: Keyboard_custom_blue, width: 25, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '17', height: 52, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 9键, click: Keyboard_custom_blue_9, width: 25, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '17', height: 52, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 14键, click: Keyboard_custom_blue_14, width: 25, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '17', height: 52, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 18键, click: Keyboard_custom_blue_18, width: 25, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '17', height: 52, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+
+    # 第 3 行
+    - {label: 数字, click: Keyboard_custom_blue_num, width: 25, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '17', height: 52, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 符号, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}', width: 25, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '17', height: 52, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 表情, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}', width: 25, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '17', height: 52, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 英文, click: Keyboard_custom_blue_en, width: 25, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '17', height: 52, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+
+    # 第 4 行
+    - {label: 返回, click: Keyboard_default, width: 100, key_back_color: '#E7F3FC', key_text_color: '#43586B', key_text_size: '15', height: 52, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
     mie:
       keyboardHeightDp: 251
       rowMargin: 1
@@ -2100,360 +1200,55 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_blue
+
+  # ── 浅天蓝 · 更多符号 ──
   custom_blue_symbols_more:
     name: 浅天蓝 · 更多符号
     keyboard_back_color: '#F7F9FB'
     vertical_gap: 8
     horizontal_gap: 5
     keys:
-    - label: 表情
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 全emoji
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji_full","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 数学
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 英文
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 中文
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 常用
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 符号表
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"symbollist","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 列表
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"list","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: IDS
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"ids","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 特殊
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"special","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 拼音
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"pinyin","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 拉丁
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"latin","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 假名
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"kana","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 希腊
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"greek","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 俄语
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"russian","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 韩文
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"korean","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 音标
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"phonetic","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 单位
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"unit","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 颜文字
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"kaomoji","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 组合
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"combo","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 箭头
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"arrows","label":"表情与符号"}
-      width: 25.0
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 5
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 几何
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"geometry","label":"表情与符号"}
-      width: 25.0
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 5
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 天气
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"weather","label":"表情与符号"}
-      width: 25.0
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 5
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 货币
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"currency","label":"表情与符号"}
-      width: 25.0
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 5
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 返回
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
-      width: 20
-      key_back_color: '#E7F3FC'
-      key_text_color: '#43586B'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 更多
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
-      width: 20
-      key_back_color: '#E7F3FC'
-      key_text_color: '#43586B'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 空格
-      click: space
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#43586B'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 删除
-      click: BackSpace
-      width: 20
-      key_back_color: '#E7F3FC'
-      key_text_color: '#43586B'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#B9D4E6'
-    - label: 回车
-      click: Return
-      width: 20
-      key_back_color: '#96CBF4'
-      key_text_color: '#FFFFFF'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '0'
-      key_border_color: '#B9D4E6'
+
+    # 第 1 行
+    - {label: 表情, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 全emoji, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji_full","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 数学, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 英文, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 中文, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+
+    # 第 2 行
+    - {label: 常用, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 符号表, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"symbollist","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 列表, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"list","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: IDS, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"ids","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 特殊, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"special","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+
+    # 第 3 行
+    - {label: 拼音, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"pinyin","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 拉丁, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"latin","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 假名, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"kana","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 希腊, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"greek","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 俄语, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"russian","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+
+    # 第 4 行
+    - {label: 韩文, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"korean","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 音标, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"phonetic","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 单位, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"unit","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 颜文字, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"kaomoji","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 组合, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"combo","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+
+    # 第 5 行
+    - {label: 箭头, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"arrows","label":"表情与符号"}', width: 25.0, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 5}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 几何, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"geometry","label":"表情与符号"}', width: 25.0, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 5}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 天气, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"weather","label":"表情与符号"}', width: 25.0, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 5}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 货币, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"currency","label":"表情与符号"}', width: 25.0, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '14', height: 46, mie: {row: 5}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+
+    # 第 6 行
+    - {label: 返回, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}', width: 20, key_back_color: '#E7F3FC', key_text_color: '#43586B', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 更多, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}', width: 20, key_back_color: '#E7F3FC', key_text_color: '#43586B', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 空格, click: space, width: 20, key_back_color: '#FFFFFF', key_text_color: '#43586B', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 删除, click: BackSpace, width: 20, key_back_color: '#E7F3FC', key_text_color: '#43586B', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '1', key_border_color: '#B9D4E6'}
+    - {label: 回车, click: Return, width: 20, key_back_color: '#96CBF4', key_text_color: '#FFFFFF', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '0', key_border_color: '#B9D4E6'}
     mie:
       keyboardHeightDp: 251
       rowMargin: 1
@@ -2657,131 +1452,32 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_blue
+
+  # ── 杏子橙 · 键盘中心 ──
   custom_orange_hub:
     name: 杏子橙 · 键盘中心
     keyboard_back_color: '#FBF8F5'
     vertical_gap: 8
     horizontal_gap: 5
     keys:
-    - label: 选择键盘
-      width: 100
-      key_back_color: '#00000000'
-      key_text_color: '#6B564A'
-      key_text_size: '12'
-      height: 36
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '0'
-      key_border_color: '#E5C7AE'
-    - label: 26键
-      click: Keyboard_custom_orange
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 9键
-      click: Keyboard_custom_orange_9
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 14键
-      click: Keyboard_custom_orange_14
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 18键
-      click: Keyboard_custom_orange_18
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 数字
-      click: Keyboard_custom_orange_num
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 符号
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 表情
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 英文
-      click: Keyboard_custom_orange_en
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 返回
-      click: Keyboard_default
-      width: 100
-      key_back_color: '#FFF0E2'
-      key_text_color: '#6B564A'
-      key_text_size: '15'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
+
+    # 第 1 行
+    - {label: 选择键盘, width: 100, key_back_color: '#00000000', key_text_color: '#6B564A', key_text_size: '12', height: 36, mie: {row: 1}, round_corner: '6', key_border: '0', key_border_color: '#E5C7AE'}
+
+    # 第 2 行
+    - {label: 26键, click: Keyboard_custom_orange, width: 25, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '17', height: 52, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 9键, click: Keyboard_custom_orange_9, width: 25, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '17', height: 52, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 14键, click: Keyboard_custom_orange_14, width: 25, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '17', height: 52, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 18键, click: Keyboard_custom_orange_18, width: 25, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '17', height: 52, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+
+    # 第 3 行
+    - {label: 数字, click: Keyboard_custom_orange_num, width: 25, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '17', height: 52, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 符号, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}', width: 25, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '17', height: 52, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 表情, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}', width: 25, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '17', height: 52, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 英文, click: Keyboard_custom_orange_en, width: 25, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '17', height: 52, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+
+    # 第 4 行
+    - {label: 返回, click: Keyboard_default, width: 100, key_back_color: '#FFF0E2', key_text_color: '#6B564A', key_text_size: '15', height: 52, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
     mie:
       keyboardHeightDp: 251
       rowMargin: 1
@@ -2985,360 +1681,55 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_orange
+
+  # ── 杏子橙 · 更多符号 ──
   custom_orange_symbols_more:
     name: 杏子橙 · 更多符号
     keyboard_back_color: '#FBF8F5'
     vertical_gap: 8
     horizontal_gap: 5
     keys:
-    - label: 表情
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 全emoji
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji_full","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 数学
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 英文
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 中文
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 常用
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 符号表
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"symbollist","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 列表
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"list","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: IDS
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"ids","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 特殊
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"special","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 拼音
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"pinyin","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 拉丁
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"latin","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 假名
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"kana","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 希腊
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"greek","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 俄语
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"russian","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 韩文
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"korean","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 音标
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"phonetic","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 单位
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"unit","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 颜文字
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"kaomoji","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 组合
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"combo","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 箭头
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"arrows","label":"表情与符号"}
-      width: 25.0
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 5
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 几何
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"geometry","label":"表情与符号"}
-      width: 25.0
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 5
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 天气
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"weather","label":"表情与符号"}
-      width: 25.0
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 5
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 货币
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"currency","label":"表情与符号"}
-      width: 25.0
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 5
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 返回
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFF0E2'
-      key_text_color: '#6B564A'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 更多
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFF0E2'
-      key_text_color: '#6B564A'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 空格
-      click: space
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#6B564A'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 删除
-      click: BackSpace
-      width: 20
-      key_back_color: '#FFF0E2'
-      key_text_color: '#6B564A'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#E5C7AE'
-    - label: 回车
-      click: Return
-      width: 20
-      key_back_color: '#F7BD99'
-      key_text_color: '#FFFFFF'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '0'
-      key_border_color: '#E5C7AE'
+
+    # 第 1 行
+    - {label: 表情, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 全emoji, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji_full","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 数学, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 英文, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 中文, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+
+    # 第 2 行
+    - {label: 常用, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 符号表, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"symbollist","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 列表, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"list","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: IDS, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"ids","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 特殊, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"special","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+
+    # 第 3 行
+    - {label: 拼音, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"pinyin","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 拉丁, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"latin","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 假名, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"kana","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 希腊, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"greek","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 俄语, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"russian","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+
+    # 第 4 行
+    - {label: 韩文, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"korean","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 音标, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"phonetic","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 单位, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"unit","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 颜文字, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"kaomoji","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 组合, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"combo","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+
+    # 第 5 行
+    - {label: 箭头, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"arrows","label":"表情与符号"}', width: 25.0, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 5}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 几何, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"geometry","label":"表情与符号"}', width: 25.0, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 5}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 天气, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"weather","label":"表情与符号"}', width: 25.0, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 5}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 货币, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"currency","label":"表情与符号"}', width: 25.0, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '14', height: 46, mie: {row: 5}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+
+    # 第 6 行
+    - {label: 返回, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}', width: 20, key_back_color: '#FFF0E2', key_text_color: '#6B564A', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 更多, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}', width: 20, key_back_color: '#FFF0E2', key_text_color: '#6B564A', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 空格, click: space, width: 20, key_back_color: '#FFFFFF', key_text_color: '#6B564A', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 删除, click: BackSpace, width: 20, key_back_color: '#FFF0E2', key_text_color: '#6B564A', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '1', key_border_color: '#E5C7AE'}
+    - {label: 回车, click: Return, width: 20, key_back_color: '#F7BD99', key_text_color: '#FFFFFF', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '0', key_border_color: '#E5C7AE'}
     mie:
       keyboardHeightDp: 251
       rowMargin: 1
@@ -3542,131 +1933,32 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_orange
+
+  # ── 薰衣紫 · 键盘中心 ──
   custom_purple_hub:
     name: 薰衣紫 · 键盘中心
     keyboard_back_color: '#F9F7FC'
     vertical_gap: 8
     horizontal_gap: 5
     keys:
-    - label: 选择键盘
-      width: 100
-      key_back_color: '#00000000'
-      key_text_color: '#574B66'
-      key_text_size: '12'
-      height: 36
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '0'
-      key_border_color: '#D3BFE6'
-    - label: 26键
-      click: Keyboard_custom_purple
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 9键
-      click: Keyboard_custom_purple_9
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 14键
-      click: Keyboard_custom_purple_14
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 18键
-      click: Keyboard_custom_purple_18
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 数字
-      click: Keyboard_custom_purple_num
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 符号
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 表情
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 英文
-      click: Keyboard_custom_purple_en
-      width: 25
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '17'
-      height: 52
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 返回
-      click: Keyboard_default
-      width: 100
-      key_back_color: '#F1E9FC'
-      key_text_color: '#574B66'
-      key_text_size: '15'
-      height: 52
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
+
+    # 第 1 行
+    - {label: 选择键盘, width: 100, key_back_color: '#00000000', key_text_color: '#574B66', key_text_size: '12', height: 36, mie: {row: 1}, round_corner: '6', key_border: '0', key_border_color: '#D3BFE6'}
+
+    # 第 2 行
+    - {label: 26键, click: Keyboard_custom_purple, width: 25, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '17', height: 52, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 9键, click: Keyboard_custom_purple_9, width: 25, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '17', height: 52, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 14键, click: Keyboard_custom_purple_14, width: 25, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '17', height: 52, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 18键, click: Keyboard_custom_purple_18, width: 25, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '17', height: 52, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+
+    # 第 3 行
+    - {label: 数字, click: Keyboard_custom_purple_num, width: 25, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '17', height: 52, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 符号, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}', width: 25, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '17', height: 52, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 表情, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}', width: 25, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '17', height: 52, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 英文, click: Keyboard_custom_purple_en, width: 25, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '17', height: 52, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+
+    # 第 4 行
+    - {label: 返回, click: Keyboard_default, width: 100, key_back_color: '#F1E9FC', key_text_color: '#574B66', key_text_size: '15', height: 52, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
     mie:
       keyboardHeightDp: 251
       rowMargin: 1
@@ -3870,360 +2162,55 @@ preset_keyboards:
         elevation: 6
         itemElevation: 0
       secondaryOf: custom_purple
+
+  # ── 薰衣紫 · 更多符号 ──
   custom_purple_symbols_more:
     name: 薰衣紫 · 更多符号
     keyboard_back_color: '#F9F7FC'
     vertical_gap: 8
     horizontal_gap: 5
     keys:
-    - label: 表情
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 全emoji
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji_full","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 数学
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 英文
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 中文
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 1
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 常用
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 符号表
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"symbollist","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 列表
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"list","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: IDS
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"ids","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 特殊
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"special","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 2
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 拼音
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"pinyin","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 拉丁
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"latin","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 假名
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"kana","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 希腊
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"greek","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 俄语
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"russian","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 3
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 韩文
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"korean","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 音标
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"phonetic","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 单位
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"unit","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 颜文字
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"kaomoji","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 组合
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"combo","label":"表情与符号"}
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 4
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 箭头
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"arrows","label":"表情与符号"}
-      width: 25.0
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 5
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 几何
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"geometry","label":"表情与符号"}
-      width: 25.0
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 5
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 天气
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"weather","label":"表情与符号"}
-      width: 25.0
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 5
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 货币
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"currency","label":"表情与符号"}
-      width: 25.0
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '14'
-      height: 46
-      mie:
-        row: 5
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 返回
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}
-      width: 20
-      key_back_color: '#F1E9FC'
-      key_text_color: '#574B66'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 更多
-      click: __mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}
-      width: 20
-      key_back_color: '#F1E9FC'
-      key_text_color: '#574B66'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 空格
-      click: space
-      width: 20
-      key_back_color: '#FFFFFF'
-      key_text_color: '#574B66'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 删除
-      click: BackSpace
-      width: 20
-      key_back_color: '#F1E9FC'
-      key_text_color: '#574B66'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '1'
-      key_border_color: '#D3BFE6'
-    - label: 回车
-      click: Return
-      width: 20
-      key_back_color: '#C9A6ED'
-      key_text_color: '#FFFFFF'
-      key_text_size: '13'
-      height: 52
-      mie:
-        row: 6
-      round_corner: '6'
-      key_border: '0'
-      key_border_color: '#D3BFE6'
+
+    # 第 1 行
+    - {label: 表情, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji","label":"表情"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 全emoji, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"emoji_full","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 数学, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"math","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 英文, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 中文, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"chinese","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 1}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+
+    # 第 2 行
+    - {label: 常用, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 符号表, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"symbollist","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 列表, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"list","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: IDS, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"ids","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 特殊, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"special","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 2}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+
+    # 第 3 行
+    - {label: 拼音, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"pinyin","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 拉丁, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"latin","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 假名, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"kana","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 希腊, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"greek","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 俄语, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"russian","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 3}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+
+    # 第 4 行
+    - {label: 韩文, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"korean","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 音标, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"phonetic","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 单位, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"unit","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 颜文字, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"kaomoji","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 组合, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"combo","label":"表情与符号"}', width: 20, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 4}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+
+    # 第 5 行
+    - {label: 箭头, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"arrows","label":"表情与符号"}', width: 25.0, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 5}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 几何, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"geometry","label":"表情与符号"}', width: 25.0, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 5}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 天气, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"weather","label":"表情与符号"}', width: 25.0, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 5}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 货币, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"currency","label":"表情与符号"}', width: 25.0, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '14', height: 46, mie: {row: 5}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+
+    # 第 6 行
+    - {label: 返回, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"english","label":"表情与符号"}', width: 20, key_back_color: '#F1E9FC', key_text_color: '#574B66', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 更多, click: '__mie_action:{"send":"FUNCTION","command":"__mie_symbols","option":"common","label":"表情与符号"}', width: 20, key_back_color: '#F1E9FC', key_text_color: '#574B66', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 空格, click: space, width: 20, key_back_color: '#FFFFFF', key_text_color: '#574B66', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 删除, click: BackSpace, width: 20, key_back_color: '#F1E9FC', key_text_color: '#574B66', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '1', key_border_color: '#D3BFE6'}
+    - {label: 回车, click: Return, width: 20, key_back_color: '#C9A6ED', key_text_color: '#FFFFFF', key_text_size: '13', height: 52, mie: {row: 6}, round_corner: '6', key_border: '0', key_border_color: '#D3BFE6'}
     mie:
       keyboardHeightDp: 251
       rowMargin: 1

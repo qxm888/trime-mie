@@ -160,6 +160,7 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
         if (pageId == "theme") preferenceScreen.addPreference("配色组", "新建日间 / 夜间主题组合，跟随系统切换") { startActivity(Intent(requireContext(), KeyboardColorGroupsActivity::class.java)) }
         if (pageId == "theme") preferenceScreen.addPreference("主题键盘字体与字号", "按键、符号、注解、候选和工具栏分别设置") { startActivity(Intent(requireContext(), FontSettingsActivity::class.java)) }
         if (pageId == "layout") preferenceScreen.addPreference("自定义功能", "命名并组合多个动作，供按键和工具栏绑定") { NamedFunctionsEditor.show(requireActivity()) }
+        if (pageId == "hardware") preferenceScreen.addPreference("自定义组合键", "Ctrl+Enter、Ctrl+Alt+Del 等组合触发自定义动作，先于应用拦截") { ComboKeysEditor.show(requireActivity()) }
         if (pageId == "transfer") preferenceScreen.addPreference("整包备份与恢复", "打包全部设置与键盘资源到 rime/mie，支持一键导入") { startActivity(Intent(requireContext(), FullBackupActivity::class.java)) }
         if (pageId == "voice") preferenceScreen.addPreference("识别服务与模型", "在线服务、离线模型、下载与导入") { startActivity(Intent(requireContext(), VoiceSettingsActivity::class.java)) }
         if (pageId == "clipboard") preferenceScreen.addPreference("剪贴板同步", "SyncClipboard / WebDAV · 文本、图片和文件，默认关闭") { startActivity(Intent(requireContext(), ClipboardSyncActivity::class.java)) }

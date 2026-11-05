@@ -38,6 +38,26 @@ object FontOverrides {
         check(edit.commit()) { "迁移字体设置失败" }
         snapshot = prefs.all.toMap()
     }
+
+    /** 删除字体文件后调用：把该路径从所有单项/全局字体链里清掉，并失效缓存。 */
+    @Synchronized
+    fun purge(path: String) {
+        val edit = prefs.edit()
+        var changed = false
+        snapshot.keys.filter { it in roles || it.startsWith(GLOBAL_PREFIX) }.forEach { key ->
+            val value = snapshot[key] as? String ?: return@forEach
+            val paths = decode(value)
+            if (path in paths) {
+                edit.putString(key, encode(paths.filterNot { it == path }))
+                changed = true
+            }
+        }
+        if (changed) edit.putLong("version", version + 1)
+        check(edit.commit()) { "清理字体引用失败" }
+        snapshot = prefs.all.toMap()
+        invalidate()
+        if (changed) ThemeManager.requestCustomizationRefresh()
+    }
     fun size(role: String): Float = (snapshot["size.$role"] as? Float ?: 0f).takeIf { it.isFinite() && it in 0f..200f } ?: 0f
     fun setSize(role: String, value: Float) {
         require(role in roles && value.isFinite() && value in 0f..200f)

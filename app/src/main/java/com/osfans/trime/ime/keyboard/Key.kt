@@ -106,6 +106,9 @@ class Key(
     val hintTextSize: Float = keyDef?.hintTextSize ?: 0f
     val roundCorner: Float = keyDef?.roundCorner?.takeIf { it >= 0 } ?: parent.roundCorner
     val keyBorder: Int = keyDef?.keyBorder?.takeIf { it >= 0 } ?: parent.keyBorder
+    /** 这个键自己设过圆角/边框（不是从本页统一值继承来的）。 */
+    val ownRoundCorner: Boolean = keyDef?.ownRoundCorner == true
+    val ownKeyBorder: Boolean = keyDef?.ownKeyBorder == true
     var keyTextOffsetX = 0f
         get() = field + keyOffsetX
     var keyTextOffsetY = 0f

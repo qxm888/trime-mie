@@ -20,7 +20,7 @@ internal class PetPose {
     fun reset() { face=PetFace.CALM;amount=0f;phase=0f;angle=0f;y=0f;squash=0f;backAngle=0f;gaze=0f;interaction=null }
 }
 
-/** One finite reaction track. Keyed motion stays independent from the two live paw tracks. */
+/** One finite reaction track. Facial reactions stay independent from the mini keyboard footstep track. */
 internal class PetReactionPlayer(private val host:View) {
     val pose=PetPose()
     private var animation:ValueAnimator?=null
@@ -34,7 +34,7 @@ internal class PetReactionPlayer(private val host:View) {
     fun key(code:Int,gaze:Float) {
         host.removeCallbacks(rest);pose.gaze=gaze.coerceIn(-1f,1f);presses++
         val now=SystemClock.uptimeMillis()
-        // Keep the paw response immediate; change faces at a comfortable visual cadence.
+        // Keep the key response immediate; change faces at a comfortable visual cadence.
         if(now-lastTrigger<270) return
         lastTrigger=now
         val slot=(sequence++ + seed)%6

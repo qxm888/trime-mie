@@ -146,10 +146,10 @@ object CustomKeyboards {
 
         fun effectivePortraitHeightDp(): Int = if (keyboardHeightDp > 0) keyboardHeightDp
             else if (importedSkin != null) 240 * importedHeightPercent / 100
-            else rows.sumOf { it.height.coerceIn(24, 160) }.coerceAtLeast(24) * options.heightPercent / 100
+            else rows.sumOf { it.height.coerceIn(1, 160) }.coerceAtLeast(1) * options.heightPercent / 100
         fun effectiveLandscapeHeightDp(): Int = if (landscapeHeightDp > 0) landscapeHeightDp
             else if (importedSkin != null) 180 * importedHeightPercent / 100
-            else rows.sumOf { it.height.coerceIn(24, 160) }.coerceAtLeast(24) * options.landscapeHeightPercent / 100
+            else rows.sumOf { it.height.coerceIn(1, 160) }.coerceAtLeast(1) * options.landscapeHeightPercent / 100
 
         fun backgroundFor(context: Context): CustomBackground = if (background?.type == CustomBackground.Type.VIDEO) resolvedBackground() else importedSkin?.layout(context)?.background
             ?.let { CustomBackground(CustomBackground.Type.IMAGE, image = it) } ?: resolvedBackground()
@@ -167,7 +167,12 @@ object CustomKeyboards {
         fun toolbarTextColor(): String? =
             if (importedSkin != null && !hasToolbarOverride()) null else toolbarBackground?.textColor()
 
-        fun maxRowSpacing(): Int = minOf(32, (rows.minOfOrNull { it.height.coerceIn(24, 160) } ?: 60) / 2)
+        /**
+         * 行间距上限只受绝对上限约束，不再跟「最小行高的一半」绑定。
+         * 间距是键内缩：间距越大按键越扁，行数越多越是挤压，
+         * 这是用户自己想调出来的效果，不该由程序替他限制。
+         */
+        fun maxRowSpacing(): Int = 32
 
         fun resolvedBackground(): CustomBackground = (background ?: CustomBackground.fromLegacy(bgColor, bgImage, CustomBackground.KEYBOARD_COLOR)).normalized(CustomBackground.KEYBOARD_COLOR)
     }
@@ -201,7 +206,7 @@ object CustomKeyboards {
     private var builtinExtrasJob: Job? = null
 
     // 只写非默认值：内置五色 300 套键盘的存档从 13.5MB 降到 2MB 级，启动解析更快。
-    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = false }
+    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = false; prettyPrint = true }
 
     /** Bumped on every change so cached keyboards can detect staleness. */
     val version: Long
@@ -250,10 +255,14 @@ object CustomKeyboards {
      * 运行时键盘 id → 真实自定义键盘 id 的统一映射。
      * mergeInto 会把当前使用的键盘额外别名为 "default"，皮肤/按键覆盖/缓存
      * 判断都必须经此解析，否则别名为 default 时查不到配置。
+     *
+     * 这里**不再按 store.mode 提前返回**：只要键盘库里存在就直接命中。
+     * 模式与主题快照短暂不同步时（切换布局来源、配置刚刚重载），
+     * 早退会让所有 id 都解析不到 —— 键盘背景被置空 → 整块键盘变全透明，
+     * 顶栏工具栏同时塌掉。多解析一步不会有副作用，调用方各自还有 isCustom 守卫。
      */
     fun resolveId(runtimeId: String): String =
         synchronized(lock) {
-            if (store.mode != MODE_CUSTOM) return@synchronized runtimeId
             when {
                 store.keyboards.containsKey(runtimeId) -> runtimeId
 
@@ -738,7 +747,7 @@ object CustomKeyboards {
             CustomRow(row.keys.map { key -> key.copy(
                 width = key.width.takeIf { it.isFinite() && it > 0 }?.coerceAtMost(100f) ?: 10f,
                 bindings = key.bindings.toMutableMap(), bgColor = "", bgImage = "", background = key.resolvedBackground(),
-            ) }.toMutableList(), height = row.height.coerceIn(24, 160), alignment = ButtonAlignment.normalized(row.alignment))
+            ) }.toMutableList(), height = row.height.coerceIn(1, 160), alignment = ButtonAlignment.normalized(row.alignment))
         }.toMutableList().onEachIndexed { index, row ->
             row.margin = kb.rows.getOrNull(index)?.margin?.coerceIn(0, 48)
         },
@@ -910,7 +919,30 @@ object CustomKeyboards {
                 // Editing a set always makes the changed groups local; shared profiles have their own explicit save action.
                 val changedGroups = KeyboardSets.fields.filterValues { fields -> patch.keys.any { it in fields } }.keys
                 val base = KeyboardSets.defaults(config, store.sharedProfiles)
-                root.setConfig = config.copy(defaults = KeyboardSets.overlay(base, patch), profiles = config.profiles - changedGroups)
+                // 圆角/边框一条参数两处存储，改到它就把整套两份写成同一个数，否则页面按另一份旧值渲染。
+                val shape = KeyboardSets.pushedShape(patch, after)
+                var nextDefaults = KeyboardSets.overlay(base, patch)
+                if (shape.isNotEmpty()) nextDefaults = KeyboardSets.syncShape(nextDefaults, shape)
+                root.setConfig = config.copy(defaults = nextDefaults, profiles = config.profiles - changedGroups)
+                // 整套只是一块「批量推送」面板：这次改到的字段，从每一页的独立设置里清掉，
+                // 页面才会真的用上新值。只清改动过的那几个字段，页面其它自定义保留。
+                if (patch.isNotEmpty()) {
+                    val pushPatch = if (shape.isEmpty()) patch else KeyboardSets.overlay(patch, KeyboardSets.shapeProbe(shape))
+                    val appearanceFields = (
+                        (patch["keyAppearance"] as? JsonObject)?.let {
+                            // difference 可能把整组包成 __mie_replace，真正改到的字段在里面。
+                            if ("__mie_replace" in it) (it["__mie_replace"] as? JsonObject)?.keys?.toSet() else it.keys
+                        }.orEmpty() + KeyboardSets.keyShapeFields(shape)).toSet()
+                    KeyboardSets.family(scopeRoot, store.keyboards).forEach { pageId ->
+                        val page = store.keyboards[pageId] ?: return@forEach
+                        // null = 这页从没跟随过整套：先把现值固化成独立设置，否则清完等于把它重置成整套的值。
+                        val overrides = page.setOverrides
+                            ?: JsonObject(KeyboardSets.values(page).filter { (name, value) -> value != base[name] })
+                        // 整套动的按键外观也要覆盖到单键，否则改过的键会一直用自己那份旧值。
+                        store.keyboards[pageId] = KeyboardSetOperations.pushAppearance(
+                            page.copy(setOverrides = KeyboardSets.prune(overrides, pushPatch)), appearanceFields)
+                    }
+                }
             } else {
                 val raw = store.keyboards[id]?.let(::normalizedCopy) ?: return false
                 val before = get(id) ?: return false
@@ -1023,11 +1055,24 @@ object CustomKeyboards {
     private fun token(value: String?): KeyActionToken? =
         value?.let { KeyActionToken.Plain(it) }
 
+    /**
+     * 单键是否自己设过这项形状。整套/页面推下来的值存在 [setStyleOverrides] 里，
+     * 只有那里带了这个字段（且不是 -1 继承）才算这个键自己的选择。
+     */
+    private fun CustomKey.ownShape(field: String, inherited: Float): Boolean {
+        // 有差量表时它才是这个键的真实来源：resolve 已经把页面值烘进 appearance 了。
+        val overrides = setStyleOverrides ?: return inherited >= 0f
+        val explicit = overrides[field]?.let { (it as? JsonPrimitive)?.contentOrNull?.toFloatOrNull() } ?: return false
+        return explicit >= 0f
+    }
+
     fun CustomKey.toTextKey(keyboardBackground: CustomBackground, defaults: KeyAppearance.Style = KeyAppearance.Style()): TextKeyboard.TextKey =
         KeyAppearance.merge(defaults, appearance).toTextKey().let { style -> style.copy(
             label = label,
             allowDefaultVoice = !bindings.containsKey("longClick"),
             width = if (width > 0f) width else 10f,
+            ownRoundCorner = ownShape("roundCorner", appearance.roundCorner),
+            ownKeyBorder = ownShape("keyBorder", appearance.keyBorder.toFloat()),
             keyBackColor = style.keyBackColor.ifEmpty { if (resolvedBackground().type == CustomBackground.Type.COLOR) resolvedBackground().color else "#00000000" },
             hilitedKeyBackColor = style.hilitedKeyBackColor.ifEmpty { KeyAppearance.pressedColor(style.keyBackColor.ifEmpty { resolvedBackground().color }) },
             keyTextColor = style.keyTextColor.ifEmpty { resolvedBackground().textColor(keyboardBackground) },
@@ -1051,7 +1096,7 @@ object CustomKeyboards {
         rows.forEach { row ->
             ButtonAlignment.slots(row).forEachIndexed { index, (key, width) ->
                 val text = key?.toTextKey(resolvedBackground(), keyAppearance) ?: TextKeyboard.TextKey()
-                add(key to text.copy(width = width, height = row.height.coerceIn(24, 160).toFloat(), newRow = index == 0,
+                add(key to text.copy(width = width, height = row.height.coerceIn(1, 160).toFloat(), newRow = index == 0,
                     rowMargin = row.margin ?: rowMargin))
             }
         }
@@ -1067,14 +1112,17 @@ object CustomKeyboards {
 
     fun CustomKeyboard.toTextKeyboard(layoutId: String = ""): TextKeyboard = TextKeyboard(
         name = name, width = 10f, height = 60f, columns = -1,
+        // 按键没自己设形状时回落到这里：本页统一值。键自己的值仍由 per-key 覆盖。
+        roundCorner = keyAppearance.roundCorner,
+        keyBorder = keyAppearance.keyBorder,
         verticalGap = rowSpacing.coerceIn(0, maxRowSpacing()),
         horizontalGap = options.horizontalGap,
         // keyboard_height is the key area only; the toolbar strip sits above it inside the
         // same surface, so an explicit total keyboard height leaves the toolbar its share.
         keyboardHeight = if (keyboardHeightDp > 0) (keyboardHeightDp - effectiveToolbarHeightDp()).coerceAtLeast(24)
-            else rows.sumOf { it.height.coerceIn(24, 160) }.coerceAtLeast(24) * options.heightPercent / 100,
+            else rows.sumOf { it.height.coerceIn(1, 160) }.coerceAtLeast(1) * options.heightPercent / 100,
         keyboardHeightLand = if (landscapeHeightDp > 0) (landscapeHeightDp - effectiveToolbarHeightDp()).coerceAtLeast(24)
-            else rows.sumOf { it.height.coerceIn(24, 160) }.coerceAtLeast(24) * options.landscapeHeightPercent / 100,
+            else rows.sumOf { it.height.coerceIn(1, 160) }.coerceAtLeast(1) * options.landscapeHeightPercent / 100,
         asciiKeyboard = effectiveAsciiTarget(layoutId, this, store.keyboards),
         asciiMode = if (importedSkin != null) { if (importedSkin?.page == "en_26" || importedSkin?.page == "num_9") 1 else 0 } else options.asciiMode,
         resetAsciiMode = importedSkin != null || options.resetAsciiMode,

@@ -314,6 +314,7 @@ class AppPrefs(
             val position: PreferenceDelegate<Int>,
             val offsetY: PreferenceDelegate<Int>,
         )
+        val landscapeOpacity = int(R.string.landscape_opacity, "landscape_opacity", 100, 20, 100, "%", 1)
         val landscapeSizeEnabled = switch(R.string.landscape_size_enabled, "landscape_size_enabled", false, R.string.landscape_size_summary)
         val landscapeWidth = int(R.string.landscape_width, "landscape_width", 70, 40, 100, "%", 1) { landscapeSizeEnabled.getValue() }
         val landscapeHeight = int(R.string.landscape_height, "landscape_height", 40, 20, 70, "%", 1) { landscapeSizeEnabled.getValue() }

@@ -241,20 +241,33 @@ class Keyboard(
             val rows = rowRawHeight.size
             val rawHeightSum = rowRawHeight.sum()
 
+            // 自定义键盘在「自动高度」下，行高是绝对 dp：1dp 就是 1dp。
+            // 旧逻辑把 keyboardHeight 按行高比例分给各行，而 keyboardHeight 又被
+            // 「高度百分比 / 键盘高度」往上抬，于是加一行（甚至加 1dp 间距）总高变大，
+            // 比例随之变大 → 每一行按键都跟着放大一圈，而不是把键盘整体往上推。
+            // 现在：行高固定，多出来的高度摊到行间距里，只有间距变、按键不变。
+            val autoCustomHeight = theme.isCustom && selfConfig != null &&
+                (CustomKeyboards.get(CustomKeyboards.resolveId(keyboardId))?.keyboardHeightDp ?: 0) <= 0
+            val density = context.resources.displayMetrics.density
+            val naturalHeightPx = (rawHeightSum * density).toInt()
+            val keepAbsolute = autoCustomHeight && keyboardHeight >= naturalHeightPx
+            val extraPerGap =
+                if (keepAbsolute && rows > 1) (keyboardHeight - naturalHeightPx) / (rows - 1) else 0
+
             // scaled row heights after fitting into keyboardHeight
             val rowHeightScaled = MutableList(rows) { 0 }
 
             var remainHeight = keyboardHeight
-            val scale = keyboardHeight.toFloat() / rawHeightSum
+            val scale = if (keepAbsolute) density else keyboardHeight.toFloat() / rawHeightSum
 
             // scale row heights to keyboardHeight; last row absorbs rounding errors
             for (i in 0 until rows - 1) {
-                val h = (rowRawHeight[i] * scale).toInt()
+                val h = if (keepAbsolute) (rowRawHeight[i] * density).toInt() else (rowRawHeight[i] * scale).toInt()
                 rowHeightScaled[i] = h
                 remainHeight -= h
             }
 
-            rowHeightScaled[rows - 1] = remainHeight
+            rowHeightScaled[rows - 1] = if (keepAbsolute) (rowRawHeight[rows - 1] * density).toInt() else remainHeight
 
             var xPos = 0
             var yPos = 0
@@ -293,7 +306,7 @@ class Keyboard(
                 if ((textKey.newRow && xPos > rowInset) || column >= maxColumns || xPos + widthPx > allowedWidth) {
                     xPos = 0
                     rowInset = 0
-                    yPos += currentRowHeight
+                    yPos += currentRowHeight + extraPerGap
                     row++
                     column = 0
                     rowWeightAccumulo = 0f

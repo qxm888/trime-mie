@@ -8,6 +8,9 @@ internal object PopupChoices {
     fun rows(count:Int)=ceil(count/5.0).toInt().coerceAtLeast(1)
     fun columns(count:Int)=ceil(count.toDouble()/rows(count)).toInt().coerceAtLeast(1)
     fun rowAt(y:Float,keyHeight:Int,rows:Int)=rows-1-floor(y/keyHeight.coerceAtLeast(1)).toInt()
+    /** 键序列里的 {Left} 之类占位符：显示时一律去掉，绝不能把代码画出来。 */
+    val BRACED = Regex("""\{[^{}]+\}""")
+
     fun compactActionLabel(label: String): String {
         // A short action label is one grapheme, including emoji variation/skin/ZWJ/flag tails.
         var end=Character.charCount(label.codePointAt(0));var joinNext=false

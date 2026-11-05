@@ -170,7 +170,11 @@ class InputBarDelegate(override val di: DI) :
                 ContextCompat.getMainExecutor(context).execute {
                     if (latestToolbarTarget != target) return@execute
                     runCatching {
-                        alwaysUi.applyToolbar(ToolbarOverrides.forKeyboard(theme, target))
+                        val bar = ToolbarOverrides.forKeyboard(theme, target)
+                        // 双保险：算出来一个按钮都没有时保留现有工具栏，
+                        // 绝不让顶栏塌成空白（切换中英时曾出现整排图标消失）。
+                        if (bar.buttons.isEmpty() && bar.primaryButton == null) return@execute
+                        alwaysUi.applyToolbar(bar)
                         refreshColors()
                     }
                 }

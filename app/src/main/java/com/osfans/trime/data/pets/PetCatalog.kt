@@ -2,8 +2,8 @@
 package com.osfans.trime.data.pets
 
 object PetCatalog {
-    data class Species(val id:String,val name:String,val rarity:Int,val description:String,val color:Int)
-    val rarities=listOf("普通","稀有","珍奇 SR","星耀 SSR")
+    data class Species(val id:String,val name:String,val rarity:Int,val description:String,val color:Int,val hatchable:Boolean=true)
+    val rarities=listOf("普通","稀有","珍奇 SR","星耀 SSR","典藏 UR")
     val species=listOf(
         Species("sheep","绵绵",0,"把每一个字，织成柔软的云。",0xffe9d9d1.toInt()),
         Species("cat","奶盖",0,"喜欢趴在空格上打盹的小猫。",0xffead8b8.toInt()),
@@ -61,7 +61,10 @@ object PetCatalog {
         Species("dragonfly","琥珀",2,"薄翼载着远古的光，停在指尖稍作停留。",0xfff2c14e.toInt()),
         Species("axolotl","珠露",2,"腮边的小花，是春天写在信上的落款。",0xffffb3c6.toInt()),
         Species("hummingbird","紫电",2,"快过闪电的翅膀，追上每一个灵感。",0xffc97fe8.toInt()),
+        Species("xiaomie","小咩",4,"把你的每次敲键，都变成闪闪发光的小心意。",0xffedc48d.toInt(),false),
+        Species("monkey","猴哥",4,"金箍棒换成键盘，一个字就是一个筋斗。",0xffe05560.toInt()),
     )
+    val hatchPool get()=species.filter { it.id!="xiaomie" }
     fun get(id:String)=species.first { it.id==id }
     data class Item(val id:String,val name:String,val cost:Int,val hunger:Int,val mood:Int,val bond:Int,val description:String)
     val items=listOf(

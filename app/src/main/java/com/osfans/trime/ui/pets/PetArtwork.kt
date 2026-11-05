@@ -60,6 +60,7 @@ internal object PetArtwork {
         "dragonfly" -> R.drawable.pet_dragonfly_back
         "axolotl" -> R.drawable.pet_axolotl_back
         "hummingbird" -> R.drawable.pet_hummingbird_back
+        "monkey" -> R.drawable.pet_monkey_back
         else -> R.drawable.pet_sheep_back
     }
     fun body(id:String)=when(id) {
@@ -119,6 +120,7 @@ internal object PetArtwork {
         "dragonfly" -> R.drawable.pet_dragonfly_body
         "axolotl" -> R.drawable.pet_axolotl_body
         "hummingbird" -> R.drawable.pet_hummingbird_body
+        "monkey" -> R.drawable.pet_monkey_body
         else -> R.drawable.pet_sheep_body
     }
 }

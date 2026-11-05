@@ -23,6 +23,7 @@ object CustomKeyboardYaml {
         "composing" to "composing", "hasMenu" to "has_menu", "paging" to "paging", "combo" to "combo", "ascii" to "ascii")
 
     @Serializable private data class KeyboardInfo(
+        val keyMetadata: Map<String, KeyInfo> = emptyMap(),
         val importedActions: Map<String, com.osfans.trime.data.theme.model.PresetKey> = emptyMap(),
         val surfaceAppearance: com.osfans.trime.ime.appearance.SurfaceAppearanceConfig? = null,
         val unifiedBackground: Boolean? = null,
@@ -51,7 +52,7 @@ object CustomKeyboardYaml {
         val options: KeyboardOptions = KeyboardOptions(),
     )
     @Serializable private data class KeyInfo(
-        val row: Int = 1, val spacer: Boolean = false,
+        val row: Int = 1, val spacer: Boolean = false, val ref: String = "",
         val skinId: String = "", val skin: ImportedKeyStyle? = null,
         val originalWidth: Float = 0f, val exportedWidth: Float = 0f, val exportedHeight: Int = 0, val exportedBackground: String = "",
         val background: CustomBackground? = null,
@@ -100,6 +101,7 @@ object CustomKeyboardYaml {
         keyboardNodes["default"] = obj("import_preset" to string(layouts.keys.first()))
         layouts.forEach { (id, kb) ->
             val keys = mutableListOf<JsonElement>()
+            val keyMetadata = linkedMapOf<String, KeyInfo>()
             kb.rows.forEachIndexed { rowIndex, row ->
                 ButtonAlignment.slots(row).forEach slot@{ (key,width) ->
                     if (key == null) {
@@ -115,11 +117,13 @@ object CustomKeyboardYaml {
                         data[KeyAppearance.yamlName(name)] = value
                     }
                     behaviors.forEach { (behavior, yamlName) -> key.bindings[behavior]?.let { data[yamlName] = string(it) } }
-                    data["mie"] = json.encodeToJsonElement(KeyInfo.serializer(), KeyInfo(rowIndex + 1, skinId = key.skinId, skin = key.skin,
+                    val reference = "key${keys.size+1}"
+                    keyMetadata[reference] = KeyInfo(rowIndex + 1, skinId = key.skinId, skin = key.skin,
                         originalWidth = key.width, exportedWidth = width, exportedHeight = row.height, exportedBackground = bg,
                         background = key.resolvedBackground(), appearance = KeyAppearance.textValues(key.appearance), exportedAppearance = KeyAppearance.textValues(effective) + ("keyBackColor" to bg),
                         primaryBindingOverrides = key.primaryBindingOverrides, primaryBaseBindings = key.primaryBaseBindings,
-                        primaryBasePopup = key.primaryBasePopup, primaryBaseSendBindings = key.primaryBaseSendBindings))
+                        primaryBasePopup = key.primaryBasePopup, primaryBaseSendBindings = key.primaryBaseSendBindings)
+                    data["mie"] = obj("row" to JsonPrimitive(rowIndex+1), "ref" to string(reference))
                     keys += JsonObject(data)
                 }
 
@@ -140,7 +144,7 @@ object CustomKeyboardYaml {
                 "ascii_keyboard" to string(kb.options.asciiKeyboard), "landscape_keyboard" to string(kb.options.landscapeKeyboard),
                 "landscape_split_percent" to JsonPrimitive(layout.landscapeSplitPercent), "label_transform" to string(layout.labelTransform.name.lowercase()),
                 "keyboard_back_color" to string(bg),
-                "mie" to json.encodeToJsonElement(KeyboardInfo.serializer(), KeyboardInfo(layoutDisplayName=kb.layoutDisplayName, hiddenMenuItems=kb.hiddenMenuItems, importedActions=kb.importedActions, toolbarAlignment=kb.toolbarAlignment, rowAlignments=kb.rows.mapIndexed { index,row -> index+1 to row.alignment }.toMap(), rowMargins=kb.rows.mapIndexed { index,row -> index+1 to (row.margin ?: -1) }.toMap(), surfaceAppearance=kb.surfaceAppearance, unifiedBackground=kb.unifiedBackground, typography=kb.typography, floatingCandidates=kb.floatingCandidates, toolbar=kb.toolbar, toolbarBackground=kb.toolbarBackground,
+                "mie" to json.encodeToJsonElement(KeyboardInfo.serializer(), KeyboardInfo(keyMetadata=keyMetadata, layoutDisplayName=kb.layoutDisplayName, hiddenMenuItems=kb.hiddenMenuItems, importedActions=kb.importedActions, toolbarAlignment=kb.toolbarAlignment, rowAlignments=kb.rows.mapIndexed { index,row -> index+1 to row.alignment }.toMap(), rowMargins=kb.rows.mapIndexed { index,row -> index+1 to (row.margin ?: -1) }.toMap(), surfaceAppearance=kb.surfaceAppearance, unifiedBackground=kb.unifiedBackground, typography=kb.typography, floatingCandidates=kb.floatingCandidates, toolbar=kb.toolbar, toolbarBackground=kb.toolbarBackground,
                     allKeysBackground = kb.allKeysBackground, importedSkin = kb.importedSkin, importedHeightPercent = kb.importedHeightPercent, keyboardHeightDp = kb.keyboardHeightDp, landscapeHeightDp = kb.landscapeHeightDp, toolbarHeightDp = kb.toolbarHeightDp, secondaryOf = kb.secondaryOf, setPageRole = kb.setPageRole, exportedHeight = portraitHeight, exportedBackground = bg, exportedRowSpacing = kb.rowSpacing, rowMargin = kb.rowMargin, keyAppearance = KeyAppearance.textValues(kb.keyAppearance), options = kb.options)), "keys" to JsonArray(keys))
         }
         val first = layouts.values.first()
@@ -159,7 +163,8 @@ object CustomKeyboardYaml {
             append("# 同文自定义键盘：可手动修改的 .trime.yaml\n")
             append("# preset_keyboards 下只包含本次勾选的键盘；default 仅为首个键盘的别名。\n")
             append("# 修改 label/click/long_click/swipe_up 等绑定，width 为百分比，height 为行高(dp)。\n")
-            append("# mie.row 从1开始，用于保留行分组；每行首个按键的 height 决定行高。\n")
+            append("# 按示例主题分区排列，keys 每键一行；mie.row 从1开始，行首 height 决定行高。\n")
+            append("# mie.ref 对应布局末尾的 keyMetadata，保留图片、动效等编辑信息，请随按键一起移动。\n")
             append("# 修改 keyboard_height 会按比例调整总高度；修改单行 height 后未改总高度时以行高为准。\n")
             append("# mie 保存工具栏、百度原坐标和动画；普通同文只读取标准主题字段。\n")
             append("# 咩版导回时以各键的 click/long_click 等动作为准；preset_keys 用于传统主题加载。\n")
@@ -169,18 +174,37 @@ object CustomKeyboardYaml {
         }.also { require(it.toByteArray(Charsets.UTF_8).size <= 10 * 1024 * 1024) { "导出内容超过10MB，请分批选择键盘" } }
     }
 
-    /** YAML scalars use JSON quoting, which is also valid YAML and preserves '#', ':', numbers and escapes. */
+    /** Native Trime sections and one flow mapping per key, with editor metadata kept separate. */
     private fun StringBuilder.writeYaml(value: JsonElement, indent: Int) {
         val pad = " ".repeat(indent)
-        fun scalar(v: JsonElement) = v is JsonPrimitive || v is JsonArray && v.isEmpty() || v is JsonObject && v.isEmpty()
+        fun keyName(key:String)=if(key.matches(Regex("[A-Za-z_][A-Za-z0-9_.-]*"))) key else string(key).toString()
+        fun scalar(v:JsonElement)=v is JsonPrimitive || v is JsonArray && v.isEmpty() || v is JsonObject && v.isEmpty()
+        fun flow(v:JsonElement):String=when(v) {
+            is JsonObject -> v.entries.joinToString(", ","{","}") { (k,c) -> keyName(k)+": "+flow(c) }
+            is JsonArray -> v.joinToString(", ","[","]") { flow(it) }
+            else -> v.toString()
+        }
         when(value) {
-            is JsonObject -> value.forEach { (key, child) ->
-                append(pad).append(if (key.matches(Regex("[A-Za-z_][A-Za-z0-9_.-]*"))) key else string(key).toString()).append(':')
-                if (scalar(child)) append(' ').append(child.toString()).append('\n') else { append('\n'); writeYaml(child, indent + 2) }
+            is JsonObject -> value.entries.sortedBy { it.key=="mie" }.forEach { (key, child) ->
+                if(indent==0 && child is JsonObject) {
+                    val section=when(key) { "style" -> "界面风格与尺寸"; "preset_color_schemes" -> "配色方案"; "tool_bar" -> "工具栏"; "preset_keys" -> "功能动作"; "preset_keyboards" -> "键盘布局"; "mie" -> "咩版格式与自定义功能";else -> key }
+                    append('\n').append("# ── ").append(section).append(" ──\n")
+                }
+                if(key=="mie" && indent>0) append(pad).append("# 编辑器恢复信息；手动改绑定请修改上方 keys，不必改这里。\n")
+                append(pad).append(keyName(key)).append(':')
+                if(key=="keys" && child is JsonArray) {
+                    append('\n');var previousRow=-1
+                    child.forEach { entry ->
+                        val row=entry.jsonObject["mie"]?.jsonObject?.get("row")?.jsonPrimitive?.intOrNull ?: 1
+                        if(row!=previousRow) { append('\n').append(pad).append("  # 第 ").append(row).append(" 行\n");previousRow=row }
+                        append(pad).append("  - ").append(flow(entry)).append('\n')
+                    }
+                } else if(scalar(child)) append(' ').append(child.toString()).append('\n')
+                else { append('\n');writeYaml(child,indent+2) }
             }
             is JsonArray -> value.forEach { child ->
                 append(pad).append('-')
-                if (scalar(child)) append(' ').append(child.toString()).append('\n') else { append('\n'); writeYaml(child, indent + 2) }
+                if(scalar(child)) append(' ').append(child.toString()).append('\n') else { append('\n');writeYaml(child,indent+2) }
             }
             else -> append(pad).append(value.toString()).append('\n')
         }
@@ -208,10 +232,11 @@ object CustomKeyboardYaml {
             require(list.size <= 4096) { "单个键盘按键数量超过4096" }
             list.forEach keyLoop@{ item ->
                 val key = item.mapping ?: error("按键必须是映射")
-                val extra = key.pairs["mie"]?.let { metadata.decodeFromYamlNode(KeyInfo.serializer(), it) } ?: KeyInfo()
+                val inline = key.pairs["mie"]?.let { metadata.decodeFromYamlNode(KeyInfo.serializer(), it) } ?: KeyInfo()
+                val extra = info.keyMetadata[inline.ref]?.copy(row=inline.row) ?: inline
                 require(extra.row in 1..128) { "mie.row 行号须为1–128" }
                 val height = key.pairs["height"]?.int ?: 60
-                require(height in 24..160) { "行高须为24–160dp" }
+                require(height in 1..160) { "行高须为1–160dp" }
                 val row = grouped.getOrPut(extra.row) {
                     val perRowMargin = info.rowMargins[extra.row]
                     val fallbackMargin = if (info.rowMargin in 0..48) info.rowMargin else null
@@ -261,12 +286,12 @@ object CustomKeyboardYaml {
                 } else {
                     val sum = rows.sumOf { it.height }
                     rows.forEach { row -> row.height = (row.height * targetHeight.toFloat() * 100 / sum / info.options.heightPercent).toInt() }
-                    require(rows.all { it.height in 24..160 }) { "总高度使行高超出24–160dp范围" }
+                    require(rows.all { it.height in 1..160 }) { "总高度使行高超出1–160dp范围" }
                 }
             }
             if (heightDp > 0) require(heightDp in 80..800) { "键盘高度须为 80–800 dp" }
             if (heightDpLand > 0) require(heightDpLand in 80..800) { "横屏键盘高度须为 80–800 dp" }
-            require(spacing in 0..minOf(32, rows.minOf { it.height } / 2)) { "行距超过允许范围" }
+            require(spacing in 0..32) { "行距须为 0–32 dp" }
             val options = info.options.copy(
                 horizontalGap = node.pairs["horizontal_gap"]?.int ?: info.options.horizontalGap,
                 asciiMode = node.pairs["ascii_mode"]?.int ?: info.options.asciiMode,

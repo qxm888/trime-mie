@@ -33,7 +33,10 @@ import com.osfans.trime.R
 import com.osfans.trime.data.keymap.CustomBackground
 import com.osfans.trime.data.keymap.CustomKeyboards
 import com.osfans.trime.data.keymap.CustomKeyboards.CustomKey
+import com.osfans.trime.data.keymap.KeyAppearance
 import com.osfans.trime.data.keymap.KeyBindingOverrides
+import com.osfans.trime.data.keymap.KeyboardSetOperations
+import com.osfans.trime.data.keymap.KeyboardSets
 import com.osfans.trime.data.theme.ThemeManager
 import kotlinx.coroutines.launch
 
@@ -88,7 +91,19 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         }
         findViewById<View>(R.id.cbe_key_appearance).setOnClickListener {
             val current = CustomKeyboards.get(kbId) ?: return@setOnClickListener
-            KeyAppearanceEditor.show(this, "按键默认外观", current.keyAppearance) { style -> mutate { it.keyAppearance = style } }
+            val old = current.keyAppearance
+            KeyAppearanceEditor.show(this, "按键默认外观", old) { style ->
+                val changed = KeyboardSets.difference(KeyAppearance.values(old), KeyAppearance.values(style)).keys
+                mutate {
+                    it.keyAppearance = style
+                    // 圆角/边框渲染时会先读「全局外观 · 按键」那份，同一参数两处存储，保存时一起写。
+                    it.surfaceAppearance = KeyboardSetOperations.shapeKeys(it, style.roundCorner, style.keyBorder).surfaceAppearance
+                    // 这一页的统一设置是批量推送：这次改过的项从每个按键的独立副本里清掉，
+                    // 26 个键（包括之前单独调过的）都回到统一值；没改的项各自保留。
+                    val pushed = KeyboardSetOperations.pushAppearance(it, changed)
+                    it.rows.clear(); it.rows.addAll(pushed.rows)
+                }
+            }
         }
         findViewById<View>(R.id.cbe_all_keys_bg).setOnClickListener {
             val current = CustomKeyboards.get(kbId) ?: return@setOnClickListener
@@ -255,7 +270,7 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
             }
             return
         }
-        val rowSum = kb.rows.sumOf { it.height.coerceIn(24, 160) }.coerceAtLeast(24).toFloat()
+        val rowSum = kb.rows.sumOf { it.height.coerceIn(1, 160) }.coerceAtLeast(1).toFloat()
         val totalHeight = kb.effectivePortraitHeightDp().toFloat()
         val toolbarHeight = kb.effectiveToolbarHeightDp().toFloat()
         val heightScale = (totalHeight - toolbarHeight).coerceAtLeast(rowSum) / rowSum
@@ -661,7 +676,7 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
             selectAll()
         }
         val field = TextInputLayout(this).apply {
-            hint = "行高（24–160 dp）"
+            hint = "行高（1–160 dp）"
             helperText = "各行独立设置；悬浮缩放时按比例保持行高"
             setPadding(dp(24), dp(8), dp(24), 0)
             addView(input)
@@ -674,8 +689,8 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         dialog.setOnShowListener {
             dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val height = input.text?.toString()?.toIntOrNull()
-                if (height == null || height !in 24..160) {
-                    field.error = "请输入 24–160 之间的整数"
+                if (height == null || height !in 1..160) {
+                    field.error = "请输入 1–160 之间的整数"
                 } else {
                     mutate { it.rows.getOrNull(rowIdx)?.height = height }
                     dialog.dismiss()

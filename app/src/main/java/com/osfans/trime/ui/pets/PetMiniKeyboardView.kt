@@ -1,6 +1,8 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 package com.osfans.trime.ui.pets
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
@@ -17,29 +19,28 @@ import com.osfans.trime.data.pets.PetCatalog
 import com.osfans.trime.data.pets.PetHouse
 import com.osfans.trime.ime.keyboard.KeyBehavior
 import com.osfans.trime.ime.keyboard.Keyboard
-import kotlin.math.abs
 import kotlin.math.hypot
 
 /** A miniature of the real layout. Only live touch identities enter this view, never committed text. */
 @SuppressLint("ViewConstructor")
 class PetMiniKeyboardView(context:Context):View(context) {
     data class MiniKey(val index:Int,val code:Int,val label:String,val bounds:RectF)
-    private data class Touch(val key:MiniKey,val started:Long)
-    private class Arm(val homeX:Float) {
-        var x=homeX;var y=112f;var pressure=0f
-        var index=-1
-        var animation:ValueAnimator?=null
-    }
-    private val portrait=PetPortraitView(context).apply { halo=false;layout(0,0,110,110) }
+    private val portrait=PetPortraitView(context).apply { halo=false;layout(0,0,80,80) }
     private val reactions=PetReactionPlayer(this)
     private val paint=Paint(Paint.ANTI_ALIAS_FLAG)
     private val fontMetrics=Paint.FontMetrics()
-    private val path=Path()
-    private val left=Arm(77f)
-    private val right=Arm(136f)
+    private val stance=PetMiniStance()
+    private var soleX=PetMiniScene.CENTER
+    private var soleY=PetMiniScene.BOARD_TOP
+    private var jumpY=0f
+    private var landingPressure=0f
+    private var landingIndex=-1
+    private var sequence=0
+    private var lastPress=0L
+    private var bodyAnimation:ValueAnimator?=null
+    private val rest=Runnable { if(held.isEmpty()) hopTo(null) }
     private var keys:List<MiniKey> = emptyList()
-    private val held=linkedMapOf<Int,Touch>()
-    private val releaseTasks=mutableMapOf<Int,Runnable>()
+    private val held=linkedSetOf<Int>()
     private var pet=PetHouse.Pet("sheep")
     private var accent=PetCatalog.get("sheep").color
     private var layout:Keyboard?=null
@@ -62,6 +63,7 @@ class PetMiniKeyboardView(context:Context):View(context) {
     fun bind(value:PetHouse.Pet) {
         if(pet==value) return
         val changed=pet.id!=value.id
+        if(changed) clearPresses()
         pet=value;accent=PetCatalog.get(value.id).color;portrait.bind(value);if(changed) reactions.species(value.id);invalidate()
     }
     fun setKeyboard(keyboard:Keyboard?,force:Boolean=false) {
@@ -83,7 +85,7 @@ class PetMiniKeyboardView(context:Context):View(context) {
                         if(s.isBlank()) "·" else s.substring(0,s.offsetByCodePoints(0,minOf(4,s.codePointCount(0,s.length))))
                     }
                 }
-                val rect=RectF(10+key.x/width*192,98+key.y/height*48,10+(key.x+key.width)/width*192,98+(key.y+key.height)/height*48)
+                val rect=RectF(36+key.x/width*192,98+key.y/height*48,36+(key.x+key.width)/width*192,98+(key.y+key.height)/height*48)
                 // Very small source gaps remain visible even on tightly packed layouts.
                 rect.inset(.65f,.65f)
                 MiniKey(i,code,label,rect)
@@ -93,75 +95,94 @@ class PetMiniKeyboardView(context:Context):View(context) {
     }
     fun press(index:Int) {
         val key=keys.firstOrNull { it.index==index } ?: return
-        releaseTasks.remove(index)?.let(::removeCallbacks)
-        held.remove(index);held[index]=Touch(key,SystemClock.uptimeMillis())
-        reactions.key(key.code,((key.bounds.centerX()-106)/96f).coerceIn(-1f,1f))
-        updateArms();invalidate()
+        removeCallbacks(rest)
+        held.remove(index);held.add(index)
+        reactions.key(key.code,((key.bounds.centerX()-PetMiniScene.CENTER)/96f).coerceIn(-1f,1f))
+        // Restart even on the same key: each down is a new little hop, not a hand reach.
+        val now=SystemClock.uptimeMillis()
+        val duration=if(lastPress==0L) 280L else ((now-lastPress)*.85f).toLong().coerceIn(110L,280L)
+        lastPress=now;hopTo(key,duration);invalidate()
     }
     fun release(index:Int,cancel:Boolean=false) {
-        val touch=held[index] ?: return
-        releaseTasks.remove(index)?.let(::removeCallbacks)
-        val wait=if(cancel) 0L else (90-(SystemClock.uptimeMillis()-touch.started)).coerceAtLeast(0)
-        if(wait==0L) { held.remove(index);updateArms();if(held.isEmpty() && !cancel) reactions.released();invalidate() }
-        else {
-            val task=Runnable { releaseTasks.remove(index);held.remove(index);updateArms();if(held.isEmpty()) reactions.released();invalidate() }
-            releaseTasks[index]=task;postDelayed(task,wait)
+        if(!held.remove(index)) return
+        if(held.isEmpty()) {
+            if(!cancel) reactions.released()
+            removeCallbacks(rest);postDelayed(rest,if(cancel) 260 else 700)
         }
+        invalidate()
     }
     fun pressCode(code:Int,down:Boolean) {
         keys.firstOrNull { it.code==code }?.let { if(down) press(it.index) else release(it.index) }
     }
-    private fun updateArms() {
-        fun eligible(key:MiniKey,leftHand:Boolean):Boolean =
-            if(key.bounds.width()>45 && abs(key.bounds.centerX()-106)<15) true else (key.bounds.centerX()<106)==leftHand
-        animateArm(left,held.values.lastOrNull { eligible(it.key,true) }?.key)
-        animateArm(right,held.values.lastOrNull { eligible(it.key,false) }?.key)
-    }
-    private fun animateArm(arm:Arm,key:MiniKey?) {
-        arm.animation?.cancel()
-        val fromX=arm.x;val fromY=arm.y;val fromPressure=arm.pressure
-        val targetX=key?.bounds?.let { if(it.width()>45) it.centerX()+(if(arm===left) -14 else 14) else it.centerX() } ?: arm.homeX
-        val targetY=key?.bounds?.centerY() ?: 112f
-        val targetPressure=if(key!=null) 1f else 0f
-        if(key!=null) arm.index=key.index
+    /** The selected sole lands on the actual key center, with a short cushioned landing. */
+    private fun hopTo(key:MiniKey?,durationMs:Long=280L) {
+        val oldX=soleX;val fromY=soleY+jumpY
+        val oldFoot=stance.soleX(pet.id)
+        val previous=bodyAnimation;bodyAnimation=null;previous?.cancel()
+        val targetX=key?.bounds?.centerX() ?: PetMiniScene.CENTER
+        val targetY=key?.bounds?.centerY() ?: PetMiniScene.BOARD_TOP
+        if(key!=null) { sequence++;stance.leftFoot=sequence%2==0;stance.variant=sequence%3 }
+        val fromX=oldX+(stance.soleX(pet.id)-oldFoot)*PetMiniScene.MODEL_SIDE/128f
+        val targetIndex=key?.index ?: -1
+        landingIndex=-1;landingPressure=0f
+        val direction=(targetX-fromX).coerceIn(-20f,20f)/20f
         if(Build.VERSION.SDK_INT>=26 && !ValueAnimator.areAnimatorsEnabled()) {
-            arm.x=targetX;arm.y=targetY;arm.pressure=targetPressure;invalidate();return
+            soleX=targetX;soleY=targetY;jumpY=0f;stance.lift=0f;stance.bend=0f;stance.lean=0f
+            landingIndex=targetIndex;landingPressure=if(targetIndex in held) 1f else 0f;invalidate();return
         }
-        arm.animation=ValueAnimator.ofFloat(0f,1f).apply {
-            duration=if(key!=null) 65 else 145
-            interpolator=android.view.animation.DecelerateInterpolator()
+        bodyAnimation=ValueAnimator.ofFloat(0f,1f).apply {
+            duration=durationMs
+            interpolator=android.view.animation.LinearInterpolator()
             addUpdateListener {
                 val t=it.animatedValue as Float
-                arm.x=fromX+(targetX-fromX)*t;arm.y=fromY+(targetY-fromY)*t
-                arm.pressure=fromPressure+(targetPressure-fromPressure)*t;invalidate()
+                val flight=(t/.76f).coerceAtMost(1f)
+                val ease=flight*flight*(3-2*flight)
+                soleX=fromX+(targetX-fromX)*ease
+                soleY=fromY+(targetY-fromY)*ease
+                stance.lift=kotlin.math.sin(flight*Math.PI).toFloat().coerceAtLeast(0f)
+                // Keep the entire head in the scene, including a hop from the upper row.
+                jumpY=maxOf(-stance.lift*16f,PetMiniScene.MODEL_SIDE*125/128f+2-soleY).coerceAtMost(0f)
+                stance.lean=direction*stance.lift*7f
+                val settle=((t-.76f)/.24f).coerceIn(0f,1f)
+                stance.bend=if(t<.76f) stance.lift*.22f else kotlin.math.sin(settle*Math.PI).toFloat()*.75f
+                landingIndex=if(t>=.76f) targetIndex else -1
+                landingPressure=if(t>=.76f && key!=null) 1f-settle*.45f else 0f
+                invalidate()
             }
+            addListener(object:AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation:Animator) {
+                    if(bodyAnimation!==animation) return
+                    bodyAnimation=null;stance.lift=0f;stance.bend=0f;stance.lean=0f;jumpY=0f
+                    landingPressure=0f;invalidate()
+                }
+            })
             start()
         }
     }
     fun playInteraction(interaction:PetInteraction) { reactions.interact(interaction) }
     fun clearPresses() {
-        reactions.clear()
-        releaseTasks.values.forEach(::removeCallbacks);releaseTasks.clear();held.clear()
-        listOf(left,right).forEach { arm -> arm.animation?.cancel();arm.animation=null;arm.x=arm.homeX;arm.y=112f;arm.pressure=0f;arm.index=-1 }
-        invalidate()
+        reactions.clear();removeCallbacks(rest)
+        val previous=bodyAnimation;bodyAnimation=null;previous?.cancel()
+        soleX=PetMiniScene.CENTER;soleY=PetMiniScene.BOARD_TOP;jumpY=0f
+        landingIndex=-1;landingPressure=0f;lastPress=0L;stance.reset();held.clear();invalidate()
     }
     override fun onDraw(canvas:Canvas) {
         super.onDraw(canvas)
-        val scale=minOf(width/212f,height/160f)
-        canvas.save();canvas.translate((width-212*scale)/2,(height-160*scale)/2);canvas.scale(scale,scale)
+        val sceneHeight=PetMiniScene.HEIGHT
+        val scale=minOf(width/PetMiniScene.WIDTH,height/sceneHeight)
+        canvas.save();canvas.translate((width-PetMiniScene.WIDTH*scale)/2,(height-sceneHeight*scale)/2);canvas.scale(scale,scale)
         val dark=resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK==Configuration.UI_MODE_NIGHT_YES
         val ink=if(dark) 0xffe5e9ef.toInt() else 0xff4b5662.toInt()
         val body=if(dark) 0xff34404e.toInt() else 0xffe9e9e5.toInt()
         val cap=if(dark) 0xff56616e.toInt() else 0xfffaf9f5.toInt()
         val rim=if(dark) 0xff8692a0.toInt() else 0xffc6cbc9.toInt()
-        val contact=maxOf(left.pressure,right.pressure)
-        canvas.save();canvas.translate(51f,contact*1.2f);portrait.drawAt(canvas,110f,110f,reactions.pose);canvas.restore()
-        paint.style=Paint.Style.FILL;paint.color=0x1b25323d;canvas.drawRoundRect(5f,97f,208f,156f,9f,9f,paint)
-        paint.color=body;canvas.drawRoundRect(4f,92f,208f,152f,9f,9f,paint)
-        paint.style=Paint.Style.STROKE;paint.strokeWidth=.8f;paint.color=rim;canvas.drawRoundRect(4f,92f,208f,152f,9f,9f,paint);paint.style=Paint.Style.FILL
+        val boardBottom=PetMiniScene.BOARD_BOTTOM
+        paint.style=Paint.Style.FILL;paint.color=0x1b25323d;canvas.drawRoundRect(31f,97f,234f,boardBottom+4,9f,9f,paint)
+        paint.color=body;canvas.drawRoundRect(30f,92f,234f,boardBottom,9f,9f,paint)
+        paint.style=Paint.Style.STROKE;paint.strokeWidth=.8f;paint.color=rim;canvas.drawRoundRect(30f,92f,234f,boardBottom,9f,9f,paint);paint.style=Paint.Style.FILL
         keys.forEach { key ->
             val rect=key.bounds
-            val pressure=if(key.index in held) 1f else maxOf(if(left.index==key.index) left.pressure else 0f,if(right.index==key.index) right.pressure else 0f)
+            val pressure=maxOf(if(key.index in held) 1f else 0f,if(landingIndex==key.index) landingPressure else 0f)
             val push=pressure*1.7f
             paint.color=if(dark) 0xff25313d.toInt() else 0xffbfc6c3.toInt()
             canvas.drawRoundRect(rect.left,rect.top+2,rect.right,rect.bottom+2,2f,2f,paint)
@@ -178,44 +199,33 @@ class PetMiniKeyboardView(context:Context):View(context) {
             paint.getFontMetrics(fontMetrics)
             canvas.drawText(key.label,rect.centerX(),rect.centerY()-(fontMetrics.ascent+fontMetrics.descent)/2+push,paint)
         }
-        drawArm(canvas,left,82f,75f,dark);drawArm(canvas,right,130f,75f,dark)
+        // All companions stand above the caps. The shadow tightens as a foot lands.
+        val ground=soleY+(if(landingIndex>=0 && (landingIndex in held || landingPressure>0)) 1.7f else 0f)
+        paint.style=Paint.Style.FILL;paint.color=ColorUtils.setAlphaComponent(ink,((1-stance.lift*.65f)*48).toInt())
+        canvas.drawOval(soleX-6f-stance.lift*2,ground-1.2f,soleX+6f+stance.lift*2,ground+1.2f,paint)
+        drawCompanion(canvas)
         canvas.restore()
     }
-    private fun drawArm(canvas:Canvas,arm:Arm,shoulderX:Float,shoulderY:Float,dark:Boolean) {
-        val pose=reactions.pose
-        val sx=106+(shoulderX-106)*(1+pose.squash)
-        val sy=shoulderY+pose.y*.86f+(shoulderX-106)*(pose.angle*Math.PI/180).toFloat()
-        var endX=arm.x;var endY=arm.y
-        if(held.isEmpty() && pose.amount>0 && pose.interaction!=null) {
-            val leftHand=arm===left;val side=if(leftHand) -1 else 1
-            val wave=kotlin.math.sin(pose.phase*Math.PI*6).toFloat()
-            val target=when(pose.interaction) {
-                PetInteraction.GREET -> if(leftHand) arm.homeX to 112f else (151f+wave*6) to 65f
-                PetInteraction.LOVE -> (106f+side*6) to 87f
-                PetInteraction.PLAY -> (106f+side*(8+wave*4)) to 94f
-                PetInteraction.EAT -> (106f+side*7) to (85f+wave*1.5f)
-                PetInteraction.YAWN -> (106f+side*43) to 76f
-                PetInteraction.LEVEL_UP -> (106f+side*45) to 62f
-                else -> arm.homeX to 108f
-            }
-            endX+=(target.first-endX)*pose.amount;endY+=(target.second-endY)*pose.amount
-        }
-        path.reset();path.moveTo(sx,sy)
-        path.quadTo(sx+(endX-sx)*.25f,endY-15,endX,endY)
-        paint.style=Paint.Style.STROKE;paint.strokeCap=Paint.Cap.ROUND;paint.strokeWidth=10f;paint.color=ColorUtils.blendARGB(accent,if(dark) Color.BLACK else 0xff64716b.toInt(),.12f)
-        canvas.drawPath(path,paint);paint.strokeWidth=7.6f;paint.color=accent;canvas.drawPath(path,paint)
-        paint.style=Paint.Style.FILL;paint.color=ColorUtils.blendARGB(accent,Color.WHITE,.20f)
-        val y=endY+arm.pressure*1.4f
-        canvas.drawOval(endX-6f,y-3.8f,endX+6f,y+3.8f,paint)
-        paint.style=Paint.Style.STROKE;paint.strokeWidth=.8f;paint.color=ColorUtils.blendARGB(accent,0xff46505a.toInt(),.35f)
-        canvas.drawLine(endX-2,y-.6f,endX-2,y+1.5f,paint);canvas.drawLine(endX+1,y-.6f,endX+1,y+1.5f,paint);paint.style=Paint.Style.FILL
+    private fun drawCompanion(canvas:Canvas) {
+        val scale=PetMiniScene.MODEL_SIDE/128f
+        val press=if(landingIndex>=0 && (landingIndex in held || landingPressure>0)) 1.7f else 0f
+        val x=soleX-stance.soleX(pet.id)*scale
+        val y=soleY+jumpY+press-stance.soleY*scale
+        canvas.save();canvas.translate(x,y)
+        portrait.drawAt(canvas,PetMiniScene.MODEL_SIDE,PetMiniScene.MODEL_SIDE,reactions.pose,miniature=true,step=stance)
+        canvas.restore()
     }
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event:MotionEvent):Boolean {
         when(event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 touchX=event.rawX;touchY=event.rawY;lastX=touchX;lastY=touchY;dragging=false;longClicked=false
-                tappedPet=event.y<height*.58f
+                val sceneScale=minOf(width/PetMiniScene.WIDTH,height/PetMiniScene.HEIGHT)
+                val px=(event.x-(width-PetMiniScene.WIDTH*sceneScale)/2)/sceneScale
+                val py=(event.y-(height-PetMiniScene.HEIGHT*sceneScale)/2)/sceneScale
+                val sx=soleX-stance.soleX(pet.id)*PetMiniScene.MODEL_SIDE/128f
+                val sy=soleY+jumpY-stance.soleY*PetMiniScene.MODEL_SIDE/128f
+                tappedPet=px in sx..(sx+PetMiniScene.MODEL_SIDE) && py in sy..(sy+PetMiniScene.MODEL_SIDE)
                 postDelayed(longPress,ViewConfiguration.getLongPressTimeout().toLong());return true
             }
             MotionEvent.ACTION_MOVE -> {
