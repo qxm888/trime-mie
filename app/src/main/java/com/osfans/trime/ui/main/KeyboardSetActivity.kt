@@ -93,6 +93,14 @@ class KeyboardSetActivity : AppCompatActivity() {
     override fun onResume() { super.onResume(); if(::body.isInitialized) render() }
     override fun onSaveInstanceState(outState: Bundle) { outState.putInt("tab", tab); outState.putString("preview", previewId); super.onSaveInstanceState(outState) }
     override fun onPause() { super.onPause(); CustomKeyboards.flush(); com.osfans.trime.data.theme.ThemeManager.requestCustomizationRefresh() }
+    /** #AARRGGBB → 不透明色。预览只是示意图，半透明色叠在设置页上会看成「另一个颜色」。 */
+    private fun solid(value: String): Int {
+        val c = runCatching { android.graphics.Color.parseColor(value) }.getOrNull()
+            ?: return getColor(R.color.framework_text_primary)
+        return android.graphics.Color.rgb(
+            android.graphics.Color.red(c), android.graphics.Color.green(c), android.graphics.Color.blue(c),
+        )
+    }
     private fun dp(n: Int) = (n * resources.displayMetrics.density + .5f).toInt()
     private fun hint(text: String, target: LinearLayout = body) { target.addView(TextView(this).apply {
         this.text = text; textSize = 13f; setTextColor(getColor(R.color.framework_text_secondary)); setPadding(dp(4), dp(8), dp(4), dp(10))
@@ -123,7 +131,17 @@ class KeyboardSetActivity : AppCompatActivity() {
         button("预览 · ${kb.name}  ▾", preview) {
             MaterialAlertDialogBuilder(this).setTitle("预览布局").setItems(ids.map { CustomKeyboards.get(it)?.name.orEmpty() }.toTypedArray()) { _, i -> previewId = ids[i]; render() }.show()
         }
-        val keys = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; background = kb.resolvedBackground().drawable(this@KeyboardSetActivity, resources.displayMetrics.widthPixels) }
+        val keys = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        // 预览是示意图：底色实心化，否则半透明的键盘色会透出设置页的米色，
+        // 看起来像「换了套颜色」（真机上底下是 App，颜色本来就不同）。
+        val panel = kb.resolvedBackground()
+        keys.background = if (panel.type == CustomBackground.Type.COLOR) {
+            android.graphics.drawable.GradientDrawable().apply {
+                setColor(solid(panel.color)); cornerRadius = dp(8).toFloat()
+            }
+        } else {
+            panel.drawable(this@KeyboardSetActivity, resources.displayMetrics.widthPixels)
+        }
         // A small live style preview; the full editor remains available on each layout card.
         val landscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
         kb.rows.take(if(landscape) 2 else 5).forEach { row ->
@@ -132,12 +150,15 @@ class KeyboardSetActivity : AppCompatActivity() {
                 val style = KeyAppearance.merge(kb.keyAppearance, key.appearance)
                 line.addView(TextView(this).apply {
                     text = key.label; textSize = 12f; gravity = Gravity.CENTER; maxLines = 1
+                    // AppCompat 的 TextView 会拿主题的 backgroundTint 给背景染色，
+                    // 白键帽会被染成米灰（预览里看着像「换了颜色」），这里显式去掉。
+                    backgroundTintList = null
                     val color = style.keyBackColor.ifBlank { KeyboardSets.backgroundToken(key.resolvedBackground()) }
                     background = android.graphics.drawable.GradientDrawable().apply {
-                        setColor(runCatching { android.graphics.Color.parseColor(color) }.getOrDefault(android.graphics.Color.TRANSPARENT))
+                        setColor(solid(color))
                         cornerRadius = dp(5).toFloat()
                     }
-                    setTextColor(runCatching { android.graphics.Color.parseColor(style.keyTextColor) }.getOrDefault(getColor(R.color.framework_text_primary)))
+                    setTextColor(solid(style.keyTextColor))
                 }, LinearLayout.LayoutParams(0, dp(if(landscape) 18 else 25), key.width).apply { setMargins(dp(1), dp(1), dp(1), dp(1)) })
             }; keys.addView(line)
         }; preview.addView(keys)
