@@ -382,9 +382,16 @@ object SurfaceAppearance {
             com.osfans.trime.data.keymap.CustomKeyboards.runtimeActiveId().takeIf { it.isNotBlank() }?.let(::add)
             page?.takeIf { it.isNotBlank() }?.let(::add)
         }
-        return sources.distinct().mapNotNull { candidate ->
+        val scoped = sources.distinct().mapNotNull { candidate ->
             runCatching { com.osfans.trime.data.keymap.CustomKeyboards.get(candidate)?.surfaceAppearance }.getOrNull()
         }
+        // 兜底：把「主题键盘全局外观」接在最后。
+        //
+        // 内置皮肤是当作自定义键盘注入的，各皮肤只存自己改过的那几项；其余项
+        // （描边、留白、候选高亮……）应当从全局设定继承，而不是一律回落到 0。
+        // 放在最后是因为各 getter 都取「第一个满足条件的配置」，皮肤自己设了值
+        // 就轮不到这条兜底——它只补没设的部分，不会盖掉皮肤自己的外观。
+        return scoped + current(false)
     }
 
     /**
