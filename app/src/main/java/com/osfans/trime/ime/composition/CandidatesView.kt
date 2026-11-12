@@ -241,10 +241,24 @@ class CandidatesView(
 
     fun refreshVisibility() = updateUi()
 
+    /**
+     * 系统跨窗口模糊开关翻转（省电模式 / 开发者选项 / 播放视频）后由 Service 调用：
+     * 强制重画一次，让 [withPanelBackdrop] 重新 [SystemBackdrop.obtain]，否则缓存里
+     * 那个旧 drawable 不会被系统重新登记，模糊一直不回来。
+     */
+    fun refreshBackdrop() {
+        paintedStyle = null
+        paintedVersion = Long.MIN_VALUE
+        com.osfans.trime.ime.appearance.SystemBackdrop.forget(this)
+        post { if (isAttachedToWindow) updateUi() }
+    }
+
     private val floatingStyle get() = FloatingCandidateStyle.current(theme.isCustom)
     private var paintedStyle: FloatingCandidateStyle? = null
     private var paintedColors: com.osfans.trime.data.theme.ThemeColors? = null
     private var paintedMode = -1
+    /** 面板外观配置版本：背板开关/强度改了也要重建底色。 */
+    private var paintedVersion = Long.MIN_VALUE
     private var blurConfig = SurfaceAppearanceConfig()
     private var panelBase: android.graphics.drawable.Drawable? = null
     private var blur: BackdropBlur? = null
@@ -252,14 +266,15 @@ class CandidatesView(
     private fun styleWindow(ballOnly: Boolean, idle: Boolean) {
         val style=floatingStyle
         val mode=if(ballOnly) 1 else if(idle) 2 else 0
-        if(paintedStyle==style && paintedColors===scope.colors && paintedMode==mode) return
-        paintedStyle=style;paintedColors=scope.colors;paintedMode=mode
+        val version = com.osfans.trime.ime.appearance.SurfaceAppearance.version
+        if(paintedStyle==style && paintedColors===scope.colors && paintedMode==mode && paintedVersion==version) return
+        paintedStyle=style;paintedColors=scope.colors;paintedMode=mode;paintedVersion=version
         minWidth=if(ballOnly) 0 else dp(style?.minWidth ?: theme.window.minWidth)
         val ph=if(ballOnly) 0 else style?.paddingHorizontal ?: theme.window.insets.horizontal
         val pv=if(ballOnly) 0 else style?.paddingVertical ?: theme.window.insets.vertical
         setPadding(dp(ph),dp(pv),dp(ph),dp(pv))
         if(style==null) {
-            background=if(ballOnly) null else scope.decorDrawable("text_back_color","candidate_border_color",dp(theme.window.border),dp(theme.window.cornerRadius))
+            background=if(ballOnly) null else withPanelBackdrop(scope.decorDrawable("text_back_color","candidate_border_color",dp(theme.window.border),dp(theme.window.cornerRadius)))
             elevation=if(ballOnly) 0f else dp(theme.window.shadow)
             outlineProvider=ViewOutlineProvider.BACKGROUND
             ball.background=android.graphics.drawable.GradientDrawable().apply { shape=android.graphics.drawable.GradientDrawable.OVAL;setColor(scope.colors.textBackColor) }
@@ -267,7 +282,7 @@ class CandidatesView(
             blurConfig=SurfaceAppearanceConfig()
         } else {
             panelBase=FloatingCandidateRenderer.base(scope,style)
-            background=if(ballOnly) null else FloatingCandidateRenderer.panel(this,scope,style,panelBase)
+            background=if(ballOnly) null else withPanelBackdrop(FloatingCandidateRenderer.panel(this,scope,style,panelBase))
             FloatingCandidateRenderer.elevation(this,style.panel.radius ?: theme.window.cornerRadius,if(ballOnly) 0 else style.elevation,style.shadowColor)
             ball.text=style.ballLabel;ball.minWidth=dp(style.ballSize);ball.minHeight=dp(style.ballSize)
             ball.textSize=style.ballSize*.55f;ball.setTextColor(style.color("ball",scope.colors.candidateTextColor))
@@ -278,8 +293,82 @@ class CandidatesView(
                 panelBase?.let { it.setBounds(0,0,width,height);it.draw(canvas) }
             }
         }
-        clipToOutline=!ballOnly
+        // 不用 clipToOutline：Outline 只能画圆弧角，会把 G2 的角削掉一块。
+        // 圆角裁剪改由 draw() 里同一条 Squircle 路径完成，和背景绘制用的是同一条曲线。
+        clipToOutline=false
         BackdropBlur.invalidateBackground(this)
+    }
+
+    /**
+     * 面板开了真模糊时，悬浮候选窗用同一套模糊铺在底下：系统糊的是窗口背后的应用，
+     * 悬浮窗和键盘在同一个窗口里，所以这块区域单独登记一份即可。
+     * 上面的窗口背景照旧画——它自己带 alpha，透多少由用户设的颜色决定（和面板的纯色一个道理）。
+     */
+    private fun withPanelBackdrop(base: android.graphics.drawable.Drawable?): android.graphics.drawable.Drawable? {
+        val cfg = com.osfans.trime.ime.appearance.SurfaceAppearance
+            .panelBackdrop(theme.isCustom)?.takeIf { it.enabled } ?: return base
+        // 系统把模糊画在窗口下方，canvas 里的 G2 裁剪管不到它；区域本身必须是圆角，
+        // 否则四角会是四块直角（用久了才出现的"尖角"就是它）。
+        val radius = (floatingStyle?.panel?.radius ?: theme.window.cornerRadius).toFloat() *
+            resources.displayMetrics.density
+        val blur = com.osfans.trime.ime.appearance.SystemBackdrop.obtain(
+            this, cfg.radiusPx(), android.graphics.Color.TRANSPARENT, FloatArray(8) { radius },
+        ) ?: return base
+        if (base == null) return blur
+        return android.graphics.drawable.LayerDrawable(arrayOf(blur, base))
+    }
+
+    private val panelClip = android.graphics.Path()
+    private val panelClipRect = android.graphics.RectF()
+    private var panelClipRadius = -1f
+    private var panelClipSize = 0
+
+    override fun draw(canvas: android.graphics.Canvas) {
+        // 悬浮窗四角按 G2 连续圆角裁剪（和背景、按键同一条曲线），角上不会出现圆弧缺口。
+        val radius = (floatingStyle?.panel?.radius ?: theme.window.cornerRadius).toFloat() *
+            resources.displayMetrics.density
+        val size = width * 31 + height
+        if (radius <= 0f || width <= 0 || height <= 0) {
+            super.draw(canvas)
+            return
+        }
+        if (radius != panelClipRadius || size != panelClipSize) {
+            panelClipRadius = radius
+            panelClipSize = size
+            panelClipRect.set(0f, 0f, width.toFloat(), height.toFloat())
+            com.osfans.trime.ime.appearance.Squircle.into(panelClip, panelClipRect, radius)
+        }
+        val saved = canvas.save()
+        canvas.clipPath(panelClip)
+        super.draw(canvas)
+        // 描边带上的白色高光：和键盘面板共用同一个强度和"只画在描边宽度内"的规则。
+        val style = floatingStyle
+        val band = ((style?.panel?.borderWidth ?: theme.window.border.toFloat())) *
+            resources.displayMetrics.density
+        val strength = com.osfans.trime.ime.appearance.SurfaceAppearance
+            .keyboardBorderGlow(theme.isCustom)
+        if (band > 0f && strength > 0) {
+            com.osfans.trime.ime.appearance.BorderGlow.draw(
+                canvas, width, height, radius, band, strength,
+            )
+        }
+        canvas.restoreToCount(saved)
+    }
+
+    init {
+        // 悬浮窗可能在建好之后才挂到窗口上；那时申请模糊 drawable 会拿不到，
+        // 挂上之后必须重来一次，否则永远是"没有模糊"的样子。
+        addOnAttachStateChangeListener(object : android.view.View.OnAttachStateChangeListener {
+            override fun onViewAttachedToWindow(v: android.view.View) {
+                paintedStyle = null
+                paintedVersion = Long.MIN_VALUE
+                post { if (isAttachedToWindow) updateUi() }
+            }
+
+            override fun onViewDetachedFromWindow(v: android.view.View) {
+                com.osfans.trime.ime.appearance.SystemBackdrop.forget(this@CandidatesView)
+            }
+        })
     }
 
     private var touchMode = -1
@@ -304,7 +393,12 @@ class CandidatesView(
         candidatesUi.root.visibility = if (expanded) VISIBLE else GONE
         ball.visibility = if (idle) VISIBLE else GONE
         tools.visibility = if (idle && showingTools) VISIBLE else GONE
-        alpha = if (idle && !showingTools) AppPrefs.defaultInstance().candidates.ballOpacity.getValue() / 100f else floatingStyle?.opacity?.div(100f) ?: theme.window.alpha
+        val wantedAlpha = if (idle && !showingTools) AppPrefs.defaultInstance().candidates.ballOpacity.getValue() / 100f else floatingStyle?.opacity?.div(100f) ?: theme.window.alpha
+        // View 的 alpha < 1 会把整块内容放进离屏图层，系统模糊在这种图层里不生效
+        // （键盘面板一直避开 alpha 就是这个原因）。模糊开着时透明感交给背景色自己的 alpha。
+        val backdropOn = com.osfans.trime.ime.appearance.SurfaceAppearance
+            .panelBackdrop(theme.isCustom)?.enabled == true
+        alpha = if (backdropOn) 1f else wantedAlpha
         styleWindow(idle && !showingTools,idle)
         // the candidate layout is queried natively with the page itself
         candidatesUi.update(candidates, layout)
@@ -468,7 +562,8 @@ class CandidatesView(
                 borderPx = dp(theme.window.border),
                 cornerRadius = dp(theme.window.cornerRadius),
             )
-        clipToOutline = true
+        // 圆角统一由 draw() 的 G2 路径裁剪，不用 Outline（它只能是圆弧，还会削角）。
+        clipToOutline = false
         outlineProvider = ViewOutlineProvider.BACKGROUND
         elevation = dp(theme.window.shadow)
         add(

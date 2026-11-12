@@ -48,13 +48,21 @@ class LabeledCandidateItemUi(
     private val commentFont get() = com.osfans.trime.data.theme.FontOverrides.fromSelection(appearance?.fonts?.get("comment")?.font.orEmpty()) ?: theme.fonts.comment
 
     // Read at use time so a scheme switch re-binds rows with the new colors.
-    private val labelColor: Int get() = appearance?.color("label", scope.colors.labelColor) ?: scope.colors.labelColor
-    private val textColor: Int get() = appearance?.color("candidate", scope.colors.candidateTextColor) ?: scope.colors.candidateTextColor
-    private val commentColor: Int get() = appearance?.color("comment", scope.colors.commentTextColor) ?: scope.colors.commentTextColor
+    private val labelColor: Int get() = com.osfans.trime.data.keymap.LayoutTypography.colorOr("label", appearance?.color("label", scope.colors.labelColor) ?: scope.colors.labelColor)
+    private val textColor: Int get() = com.osfans.trime.data.keymap.LayoutTypography.colorOr("candidate", appearance?.color("candidate", scope.colors.candidateTextColor) ?: scope.colors.candidateTextColor)
+    private val commentColor: Int get() = com.osfans.trime.data.keymap.LayoutTypography.colorOr("comment", appearance?.color("comment", scope.colors.commentTextColor) ?: scope.colors.commentTextColor)
     private val highlightLabelColor: Int get() = appearance?.color("highlight.label", scope.colors.hilitedLabelColor) ?: scope.colors.hilitedLabelColor
     private val highlightCommentTextColor: Int get() = appearance?.color("highlight.comment", scope.colors.hilitedCommentTextColor) ?: scope.colors.hilitedCommentTextColor
-    private val highlightCandidateTextColor: Int get() = appearance?.color("highlight.candidate", scope.colors.hilitedCandidateTextColor) ?: scope.colors.hilitedCandidateTextColor
-    private val highlightCandidateBackColor: Int get() = scope.colors.hilitedCandidateBackColor
+    private val highlightCandidateTextColor: Int
+        get() = com.osfans.trime.data.keymap.LayoutTypography.colorOr(
+            "candidateHl",
+            appearance?.color("highlight.candidate", scope.colors.hilitedCandidateTextColor) ?: scope.colors.hilitedCandidateTextColor,
+        )
+    private val highlightCandidateBackColor: Int
+        get() =
+            com.osfans.trime.ime.appearance.SurfaceAppearance.candidateHighlightColor()
+                ?.let { runCatching { Color.parseColor(it) }.getOrNull() }
+                ?: scope.colors.hilitedCandidateBackColor
 
     override val root =
         view(::FloatingCandidateTextView) {
@@ -103,6 +111,7 @@ class LabeledCandidateItemUi(
     private var boundStyle: FloatingCandidateStyle? = null
     private var boundHighlight: Boolean? = null
     private var boundFill = 0
+    private var boundRadius = -1f
     private var boundRowLimit = 1
 
     /** 行数上限的 TextView 口径：0 表示不限，其余至少 1 行。 */
@@ -186,14 +195,16 @@ class LabeledCandidateItemUi(
                 1f
             }
         val fill = if(highlighted) highlightCandidateBackColor else Color.TRANSPARENT
-        if(boundStyle != style || boundHighlight != highlighted || boundFill != fill) {
-            if(style == null) root.background = GradientDrawable().apply { setColor(fill);cornerRadius=ctx.dp(theme.style.candidateCornerRadius) }
+        val hlRadius = com.osfans.trime.ime.appearance.SurfaceAppearance.candidateHighlightRadius() ?: theme.style.candidateCornerRadius
+        val hlRadiusPx = ctx.dp(hlRadius).toFloat()
+        if(boundStyle != style || boundHighlight != highlighted || boundFill != fill || boundRadius != hlRadiusPx) {
+            if(style == null) root.background = com.osfans.trime.ime.appearance.SquircleDrawable(fill, hlRadiusPx)
             else {
                 val surface = if(highlighted) style.highlighted else style.normal
-                root.background=FloatingCandidateRenderer.surface(root,surface,style.itemEffects,fill,theme.style.candidateCornerRadius,style.glassOpacity)
-                FloatingCandidateRenderer.elevation(root,surface.radius ?: theme.style.candidateCornerRadius,style.itemElevation,style.shadowColor)
+                root.background=FloatingCandidateRenderer.surface(root,surface,style.itemEffects,fill,hlRadius,style.glassOpacity)
+                FloatingCandidateRenderer.elevation(root,surface.radius ?: hlRadius,style.itemElevation,style.shadowColor)
             }
-            boundStyle=style;boundHighlight=highlighted;boundFill=fill
+            boundStyle=style;boundHighlight=highlighted;boundFill=fill;boundRadius=hlRadiusPx
         }
         return scale
     }

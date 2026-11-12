@@ -37,13 +37,17 @@ class PopupEntryUi(
 ) : Ui {
     private val theme: Theme get() = scope.theme
 
+    /** 「字体与字号 → 按键弹出预览」设了颜色就盖过主题配色。 */
+    private val popupTextColor: Int
+        get() = com.osfans.trime.data.keymap.LayoutTypography.colorOr("popup", scope.colors.popupTextColor)
+
     var lastShowTime = -1L
 
     val textView = view(::AutoScaleTextView) {
         scaleMode = AutoScaleTextView.Mode.Proportional
         textSize = com.osfans.trime.data.keymap.LayoutTypography.size("popup", theme.style.popupTextSize)
         gravity = gravityCenter
-        setTextColor(scope.colors.popupTextColor)
+        setTextColor(popupTextColor)
         typeface = theme.fonts.popup
     }
 
@@ -79,9 +83,9 @@ class PopupEntryUi(
     /** Re-applies the scheme colors, as pooled popups outlive scheme switches. */
     fun refreshColors() {
         popupBackground.setColor(scope.colors.popupBackColor)
-        textView.setTextColor(scope.colors.popupTextColor)
+        textView.setTextColor(popupTextColor)
         imageView.drawable?.colorFilter =
-            PorterDuffColorFilter(scope.colors.popupTextColor, PorterDuff.Mode.SRC_IN)
+            PorterDuffColorFilter(popupTextColor, PorterDuff.Mode.SRC_IN)
     }
 
     fun setText(text: String) {
@@ -89,7 +93,7 @@ class PopupEntryUi(
             imageView.setImageDrawable(
                 IconicsDrawable(ctx, text.toIconName()).apply {
                     sizeDp = com.osfans.trime.data.keymap.LayoutTypography.size("popup", theme.style.popupTextSize).toInt()
-                    colorFilter = PorterDuffColorFilter(scope.colors.popupTextColor, PorterDuff.Mode.SRC_IN)
+                    colorFilter = PorterDuffColorFilter(popupTextColor, PorterDuff.Mode.SRC_IN)
                 },
             )
             imageView.isVisible = true

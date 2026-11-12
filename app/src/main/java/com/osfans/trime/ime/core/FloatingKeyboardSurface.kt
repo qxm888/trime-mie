@@ -175,16 +175,52 @@ internal class FloatingKeyboardContainer(
         private set
     private val clipPath = Path()
     private var radii = FloatArray(8)
+
+    /** 面板描边层，铺满整块面板、不接触摸；圆角与容器同一条 G2 曲线。 */
+    private val borderOverlay = KeyboardBorderView(context)
+
+    init {
+        addView(borderOverlay, LayoutParams(0, 0).apply {
+            startToStart = LayoutParams.PARENT_ID
+            endToEnd = LayoutParams.PARENT_ID
+            topToTop = LayoutParams.PARENT_ID
+            bottomToBottom = LayoutParams.PARENT_ID
+        })
+    }
+
+    /** 描边的实时来源（颜色 + 宽度 px），由 InputView 注入；见 [KeyboardBorderView.syncIfStale]。 */
+    var borderProvider: (() -> Pair<Int, Float>)?
+        get() = borderOverlay.borderProvider
+        set(value) { borderOverlay.borderProvider = value }
+
+    /** 亮边强度的实时来源；null 时按 0 处理。 */
+    var glowProvider: (() -> Int)?
+        get() = borderOverlay.glowProvider
+        set(value) { borderOverlay.glowProvider = value }
+
     fun setCornerRadii(corners: List<Float>) {
         val next = FloatArray(8) { corners.getOrElse(it / 2) { 0f } }
         if (next.contentEquals(radii)) return
         radii = next
+        borderOverlay.setCornerRadii(radii)
         rebuildClip(); rebuildOutline(); invalidate()
     }
+
+    fun setGlow(strength: Int) = borderOverlay.setGlow(strength)
+
+    fun setBorder(color: Int, widthPx: Float) {
+        borderOverlay.setBorder(color, widthPx)
+    }
+
     private fun rebuildClip() {
         clipPath.reset()
         if (radii.any { it > 0 }) {
-            clipPath.addRoundRect(RectF(0f, 0f, width.toFloat(), height.toFloat()), radii, Path.Direction.CW)
+            // G2 圆角：与背景层、描边层同一条曲率连续曲线。
+            com.osfans.trime.ime.appearance.Squircle.into(
+                clipPath,
+                RectF(0f, 0f, width.toFloat(), height.toFloat()),
+                radii,
+            )
         }
     }
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -209,12 +245,15 @@ internal class FloatingKeyboardContainer(
         outlineProvider = object : ViewOutlineProvider() {
             override fun getOutline(view: View, outline: android.graphics.Outline) {
                 if (android.os.Build.VERSION.SDK_INT >= 30) {
-                    outline.setPath(Path().apply {
-                        addRoundRect(
+                    // 系统级裁剪同样走 G2 路径：它和 canvas.clipPath 是两条独立的路径，
+                    // 两边曲线不一致时圆角边缘会出现一道重复的轮廓。
+                    outline.setPath(
+                        com.osfans.trime.ime.appearance.Squircle.into(
+                            Path(),
                             RectF(0f, 0f, view.width.toFloat(), view.height.toFloat()),
-                            radii, Path.Direction.CW,
-                        )
-                    })
+                            radii,
+                        ),
+                    )
                 } else {
                     // 旧系统只支持四角同半径。
                     outline.setRoundRect(0, 0, view.width, view.height, radii.maxOrNull() ?: 0f)
@@ -238,6 +277,146 @@ internal class FloatingKeyboardContainer(
         if (radii.any { it > 0 }) canvas.clipPath(clipPath)
         super.draw(canvas)
         canvas.restoreToCount(save)
+    }
+}
+
+/**
+ * 面板描边层：沿键盘外轮廓内侧画一圈描边，再在描边带里叠一层自上而下的白色高光。
+ *
+ * 颜色 / 宽度 / 高光都由 [borderProvider]、[glowProvider] 实时提供——保存外观不一定会
+ * 重建输入法，键盘可能一直挂在屏幕上，所以每次绘制前按配置版本自查一次。
+ */
+internal class KeyboardBorderView(context: Context) : View(context) {
+    private var color = 0
+    private var widthPx = 0f
+    /** 描边的实时来源（颜色 + 宽度 px），由 InputView 注入；见 [syncIfStale]。 */
+    var borderProvider: (() -> Pair<Int, Float>)? = null
+    /** 亮边强度的实时来源；null 时按 0 处理。 */
+    var glowProvider: (() -> Int)? = null
+    private var glow = 0
+    private val glowPaths = Array(GLOW_LAYERS) { Path() }
+    /** 单独的裁剪路径：不能复用 [path]，那是描边用的向内收过的轮廓。 */
+    private val glowClipPath = Path()
+    private val glowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE }
+    private val path = Path()
+    private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE }
+    private var radii = FloatArray(8)
+    private var syncedVersion = Long.MIN_VALUE
+
+    init {
+        isClickable = false
+        isFocusable = false
+        importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO
+        setWillNotDraw(false)
+    }
+
+    fun setCornerRadii(corners: FloatArray) {
+        if (corners.contentEquals(radii)) return
+        radii = corners
+        rebuild()
+    }
+
+    fun setGlow(strength: Int) {
+        val clamped = strength.coerceIn(0, 100)
+        if (clamped == glow) return
+        glow = clamped
+        invalidate()
+    }
+
+    fun setBorder(color: Int, widthPx: Float) {
+        if (color == this.color && widthPx == this.widthPx) return
+        this.color = color
+        this.widthPx = widthPx.coerceAtLeast(0f)
+        rebuild()
+    }
+
+    /** 配置版本变了才重读，避免每帧都走一遍外观查找链。 */
+    fun syncIfStale(version: Long) {
+        if (version == syncedVersion) return
+        val provider = borderProvider ?: return
+        syncedVersion = version
+        val (liveColor, liveWidth) = provider()
+        setBorder(liveColor, liveWidth)
+        setGlow(glowProvider?.invoke() ?: 0)
+    }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        rebuild()
+    }
+
+    private fun rebuild() {
+        path.reset()
+        if (widthPx > 0f && android.graphics.Color.alpha(color) != 0 && width > 0 && height > 0) {
+            val inset = widthPx / 2f
+            if (width > 2 * inset && height > 2 * inset) {
+                // 整体向内收半个线宽再描边，圆角也跟着走同一条 G2 曲线（半径按内缩量同步减）。
+                com.osfans.trime.ime.appearance.Squircle.into(
+                    path,
+                    RectF(inset, inset, width - inset, height - inset),
+                    FloatArray(8) { (radii[it] - inset).coerceAtLeast(0f) },
+                )
+            }
+        }
+        invalidate()
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        syncIfStale(com.osfans.trime.ime.appearance.SurfaceAppearance.version)
+        if (widthPx <= 0f || android.graphics.Color.alpha(color) == 0 || path.isEmpty) return
+        paint.color = color
+        paint.strokeWidth = widthPx
+        canvas.drawPath(path, paint)
+        drawGlow(canvas)
+    }
+
+    /**
+     * 描边带上的白色高光。
+     *
+     * 只画在描边自身的宽度里：外沿最亮 → 内沿透明，宽度永远跟着描边宽度走，
+     * 所以细描边是细亮线、粗描边是柔和的厚边，永远不会超出用户设的那条带。
+     * 四层等分这条带，透明度依次衰减；每层用一条垂直渐变描边（顶白、底 45%），
+     * 光线看起来是从上方打下来的，四个角自动过渡，不用额外算圆弧。
+     *
+     * 白色最亮也要封顶在 [GLOW_MAX_ALPHA]：一旦到 255 完全不透明，就会把描边
+     * 本身的颜色整个抹掉，在浅色/白色背景上看起来像沿外沿漏出一道白边。
+     */
+    private fun drawGlow(canvas: Canvas) {
+        if (glow <= 0 || widthPx <= 0f || width <= 0 || height <= 0) return
+        val outer = RectF(0f, 0f, width.toFloat(), height.toFloat())
+        val clip = canvas.save()
+        com.osfans.trime.ime.appearance.Squircle.into(glowClipPath, outer, radii)
+        canvas.clipPath(glowClipPath)
+        val layerWidth = widthPx / GLOW_LAYERS
+        for (i in 0 until GLOW_LAYERS) {
+            val centerInset = layerWidth * (i + 0.5f)
+            val layerPath = glowPaths[i]
+            layerPath.reset()
+            com.osfans.trime.ime.appearance.Squircle.into(
+                layerPath,
+                RectF(centerInset, centerInset, width - centerInset, height - centerInset),
+                FloatArray(8) { (radii[it] - centerInset).coerceAtLeast(0f) },
+            )
+            val base = glow / 100f * GLOW_ALPHA[i]
+            val top = android.graphics.Color.argb((255 * base).toInt().coerceIn(0, GLOW_MAX_ALPHA), 255, 255, 255)
+            val bottom = android.graphics.Color.argb((255 * base * 0.45f).toInt().coerceIn(0, GLOW_MAX_ALPHA), 255, 255, 255)
+            glowPaint.strokeWidth = layerWidth
+            glowPaint.shader = android.graphics.LinearGradient(
+                0f, 0f, 0f, height.toFloat(), top, bottom, android.graphics.Shader.TileMode.CLAMP,
+            )
+            canvas.drawPath(layerPath, glowPaint)
+        }
+        glowPaint.shader = null
+        canvas.restoreToCount(clip)
+    }
+
+    private companion object {
+        /** 描边带切成几层做渐变；4 层在 1–3dp 上看不出分界。 */
+        const val GLOW_LAYERS = 4
+        /** 高光最亮的白色封顶值（0–255）：保留描边本身颜色，不出现不透明的实白。 */
+        const val GLOW_MAX_ALPHA = 165
+        /** 由外到内的透明度系数：外沿最亮，内沿几乎透明。 */
+        val GLOW_ALPHA = floatArrayOf(1f, 0.72f, 0.42f, 0.16f)
     }
 }
 
@@ -280,8 +459,11 @@ internal class FloatingResizeHandleView(
         val ry = y.coerceAtLeast(0f)
         if (radiusX == rx && radiusY == ry && width > 0) return
         radiusX = rx; radiusY = ry
-        val boxWidth = kotlin.math.ceil(2 * (rx + touchArm + context.dp(16f))).toInt()
-        val boxHeight = kotlin.math.ceil(2 * (ry + touchArm + context.dp(16f))).toInt()
+        // 盒子要容下「角曲线的沿边长度 + 触摸臂 + 余量」：G2 的角比同半径圆弧长
+        // （半径 × EXTENT_RATIO），按半径算会让大圆角下的长臂顶出边界被裁掉。
+        val reach = com.osfans.trime.ime.appearance.Squircle.EXTENT_RATIO
+        val boxWidth = kotlin.math.ceil(2 * (rx * reach + touchArm + context.dp(16f))).toInt()
+        val boxHeight = kotlin.math.ceil(2 * (ry * reach + touchArm + context.dp(16f))).toInt()
         layoutParams?.let { params ->
             if (params.width != boxWidth || params.height != boxHeight) {
                 params.width = boxWidth; params.height = boxHeight; layoutParams = params
@@ -299,21 +481,22 @@ internal class FloatingResizeHandleView(
         val x = width / 2f
         val y = height / 2f
         val offset = outerPaint.strokeWidth / 2f
+        // 卡片描边、背景裁切、系统 outline 都是 G2 曲线，手柄也必须同一条：
+        // 圆弧在这个尺寸下与卡片的角会差出一两个像素，转角处能看出一条错位的细线。
+        val ex = radiusX * com.osfans.trime.ime.appearance.Squircle.EXTENT_RATIO
+        val ey = radiusY * com.osfans.trime.ime.appearance.Squircle.EXTENT_RATIO
         fun trace(path: Path, length: Float) {
             path.reset()
-            if (fromLeft) {
-                path.moveTo(x - offset, y - radiusY - length)
-                path.lineTo(x - offset, y - radiusY)
-                path.arcTo(RectF(x - offset, y - 2 * radiusY - offset,
-                    x + 2 * radiusX + offset, y + offset), 180f, -90f)
-                path.lineTo(x + radiusX + length, y + offset)
-            } else {
-                path.moveTo(x + offset, y - radiusY - length)
-                path.lineTo(x + offset, y - radiusY)
-                path.arcTo(RectF(x - 2 * radiusX - offset, y - 2 * radiusY - offset,
-                    x + offset, y + offset), 0f, 90f)
-                path.lineTo(x - radiusX - length, y + offset)
-            }
+            val dir = if (fromLeft) 1f else -1f
+            // 竖直臂贴卡片的侧边（外沿让半个线宽），走完角曲线后落到卡片底边。
+            val edgeX = x - dir * offset
+            val startY = y - ey
+            val dx = dir * (ex + offset)
+            val dy = ey + offset
+            path.moveTo(edgeX, startY - length)
+            path.lineTo(edgeX, startY)
+            com.osfans.trime.ime.appearance.Squircle.cornerInto(path, edgeX, startY, dx, dy)
+            path.lineTo(edgeX + dx + dir * length, y + offset)
         }
         trace(contour, arm)
         trace(touchContour, touchArm)

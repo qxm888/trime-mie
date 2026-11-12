@@ -48,6 +48,35 @@ class Keyboard(
         if (theme.isCustom && selfConfig != null) context.dp(selfConfig.horizontalGap.coerceAtLeast(0))
         else resolvePositive(selfConfig?.horizontalGap, theme.style.horizontalGap) { context.dp(it) }
 
+    /**
+     * 外观「整体」页的键盘左右留白（px）。只作用于按键，不挪动面板背景/描边：
+     * 背景所在的容器必须保持全宽，否则背景色会跟着一起被挤进来。
+     * 与自定义键盘自己的 rowMargin 叠加，作用域不同但效果相加。
+     */
+    private val sideMarginPx: Int =
+        context.dp(
+            com.osfans.trime.ime.appearance.SurfaceAppearance
+                .keyboardSideMargin(theme.isCustom).toInt(),
+        )
+
+    /**
+     * 外观「整体」页的键盘上/下留白（px）。
+     *
+     * 和左右留白同一套口径：只把**按键区**从面板上下沿收进来，键盘总高
+     * （[keyboardHeight]）不变，背景、描边、底部条仍铺满整块面板——
+     * 所以这里缩的是「行盒放进来的高度」，不是键盘高度本身。
+     */
+    private val topMarginPx: Int =
+        context.dp(
+            com.osfans.trime.ime.appearance.SurfaceAppearance
+                .keyboardTopMargin(theme.isCustom).toInt(),
+        )
+    private val bottomMarginPx: Int =
+        context.dp(
+            com.osfans.trime.ime.appearance.SurfaceAppearance
+                .keyboardBottomMargin(theme.isCustom).toInt(),
+        )
+
     /** 默認鍵寬  */
     private val keyWidth: Int = (allowedWidth * theme.style.keyWidth / 100).toInt()
 
@@ -170,6 +199,14 @@ class Keyboard(
 
     val keyboardHeight: Int = if (maxHeightPx > 0) unconstrainedHeight.coerceAtMost(maxHeightPx).coerceAtLeast(1) else unconstrainedHeight
 
+    /**
+     * 行盒实际可用的高度 = 键盘总高 − 上留白 − 下留白。
+     *
+     * 键盘总高不跟着变小，所以留白只是把按键往中间挤：上留白从顶部让开，
+     * 下留白从底部让开，背景仍然铺到边。
+     */
+    private val keyAreaHeight: Int = (keyboardHeight - topMarginPx - bottomMarginPx).coerceAtLeast(1)
+
     private val expandKeypressArea: Boolean by AppPrefs.defaultInstance().keyboard.expandKeypressArea
 
     init {
@@ -250,15 +287,15 @@ class Keyboard(
                 (CustomKeyboards.get(CustomKeyboards.resolveId(keyboardId))?.keyboardHeightDp ?: 0) <= 0
             val density = context.resources.displayMetrics.density
             val naturalHeightPx = (rawHeightSum * density).toInt()
-            val keepAbsolute = autoCustomHeight && keyboardHeight >= naturalHeightPx
+            val keepAbsolute = autoCustomHeight && keyAreaHeight >= naturalHeightPx
             val extraPerGap =
-                if (keepAbsolute && rows > 1) (keyboardHeight - naturalHeightPx) / (rows - 1) else 0
+                if (keepAbsolute && rows > 1) (keyAreaHeight - naturalHeightPx) / (rows - 1) else 0
 
             // scaled row heights after fitting into keyboardHeight
             val rowHeightScaled = MutableList(rows) { 0 }
 
-            var remainHeight = keyboardHeight
-            val scale = if (keepAbsolute) density else keyboardHeight.toFloat() / rawHeightSum
+            var remainHeight = keyAreaHeight
+            val scale = if (keepAbsolute) density else keyAreaHeight.toFloat() / rawHeightSum
 
             // scale row heights to keyboardHeight; last row absorbs rounding errors
             for (i in 0 until rows - 1) {
@@ -270,7 +307,7 @@ class Keyboard(
             rowHeightScaled[rows - 1] = if (keepAbsolute) (rowRawHeight[rows - 1] * density).toInt() else remainHeight
 
             var xPos = 0
-            var yPos = 0
+            var yPos = topMarginPx
 
             var row = 0
             column = 0
@@ -432,14 +469,18 @@ class Keyboard(
     private fun buildImported(layout: com.osfans.trime.data.baiduskin.ImportedLayout, data: CustomKeyboards.CustomKeyboard) {
         val edits = data.rows.flatMap { it.keys }.filter { it.skinId.isNotEmpty() }.associateBy { it.skinId }
         val rows = layout.keys.map { it.box.y }.distinct().sorted()
+        // 和主排布一致：按键整体收进 sideMarginPx，面板背景仍铺满 allowedWidth。
+        val contentWidth = (allowedWidth - 2 * sideMarginPx).coerceAtLeast(1)
+        // 上下留白同理：纵向按 keyAreaHeight 排，再整体下移 topMarginPx。
+        val importedHeight = (keyboardHeight - topMarginPx - bottomMarginPx).coerceAtLeast(1)
         layout.keys.forEach { placed ->
             val edited = edits[placed.id] ?: CustomKeyboards.CustomKey(placed.label, bindings = placed.bindings.toMutableMap(), skinId = placed.id, skin = placed.style)
             val text = CustomKeyboards.run { edited.toTextKey(data.backgroundFor(context), data.keyAppearance) }
             val key = Key(this, theme, text)
-            key.x = (placed.box.x / layout.width * allowedWidth).toInt()
-            key.y = (placed.box.y / layout.height * keyboardHeight).toInt()
-            key.width = (placed.box.width / layout.width * allowedWidth).toInt().coerceAtLeast(1)
-            key.height = (placed.box.height / layout.height * keyboardHeight).toInt().coerceAtLeast(1)
+            key.x = sideMarginPx + (placed.box.x / layout.width * contentWidth).toInt()
+            key.y = topMarginPx + (placed.box.y / layout.height * importedHeight).toInt()
+            key.width = (placed.box.width / layout.width * contentWidth).toInt().coerceAtLeast(1)
+            key.height = (placed.box.height / layout.height * importedHeight).toInt().coerceAtLeast(1)
             key.row = rows.indexOf(placed.box.y)
             key.column = layout.keys.count { it.box.y == placed.box.y && it.box.x < placed.box.x }
             key.index = mKeys.size
@@ -653,9 +694,12 @@ class Keyboard(
     val isLabelUppercase: Boolean
         get() = labelTransform == TextKeyboard.LabelTransform.UPPERCASE
 
-    /** 行边距 dp（由 generatedKeys 填充；主题键盘无此概念返回 0）。 */
+    /**
+     * 行边距 px（由 generatedKeys 填充；主题键盘无此概念返回 0），
+     * 叠加外观「整体」页的键盘左右留白。
+     */
     private fun rowMarginOf(textKey: TextKeyboard.TextKey): Int =
-        if (theme.isCustom && textKey.rowMargin >= 0) context.dp(textKey.rowMargin) else 0
+        (if (theme.isCustom && textKey.rowMargin >= 0) context.dp(textKey.rowMargin) else 0) + sideMarginPx
 
     /** 按键上方符号的水平对齐：left / center / right。 */
     val symbolAlign: String

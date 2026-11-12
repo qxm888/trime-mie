@@ -23,6 +23,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
+import android.graphics.RectF
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.view.HapticFeedbackConstants
@@ -86,7 +87,6 @@ import splitties.views.imageDrawable
 import kotlin.math.abs
 
 import kotlin.math.roundToInt
-import kotlin.math.sqrt
 
 /**
  * Successor of the old InputRoot
@@ -158,6 +158,27 @@ class InputView(
         imageView {
             scaleType = ImageView.ScaleType.CENTER_CROP
         }
+
+    /**
+     * 系统跨窗口模糊的落点，整块面板最底的一层。自己按 G2 路径裁角，
+     * 因为系统只能画圆弧角，直接交给它角上会露缝。
+     */
+    private val blurLayer = com.osfans.trime.ime.appearance.BlurBackdropView(context)
+
+    /**
+     * 渐变单独一层，画在底图之上：两者是**叠加**关系，不再二选一。
+     * 渐变色带 alpha 时就能透出下面的底图。
+     */
+    private val gradientLayer =
+        imageView {
+            scaleType = ImageView.ScaleType.FIT_XY
+        }
+
+    /**
+     * 面板最底下的玻璃层：`background` 放系统跨窗口模糊（糊背后的 App），
+     * `onDraw` 画我们自己糊过的图/视频。两者叠起来就是「磨砂的图 + 图背后糊着的 App」。
+     */
+    private val glassLayer = com.osfans.trime.ime.appearance.GlassBackdropView(context)
     private val placeholderListener = OnClickListener { }
 
     private val leftPaddingSpace =
@@ -248,24 +269,147 @@ class InputView(
     private var unifiedVideo: com.osfans.trime.ime.keyboard.VideoKeyboardBackground? = null
     private var unifiedVideoPath: String? = null
 
+    /** 真模糊背板的几何指纹：半径/着色/圆角变了才重新下发，避免布局抖动时反复建 drawable。 */
+    private var backdropKey = ""
+    private var backdropApplied = false
+    private var backdropRetried = 0
+
     fun setUnifiedVideoActive(active: Boolean) { unifiedVideo?.setActive(active) }
+
+    /**
+     * 铺系统模糊（基板）。返回 true 表示系统那一层已经拿到。
+     *
+     * 和 [com.osfans.trime.ime.appearance.BackdropBlur] 的分工：
+     * 这个糊「窗口下面那个 App」，那个糊「我们自己画的图/视频」。
+     * 背板不再是独占层——纯色/渐变/图片都按「混入比例」叠在它上面，见 [updateUnifiedBackground]。
+     *
+     * 拿不到 drawable（窗口还没 attach、系统版本不够、ROM 关掉了跨窗口模糊）时返回
+     * false，调用方照旧走纯色/图片/渐变那条路。
+     */
+    private fun applyPanelBackdrop(): Boolean {
+        val cfg = com.osfans.trime.ime.appearance.SurfaceAppearance.panelBackdrop(theme.isCustom)
+            ?.takeIf { it.enabled }
+        if (cfg == null) {
+            backdropKey = ""
+            backdropApplied = false
+            blurLayer.setBackdrop(null, keyboardCornerRadii)
+            glassLayer.imageAlpha = 0
+            return false
+        }
+        val radius = cfg.radiusPx()
+        // 不再给模糊加任何着色：颜色统一由外边「整套键盘背景」的纯色/渐变决定。
+        val color = Color.TRANSPARENT
+        // 窗口身份必须进 key：转屏/窗口重建后 ViewRootImpl 换了，旧 drawable 已失效，
+        // 但半径和圆角往往没变，不带上它就会被下面这行短路挡住，转屏后一直不重申请。
+        val key = "$radius|${keyboardCornerRadii.contentToString()}|" +
+            com.osfans.trime.ime.appearance.SystemBackdrop.windowStamp(blurLayer)
+        if (key == backdropKey && backdropApplied) return true
+        // 系统模糊区域是系统在合成层画的，canvas 的 clipPath 管不到它，必须让区域
+        // 自己带圆角，否则圆角外会糊出四块直角色斑（「收不住」）。以前这里故意传
+        // 全 0 直角、指望 blurLayer 的 G2 裁剪收边，但合成层不听 canvas 的裁剪。
+        // 传面板四角半径，与悬浮候选窗 withPanelBackdrop 的做法一致。
+        val drawable = com.osfans.trime.ime.appearance.SystemBackdrop.obtain(
+            blurLayer, radius, color, keyboardCornerRadii,
+        )
+        if (drawable == null) {
+            backdropApplied = false
+            backdropKey = ""
+            blurLayer.setBackdrop(null, keyboardCornerRadii)
+            // 只在「窗口还没 attach」时重试：版本不够、ROM 不支持这类原因重试也没用。
+            // 用 per-host 状态，别让悬浮候选窗的成功把键盘的失败状态盖掉。
+            val status = com.osfans.trime.ime.appearance.SystemBackdrop.statusOf(blurLayer)
+            if (status.startsWith("no_view_root") && backdropRetried < 8) {
+                backdropRetried++
+                blurLayer.postDelayed(
+                    {
+                        if (isAttachedToWindow) updateUnifiedBackground()
+                    },
+                    150L,
+                )
+            }
+            return false
+        }
+        backdropKey = key
+        backdropApplied = true
+        backdropRetried = 0
+        blurLayer.setBackdrop(drawable, keyboardCornerRadii)
+        return true
+    }
 
     private fun updateUnifiedBackground() {
         val enabled = com.osfans.trime.ime.appearance.SurfaceAppearance.unifiedBackground(theme.isCustom)
-        val background = keyboardWindow.currentBackground.takeIf { enabled }
-        keyboardBackground.imageDrawable = roundedBackground(
-            background?.drawable(context, resources.displayMetrics.widthPixels)
-                ?: floatingCardOverride()
-                ?: scope.drawable("keyboard_background"),
+        val backdropCfg = com.osfans.trime.ime.appearance.SurfaceAppearance.panelBackdrop(theme.isCustom)
+            ?.takeIf { it.enabled }
+        val backdropOn = applyPanelBackdrop()
+        val gradient = com.osfans.trime.ime.appearance.SurfaceAppearance.panelGradient(theme.isCustom)
+        // 底图和渐变是**两层**，各画各的：渐变盖在底图上，色带带 alpha 时能透出底图。
+        // 以前这里是 if/else 二选一，一开渐变底图就整层不画了。
+        val background = keyboardWindow.currentBackground.takeIf { enabled || backdropCfg != null }
+        val night = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+        // 真正落到面板上的那张底图：可能是「整套键盘背景」里选的，也可能是主题自带的
+        // keyboard_background。判断"有没有纹理"要按这张实际的图来，不能只看配置类型——
+        // 主题自带的那张图是没有 CustomBackground 记录的。
+        // 主题键盘（非自定义）支持「键盘整体 · 背景」覆盖：设了颜色/图片/透明就用它，
+        // 优先级高于主题自带的 keyboard_background（自定义键盘走自己的整套键盘背景）。
+        val panelOverride = if (!theme.isCustom) {
+            com.osfans.trime.ime.appearance.SurfaceAppearance.panelBackground(theme.isCustom)
+                ?.takeIf { it.isNotBlank() }
+                ?.let { scope.drawable(it) }
+        } else null
+        val rawBackground = panelOverride
+            ?: background?.drawable(context, resources.displayMetrics.widthPixels)
+            ?: floatingCardOverride()
+            ?: scope.drawable("keyboard_background")
+        keyboardBackground.imageDrawable = roundedBackground(rawBackground)
+        glassLayer.radii = keyboardCornerRadii
+        // 自糊层异步首帧还没算好时，用未糊的原图占位，别留一块黑/透空。
+        glassLayer.placeholder = rawBackground?.constantState?.newDrawable()?.mutate()?.let {
+            com.osfans.trime.ime.appearance.CornerClipDrawable(it).apply { radii = keyboardCornerRadii }
+        }
+        gradientLayer.imageDrawable = gradient?.let {
+            com.osfans.trime.ime.appearance.CornerClipDrawable(
+                com.osfans.trime.ime.appearance.PanelGradientDrawable(it, night),
+            ).apply { radii = keyboardCornerRadii }
+        }
+        // 有纹理（位图/视频）才需要自糊；纯色和渐变糊了没有意义。
+        // 注意：主题自带的位图是 AssetBitmapDrawable，它没有实现 intrinsic 尺寸（返回 -1），
+        // 所以不能只靠 intrinsicWidth 判断，得按类型排除「平的」那两种。
+        val textured = when {
+            background?.type == com.osfans.trime.data.keymap.CustomBackground.Type.IMAGE -> true
+            background?.type == com.osfans.trime.data.keymap.CustomBackground.Type.VIDEO -> true
+            rawBackground == null -> false
+            rawBackground is android.graphics.drawable.GradientDrawable -> false
+            rawBackground is android.graphics.drawable.ColorDrawable -> false
+            (rawBackground.intrinsicWidth) > 0 -> true
+            else -> rawBackground is com.osfans.trime.data.theme.AssetBitmapDrawable
+        }
+        val glassSource = backdropOn && textured
+        com.osfans.trime.ime.appearance.SystemBackdrop.recordSelfBlur(
+            "backdrop=$backdropOn textured=$textured cover=${backdropCfg?.imageAlpha ?: 0} " +
+                "type=${background?.type} drawable=${rawBackground?.javaClass?.simpleName}",
         )
+        if (backdropCfg != null) {
+            // 「糊多少」和「透多少」是两件事：
+            // imageAlpha = 图自己被糊掉多少；imageOpacity = 整层透多少（透出来的是背后 App 的系统模糊）。
+            val opacity = backdropCfg.imageOpacity
+            glassLayer.imageAlpha = if (glassSource) backdropCfg.imageAlpha * opacity / 100 else 0
+            keyboardBackground.alpha = if (glassSource) opacity / 100f else 1f
+            if (glassSource) unifiedVideo?.alpha = opacity / 100f
+        } else {
+            glassLayer.imageAlpha = 0
+            keyboardBackground.alpha = 1f
+            unifiedVideo?.alpha = 1f
+        }
         // The navigation inset belongs to the painted strip, not an unpainted bottom margin.
         // Keep the toolbar's independent background when unified backgrounds are disabled.
         // 这块是铺在键盘最底下的一整条底图，会把背景层刚裁好的两个下圆角重新盖成直角。
         // 开了四角圆角就让它空着，交给下面那层已经带圆角的背景。
-        bottomPaddingSpace.background = if (!enabled && theme.isCustom && keyboardCornerRadii.none { it > 0f })
+        bottomPaddingSpace.background = if (!backdropOn && gradient == null && !enabled && theme.isCustom && keyboardCornerRadii.none { it > 0f })
             keyboardWindow.currentBackground?.drawable(context, resources.displayMetrics.widthPixels)
             else null
         com.osfans.trime.ime.appearance.BackdropBlur.invalidateBackground(keyboardView)
+        // 视频要留着播放，糊的那一层才抓得到帧；显示上它已经被 glassLayer 盖住了。
+        // 渐变不再顶掉视频：渐变是有 alpha 的，底下的视频该透出来就透出来。
         val path = background?.takeIf { it.type == com.osfans.trime.data.keymap.CustomBackground.Type.VIDEO }?.image
         if (path == unifiedVideoPath && unifiedVideo != null) return
         unifiedVideo?.let { it.release(); (it.parent as? android.view.ViewGroup)?.removeView(it) }
@@ -278,8 +422,9 @@ class InputView(
                 startToStart = LayoutParams.PARENT_ID; endToEnd = LayoutParams.PARENT_ID
                 topToTop = LayoutParams.PARENT_ID; bottomToBottom = LayoutParams.PARENT_ID
             }
-            (keyboardView as android.view.ViewGroup).addView(video, 1, params)
+            (keyboardView as android.view.ViewGroup).addView(video, 2, params)
             unifiedVideo = video
+            video.alpha = if (glassSource) (backdropCfg?.imageOpacity ?: 100) / 100f else 1f
         }
     }
 
@@ -869,28 +1014,32 @@ class InputView(
     private var inputBarBasePaddingRight = 0
 
     /**
-     * 图标行高度处，圆角矩形被弧线吃掉的横向宽度。
+     * 距面板上沿 [iconTopGapPx] 处，G2 轮廓从左右两侧内收多少。
      *
-     * 圆心在 (r, r)：越过 y = r - [iconTopGapPx] 之后左边界才内收，
-     * 内收量 = r - sqrt(r² - (r - y)²)。两端各让这么多，图标就不会被弧线切到。
+     * 让位量按曲线本身算（[com.osfans.trime.ime.appearance.Squircle.topInset]），不再套圆弧公式：
+     * G2 的角沿边占得比同半径圆弧长，套圆弧会少让一截，图标就贴着弧线。取不到面板尺寸时
+     * 退回本地窗口宽度——只影响一次布局前的估算，等布局完成会重算。
      */
-    private fun cornerSideInsetPx(radiusPx: Float, iconTopGapPx: Float): Int {
-        if (radiusPx <= 0f) return 0
-        val dy = radiusPx - iconTopGapPx
-        if (dy <= 0f) return 0
-        val inner = radiusPx * radiusPx - dy * dy
-        if (inner <= 0f) return radiusPx.toInt()
-        return (radiusPx - sqrt(inner)).toInt()
+    private fun cornerSideInsetPx(corners: List<Float>, iconTopGapPx: Float): Int {
+        if (corners.isEmpty() || corners.all { it <= 0f }) return 0
+        val w = keyboardView.width.takeIf { it > 0 } ?: resources.displayMetrics.widthPixels
+        val h = keyboardView.height.takeIf { it > 0 } ?: resources.displayMetrics.heightPixels
+        val radii = FloatArray(8) { dp(corners.getOrElse(it / 2) { 0f }) }
+        val inset = com.osfans.trime.ime.appearance.Squircle.topInset(
+            RectF(0f, 0f, w.toFloat(), h.toFloat()),
+            radii,
+            iconTopGapPx,
+        )
+        return inset.roundToInt().coerceAtLeast(0)
     }
 
-    /** 工具栏左右内边距 = 单手模式留白 + 圆角让位。两处都在改它，走同一个出口。 */
+    /** 工具栏左右内边距 = 单手模式留白 + 圆角让位。两处都在改它，走同一个出口且可重复调用。 */
     private fun applyInputBarPadding() {
-        inputBar.view.setPadding(
-            inputBarBasePaddingLeft + cornerSideInset,
-            inputBar.view.paddingTop,
-            inputBarBasePaddingRight + cornerSideInset,
-            inputBar.view.paddingBottom,
-        )
+        val left = inputBarBasePaddingLeft + cornerSideInset
+        val right = inputBarBasePaddingRight + cornerSideInset
+        val bar = inputBar.view
+        if (bar.paddingLeft == left && bar.paddingRight == right) return
+        bar.setPadding(left, bar.paddingTop, right, bar.paddingBottom)
     }
 
     /**
@@ -927,30 +1076,74 @@ class InputView(
         val pixelCorners = resolved.map { dp(it) }
         keyboardCornerRadii = FloatArray(8) { pixelCorners.getOrElse(it / 2) { 0f } }
         (keyboardBackground.imageDrawable as? com.osfans.trime.ime.appearance.CornerClipDrawable)?.radii = keyboardCornerRadii
+        (gradientLayer.imageDrawable as? com.osfans.trime.ime.appearance.CornerClipDrawable)?.radii = keyboardCornerRadii
+        glassLayer.radii = keyboardCornerRadii
         (keyboardView as? FloatingKeyboardContainer)?.setCornerRadii(pixelCorners)
+        // 面板描边：跟随同一套圆角，画在键盘轮廓内侧。颜色为空或宽度为 0 时传透明色，
+        // 容器那边会直接跳过绘制，所以两种键盘模式下都可以无条件调用。
+        val border = com.osfans.trime.ime.appearance.SurfaceAppearance.keyboardBorder(theme.isCustom)
+        val borderColor = if (border.first.isBlank()) 0 else
+            runCatching { android.graphics.Color.parseColor(border.first) }.getOrDefault(0)
+        val borderGlow = com.osfans.trime.ime.appearance.SurfaceAppearance.keyboardBorderGlow(theme.isCustom)
+        (keyboardView as? FloatingKeyboardContainer)?.apply {
+            setBorder(borderColor, dp(border.second))
+            setGlow(borderGlow)
+            // 保存外观时不一定重建输入法：键盘可能一直挂在屏幕上，只是被设置页盖住。
+            // 交给描边层在每次绘制前按配置版本自查，改完下一帧就跟上。
+            borderProvider = {
+                val live = com.osfans.trime.ime.appearance.SurfaceAppearance.keyboardBorder(theme.isCustom)
+                val color = if (live.first.isBlank()) 0 else
+                    runCatching { android.graphics.Color.parseColor(live.first) }.getOrDefault(0)
+                com.osfans.trime.ime.appearance.SurfaceAppearance.recordAppliedBorder(live.first, live.second)
+                color to dp(live.second)
+            }
+            // 亮边强度也走同一条「配置版本变了才重读」的路。
+            glowProvider = {
+                com.osfans.trime.ime.appearance.SurfaceAppearance.keyboardBorderGlow(theme.isCustom)
+            }
+        }
+        com.osfans.trime.ime.appearance.SurfaceAppearance.recordAppliedBorder(border.first, border.second)
         // 工具栏两端不能压在弧线上。整行下移（加高上边）会把键盘顶出可视区：
         // 实测工具栏被整条裁掉、圆角跟着消失，编辑框还悬在半空——输入法窗口的高度
         // 由内容决定，键盘自己长高只会向上溢出。所以改成横向让位：只把两端 Icon
         // 从弧线里挪出来，高度、键区、候选词位置全都不动。
         //
-        // 直角坐标里圆心是 (r, r)，图标上沿在 y0 时，圆角矩形的左边界内收到
-        // r - sqrt(r² - (r - y0)²)，这就是两端各自要让开的宽度。
+        // 图标上沿用真实值：工具栏自己的上留白 + 图标行内距。设了上留白时图标整体下移，
+        // 弧线在那个高度内收得更多，写死 6dp 会少让一截。
         val sideInset = cornerSideInsetPx(
-            maxOf(pixelCorners.getOrElse(0) { 0f }, pixelCorners.getOrElse(1) { 0f }),
-            dp(TOOLBAR_ICON_TOP_GAP_DP).toFloat(),
+            resolved,
+            inputBar.toolbarTopPadPx() + dp(TOOLBAR_ICON_TOP_GAP_DP),
         )
-        if (sideInset != cornerSideInset) {
-            cornerSideInset = sideInset
-            applyInputBarPadding()
-        }
+        // 不做「值没变就跳过」的短路：工具栏自己也会写 padding，一旦被谁清掉，
+        // 圆角值不变就再也补不回来（换工具栏方案后让位失效就是这么来的）。
+        // applyInputBarPadding 内部比对实际 padding，等价时不会触发重新布局。
+        cornerSideInset = sideInset
+        applyInputBarPadding()
         // 圆角裁掉的那四个角必须露出后面的应用，所以窗口底色要跟着透明化。
         // 只在真的开了圆角时才透明：关掉时恢复主题的 windowBackground，
         // 免得把原本靠窗口底色兜底的区域变成透空。
-        service.setInputWindowBackdropTransparent(resolved.any { it > 0f }, forceWindowBackdrop)
+        // 真模糊背板同理——窗口不透明，系统就没有「下面那层」可以糊，效果直接没有。
+        val backdropOn = com.osfans.trime.ime.appearance.SurfaceAppearance.panelBackdrop(theme.isCustom)
+            ?.enabled == true
+        if (backdropOn) applyPanelBackdrop()
+        service.setInputWindowBackdropTransparent(resolved.any { it > 0f } || backdropOn, forceWindowBackdrop)
     }
 
     /** 窗口每次显示都调一次：此时窗口记录是新的，底色和轮廓要重新落。 */
     fun refreshSurfaceCorners() = applyKeyboardCorners(forceWindowBackdrop = true)
+
+    /**
+     * 系统跨窗口模糊开关翻转后由 Service 调用：丢掉属于旧窗口的 drawable、作废
+     * 缓存 key，重铺背景层并重新申请模糊，避免「开关回来了但模糊没回来」。
+     */
+    fun refreshBackdrop() {
+        com.osfans.trime.ime.appearance.SystemBackdrop.forget(blurLayer)
+        backdropKey = ""
+        backdropApplied = false
+        backdropRetried = 0
+        updateUnifiedBackground()
+        refreshSurfaceCorners()
+    }
 
     /** Styles the floating card and resize handles; docked mode strips both. */
     private fun configureFloatingSurface(enabled: Boolean) {
@@ -959,7 +1152,11 @@ class InputView(
         if (enabled) {
             val cardOverride = floatingCardOverride()
             val backColor = resolveFloatingBackColor()
-            surface.background = cardOverride ?: GradientDrawable().apply {
+            // 真模糊背板会自己画满整张卡片（圆角也交给系统的模糊区域），
+            // 这时候再垫一层不透明卡片色就把模糊盖没了。
+            val backdropOn = com.osfans.trime.ime.appearance.SurfaceAppearance.panelBackdrop(theme.isCustom)
+                ?.enabled == true
+            surface.background = if (backdropOn) null else cardOverride ?: GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
                 cornerRadii = keyboardCornerRadii.copyOf()
                 setColor(backColor)
@@ -1026,9 +1223,40 @@ class InputView(
             ).apply {
                 alpha = if (resources.configuration.isLandscape()) keyboardPrefs.landscapeOpacity.getValue().coerceIn(20, 100) / 100f else 1f
                 isMotionEventSplittingEnabled = true
+                // 最底：系统模糊。必须排在背景之前，否则会把颜色整片盖掉
+                // （模糊 drawable 画出来是不透明的）。
+                add(
+                    blurLayer,
+                    lParams(matchConstraints, matchConstraints) {
+                        startOfParent()
+                        endOfParent()
+                        topOfParent()
+                        bottomOfParent()
+                    },
+                )
                 add(
                     keyboardBackground,
                     // A portrait bitmap must not determine the surface's wrap-content height.
+                    lParams(matchConstraints, matchConstraints) {
+                        startOfParent()
+                        endOfParent()
+                        topOfParent()
+                        bottomOfParent()
+                    },
+                )
+                // 玻璃层紧贴在背景之上、视频与按键之下：视频是用 addView(video, 1, …)
+                // 插进来的，所以它的 index 1 会把这个占 1 的兄弟往后挤。
+                add(
+                    gradientLayer,
+                    lParams(matchConstraints, matchConstraints) {
+                        startOfParent()
+                        endOfParent()
+                        topOfParent()
+                        bottomOfParent()
+                    },
+                )
+                add(
+                    glassLayer,
                     lParams(matchConstraints, matchConstraints) {
                         startOfParent()
                         endOfParent()
@@ -1077,11 +1305,52 @@ class InputView(
             }
 
         keyboardWindow.onBackgroundChanged = { updateUnifiedBackground() }
+        // 每次挂到新窗口都要重新申请一次：模糊 drawable 绑定在 ViewRootImpl 上，
+        // 换窗口（切主题、锁屏回来、横竖屏）之后旧的那个已经作废。
+        keyboardView.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+            override fun onViewAttachedToWindow(v: View) {
+                backdropRetried = 0
+                v.post { updateUnifiedBackground() }
+            }
+
+            override fun onViewDetachedFromWindow(v: View) {
+                com.osfans.trime.ime.appearance.SystemBackdrop.forget(blurLayer)
+                backdropKey = ""
+                backdropApplied = false
+            }
+        })
         updateUnifiedBackground()
-        if (com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom).needsBlur) {
+        // 无条件建采集器，开不开由 active() 实时判断。
+        // 以前是「init 时配置里有没有 blur/背板」决定建不建，结果配置是在之后才打开的，
+        // 采集器永远不存在，自糊层拿不到帧 → 图片/视频保持清晰（就是"没啥区别"）。
+        run {
             val root = keyboardView as android.view.ViewGroup
-            com.osfans.trime.ime.appearance.BackdropBlur(root, { com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom) }) { canvas ->
-                com.osfans.trime.ime.appearance.BackdropBlur.drawLayer(root, keyboardBackground, canvas) { keyboardBackground.draw(it) }
+            com.osfans.trime.ime.appearance.BackdropBlur(
+                root,
+                // 面板玻璃需要比按键更强的一档：按键只糊一小块，面板要糊满整屏。
+                {
+                    val base = com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom)
+                    val bd = com.osfans.trime.ime.appearance.SurfaceAppearance.panelBackdrop(theme.isCustom)
+                        ?.takeIf { it.enabled }
+                    if (bd == null) base
+                    else base.copy(blurRadius = (bd.strength / 100f * 32f).toInt().coerceIn(2, 32))
+                },
+                {
+                    com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom).needsBlur ||
+                        com.osfans.trime.ime.appearance.SurfaceAppearance.panelBackdrop(theme.isCustom)?.enabled == true
+                },
+            ) { canvas ->
+                // 只抓背景 drawable，不能抓整个 View：开了背板之后这个 View 的
+                // background 是系统的 BackgroundBlurDrawable，把它画进离屏位图会抛异常，
+                // 整个采集循环就废了（按键的「动态模糊背景」也跟着一起坏）。
+                com.osfans.trime.ime.appearance.BackdropBlur.drawLayer(root, keyboardBackground, canvas) { c ->
+                    val layer = keyboardBackground.imageDrawable ?: return@drawLayer
+                    val saved = android.graphics.Rect(layer.bounds)
+                    layer.setBounds(0, 0, keyboardBackground.width, keyboardBackground.height)
+                    layer.draw(c)
+                    layer.setBounds(saved)
+                }
+                com.osfans.trime.ime.appearance.BackdropBlur.drawLayer(root, gradientLayer, canvas) { gradientLayer.draw(it) }
                 unifiedVideo?.let { video ->
                     com.osfans.trime.ime.appearance.BackdropBlur.drawLayer(root, video, canvas) { video.drawBlurFrame(it) }
                 }
@@ -1117,6 +1386,9 @@ class InputView(
             }
 
         updateKeyboardSize()
+        // 工具栏重设上/下留白时会整块重写自己的 padding，圆角让位是左右两份，必须跟着重算。
+        // 只靠 keyboardView 的 layout 回调不够：换工具栏方案并不一定改变键盘尺寸。
+        inputBar.onMetricsSynced = { applyKeyboardCorners() }
 
         if (isFloatingKeyboardEnabled) {
             // 悬浮卡片 8dp、按键弹层 24dp，预编辑取中间档：编码区垂直偏移可把它压到
@@ -1217,7 +1489,20 @@ class InputView(
             return
         }
         bottomPaddingSpace.updateLayoutParams { height = keyboardBottomPaddingPx + dockedNavigationInset }
-        val (left, right) = com.osfans.trime.ime.keyboard.KeyboardPrefs.run { context.oneHandPadding(theme) }
+        val (baseLeft, baseRight) = com.osfans.trime.ime.keyboard.KeyboardPrefs.run { context.oneHandPadding(theme) }
+        // 键盘整体左右留白（外观「整体」页）：只让按键、预编辑、工具栏「内容」向内收，
+        // 面板（背景色/图片、描边、底部条）仍铺满整块屏幕。
+        // 千万不能把留白加进 left/rightPaddingSpace：那两个占位约束的是
+        // windowManager.view，也就是 KeyboardWindow 的键盘区容器；容器自己带着皮肤背景，
+        // 一旦跟着收窄，背景色就会连着一起被挤进来。按键侧改由 Keyboard 的行边距承载
+        // （见 Keyboard.rowMarginOf / buildImported），容器保持全宽。
+        val sideMarginPx = dp(
+            com.osfans.trime.ime.appearance.SurfaceAppearance.keyboardSideMargin(theme.isCustom).toInt(),
+        )
+        val left = baseLeft
+        val right = baseRight
+        val contentLeft = left + sideMarginPx
+        val contentRight = right + sideMarginPx
         leftPaddingSpace.visibility = if (left == 0) View.GONE else View.VISIBLE
         rightPaddingSpace.visibility = if (right == 0) View.GONE else View.VISIBLE
         leftPaddingSpace.updateLayoutParams { width = left }
@@ -1228,9 +1513,9 @@ class InputView(
             startToEndOf(leftPaddingSpace)
             endToStartOf(rightPaddingSpace)
         }
-        preedit.ui.root.setPadding(left, 0, right, 0)
-        inputBarBasePaddingLeft = left
-        inputBarBasePaddingRight = right
+        preedit.ui.root.setPadding(contentLeft, 0, contentRight, 0)
+        inputBarBasePaddingLeft = contentLeft
+        inputBarBasePaddingRight = contentRight
         applyInputBarPadding()
     }
 

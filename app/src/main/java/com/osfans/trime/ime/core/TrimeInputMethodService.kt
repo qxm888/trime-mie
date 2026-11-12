@@ -263,6 +263,34 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
     private var transparentBackdrop = false
 
     /**
+     * 系统跨窗口模糊总开关。省电模式 / 开发者选项 / 播放视频时系统会临时关掉，
+     * 关掉再打开后旧的 BackgroundBlurDrawable 不会被重新登记，必须强制重申请。
+     */
+    private val crossWindowBlurListener = java.util.function.Consumer<Boolean> { _ ->
+        com.osfans.trime.ime.appearance.SystemBackdrop.bumpEpoch()
+        inputView?.refreshBackdrop()
+        candidatesView?.refreshBackdrop()
+        com.osfans.trime.util.DiagnosticLog.event("appearance", "cross_window_blur_changed")
+    }
+
+    private fun registerCrossWindowBlurListener() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
+        runCatching {
+            getSystemService(WindowManager::class.java)?.addCrossWindowBlurEnabledListener(
+                ContextCompat.getMainExecutor(this), crossWindowBlurListener,
+            )
+        }.onFailure { Timber.w(it, "Could not register cross window blur listener") }
+    }
+
+    private fun unregisterCrossWindowBlurListener() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
+        runCatching {
+            getSystemService(WindowManager::class.java)
+                ?.removeCrossWindowBlurEnabledListener(crossWindowBlurListener)
+        }
+    }
+
+    /**
      * 输入法窗口的底色。
      *
      * 「键盘四角」是把键盘容器本身裁成圆角，裁掉的那四块只有露出后面的应用才像圆角；
@@ -322,6 +350,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         decorView = window.window!!.decorView
         contentView = decorView.findViewById(android.R.id.content)
         lastKnownConfig = Configuration(resources.configuration)
+        registerCrossWindowBlurListener()
     }
 
     private fun handleRimeMessage(it: RimeMessage<*>) {
@@ -514,6 +543,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
     }
 
     override fun onDestroy() {
+        unregisterCrossWindowBlurListener()
         if(petCompanionDelegate.isInitialized()) petCompanionDelegate.value.dispose()
         com.osfans.trime.data.sync.ClipboardSync.stop()
         disposeVoiceIfInitialized()
@@ -568,7 +598,25 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
             super.onConfigurationChanged(newConfig)
         }
         lastKnownConfig.setTo(newConfig)
+        // 整套键盘的「夜间换另一套」不能只靠应用层那条回调：它不一定先到。
+        // syncNightMode 幂等（日夜位没翻就不动），两边都调不会重复重建。
+        val night = newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+        if (com.osfans.trime.data.keymap.CustomKeyboards.syncNightMode(night)) {
+            com.osfans.trime.data.theme.ThemeManager.requestLayoutSwitch()
+        }
         syncModeBinding()
+        // 转屏时 IME 窗口通常不 detach/attach：ViewRootImpl 换了但 View 还在，
+        // 旧的模糊 drawable 失效、窗口透明底色也可能被新窗口记录重置。
+        // 只在尺寸/方向真的变了才强制重铺：每次 createBackgroundBlurDrawable
+        // 都会登记一块模糊区域，键盘隐藏、语言切换不该反复重建、越积越多。
+        val shapeMask = ActivityInfo.CONFIG_ORIENTATION or ActivityInfo.CONFIG_SCREEN_SIZE or
+            ActivityInfo.CONFIG_SCREEN_LAYOUT or ActivityInfo.CONFIG_SMALLEST_SCREEN_SIZE or ActivityInfo.CONFIG_DENSITY
+        if (diff and shapeMask != 0) {
+            inputView?.post {
+                inputView?.refreshBackdrop()
+                candidatesView?.refreshBackdrop()
+            }
+        }
     }
 
     private val contentSize = floatArrayOf(0f, 0f)

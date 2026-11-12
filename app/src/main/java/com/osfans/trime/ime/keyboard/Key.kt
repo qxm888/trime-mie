@@ -5,9 +5,11 @@
 package com.osfans.trime.ime.keyboard
 
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.view.KeyEvent
 import androidx.annotation.ColorInt
 import com.osfans.trime.daemon.RimeDaemon
+import com.osfans.trime.data.keymap.LayoutTypography
 import com.osfans.trime.data.theme.ColorManager
 import com.osfans.trime.data.theme.Theme
 import com.osfans.trime.data.theme.model.KeyActionToken
@@ -373,27 +375,50 @@ class Key(
         val raw = layoutKeyBackground.ifBlank { com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom).keys.background }
         if (raw.isBlank()) null else ColorManager.getDrawable(raw)
     }
-    fun getBackgroundDrawable(): Drawable? = wholeKeyBackground ?: customBgDrawable ?: when (appearanceType) {
-        // Locked modifiers use the YAML on-state skin; normal per-key colours must not mask it.
-        // Fully custom/imported skins still win through customBgDrawable above.
-        2 -> when {
-            // 锁定态有按键级颜色就用它（长按大写 → 例如回车绿）。
-            isOn && perKeyOnBackground != null -> perKeyOnBackground
-            // 自定义键盘只有一份色板：不想让单击一次性 Shift 变色时保持按键自身背景。
-            theme.isCustom -> keyBackground
-            else -> if (isPressed) hlOnKeyBackground else onKeyBackground
-        }
+    /**
+     * 按键背景是不是图片（位图 / 图片皮肤），而不是纯色圆角。
+     *
+     * 不能用 [getBackgroundDrawable] 的当前值判断：按下时它会换成高亮纯色，
+     * 于是「静态是图片、按下瞬间变成纯色」会让特效在按下时又冒出来。
+     * 这里查的是这个键静态配置出来的几层背景，结果不随按压状态变化。
+     * 图片键一律不叠加任何按键特效，图片保持原样。
+     */
+    val usesImageBackground: Boolean
+        get() = (keyBackground?.let { it !is GradientDrawable } == true) ||
+            (wholeKeyBackground?.let { it !is GradientDrawable } == true) ||
+            (customBgDrawable?.let { it !is GradientDrawable } == true)
 
-        1 -> {
-            if (isPressed) {
-                hlOffKeyBackground
-            } else {
-                keyDef?.keyBackColor.takeIf { !it.isNullOrEmpty() }?.let { keyBackground }
-                    ?: offKeyBackground
+    fun getBackgroundDrawable(): Drawable? {
+        val whole = wholeKeyBackground
+        // 整套背景是图片 → 直接用；是纯色则让位给下面的图片皮肤。
+        // 皮肤自带的按键图（customBgDrawable）和主题状态背景里的图片都优先于纯色整套覆盖，
+        // 否则图片键会被纯色刷成白板；用户显式设的纯色只对普通按键生效。
+        if (whole != null && whole !is GradientDrawable) return whole
+        customBgDrawable?.let { return it }
+        val state = when (appearanceType) {
+            // Locked modifiers use the YAML on-state skin; normal per-key colours must not mask it.
+            // Fully custom/imported skins still win through customBgDrawable above.
+            2 -> when {
+                // 锁定态有按键级颜色就用它（长按大写 → 例如回车绿）。
+                isOn && perKeyOnBackground != null -> perKeyOnBackground
+                // 自定义键盘只有一份色板：不想让单击一次性 Shift 变色时保持按键自身背景。
+                theme.isCustom -> keyBackground
+                else -> if (isPressed) hlOnKeyBackground else onKeyBackground
             }
-        }
 
-        else -> if (isPressed) hlKeyBackground else keyBackground
+            1 -> {
+                if (isPressed) {
+                    hlOffKeyBackground
+                } else {
+                    keyDef?.keyBackColor.takeIf { !it.isNullOrEmpty() }?.let { keyBackground }
+                        ?: offKeyBackground
+                }
+            }
+
+            else -> if (isPressed) hlKeyBackground else keyBackground
+        }
+        if (state != null && state !is GradientDrawable) return state
+        return whole ?: state
     }
 
     /**
@@ -458,15 +483,24 @@ class Key(
 
     fun getTextColor(): Int {
         // 锁定态优先按键级颜色：自定义键盘原先整个跳过 on 态文字色。
-        if (isOn && appearanceType == 2) onStateColor(keyDef?.keyOnTextColor.orEmpty())?.let { return it }
-        return if (theme.isCustom) keyTextColor else when (appearanceType) {
+        if (isOn && appearanceType == 2) onStateColor(keyDef?.keyOnTextColor.orEmpty())?.let {
+            return LayoutTypography.colorOr("key", it)
+        }
+        val base = if (theme.isCustom) keyTextColor else when (appearanceType) {
             2 -> if (isPressed) hlOnKeyTextColor else onKeyTextColor
             1 -> if (isPressed) hlOffKeyTextColor else getColor(keyDef?.keyTextColor ?: "", offKeyTextColor)
             else -> if (isPressed) hlKeyTextColor else keyTextColor
         }
+        // 「字体与字号」里给键盘按键设了颜色就盖过主题配色，没设照旧。
+        return LayoutTypography.colorOr("key", base)
     }
 
-    fun getSymbolColor(): Int = when (appearanceType) {
+    fun getSymbolColor(): Int = LayoutTypography.colorOr("symbol", rawSymbolColor())
+
+    /** 键面下方注解。主题里注解与符号同色，所以未单独设置时跟随符号（含符号的颜色覆盖）。 */
+    fun getHintColor(): Int = LayoutTypography.colorOr("hint", getSymbolColor())
+
+    private fun rawSymbolColor(): Int = when (appearanceType) {
         2 -> if (isPressed) hlOnKeySymbolColor else onKeySymbolColor
         1 -> if (isPressed) hlOffKeySymbolColor else getColor(keyDef?.keySymbolColor ?: "", offKeySymbolColor)
         else -> if (isPressed) hlKeySymbolColor else keySymbolColor

@@ -17,7 +17,7 @@ import com.osfans.trime.data.theme.ThemeScope
 import com.osfans.trime.data.theme.model.GeneralStyle
 import com.osfans.trime.ime.core.AutoScaleTextView
 import com.osfans.trime.ime.keyboard.GestureFrame
-import com.osfans.trime.util.roundedRippleDrawable
+import com.osfans.trime.util.squircleRippleDrawable
 import splitties.dimensions.dp
 import splitties.views.dsl.constraintlayout.baselineToBaselineOf
 import splitties.views.dsl.constraintlayout.bottomOfParent
@@ -53,11 +53,16 @@ class CandidateItemUi(
     private val commentSize get() = com.osfans.trime.data.keymap.LayoutTypography.size("comment", theme.style.commentTextSize)
 
     // Read at use time so a scheme switch re-binds rows with the new colors.
-    private val textColor: Int get() = scope.colors.candidateTextColor
-    private val commentColor: Int get() = scope.colors.commentTextColor
+    private val textColor: Int get() = com.osfans.trime.data.keymap.LayoutTypography.colorOr("candidate", scope.colors.candidateTextColor)
+    private val commentColor: Int get() = com.osfans.trime.data.keymap.LayoutTypography.colorOr("comment", scope.colors.commentTextColor)
     private val hlCommentColor: Int get() = scope.colors.hilitedCommentTextColor
-    private val hlTextColor: Int get() = scope.colors.hilitedCandidateTextColor
-    private val hlBackColor: Int get() = scope.colors.hilitedCandidateBackColor
+    private val hlTextColor: Int
+        get() = com.osfans.trime.data.keymap.LayoutTypography.colorOr("candidateHl", scope.colors.hilitedCandidateTextColor)
+    private val hlBackColor: Int
+        get() =
+            com.osfans.trime.ime.appearance.SurfaceAppearance.candidateHighlightColor()
+                ?.let { runCatching { android.graphics.Color.parseColor(it) }.getOrNull() }
+                ?: scope.colors.hilitedCandidateBackColor
 
     private val commentPosition = theme.style.commentPosition
     private val commentVerticalBias = theme.style.commentVerticalBias
@@ -160,6 +165,7 @@ class CandidateItemUi(
 
     private var backgroundFill: Int? = null
     private var backgroundRipple: Int? = null
+    private var backgroundRadius = -1f
 
     @SuppressLint("UseKtx")
     fun update(
@@ -170,14 +176,16 @@ class CandidateItemUi(
         comment.updateTextStyle(commentSize, theme.fonts.comment)
         val tColor = if (highlighted) hlTextColor else textColor
         val cColor = if (highlighted) hlCommentColor else commentColor
-        val cornerRadius = ctx.dp(theme.style.candidateCornerRadius)
+        val cornerRadius = ctx.dp(com.osfans.trime.ime.appearance.SurfaceAppearance.candidateHighlightRadius() ?: theme.style.candidateCornerRadius)
         val contentColor = if (highlighted) hlBackColor else Color.TRANSPARENT
 
         val rippleColor = hlBackColor
-        if (backgroundFill != contentColor || backgroundRipple != rippleColor) {
-            content.background = roundedRippleDrawable(rippleColor, cornerRadius, contentColor)
+        if (backgroundFill != contentColor || backgroundRipple != rippleColor || backgroundRadius != cornerRadius) {
+            // 高亮块的四角走 G2，和键盘、面板、悬浮候选窗是同一条曲线。
+            content.background = squircleRippleDrawable(rippleColor, cornerRadius, contentColor)
             backgroundFill = contentColor
             backgroundRipple = rippleColor
+            backgroundRadius = cornerRadius
         }
         val created = item.comment == CandidateProto.CREATED_WORD_COMMENT
         text.text = if (created) android.text.SpannableStringBuilder(item.text).apply {

@@ -275,6 +275,15 @@ object SurfaceAppearance {
     fun recordAppliedCorners(corners: List<Float>) {
         lastAppliedCorners = corners
     }
+
+    /** 键盘最近一次真正用上的描边（颜色, 宽度 dp），设置页拿它做一行回显。 */
+    @Volatile
+    var lastAppliedBorder: Pair<String, Float> = "" to 0f
+        private set
+
+    fun recordAppliedBorder(color: String, widthDp: Float) {
+        lastAppliedBorder = color to widthDp
+    }
     private var cacheKey: Pair<String, String>? = null
     private var cached = SurfaceAppearanceConfig()
     private var layoutVersion = -1L

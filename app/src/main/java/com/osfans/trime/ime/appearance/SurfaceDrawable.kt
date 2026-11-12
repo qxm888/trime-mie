@@ -24,6 +24,7 @@ class SurfaceDrawable(
     private val area = RectF()
     private val borderArea = RectF()
     private val clip = Path()
+    private val borderPath = Path()
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private var effectWidth = -1f
     private var effectHeight = -1f
@@ -41,7 +42,7 @@ class SurfaceDrawable(
         if (area.width() == effectWidth && area.height() == effectHeight && radius == effectRadius && d == effectDensity && area.left == effectLeft && area.top == effectTop) return
         effectWidth=area.width(); effectHeight=area.height(); effectRadius=radius; effectDensity=d
         effectLeft=area.left; effectTop=area.top
-        clip.reset(); clip.addRoundRect(area, radius, radius, Path.Direction.CW)
+        clip.reset(); Squircle.into(clip, area, radius)
         shadow = if (effects.shadow.enabled) effects.shadow.let { KeyEffectPainter.shadowBitmap(area.width(),area.height(),radius,it.blur*d,it.spread*d,KeyEffectPainter.color(it.color,0x22000000)) } else null
         inner = if (effects.innerShadow.enabled) effects.innerShadow.let { KeyEffectPainter.innerShadowBitmap(area.width(),area.height(),radius,it.blur*d,it.offsetX*d,it.offsetY*d,KeyEffectPainter.color(it.color,0x22000000)) } else null
         shader = if(effects.gradient.enabled) KeyEffectPainter.gradientShader(area,effects.gradient) else null
@@ -96,14 +97,17 @@ class SurfaceDrawable(
             val width=effects.borderGradient.width*d
             borderArea.set(area); borderArea.inset(width/2,width/2)
             paint.style=Paint.Style.STROKE; paint.strokeWidth=width; paint.shader=borderShader
-            canvas.drawRoundRect(borderArea,(radius-width/2).coerceAtLeast(0f),(radius-width/2).coerceAtLeast(0f),paint)
+            // 描边跟着 G2 轮廓走：圆弧描边会盖不住外扩后的角部，露出一道缺口。
+            Squircle.into(borderPath, borderArea, (radius-width/2).coerceAtLeast(0f))
+            canvas.drawPath(borderPath, paint)
             paint.shader=null
         }
         val stroke = (style.borderWidth ?: if (style.borderColor.isNotEmpty()) 1f else 0f) * d
         if (stroke > 0f) {
             borderArea.set(area); borderArea.inset(stroke / 2, stroke / 2)
             paint.style = Paint.Style.STROKE; paint.strokeWidth = stroke; paint.color = style.color(defaultBorderColor)
-            canvas.drawRoundRect(borderArea, (radius - stroke / 2).coerceAtLeast(0f), (radius - stroke / 2).coerceAtLeast(0f), paint)
+            Squircle.into(borderPath, borderArea, (radius - stroke / 2).coerceAtLeast(0f))
+            canvas.drawPath(borderPath, paint)
         }
     }
     override fun isStateful() = true

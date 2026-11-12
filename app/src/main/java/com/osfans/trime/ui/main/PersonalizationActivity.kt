@@ -124,17 +124,30 @@ class FontSettingsActivity : PersonalizationActivity() {
         })
         FontOverrides.roles.forEach { (role, title) ->
             val section = drawers.section(title)
+            // 「高亮候选文字」只开放颜色：字形与字号跟随「候选文字」。
+            if (role != "candidateHl") {
+                section.addView(MaterialButton(this).apply {
+                    text = "字体 · " + FontOverrides.selection(role).let {
+                        if (it.isNotEmpty()) FontOverrides.name(it)
+                        else if (FontOverrides.globalSelection(themeId).isNotEmpty()) "跟随当前主题全局字体" else "跟随主题原始字体"
+                    }
+                    setOnClickListener { pick(role,title) }
+                })
+                section.addView(MaterialButton(this).apply {
+                    text = "字号 · " + FontOverrides.size(role).let { if(it==0f) "跟随主题" else "$it sp" }
+                    setOnClickListener { pickSize(role,title) }
+                })
+            }
             section.addView(MaterialButton(this).apply {
-                text = "字体 · " + FontOverrides.selection(role).let {
-                    if (it.isNotEmpty()) FontOverrides.name(it)
-                    else if (FontOverrides.globalSelection(themeId).isNotEmpty()) "跟随当前主题全局字体" else "跟随主题原始字体"
-                }
-                setOnClickListener { pick(role,title) }
+                text = "颜色 · " + FontOverrides.color(role).let { if (it.isEmpty()) "跟随主题配色" else it }
+                setOnClickListener { pickColor(role, title) }
             })
-            section.addView(MaterialButton(this).apply {
-                text = "字号 · " + FontOverrides.size(role).let { if(it==0f) "跟随主题" else "$it sp" }
-                setOnClickListener { pickSize(role,title) }
-            })
+        }
+    }
+    private fun pickColor(role: String, title: String) {
+        ColorPickerDialog.show(this, "$title 颜色", FontOverrides.color(role).ifBlank { "#FFFFFFFF" }) { hex ->
+            FontOverrides.setColor(role, hex)
+            render()
         }
     }
     private fun pickSize(role: String, title: String) {

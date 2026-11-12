@@ -20,6 +20,19 @@ fun rippleDrawable(
     @ColorInt color: Int,
 ) = RippleDrawable(ColorStateList.valueOf(color), null, ColorDrawable(Color.WHITE))
 
+/** 和 [roundedRippleDrawable] 一样，只是四角走 G2 连续曲线（候选高亮用）。 */
+fun squircleRippleDrawable(
+    @ColorInt color: Int,
+    radiusPx: Float,
+    contentColor: Int = Color.TRANSPARENT,
+): RippleDrawable {
+    val content = contentColor.takeUnless { it == Color.TRANSPARENT }?.let {
+        com.osfans.trime.ime.appearance.SquircleDrawable(it, radiusPx)
+    }
+    val mask = com.osfans.trime.ime.appearance.SquircleDrawable(Color.WHITE, radiusPx)
+    return RippleDrawable(ColorStateList.valueOf(color), content, mask)
+}
+
 fun roundedRippleDrawable(
     @ColorInt color: Int,
     cornerRadius: Float,

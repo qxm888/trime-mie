@@ -195,12 +195,11 @@ class KeyEditActivity : AppCompatActivity() {
     }
 
     private fun chooseImportMode(onChosen: (Boolean) -> Unit) {
-        val options = arrayOf(getString(R.string.key_editor_import_merge), getString(R.string.key_editor_import_replace))
-        var choice = 0
+        // 只保留「与现有定制合并」这一个选项；「覆盖现有定制」按用户要求移除。
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.key_editor_import_mode)
-            .setSingleChoiceItems(options, 0) { _, which -> choice = which }
-            .setPositiveButton(R.string.ok) { _, _ -> onChosen(choice == 1) }
+            .setSingleChoiceItems(arrayOf(getString(R.string.key_editor_import_merge)), 0) { _, _ -> }
+            .setPositiveButton(R.string.ok) { _, _ -> onChosen(false) }
             .setNegativeButton(R.string.cancel, null)
             .show()
     }

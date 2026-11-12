@@ -67,13 +67,17 @@ class PopupKeyboardUi(
 
     val theme: Theme get() = scope.theme
 
+    /** 「字体与字号 → 按键弹出预览」设了颜色就盖过主题配色。 */
+    private val popupTextColor: Int
+        get() = com.osfans.trime.data.keymap.LayoutTypography.colorOr("popup", scope.colors.popupTextColor)
+
     inner class PopupKeyUi(val text: String) : Ui {
         override val ctx: Context = this@PopupKeyboardUi.ctx
 
         val textView = view(::AutoScaleTextView) {
             scaleMode = AutoScaleTextView.Mode.Proportional
             textSize = com.osfans.trime.data.keymap.LayoutTypography.size("popup", theme.style.popupTextSize).let { if(it <= 0f) 22f else it }
-            setTextColor(scope.colors.popupTextColor)
+            setTextColor(popupTextColor)
             typeface = theme.fonts.popup
         }
 
@@ -99,7 +103,7 @@ class PopupKeyboardUi(
                 imageView.setImageDrawable(
                     IconicsDrawable(ctx, text.toIconName()).apply {
                         sizeDp = com.osfans.trime.data.keymap.LayoutTypography.size("popup", theme.style.popupTextSize).let { if(it <= 0f) 22f else it }.toInt()
-                        colorFilter = PorterDuffColorFilter(scope.colors.popupTextColor, PorterDuff.Mode.SRC_IN)
+                        colorFilter = PorterDuffColorFilter(popupTextColor, PorterDuff.Mode.SRC_IN)
                     },
                 )
                 imageView.isVisible = true
@@ -266,7 +270,7 @@ class PopupKeyboardUi(
     private fun markInactive(index: Int) {
         keyUis.getOrNull(index)?.apply {
             root.background = null
-            val color = scope.colors.popupTextColor
+            val color = popupTextColor
             textView.setTextColor(color)
             imageView.drawable?.colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN)
         }

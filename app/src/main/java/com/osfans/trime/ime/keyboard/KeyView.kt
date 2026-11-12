@@ -30,6 +30,7 @@ import com.osfans.trime.ime.appearance.KeyEffectPainter
 import com.osfans.trime.ime.appearance.KeyEffects
 import com.osfans.trime.ime.appearance.KeyGradient
 import com.osfans.trime.ime.appearance.KeyInnerShadow
+import com.osfans.trime.ime.appearance.Squircle
 import com.osfans.trime.ime.appearance.SurfaceAppearance
 import com.osfans.trime.ime.core.TrimeInputMethodService
 import com.osfans.trime.ime.popup.PopupAction
@@ -392,6 +393,7 @@ class KeyView(
     }
 
     private fun startRipple() {
+        if (key.usesImageBackground) return
         if (!SurfaceAppearance.current(theme.isCustom).effects.ripple) return
         rippleProgress = 0f
         rippleAnimator?.cancel()
@@ -550,8 +552,9 @@ class KeyView(
         iconPath = resolveIconPath(key.icon()).orEmpty()
     }
 
-    private val surfaceBorderPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
-    private val surfaceBorderBounds = android.graphics.RectF()
+    private val surfaceBorderPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val strokePath = Path()
+    private val strokeBounds = RectF()
 
     private fun drawBackground(canvas: Canvas, k: Key) {
         val config = frameAppearance
@@ -564,6 +567,10 @@ class KeyView(
         val surfaceBorder = surface.overridesBorder && !k.ownKeyBorder
 
         val bg = k.getBackgroundDrawable()
+        // 图片驱动的按键（背景是位图/图片皮肤，不是纯色圆角）：按键特效一律不叠加，
+        // 渐变/高光/噪点/3D边/内阴影/边框渐变/描边/外阴影/按压变暗/水波全不画，图片保持原样。
+        // 用 Key.usesImageBackground 而不是当前 drawable：按下时背景会换成高亮纯色。
+        val imageDriven = k.usesImageBackground
         if (paintedBackground !== bg) {
             paintedBackground?.takeIf { it.callback === this }?.callback = null
             paintedBackground = bg
@@ -571,11 +578,11 @@ class KeyView(
         }
         if (bg != null && bg.callback !== this) bg.callback = this
 
-        if (bg is GradientDrawable) {
-            backgroundStyle.apply(bg, cornerPx,
-                if (surfaceBorder) 0 else dp(k.keyBorder.coerceAtLeast(0)),
-                if (surfaceBorder || k.keyBorder <= 0) 0 else k.getBorderColor())
-        }
+        // 圆角现在是 G2（曲率连续）路径（见 [Squircle]），形状由本类自己画。
+        // GradientDrawable 只会画圆弧，留着它自带的半径会成为形状上限 —— 圆弧比连续
+        // 曲线内收，角部又被削回圆形。描边同理：贴着直角矩形画的那条会被路径裁掉
+        // 半根线，所以一并由这里接管（见下方的 drawShapeStroke）。
+        if (bg is GradientDrawable) backgroundStyle.apply(bg, 0f, 0, 0)
 
         bg?.setBounds(
             paddingLeft,
@@ -590,46 +597,97 @@ class KeyView(
         if (backgroundClipBounds != body || backgroundClipRadius != cornerPx) {
             backgroundClipBounds.set(body)
             backgroundClipRadius = cornerPx
-            backgroundClip.reset()
-            backgroundClip.addRoundRect(body, cornerPx, cornerPx, Path.Direction.CW)
+            Squircle.into(backgroundClip, body, cornerPx)
         }
         // Plain rounded color drawables already clip themselves. Image/overlay effects still need the mask.
         val overlay = (k.customBgDrawable != null && k.importedStyle == null || key.hasWholeKeyBackground) && k.isPressed
-        if (bg !is GradientDrawable || surface.blur || effects.customized || overlay) canvas.clipPath(backgroundClip)
-        val blurred = surface.blur && com.osfans.trime.ime.appearance.BackdropBlur.draw(this, canvas, body)
-        val layer = if (blurred) canvas.saveLayerAlpha(body, config.glassOpacity * 255 / 100) else -1
-        bg?.draw(canvas)
-        if (layer >= 0) canvas.restoreToCount(layer)
-        if (surface.blur) canvas.drawColor(if (k.isPressed) 0x33FFFFFF else 0x18FFFFFF)
+        // 纯色键按路径填充：硬件加速下 clipPath 不做抗锯齿，纯色块一旦走裁剪，
+        // 圆角边缘就是一圈锯齿。图片/皮肤/模糊仍然只能靠裁剪。
+        val fillColor = (bg as? GradientDrawable)?.color?.defaultColor
+        // 按键自己的模糊：和面板同一次抓图，但强度单独取，所以两边能差出层次。
+        // 0 = 不糊（默认），>0 就算开着；旧的 surface.blur 仍然有效，只是用的是面板那一帧。
+        val ownBlur = config.keyBlur.coerceIn(0, 100) > 0
+        val wantsBlur = ownBlur || surface.blur
+        val keyAlpha = config.keyOpacity.coerceIn(0, 100)
+        if (fillColor != null && !wantsBlur) {
+            effectPaint.reset()
+            effectPaint.isAntiAlias = true
+            effectPaint.style = Paint.Style.FILL
+            effectPaint.color = fillColor
+            // 面板背景已经糊过了，按键半透明就等于"透出那块磨砂"。
+            effectPaint.alpha = bg.alpha * keyAlpha / 100
+            canvas.drawPath(backgroundClip, effectPaint)
+        } else {
+            val mask = canvas.save()
+            canvas.clipPath(backgroundClip)
+            val blurred = wantsBlur &&
+                com.osfans.trime.ime.appearance.BackdropBlur.draw(this, canvas, body, 255, ownBlur)
+            // 自己那套模糊：键色按 keyOpacity 透；旧那套沿用 glassOpacity，两者相乘。
+            val layerAlpha = if (blurred && !ownBlur) {
+                config.glassOpacity.coerceIn(0, 100) * keyAlpha / 100
+            } else {
+                keyAlpha
+            }
+            val layer = if (layerAlpha < 100) canvas.saveLayerAlpha(body, layerAlpha * 255 / 100) else -1
+            bg?.draw(canvas)
+            if (layer >= 0) canvas.restoreToCount(layer)
+            if (blurred && !ownBlur && !imageDriven) canvas.drawColor(if (k.isPressed) 0x33FFFFFF else 0x18FFFFFF)
+            canvas.restoreToCount(mask)
+        }
         if (bg is com.osfans.trime.data.baiduskin.BdsKeyDrawable && bg.animating) postInvalidateOnAnimation()
 
-        if (effects.gradient.enabled) drawGradient(canvas, body, cornerPx, effects.gradient)
-        if (effects.edge3d) drawEdge3d(canvas, body, effects)
-        if (effects.innerShadow.enabled) drawInnerShadow(canvas, body, cornerPx, effects.innerShadow)
-        if (effects.gloss) drawGloss(canvas, body, cornerPx, effects.glossStrength)
-        if (effects.noise) drawNoise(canvas, body, cornerPx, effects.noiseStrength)
-        if (effects.pressDarken > 0) {
-            val darken = (effects.pressDarken * pressProgress).coerceIn(0f, 60f)
-            if (darken > 0.5f) canvas.drawColor(Color.argb((darken * 255 / 100).toInt(), 0, 0, 0))
+        if (!imageDriven) {
+            if (effects.gradient.enabled) drawGradient(canvas, backgroundClip, effects.gradient)
+            if (effects.edge3d) {
+                // 3D 底边是一条矩形，超出角部的部分要裁掉，否则会顶出圆角。
+                val edgeMask = canvas.save()
+                canvas.clipPath(backgroundClip)
+                drawEdge3d(canvas, body, effects)
+                canvas.restoreToCount(edgeMask)
+            }
+            if (effects.innerShadow.enabled) drawInnerShadow(canvas, body, cornerPx, effects.innerShadow)
+            if (effects.gloss) drawGloss(canvas, backgroundClip, effects.glossStrength)
+            if (effects.noise) drawNoise(canvas, backgroundClip, effects.noiseStrength)
+            if (effects.pressDarken > 0) {
+                val darken = (effects.pressDarken * pressProgress).coerceIn(0f, 60f)
+                if (darken > 0.5f) {
+                    effectPaint.reset()
+                    effectPaint.isAntiAlias = true
+                    effectPaint.color = Color.argb((darken * 255 / 100).toInt(), 0, 0, 0)
+                    canvas.drawPath(backgroundClip, effectPaint)
+                }
+            }
+            if (effects.ripple) {
+                val rippleMask = canvas.save()
+                canvas.clipPath(backgroundClip)
+                drawRipple(canvas, body, effects)
+                canvas.restoreToCount(rippleMask)
+            }
         }
 
         // image skins have no pressed state of their own — overlay one
+        // （这是按压反馈，不是设置页那组装饰特效，图片键保留）
         if (overlay) {
-            canvas.drawColor(0x44FFFFFF)
+            effectPaint.reset()
+            effectPaint.isAntiAlias = true
+            effectPaint.color = 0x44FFFFFF
+            canvas.drawPath(backgroundClip, effectPaint)
         }
-        if (effects.ripple) drawRipple(canvas, body, effects)
         canvas.restoreToCount(saved)
-        if (surfaceBorder) {
-            val stroke = dp(surface.borderWidth ?: k.keyBorder.toFloat())
+        // 单键描边现在也在这里画：它原本贴在 GradientDrawable 的直角矩形上，
+        // 会被 G2 路径裁掉外侧半根线。表面层覆盖和单键描边共用同一条轮廓。
+        if (!imageDriven) {
+            val stroke = if (surfaceBorder) {
+                dp(surface.borderWidth ?: k.keyBorder.toFloat())
+            } else {
+                dp(k.keyBorder.coerceAtLeast(0).toFloat())
+            }
             if (stroke > 0f) {
-                surfaceBorderBounds.set(backgroundClipBounds); surfaceBorderBounds.inset(stroke / 2, stroke / 2)
-                surfaceBorderPaint.style = android.graphics.Paint.Style.STROKE
-                surfaceBorderPaint.strokeWidth = stroke
-                surfaceBorderPaint.color = surface.color(k.getBorderColor())
-                canvas.drawRoundRect(surfaceBorderBounds, (cornerPx - stroke / 2).coerceAtLeast(0f), (cornerPx - stroke / 2).coerceAtLeast(0f), surfaceBorderPaint)
+                val color = if (surfaceBorder) surface.color(k.getBorderColor()) else k.getBorderColor()
+                drawShapeStroke(canvas, stroke, color)
             }
         }
-        if (effects.borderGradient.enabled) {
+        if (effects.borderGradient.enabled && !imageDriven) {
             val stroke = dpf(effects.borderGradient.width).coerceAtLeast(0.5f)
             val border = effectShaders.borderBounds
             val shader = effectShaders.border
@@ -639,14 +697,30 @@ class KeyView(
                 effectPaint.style = Paint.Style.STROKE
                 effectPaint.strokeWidth = stroke
                 effectPaint.shader = shader
-                val r = (cornerPx - stroke / 2).coerceAtLeast(0f)
-                canvas.drawRoundRect(border, r, r, effectPaint)
+                Squircle.into(strokePath, border, (cornerPx - stroke / 2).coerceAtLeast(0f))
+                canvas.drawPath(strokePath, effectPaint)
             }
         }
     }
 
+    /** 沿 G2 轮廓描边：路径向内收半个线宽、半径同步减，线体外沿正好压在键面边界上。 */
+    private fun drawShapeStroke(canvas: Canvas, width: Float, color: Int) {
+        val inset = width / 2f
+        strokeBounds.set(backgroundClipBounds)
+        strokeBounds.inset(inset, inset)
+        if (strokeBounds.width() <= 0f || strokeBounds.height() <= 0f) return
+        Squircle.into(strokePath, strokeBounds, (backgroundClipRadius - inset).coerceAtLeast(0f))
+        surfaceBorderPaint.style = Paint.Style.STROKE
+        surfaceBorderPaint.strokeWidth = width
+        surfaceBorderPaint.color = color
+        surfaceBorderPaint.shader = null
+        canvas.drawPath(strokePath, surfaceBorderPaint)
+    }
+
     /** 由 KeyboardView 的阴影层调用；阴影可以超出单个按键的 View 边界。 */
     fun drawOuterShadow(canvas: Canvas) {
+        // 图片背景的按键不画外阴影：阴影是按纯色圆角键算的，套在图片上会多出一圈色边。
+        if (key.usesImageBackground) return
         val config = SurfaceAppearance.current(theme.isCustom)
         val effects = config.effects
         val shadow = effects.shadow
@@ -676,13 +750,13 @@ class KeyView(
         canvas.restoreToCount(saved)
     }
 
-    private fun drawGradient(canvas: Canvas, body: RectF, radius: Float, gradient: KeyGradient) {
+    private fun drawGradient(canvas: Canvas, shape: Path, gradient: KeyGradient) {
         val shader = effectShaders.gradient ?: return
         effectPaint.reset()
         effectPaint.isAntiAlias = true
         effectPaint.shader = shader
         effectPaint.alpha = gradient.opacity * 255 / 100
-        canvas.drawRoundRect(body, radius, radius, effectPaint)
+        canvas.drawPath(shape, effectPaint)
     }
 
     private fun drawEdge3d(canvas: Canvas, body: RectF, effects: KeyEffects) {
@@ -717,21 +791,21 @@ class KeyView(
         bitmap.draw(canvas, body.left, body.top, effectPaint)
     }
 
-    private fun drawGloss(canvas: Canvas, body: RectF, radius: Float, strength: Int) {
+    private fun drawGloss(canvas: Canvas, shape: Path, strength: Int) {
         if (strength <= 0) return
         effectPaint.reset()
         effectPaint.isAntiAlias = true
         effectPaint.shader = effectShaders.gloss
-        canvas.drawRoundRect(body, radius, radius, effectPaint)
+        canvas.drawPath(shape, effectPaint)
     }
 
-    private fun drawNoise(canvas: Canvas, body: RectF, radius: Float, strength: Int) {
+    private fun drawNoise(canvas: Canvas, shape: Path, strength: Int) {
         if (strength <= 0) return
         effectPaint.reset()
         effectPaint.isAntiAlias = true
         effectPaint.shader = KeyEffectPainter.noiseShader
         effectPaint.alpha = (strength * 255 / 100).coerceIn(0, 255)
-        canvas.drawRoundRect(body, radius, radius, effectPaint)
+        canvas.drawPath(shape, effectPaint)
     }
 
     private fun drawRipple(canvas: Canvas, body: RectF, effects: KeyEffects) {
@@ -982,7 +1056,8 @@ class KeyView(
             else key.showHint?.not() ?: keyboardView.hideKeyHint
         if (hide) return
 
-        val textColor = key.getSymbolColor()
+        // 键面上方符号与下方注解各有一套颜色：「字体与字号」里可分别设。
+        val textColor = if (isTop) key.getSymbolColor() else key.getHintColor()
         val textSize = sp((if (isTop) key.symbolTextSize else key.hintTextSize).takeIf { it > 0f } ?: com.osfans.trime.data.keymap.LayoutTypography.size(if (isTop) "symbol" else "hint", keyboardView.symbolTextSize)) * keyboardView.keyTextScale
         val offsetX = if (isTop) key.keySymbolOffsetX else key.keyHintOffsetX
         val offsetY = if (isTop) key.keySymbolOffsetY else key.keyHintOffsetY

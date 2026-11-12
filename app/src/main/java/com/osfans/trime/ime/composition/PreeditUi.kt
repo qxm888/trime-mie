@@ -32,7 +32,11 @@ open class PreeditUi(
         get() = scope.theme
 
     // Read at use time so a scheme switch re-renders with the new colors.
-    private val textColor: Int get() = appearance()?.color("text", scope.colors.textColor) ?: scope.colors.textColor
+    private val textColor: Int
+        get() = com.osfans.trime.data.keymap.LayoutTypography.colorOr(
+            "text",
+            appearance()?.color("text", scope.colors.textColor) ?: scope.colors.textColor,
+        )
     private val highlightTextColor: Int get() = appearance()?.color("highlight.text", scope.colors.hilitedTextColor) ?: scope.colors.hilitedTextColor
 
     val preedit =

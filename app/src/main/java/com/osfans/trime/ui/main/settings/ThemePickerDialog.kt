@@ -217,6 +217,23 @@ object ThemePickerDialog {
                 }
             }
         }
+        // 长按整套（内置/自定义）直接跳到它的「整套设置」页；主题布局没有对应页面，不响应。
+        grid.setOnItemLongClickListener { _, _, position, _ ->
+            if (loadJob?.isActive == true || switchJob?.isActive == true || !grid.isEnabled) return@setOnItemLongClickListener false
+            val target = choices.getOrNull(position)?.target ?: return@setOnItemLongClickListener false
+            if (target.source == KeyboardLayoutCatalog.THEME) return@setOnItemLongClickListener false
+            val root = runCatching { CustomKeyboards.setRoot(target.id) }.getOrDefault(target.id)
+            if (CustomKeyboards.get(root) == null) return@setOnItemLongClickListener false
+            val intent = android.content.Intent(context, com.osfans.trime.ui.main.KeyboardSetActivity::class.java)
+                .putExtra("root", root)
+            // 弹窗可能挂在输入法服务上，不是 Activity 时必须补 NEW_TASK 才能启动页面。
+            if (context !is android.app.Activity) intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            return@setOnItemLongClickListener runCatching {
+                context.startActivity(intent)
+                dialog.dismiss()
+                true
+            }.getOrDefault(false)
+        }
         dialog.setOnShowListener { load() }
         dialog.setOnDismissListener { loadJob?.cancel() }
         content.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {

@@ -136,10 +136,6 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
         }
         if (pageId == "surface") {
             preferenceScreen.addPreference("主题键盘全局外观", "主题模式的按键与状态栏样式") { SurfaceAppearanceEditor.show(requireActivity(), false) }
-            preferenceScreen.addPreference("自定义键盘外观", "选择布局，分别保存外观与字号") {
-                val layouts=com.osfans.trime.data.keymap.CustomKeyboards.list()
-                MaterialAlertDialogBuilder(requireContext()).setTitle("选择自定义键盘").setItems(layouts.map { it.name }.toTypedArray()) { _,index -> SurfaceAppearanceEditor.show(requireActivity(),true,layoutId=layouts[index].id) }.show()
-            }
         }
         if (pageId == "tools") {
             preferenceScreen.addPreference(
