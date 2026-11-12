@@ -208,6 +208,17 @@ internal class FloatingKeyboardContainer(
 
     fun setGlow(strength: Int) = borderOverlay.setGlow(strength)
 
+    /**
+     * 把描边层提到最前。
+     *
+     * [borderOverlay] 在 [init] 里最先加入，是本容器的第一个子视图；随后的键盘背景、
+     * 渐变层、玻璃层、按键窗口都是后加的，按绘制顺序整片盖在它上面 —— 于是描边宽度
+     * 设了也看不见。挂完所有图层后必须显式提一次。
+     */
+    fun raiseBorder() {
+        borderOverlay.bringToFront()
+    }
+
     fun setBorder(color: Int, widthPx: Float) {
         borderOverlay.setBorder(color, widthPx)
     }

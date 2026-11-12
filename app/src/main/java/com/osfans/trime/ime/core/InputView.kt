@@ -1304,6 +1304,10 @@ class InputView(
                 )
             }
 
+        // 描边层是容器的第一个子视图，会被后挂的键盘背景/渐变/玻璃层整片盖住，
+        // 所有图层加完之后必须把它提到最前，否则描边设了也不显示。
+        (keyboardView as? FloatingKeyboardContainer)?.raiseBorder()
+
         keyboardWindow.onBackgroundChanged = { updateUnifiedBackground() }
         // 每次挂到新窗口都要重新申请一次：模糊 drawable 绑定在 ViewRootImpl 上，
         // 换窗口（切主题、锁屏回来、横竖屏）之后旧的那个已经作废。
