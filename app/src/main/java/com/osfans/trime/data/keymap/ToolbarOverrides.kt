@@ -244,8 +244,8 @@ object ToolbarOverrides {
     }
 
     /** Mode-aware selection: fully custom layouts never consult the theme overlay store. */
-    fun forKeyboard(theme: Theme, runtimeId: String = "default"): ToolBar =
-        withoutModeButtons(if (theme.isCustom) {
+    fun forKeyboard(theme: Theme, runtimeId: String = "default"): ToolBar {
+        val bar = withoutModeButtons(if (theme.isCustom) {
             // 数字/密码/邮箱输入框会被切到内置 `number` / `.ascii` 页，这些页在
             // 自定义键盘库里通常没有同名条目。取不到就回退到当前活动自定义键盘，
             // 让内置页沿用同一套工具栏；再取不到才落到主题完整工具栏。
@@ -269,6 +269,19 @@ object ToolbarOverrides {
         } else {
             apply(theme.toolBar)
         }, theme)
+        // 工具栏图标统一大小（整套全局）：覆盖所有按钮的位图/字体图标尺寸；文字按钮走
+        // fontSize 不受影响。自定义键盘读整套根键盘，主题键盘读 SurfaceAppearance。
+        val iconSize = if (theme.isCustom) CustomKeyboards.setToolbarIconSize(runtimeId)
+            else com.osfans.trime.ime.appearance.SurfaceAppearance.themeToolbarIconSize()
+        if (iconSize > 0) {
+            fun scale(b: ToolBar.Button) = b.copy(foreground = b.foreground.copy(iconSize = iconSize.coerceIn(8, 96)))
+            return bar.copy(
+                primaryButton = bar.primaryButton?.let(::scale),
+                buttons = bar.buttons.map(::scale),
+            )
+        }
+        return bar
+    }
 
     private fun builtinFloatingButton(icon: String?): ToolBar.Button =
         ToolBar.Button(

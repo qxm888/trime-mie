@@ -8,6 +8,7 @@ package com.osfans.trime.ime.bar.ui
 import android.content.Context
 import android.graphics.Typeface
 import android.view.View
+import android.view.ViewGroup
 import androidx.core.view.isVisible
 import com.osfans.trime.R
 import com.osfans.trime.data.theme.Theme
@@ -94,9 +95,11 @@ class TabUi(
         view: View,
         showTitle: Boolean,
     ) {
-        if (external != null) {
-            throw IllegalStateException("TabBar external view is already present")
-        }
+        // 同一个 BarView 重复挂载时直接复用；切换窗口/皮肤产生的旧 wrapper 先清掉，
+        // 否则 Android 会在 add() 时报 child already has a parent。
+        if (external === view) return
+        removeExternal()
+        (view.parent as? ViewGroup)?.removeView(view)
         backButton.isVisible = showTitle
         titleText.isVisible = showTitle
         external = view

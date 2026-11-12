@@ -12,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -101,39 +102,130 @@ class ToolbarEditActivity : AppCompatActivity() {
         }
 
         findViewById<com.google.android.material.button.MaterialButton>(R.id.toolbar_edit_height).apply {
-            visibility = if (kbId.isNotEmpty()) View.VISIBLE else View.GONE
+            // 主题键盘（kbId 空）也支持上/下留白：存到「主题键盘全局外观」；自定义键盘仍用布局自带字段。
+            visibility = View.VISIBLE
+            // 上/下留白是整套（全局）外观：自定义键盘统一读写整套根键盘，切中英文/符号页不再跳变。
+            val padTargetId = if (kbId.isEmpty()) "" else
+                runCatching { CustomKeyboards.setRoot(kbId) }.getOrNull() ?: kbId
+            fun currentPads(): Pair<Int, Int> =
+                if (padTargetId.isEmpty()) com.osfans.trime.ime.appearance.SurfaceAppearance.themeToolbarPads()
+                else CustomKeyboards.get(padTargetId)?.let { it.toolbarTopPadDp.coerceIn(0, 60) to it.toolbarBottomPadDp.coerceIn(0, 60) } ?: (0 to 0)
+            fun writePads(top: Int, bottom: Int) {
+                if (padTargetId.isEmpty()) {
+                    val cfg = com.osfans.trime.ime.appearance.SurfaceAppearance.current(false)
+                    com.osfans.trime.ime.appearance.SurfaceAppearance.save(cfg.copy(toolbarTopPadDp = top, toolbarBottomPadDp = bottom), false)
+                } else {
+                    CustomKeyboards.mutate(padTargetId) {
+                        it.toolbarTopPadDp = top; it.toolbarBottomPadDp = bottom
+                        // 留白生效后总高=上+下+图标行高，旧的整高覆盖值让位，避免双重计算。
+                        if (top > 0 || bottom > 0) it.toolbarHeightDp = 0
+                    }
+                }
+            }
             fun refresh() {
-                val kb = CustomKeyboards.get(kbId)
-                text = if (kb != null) "状态栏高度 · ${kb.effectiveToolbarHeightDp()} dp" else "状态栏高度"
+                val (top, bottom) = currentPads()
+                text = if (top > 0 || bottom > 0)
+                    "状态栏高度 · 上 $top + 下 $bottom + 图标 ${com.osfans.trime.data.keymap.TOOLBAR_ICON_ROW_DP} = ${top + bottom + com.osfans.trime.data.keymap.TOOLBAR_ICON_ROW_DP} dp"
+                else "状态栏高度"
             }
             refresh()
             setOnClickListener {
-                val kb = CustomKeyboards.get(kbId) ?: return@setOnClickListener
-                val input = com.google.android.material.textfield.TextInputEditText(this@ToolbarEditActivity).apply {
+                val (top, bottom) = currentPads()
+                val inputTop = com.google.android.material.textfield.TextInputEditText(this@ToolbarEditActivity).apply {
                     inputType = android.text.InputType.TYPE_CLASS_NUMBER
                     if (android.os.Build.VERSION.SDK_INT >= 26) importantForAutofill = android.view.View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
-                    if (kb.toolbarHeightDp > 0) setText(kb.toolbarHeightDp.toString())
+                    setText(top.toString())
                 }
-                val field = com.google.android.material.textfield.TextInputLayout(this@ToolbarEditActivity).apply {
-                    hint = "状态栏高度 dp（24–120，留空默认）"
-                    setPadding(dp(24), dp(8), dp(24), 0); addView(input)
+                val inputBottom = com.google.android.material.textfield.TextInputEditText(this@ToolbarEditActivity).apply {
+                    inputType = android.text.InputType.TYPE_CLASS_NUMBER
+                    if (android.os.Build.VERSION.SDK_INT >= 26) importantForAutofill = android.view.View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+                    setText(bottom.toString())
                 }
-                MaterialAlertDialogBuilder(this@ToolbarEditActivity).setTitle("状态栏高度")
-                    .setView(field).setNegativeButton(android.R.string.cancel, null)
+                val body = LinearLayout(this@ToolbarEditActivity).apply {
+                    orientation = LinearLayout.VERTICAL
+                    setPadding(dp(24), dp(8), dp(24), 0)
+                    addView(com.google.android.material.textfield.TextInputLayout(this@ToolbarEditActivity).apply {
+                        hint = "上高度 dp（图标上方留白，0–60；总高=上+下+28）"; addView(inputTop)
+                    })
+                    addView(com.google.android.material.textfield.TextInputLayout(this@ToolbarEditActivity).apply {
+                        hint = "下高度 dp（图标下方留白，0–60）"; addView(inputBottom)
+                    })
+                }
+                MaterialAlertDialogBuilder(this@ToolbarEditActivity).setTitle("状态栏高度 · 上 / 下")
+                    .setView(body).setNegativeButton(android.R.string.cancel, null)
                     .setNeutralButton("默认") { _, _ ->
-                        CustomKeyboards.mutate(kbId) { it.toolbarHeightDp = 0 }
+                        if (padTargetId.isEmpty()) {
+                            val cfg = com.osfans.trime.ime.appearance.SurfaceAppearance.current(false)
+                            com.osfans.trime.ime.appearance.SurfaceAppearance.save(cfg.copy(toolbarTopPadDp = 0, toolbarBottomPadDp = 0), false)
+                        } else {
+                            CustomKeyboards.mutate(padTargetId) { it.toolbarTopPadDp = 0; it.toolbarBottomPadDp = 0; it.toolbarHeightDp = 0 }
+                        }
                         com.osfans.trime.data.theme.ThemeManager.requestCustomizationRefresh(); refresh()
                     }
                     .setPositiveButton(android.R.string.ok, null).create().apply {
                         setOnShowListener {
                             getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                                val value = input.text?.toString()?.trim()?.takeIf { it.isNotEmpty() }?.toIntOrNull() ?: 0
-                                if (value !in 0..120 || value in 1..23) {
-                                    field.error = "状态栏高度须为 24–120 dp"
+                                val t = inputTop.text?.toString()?.trim()?.takeIf { it.isNotEmpty() }?.toIntOrNull()
+                                val b = inputBottom.text?.toString()?.trim()?.takeIf { it.isNotEmpty() }?.toIntOrNull()
+                                if (t == null || b == null || t !in 0..60 || b !in 0..60) {
+                                    inputTop.error = "上/下高度须为 0–60 dp"
+                                    inputBottom.error = "上/下高度须为 0–60 dp"
                                 } else {
-                                    CustomKeyboards.mutate(kbId) { it.toolbarHeightDp = value }
+                                    writePads(t, b)
                                     com.osfans.trime.data.theme.ThemeManager.requestCustomizationRefresh(); refresh(); dismiss()
                                 }
+                            }
+                        }
+                    }.show()
+            }
+        }
+
+        findViewById<com.google.android.material.button.MaterialButton>(R.id.toolbar_edit_icon_size).apply {
+            visibility = View.VISIBLE
+            // 图标大小是整套（全局）外观：统一读写整套根键盘 / 主题键盘外观，切页不跳变。
+            val padTargetId = if (kbId.isEmpty()) "" else runCatching { CustomKeyboards.setRoot(kbId) }.getOrNull() ?: kbId
+            fun currentSize(): Int =
+                if (padTargetId.isEmpty()) com.osfans.trime.ime.appearance.SurfaceAppearance.themeToolbarIconSize()
+                else CustomKeyboards.get(padTargetId)?.toolbarIconSizeDp?.coerceIn(0, 96) ?: 0
+            fun writeSize(size: Int) {
+                if (padTargetId.isEmpty()) {
+                    val cfg = com.osfans.trime.ime.appearance.SurfaceAppearance.current(false)
+                    com.osfans.trime.ime.appearance.SurfaceAppearance.save(cfg.copy(toolbarIconSizeDp = size), false)
+                } else {
+                    CustomKeyboards.mutate(padTargetId) { it.toolbarIconSizeDp = size }
+                }
+            }
+            fun refresh() {
+                val s = currentSize()
+                text = if (s > 0) "图标大小 · $s dp" else "图标大小 · 跟随主题"
+            }
+            refresh()
+            setOnClickListener {
+                val size = currentSize()
+                val input = com.google.android.material.textfield.TextInputEditText(this@ToolbarEditActivity).apply {
+                    inputType = android.text.InputType.TYPE_CLASS_NUMBER
+                    if (android.os.Build.VERSION.SDK_INT >= 26) importantForAutofill = android.view.View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+                    setText(if (size > 0) size.toString() else "")
+                }
+                val body = LinearLayout(this@ToolbarEditActivity).apply {
+                    orientation = LinearLayout.VERTICAL
+                    setPadding(dp(24), dp(8), dp(24), 0)
+                    addView(com.google.android.material.textfield.TextInputLayout(this@ToolbarEditActivity).apply {
+                        hint = "图标大小 dp（0 跟随主题，8–96）"; addView(input)
+                    })
+                }
+                MaterialAlertDialogBuilder(this@ToolbarEditActivity).setTitle("工具栏图标大小")
+                    .setView(body).setNegativeButton(android.R.string.cancel, null)
+                    .setNeutralButton("默认") { _, _ ->
+                        writeSize(0)
+                        com.osfans.trime.data.theme.ThemeManager.requestCustomizationRefresh(); refresh()
+                    }
+                    .setPositiveButton(android.R.string.ok, null).create().apply {
+                        setOnShowListener {
+                            getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                                val v = input.text?.toString()?.trim()?.takeIf { it.isNotEmpty() }?.toIntOrNull()
+                                if (v == null || v !in 0..96) input.error = "请输入 0–96"
+                                else { writeSize(v); com.osfans.trime.data.theme.ThemeManager.requestCustomizationRefresh(); refresh(); dismiss() }
                             }
                         }
                     }.show()

@@ -77,12 +77,59 @@ class InputBarDelegate(override val di: DI) :
 
     val themedHeight = theme.style.run { candidateViewHeight + commentHeight }
 
-    /** 自定义键盘可单独设置状态栏高度；其他键盘用主题默认值。 */
+    /** 自定义键盘可单独设置状态栏高度；主题键盘也可在「主题键盘全局外观」里设上/下留白。上/下留白生效时总高=上+下+图标行高。 */
     fun toolbarHeightPx(): Int {
-        if (!theme.isCustom) return context.dp(themedHeight)
+        if (!theme.isCustom) {
+            val (top, bottom) = com.osfans.trime.ime.appearance.SurfaceAppearance.themeToolbarPads()
+            if (top > 0 || bottom > 0) {
+                return context.dp(top + bottom + com.osfans.trime.data.keymap.TOOLBAR_ICON_ROW_DP)
+            }
+            return context.dp(themedHeight)
+        }
         val id = com.osfans.trime.data.keymap.CustomKeyboards.resolveId(KeyboardWindow.lastAttachedId)
-        val custom = com.osfans.trime.data.keymap.CustomKeyboards.get(id)?.toolbarHeightDp?.takeIf { it > 0 } ?: themedHeight
+        val kb = com.osfans.trime.data.keymap.CustomKeyboards.get(id)
+        // 工具栏上/下留白是整套（全局）外观，读整套根键盘；切页不再跳变。
+        val (top, bottom) = com.osfans.trime.data.keymap.CustomKeyboards.setToolbarPads(KeyboardWindow.lastAttachedId)
+        // 上/下留白生效时不再叠加主题默认整高：总高 = 上 + 下 + 紧凑图标行高。
+        if (top > 0 || bottom > 0) {
+            return context.dp(top + bottom + com.osfans.trime.data.keymap.TOOLBAR_ICON_ROW_DP)
+        }
+        val custom = kb?.toolbarHeightDp?.takeIf { it > 0 } ?: themedHeight
         return context.dp(custom)
+    }
+
+    /** 工具栏图标上下留白（px）：任一端有值时套到容器 padding 上，图标按留白排布而不再垂直居中。 */
+    private fun toolbarPadsPx(): Pair<Int, Int> {
+        if (!theme.isCustom) {
+            val (top, bottom) = com.osfans.trime.ime.appearance.SurfaceAppearance.themeToolbarPads()
+            if (top <= 0 && bottom <= 0) return 0 to 0
+            return context.dp(top) to context.dp(bottom)
+        }
+        // 工具栏上/下留白是整套（全局）外观，读整套根键盘；切页不再跳变。
+        val (top, bottom) = com.osfans.trime.data.keymap.CustomKeyboards.setToolbarPads(KeyboardWindow.lastAttachedId)
+        if (top <= 0 && bottom <= 0) return 0 to 0
+        return context.dp(top) to context.dp(bottom)
+    }
+
+    /** 工具栏图标行的上留白（px）。InputView 算圆角让位时要拿它当图标真实上沿的一部分。 */
+    fun toolbarTopPadPx(): Int = toolbarPadsPx().first
+
+    /**
+     * 工具栏的尺寸/留白被重设后的回调，由 InputView 挂上。
+     *
+     * 让位（左右两份 padding）和工具栏自己的上/下留白是两条写入路径，这边一重写，
+     * 那边就得跟着补——换工具栏方案后圆角避让失效，就是缺了这一步。
+     */
+    var onMetricsSynced: (() -> Unit)? = null
+
+    /** 键盘切换/挂载后同步工具栏容器高度与上下留白。 */
+    fun syncToolbarMetrics() {
+        val (padTop, padBottom) = toolbarPadsPx()
+        // 只写上下：左右是「单手模式留白 + 圆角让位」，由 InputView.applyInputBarPadding 管。
+        // 以前这里整行重写成 0，换工具栏方案/换键盘时把圆角让位清零，而且清完不会自动补回来。
+        view.setPadding(view.paddingLeft, padTop, view.paddingRight, padBottom)
+        view.layoutParams?.let { params -> params.height = toolbarHeightPx(); view.layoutParams = params }
+        onMetricsSynced?.invoke()
     }
 
     private val prefs = AppPrefs.defaultInstance()
@@ -301,9 +348,24 @@ class InputBarDelegate(override val di: DI) :
     }
 
     private fun barBackground(host: View): android.graphics.drawable.Drawable? {
-        val fallback = if (com.osfans.trime.ime.appearance.SurfaceAppearance.unifiedBackground(theme.isCustom) && !com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom).retainToolbarBackground) null else customBarBackground() ?: scope.decorDrawable(
-            "candidate_background", "candidate_border_color", context.dp(theme.style.candidateBorder), context.dp(theme.style.candidateBorderRound))
+        // 面板渐变是整块一张：工具栏和候选栏都不画自己的底色，
+        // 否则会在渐变上叠出两条独立色块，交界处一眼就能看出断开。
+        if (com.osfans.trime.ime.appearance.SurfaceAppearance.panelGradient(theme.isCustom) != null) return null
+        // 真模糊背板同理：整块面板共用系统糊出来的那一层，工具栏再有自己的底色，
+        // 顶栏就会是一块不透明的色条压在模糊上，和下面的键盘区分成两截。
+        if (com.osfans.trime.ime.appearance.SurfaceAppearance.panelBackdrop(theme.isCustom)?.enabled == true) return null
         val appearance = com.osfans.trime.ime.appearance.SurfaceAppearance.current(theme.isCustom)
+        val unified = com.osfans.trime.ime.appearance.SurfaceAppearance.unifiedBackground(theme.isCustom)
+        val custom = customBarBackground()
+        // 用户在「工具栏背景」里选了图片时，原样显示这张图。
+        // 走 SurfaceDrawable 会用 effectiveBar.background 的纯色 fill 盖住 fallback，
+        // 再叠一层圆角/特效，结果就是「设置里明明有图片，键盘上却是一块白板」。
+        val imagePicked = custom != null &&
+            custom !is android.graphics.drawable.GradientDrawable &&
+            custom !is android.graphics.drawable.ColorDrawable
+        if ((!unified || appearance.retainToolbarBackground) && imagePicked) return custom
+        val fallback = if (unified && !appearance.retainToolbarBackground) null else custom ?: scope.decorDrawable(
+            "candidate_background", "candidate_border_color", context.dp(theme.style.candidateBorder), context.dp(theme.style.candidateBorderRound))
         return if (appearance.barEffects.customized || appearance.effectiveBar.customized)
             com.osfans.trime.ime.appearance.SurfaceDrawable(host, fallback,
                 appearance.effectiveBar,
@@ -313,6 +375,9 @@ class InputBarDelegate(override val di: DI) :
 
     val view by lazy {
         com.osfans.trime.ime.bar.ui.ToolbarShadowAnimator(context).apply {
+            val (padTop, padBottom) = toolbarPadsPx()
+            // 左右留白当时还是 0（InputView 尚未算过圆角让位），保留现值即可，别整行清零。
+            setPadding(paddingLeft, padTop, paddingRight, padBottom)
             visibility =
                 if (hideQuickBar) {
                     View.GONE
@@ -365,8 +430,8 @@ class InputBarDelegate(override val di: DI) :
     }
 
     override fun onWindowAttached(window: BoardWindow) {
-        // 键盘切换后状态栏高度可能随布局变化，同步容器高度。
-        view.layoutParams?.let { params -> params.height = toolbarHeightPx(); view.layoutParams = params }
+        // 键盘切换后状态栏高度/上下留白可能随布局变化，同步容器尺寸。
+        syncToolbarMetrics()
         if (window is BoardWindow.BarBoardWindow) {
             tabUi.setTitle(window.title)
             window.onCreateBarView()?.let { tabUi.addExternal(it, window.showTitle) }

@@ -80,8 +80,20 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
         // Legacy theme bitmaps keep their intrinsic size and never upscale just
         // because a button is larger. Explicit sizing and custom layouts opt in.
         val fit = localImage && (scope.theme.isCustom || requested > 0)
-        val size = if (requested > 0) minOf(dp(requested) + maxOf(image.paddingLeft + image.paddingRight, image.paddingTop + image.paddingBottom), width, height).coerceAtLeast(0) else -1
-        val actual = if (size == 0) -1 else size
+        // 显式 iconSize 的位图图标尺寸固定：按钮尚未测量（width/height==0）时也直接取
+        // iconSize，别再回退成 MATCH_PARENT——否则按钮一 layout 完 onSizeChanged 会把
+        // 图标从「填满按钮」跳回 iconSize，切键盘/换主题重建按钮时一眼就看到图标闪一下。
+        val size = if (requested > 0) {
+            // 显式 iconSize：严格按用户设定渲染，不再用 minOf(target, width, height) 卡在
+            // 按钮框内——否则调到 50 也最多只有按钮那么大（有上限），且构造时未测量取
+            // target、layout 后又 minOf 压回按钮框，切键盘重建按钮时图标「先大后小」闪一下。
+            // 图标允许比按钮框大、溢出边界，由 clipChildren=false 负责完整显示。
+            dp(requested) + maxOf(
+                image.paddingLeft + image.paddingRight,
+                image.paddingTop + image.paddingBottom,
+            )
+        } else -1
+        val actual = if (size <= 0) -1 else size
         image.layoutParams = android.widget.FrameLayout.LayoutParams(if (fit) actual else -2, if (fit) actual else -2, gravityCenter)
         image.scaleType = if (fit) ImageView.ScaleType.FIT_CENTER else ImageView.ScaleType.CENTER_INSIDE
     }
@@ -138,23 +150,30 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
 
     /** Applies the tint of icon-only buttons; re-run on scheme switches. */
     private fun applyIconTint() {
-        image.imageTintList =
-            ColorStateList.valueOf(if (scope.theme.isCustom) {
-                val keyboard = com.osfans.trime.data.keymap.CustomKeyboards.get(
-                    com.osfans.trime.data.keymap.CustomKeyboards.resolveId(KeyboardWindow.lastAttachedId))
-                keyboard?.toolbarTextColor()?.let(android.graphics.Color::parseColor) ?: scope.colors.candidateTextColor
-            } else scope.colors.candidateTextColor)
+        val base = if (scope.theme.isCustom) {
+            val keyboard = com.osfans.trime.data.keymap.CustomKeyboards.get(
+                com.osfans.trime.data.keymap.CustomKeyboards.resolveId(KeyboardWindow.lastAttachedId))
+            keyboard?.toolbarTextColor()?.let(android.graphics.Color::parseColor) ?: scope.colors.candidateTextColor
+        } else scope.colors.candidateTextColor
+        image.imageTintList = ColorStateList.valueOf(
+            com.osfans.trime.data.keymap.LayoutTypography.colorOr("toolbar", base),
+        )
     }
 
     /** Applies scheme-dependent colors; re-run on scheme switches. */
     private fun applyConfigColors(config: ToolBar.Button) {
         val fg = config.foreground
+        val normalColor = com.osfans.trime.data.keymap.LayoutTypography.colorOr(
+            "toolbar",
+            runCatching { scope.color(fg.normal.ifEmpty { "candidate_text_color" }) }.getOrDefault(scope.colors.candidateTextColor),
+        )
+        val pressedColor = com.osfans.trime.data.keymap.LayoutTypography.colorOr(
+            "toolbar",
+            runCatching { scope.color(fg.highlight.ifEmpty { "hilited_candidate_text_color" }) }.getOrDefault(scope.colors.candidateTextColor),
+        )
         colorStateList = ColorStateList(
             arrayOf(intArrayOf(android.R.attr.state_pressed), intArrayOf()),
-            intArrayOf(
-                runCatching { scope.color(fg.highlight.ifEmpty { "hilited_candidate_text_color" }) }.getOrDefault(scope.colors.candidateTextColor),
-                runCatching { scope.color(fg.normal.ifEmpty { "candidate_text_color" }) }.getOrDefault(scope.colors.candidateTextColor),
-            ),
+            intArrayOf(pressedColor, normalColor),
         )
         label.setTextColor(colorStateList)
         updateContent()
@@ -211,6 +230,27 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
         cfg.bindings["swipeRight"]?.takeIf { it.isNotEmpty() }?.let { token -> onSwipeRight = { dispatch?.invoke(token) } }
     }
 
+    /**
+     * 内置的三枚线条图标（菜单 / 悬浮 / 收起）在模板里各带过一块浅色底，
+     * 夹在一排纯线条图标中间像按钮而不像图标。这里统一按线条处理：
+     * 既不吃模板的 background，也不吃那个内置底色。
+     */
+    private fun stockLineIcon(): Boolean {
+        // 图标名可能是新名（mie2_tb_*）也可能是旧别名（tb_*，主题模式下就是这样），两种都认。
+        val base = config?.foreground?.style?.substringAfterLast('/') ?: return false
+        return base.contains("tb_menu") || base.contains("tb_float") || base.contains("tb_hide")
+    }
+
+    /**
+     * 内置皮肤给「菜单 / 悬浮 / 收起」这三枚线条图标各配过一块浅色底（各皮肤的主题色，
+     * 粉 / 蓝 / 橙 / 紫 / 绿），夹在一排纯线条图标中间像贴了块色板，格格不入。
+     * 这里把它们一律当透明，只留线条本身。
+     */
+    private val stockChipColors = setOf("E6F2EA", "FCEBED", "E7F3FC", "FFF0E2", "F1E9FC")
+
+    private fun stripStockChip(color: String): String =
+        if (stockLineIcon() && color.removePrefix("#").uppercase() in stockChipColors) "#00000000" else color
+
     private fun applySurfaceBackground() {
         normalSurface = null; pressedSurface = null
         invalidateShadowHost()
@@ -231,7 +271,9 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
             radius = style.radius ?: scope.theme.style.roundCorner,
         )
         val effects = (config?.effects ?: appearance.effectiveToolbarEffects).sanitized()
-        val own = config?.appearance
+        // 「跟随按键外观」开着时，按钮自己那套外观整份让位——包括清成透明的底色，
+        // 否则这几个显式写了 '#00000000' 的按钮会一直保持透明，和其他按钮不一致。
+        val own = config?.appearance?.takeIf { !appearance.linkToolbar }
         if (own != null) {
             style = style.copy(
                 background = own.keyBackColor.ifBlank { style.background },
@@ -240,6 +282,9 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
                 radius = own.roundCorner.takeIf { it >= 0 } ?: style.radius,
             )
         }
+        // 模板给这几枚线条图标配的浅色底一律当透明，只留线条；跟随按键外观时不管，
+        // 那时要的是「和按键一样」而不是「纯线条」。
+        if (!appearance.linkToolbar) style = style.copy(background = stripStockChip(style.background))
         if (effects.customized || style.customized || appearance.linkToolbar || own?.hilitedKeyBackColor?.isNotEmpty() == true || own?.hilitedKeyBorderColor?.isNotEmpty() == true) {
             val fallback = if (appearance.linkToolbar) scope.drawable("key_back_color") else
                 config?.background?.let { bg -> StateListDrawable().apply {
@@ -268,6 +313,13 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
                     cornerRadius=(style.radius ?: config?.background?.cornerRadius ?: 8f)*resources.displayMetrics.density
                 }
                 background=android.graphics.drawable.RippleDrawable(ColorStateList.valueOf(com.osfans.trime.ime.appearance.KeyEffectPainter.color(effects.rippleColor,0x33FFFFFF)),background,android.graphics.drawable.InsetDrawable(mask,dp(3)))
+            }
+            // 跟随按键外观时，按键的「不透明度」也要接管工具栏：
+            // 键面被调成半透明玻璃，顶栏如果还是实心色，两截就对不上了。
+            if (appearance.linkToolbar) {
+                val alpha = appearance.keyOpacity.coerceIn(0, 100) * 255 / 100
+                normalSurface?.setAlpha(alpha)
+                pressedSurface?.setAlpha(alpha)
             }
         }
     }
@@ -311,6 +363,10 @@ class ToolButton(context: Context, private val scope: ThemeScope) : GestureFrame
     }
 
     init {
+        // 图标可调大后可能比按钮框大，允许图标溢出按钮框完整显示（用户明确表示
+        // 不在乎超出边界，要的就是自由控制大小）；不裁剪子 View。
+        clipChildren = false
+        clipToPadding = false
         add(
             label,
             lParams {
