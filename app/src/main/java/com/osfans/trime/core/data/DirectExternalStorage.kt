@@ -21,6 +21,29 @@ object DirectExternalStorage {
         else ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
     val directory: File get() = File(prefs.directExternalPath.getValue())
 
+    /** 历史保存过的外部目录地址（去重、非空、按保存顺序）。 */
+    fun history(): List<String> =
+        prefs.directExternalPathHistory.getValue()
+            .split('\n')
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .distinct()
+
+    private fun saveHistory(paths: List<String>) {
+        prefs.directExternalPathHistory.setValue(paths.joinToString("\n"))
+    }
+
+    /** 把若干地址并入历史列表（去重、保留原有顺序，新增的追加在尾部）。 */
+    fun addHistory(paths: List<String>) {
+        val incoming = paths.map { it.trim() }.filter { it.isNotEmpty() }.distinct()
+        if (incoming.isEmpty()) return
+        saveHistory((history() + incoming).distinct())
+    }
+
+    fun removeHistory(path: String) {
+        saveHistory(history().filter { it != path })
+    }
+
     fun validate(path: String): File {
         val root = Environment.getExternalStorageDirectory().canonicalFile
         val requested = File(path.trim()).canonicalFile
@@ -45,6 +68,29 @@ object DirectExternalStorage {
             .putString(prefs.directExternalPath.key, path)
             .putBoolean(prefs.directExternalReady.key, ready)
             .commit()) { "数据目录设置保存失败" }
+    }
+
+    /**
+     * 只保存外部目录地址，不迁移、不复制文件，随后由 Rime 重启重新部署。
+     *
+     * 与 [activate] 的区别：这里不改动任何已有数据，也不跑 [MieUserDirectory.migrate]，
+     * 适合「目录里已有配置、只想把地址指过去」的场景。Rime 停止期间调用。
+     */
+    fun savePath(context: Context, path: String) {
+        check(hasPermission(context)) { "请先开启本应用的所有文件访问权限" }
+        val target = validate(path)
+        check(target.mkdirs() || target.isDirectory) { "无法创建外部目录" }
+        val probe = File.createTempFile(".mie-access-", ".tmp", target)
+        probe.delete()
+        val previousPath = prefs.directExternalPath.getValue()
+        val previousMode = prefs.dataStorageMode.getValue()
+        val previousReady = prefs.directExternalReady.getValue()
+        try {
+            commitLocation(DataStorageMode.DIRECT_EXTERNAL, target.absolutePath, true)
+        } catch (error: Exception) {
+            runCatching { commitLocation(previousMode, previousPath, previousReady) }.onFailure(error::addSuppressed)
+            throw error
+        }
     }
 
     /** Called while Rime is stopped. Preferences change only after successful preparation. */

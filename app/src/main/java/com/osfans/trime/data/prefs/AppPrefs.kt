@@ -550,6 +550,8 @@ class AppPrefs(
         val dataStorageMode = enum(R.string.data_storage_mode, DATA_STORAGE_MODE, DataStorageMode.DIRECT_EXTERNAL)
         val directExternalPath = string("profile_direct_external_path", com.osfans.trime.core.data.DirectExternalStorage.defaultPath)
         val directExternalReady = bool("profile_direct_external_ready", false)
+        // 历史保存过的外部目录地址（换行分隔），供「直接使用外部目录」页多地址切换。
+        val directExternalPathHistory = string("profile_direct_external_path_history", "")
         val externalRimeTreeUri = string(EXTERNAL_RIME_TREE_URI, "")
         val periodicBackgroundSync = bool(PERIODIC_BACKGROUND_SYNC, false)
         val periodicBackgroundSyncInterval = int(PERIODIC_BACKGROUND_SYNC_INTERVAL, 30)
