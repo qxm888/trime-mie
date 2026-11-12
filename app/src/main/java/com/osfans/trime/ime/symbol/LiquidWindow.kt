@@ -164,7 +164,11 @@ class LiquidWindow(di: DI) :
         }
         return LinearLayout(context).apply {
             gravity=Gravity.CENTER_VERTICAL
-            addView(liquidLayout.tabsUi.root,LinearLayout.LayoutParams(0,-1,1f))
+            // tabsUi.root 是复用的单例 View；旧 BarView 被移除时它仍可能挂在旧 wrapper 下。
+            // 不先解绑，新的 wrapper.addView() 会触发 “child already has a parent”。
+            val tabsRoot = liquidLayout.tabsUi.root
+            (tabsRoot.parent as? android.view.ViewGroup)?.removeView(tabsRoot)
+            addView(tabsRoot,LinearLayout.LayoutParams(0,-1,1f))
             addView(resetButton,LinearLayout.LayoutParams((48*density).toInt(),-1))
             addView(deleteButton,LinearLayout.LayoutParams((48*density).toInt(),-1))
             addView(sortButton,LinearLayout.LayoutParams((48*density).toInt(),-1))
@@ -176,6 +180,8 @@ class LiquidWindow(di: DI) :
     override fun onDetached() {
         saveItemOrder(); liquidLayout.tabsUi.saveOrder()
         sorting=false; deleting=false; updateSorting()
+        // detach 时把复用的 tabs root 从当前 wrapper 解开，给下次 onCreateBarView 留干净状态。
+        (liquidLayout.tabsUi.root.parent as? android.view.ViewGroup)?.removeView(liquidLayout.tabsUi.root)
     }
 
     override fun refreshColors() {
