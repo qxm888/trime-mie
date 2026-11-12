@@ -200,14 +200,48 @@ class KeyboardSetActivity : AppCompatActivity() {
         .filter { it != exclude }
         .mapNotNull { id -> CustomKeyboards.get(id)?.takeIf { KeyboardKeyCopy.isLetterLayout(it) }?.let { id to it } }
 
+    /**
+     * 所有键盘（内置皮肤与自建键盘都算）里含 26 字母键的布局，按「键盘 → 布局」分组。
+     *
+     * 内置皮肤是以独立的整套键盘注入的，所以「从其它布局复制按键」原来只列当前这一套、
+     * 看不到别的键盘；这里改成跨整套收集，来源和去处都能选到别的键盘。
+     */
+    private fun allLetterGroups(): List<Pair<String, List<Pair<String, String>>>> {
+        val entries = CustomKeyboards.list()
+        val byId = entries.associateBy { it.id }
+        fun rootOf(id: String): String {
+            var current = id
+            val seen = mutableSetOf<String>()
+            while (seen.add(current)) {
+                val parent = byId[current]?.secondaryOf.orEmpty()
+                if (parent.isBlank() || parent !in byId) return current
+                current = parent
+            }
+            return current
+        }
+        return entries.groupBy({ rootOf(it.id) }, { it.id })
+            .map { (setRoot, _) ->
+                val name = byId[setRoot]?.name ?: setRoot
+                name to KeyboardSetOperations.ordered(setRoot)
+                    .mapNotNull { pid -> CustomKeyboards.get(pid)?.takeIf { KeyboardKeyCopy.isLetterLayout(it) }?.let { pid to it.name } }
+            }
+            .filter { it.second.isNotEmpty() }
+            .sortedBy { it.first }
+    }
+
     private fun pickCopySource() {
-        val pages = letterPages()
-        if (pages.isEmpty()) { toast("本套没有含 26 个字母键的布局"); return }
-        val items = pages.map { it.second.name } + "从键盘主题导入…"
-        MaterialAlertDialogBuilder(this).setTitle("选择按键来源")
-            .setItems(items.toTypedArray()) { _, index ->
-                if (index == pages.size) pickTheme() else pickCopyTarget(pages[index].first)
-            }.setNegativeButton("取消", null).show()
+        val groups = allLetterGroups()
+        if (groups.isEmpty()) { toast("没有含 26 个字母键的布局"); return }
+        val items = groups.map { it.first } + "从键盘主题导入…"
+        MaterialAlertDialogBuilder(this).setTitle("选择按键来源").setItems(items.toTypedArray()) { _, index ->
+            if (index == groups.size) pickTheme() else pickLayout(groups[index]) { id -> pickCopyTarget(id) }
+        }.setNegativeButton("取消", null).show()
+    }
+
+    private fun pickLayout(group: Pair<String, List<Pair<String, String>>>, onPick: (String) -> Unit) {
+        MaterialAlertDialogBuilder(this).setTitle(group.first)
+            .setItems(group.second.map { it.second }.toTypedArray()) { _, i -> onPick(group.second[i].first) }
+            .setNegativeButton("取消", null).show()
     }
 
     private fun pickCopyTarget(sourceId: String) {
@@ -216,16 +250,22 @@ class KeyboardSetActivity : AppCompatActivity() {
     }
 
     private fun pickCopyTarget(source: CustomKeyboards.CustomKeyboard, sourceName: String, sourceId: String = "") {
-        val pages = letterPages(sourceId)
-        if (pages.isEmpty()) { toast("本套没有可复制的 26 键布局"); return }
-        MaterialAlertDialogBuilder(this).setTitle("复制到")
-            .setItems(pages.map { it.second.name }.toTypedArray()) { _, i ->
-                val targetId = pages[i].first
-                lifecycleScope.launch {
-                    val plan = withContext(Dispatchers.Default) { runCatching { KeyboardKeyCopy.plan(source, sourceName, targetId) } }
-                    plan.onSuccess { confirmCopy(it) }.onFailure { toast(it.message ?: "无法读取布局") }
-                }
-            }.setNegativeButton("取消", null).show()
+        val groups = allLetterGroups().map { (name, pages) -> name to pages.filter { it.first != sourceId } }
+        if (groups.none { it.second.isNotEmpty() }) { toast("没有可复制的 26 键布局"); return }
+        MaterialAlertDialogBuilder(this).setTitle("复制到 · 选择键盘").setItems(groups.map { it.first }.toTypedArray()) { _, i ->
+            val pages = groups[i].second
+            if (pages.isEmpty()) { toast("这组没有可复制的 26 键布局"); return@setItems }
+            MaterialAlertDialogBuilder(this).setTitle("复制到 · ${groups[i].first}")
+                .setItems(pages.map { it.second }.toTypedArray()) { _, j -> runCopy(source, sourceName, pages[j].first) }
+                .setNegativeButton("取消", null).show()
+        }.setNegativeButton("取消", null).show()
+    }
+
+    private fun runCopy(source: CustomKeyboards.CustomKeyboard, sourceName: String, targetId: String) {
+        lifecycleScope.launch {
+            val plan = withContext(Dispatchers.Default) { runCatching { KeyboardKeyCopy.plan(source, sourceName, targetId) } }
+            plan.onSuccess { confirmCopy(it) }.onFailure { toast(it.message ?: "无法读取布局") }
+        }
     }
 
     private fun confirmCopy(plan: KeyboardKeyCopy.Plan) {
@@ -309,7 +349,20 @@ class KeyboardSetActivity : AppCompatActivity() {
             "geometry" -> editGeometry(kb)
             // 工具栏背景与叠加在顶层「外观 · 工具栏」里改，这里只留键盘背景。
             "background" -> SkinPicker.show(this, "整套键盘背景", kb.resolvedBackground(), onPicked = { bg -> change { it.background = bg } },
-                onPickImage = { imageResult = { path -> change { it.background = CustomBackground(CustomBackground.Type.IMAGE, image = path) } }; image.launch("image/*") },
+                onPickImage = {
+                    imageResult = { path ->
+                        // 和单页那边一致：先按键盘的实际宽高比裁一刀再落盘。
+                        // 不裁的话背景图会被 stretch 到整块面板，比例不对就明显变形。
+                        val heightDp = kb.effectivePortraitHeightDp().toFloat().coerceAtLeast(24f)
+                        val widthDp = resources.displayMetrics.widthPixels / resources.displayMetrics.density
+                        SkinPicker.showBackgroundCrop(this, path, widthDp / heightDp) { cropped ->
+                            if (cropped != null) {
+                                change { it.background = CustomBackground(CustomBackground.Type.IMAGE, image = cropped) }
+                            }
+                        }
+                    }
+                    image.launch("image/*")
+                },
                 onPickVideo = { video.launch("video/*") })
             "appearance" -> MaterialAlertDialogBuilder(this).setTitle("整套按键外观").setItems(arrayOf("全部按键统一外观", "普通键", "功能键", "强调键", "强制覆盖全部按键背景")) { _, i ->
                 when(i) {

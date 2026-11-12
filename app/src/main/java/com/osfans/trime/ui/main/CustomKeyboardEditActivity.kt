@@ -27,6 +27,7 @@ import androidx.core.view.doOnLayout
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.osfans.trime.R
@@ -128,6 +129,7 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.cbe_add_row).setOnClickListener {
             mutate { it.rows.add(CustomKeyboards.CustomRow()) }
         }
+        renderFollowSwitches()
         render()
     }
 
@@ -200,6 +202,40 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
     // ----------------------------------------------------------------
     // rows
     // ----------------------------------------------------------------
+
+    /** 编辑页顶部的「跟随整套设置」开关：关 = 该组外观跟随整套，开 = 本页独立。 */
+    private val followSwitchGroups = listOf(
+        "geometry" to "尺寸与间距",
+        "background" to "背景",
+        "appearance" to "按键外观",
+        "fonts" to "字体",
+        "toolbar" to "工具栏",
+        "floating" to "候选窗与悬浮球",
+    )
+
+    private fun renderFollowSwitches() {
+        val container = findViewById<LinearLayout>(R.id.cbe_follow_switches) ?: return
+        container.removeAllViews()
+        followSwitchGroups.forEach { (group, label) ->
+            // 该组是否有本页独立覆盖：setOverrides 里出现该组任一字段即算「独立」。
+            val overrides = CustomKeyboards.rawLayouts()[kbId]?.setOverrides
+            val detached = overrides?.keys?.any { it in KeyboardSets.fields.getValue(group) } == true
+            val sw = MaterialSwitch(this).apply {
+                text = label
+                isChecked = detached
+                setOnCheckedChangeListener { _, checked ->
+                    KeyboardSetDialogs.run(this@CustomKeyboardEditActivity, {
+                        renderFollowSwitches()
+                        render()
+                    }) {
+                        if (checked) KeyboardSetOperations.detach(kbId, group)
+                        else KeyboardSetOperations.follow(kbId, group)
+                    }
+                }
+            }
+            container.addView(sw)
+        }
+    }
 
     private fun render() {
         val kb = CustomKeyboards.get(kbId) ?: run {
@@ -957,6 +993,7 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
         CustomBackground.Type.TRANSPARENT -> getString(R.string.custom_bg_transparent)
         CustomBackground.Type.IMAGE -> getString(R.string.custom_bg_image)
         CustomBackground.Type.VIDEO -> "视频（静音循环）"
+        CustomBackground.Type.FROST -> getString(R.string.custom_bg_transparent)
     }
 
     private fun refreshGestureRows(

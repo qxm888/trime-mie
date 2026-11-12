@@ -42,6 +42,8 @@ object CustomKeyboardYaml {
         val landscapeHeightDp: Int = 0,
         val toolbarHeightDp: Int = 0,
         val secondaryOf: String = "",
+        /** 暗色模式下改用哪套整套键盘；空 = 不切换。 */
+        val nightId: String = "",
         val setPageRole: String = "",
         val layoutDisplayName: String = "",
         val exportedHeight: Int = 0,
@@ -71,6 +73,8 @@ object CustomKeyboardYaml {
         CustomBackground.Type.TRANSPARENT -> "#00000000"
         CustomBackground.Type.IMAGE -> value.image
         CustomBackground.Type.VIDEO -> "video:" + value.image
+        // 已下线的半透磨砂：导出成透明，避免旧配置带出无法识别的类型。
+        CustomBackground.Type.FROST -> "#00000000"
     }
     private fun background(value: String): CustomBackground = when {
         value.startsWith("video:") -> CustomBackground(CustomBackground.Type.VIDEO, image = value.removePrefix("video:"))
@@ -145,7 +149,7 @@ object CustomKeyboardYaml {
                 "landscape_split_percent" to JsonPrimitive(layout.landscapeSplitPercent), "label_transform" to string(layout.labelTransform.name.lowercase()),
                 "keyboard_back_color" to string(bg),
                 "mie" to json.encodeToJsonElement(KeyboardInfo.serializer(), KeyboardInfo(keyMetadata=keyMetadata, layoutDisplayName=kb.layoutDisplayName, hiddenMenuItems=kb.hiddenMenuItems, importedActions=kb.importedActions, toolbarAlignment=kb.toolbarAlignment, rowAlignments=kb.rows.mapIndexed { index,row -> index+1 to row.alignment }.toMap(), rowMargins=kb.rows.mapIndexed { index,row -> index+1 to (row.margin ?: -1) }.toMap(), surfaceAppearance=kb.surfaceAppearance, unifiedBackground=kb.unifiedBackground, typography=kb.typography, floatingCandidates=kb.floatingCandidates, toolbar=kb.toolbar, toolbarBackground=kb.toolbarBackground,
-                    allKeysBackground = kb.allKeysBackground, importedSkin = kb.importedSkin, importedHeightPercent = kb.importedHeightPercent, keyboardHeightDp = kb.keyboardHeightDp, landscapeHeightDp = kb.landscapeHeightDp, toolbarHeightDp = kb.toolbarHeightDp, secondaryOf = kb.secondaryOf, setPageRole = kb.setPageRole, exportedHeight = portraitHeight, exportedBackground = bg, exportedRowSpacing = kb.rowSpacing, rowMargin = kb.rowMargin, keyAppearance = KeyAppearance.textValues(kb.keyAppearance), options = kb.options)), "keys" to JsonArray(keys))
+                    allKeysBackground = kb.allKeysBackground, importedSkin = kb.importedSkin, importedHeightPercent = kb.importedHeightPercent, keyboardHeightDp = kb.keyboardHeightDp, landscapeHeightDp = kb.landscapeHeightDp, toolbarHeightDp = kb.toolbarHeightDp, secondaryOf = kb.secondaryOf, nightId = kb.nightId, setPageRole = kb.setPageRole, exportedHeight = portraitHeight, exportedBackground = bg, exportedRowSpacing = kb.rowSpacing, rowMargin = kb.rowMargin, keyAppearance = KeyAppearance.textValues(kb.keyAppearance), options = kb.options)), "keys" to JsonArray(keys))
         }
         val first = layouts.values.first()
         val root = obj("name" to string(if (layouts.size == 1) first.name else "自定义键盘合集"), "config_version" to string("1.0"),
@@ -307,7 +311,7 @@ object CustomKeyboardYaml {
             require(info.rowMargins.values.all { it in -1..48 }) { "行边距须为 0–48 dp" }
             result[id] = CustomKeyboard(layoutDisplayName = info.layoutDisplayName, name = node.pairs["name"]?.string ?: id, rows = rows, rowSpacing = spacing, rowMargin = keyboardRowMargin,
                 hiddenMenuItems=info.hiddenMenuItems, importedActions=info.importedActions, toolbarAlignment=info.toolbarAlignment, surfaceAppearance=info.surfaceAppearance, unifiedBackground=info.unifiedBackground, typography=info.typography, floatingCandidates=info.floatingCandidates, background = background(bg), toolbar = info.toolbar.toMutableList(), toolbarBackground = info.toolbarBackground, allKeysBackground = info.allKeysBackground,
-                importedSkin = skin, importedHeightPercent = percent, keyboardHeightDp = heightDp, landscapeHeightDp = heightDpLand, toolbarHeightDp = toolbarHeight, secondaryOf = secondaryOf, setPageRole = info.setPageRole, keyAppearance = KeyAppearance.parse(info.keyAppearance), options = options)
+                importedSkin = skin, importedHeightPercent = percent, keyboardHeightDp = heightDp, landscapeHeightDp = heightDpLand, toolbarHeightDp = toolbarHeight, secondaryOf = secondaryOf, nightId = info.nightId, setPageRole = info.setPageRole, keyAppearance = KeyAppearance.parse(info.keyAppearance), options = options)
         }
         require(result.isNotEmpty()) { "未找到可导入的自定义键盘" }
         return result

@@ -30,6 +30,18 @@ import com.osfans.trime.util.writeAtomicText
 import java.util.UUID
 
 /**
+ * 上/下留白模式下的「候选/图标内容行高」（dp）。
+ *
+ * 旧实现在这里叠了主题默认的状态栏整高
+ * （candidateViewHeight + commentHeight ≈ 46dp），设 5+5 时总高变成 56dp，
+ * 比不设置还宽。但也不能拍脑袋写 28：候选项里的文字 + 圆形高亮背景是按
+ * `theme.style.candidateViewHeight`（34dp）量高的，28dp 会把紫色圆的下半截
+ * 直接裁掉、顶上还挤出一条空白。这里取字母高度 + 2dp 余量，
+ * 保证圆形候选完整显示；图标行也用同一个值，不会溢出内容区。
+ */
+const val TOOLBAR_ICON_ROW_DP = 36
+
+/**
  * Two exclusive layout modes:
  *  - [MODE_THEME]: keyboards come from the theme file only (default; the
  *    per-key overlay from [KeyBindingOverrides] still applies on top).
@@ -115,8 +127,19 @@ object CustomKeyboards {
         var keyboardHeightDp: Int = 0,
         var landscapeHeightDp: Int = 0,
         var toolbarHeightDp: Int = 0,
+        /** 工具栏图标上方留白（dp，0–60）。与下方留白一起：总高=上+下+图标行高，图标不再居中。 */
+        var toolbarTopPadDp: Int = 0,
+        /** 工具栏图标下方留白（dp，0–60）。 */
+        var toolbarBottomPadDp: Int = 0,
+        /** 工具栏图标统一大小（dp，0=跟随主题按钮自带的 iconSize/fontSize，8–96）。整套全局。 */
+        var toolbarIconSizeDp: Int = 0,
         /** 非空 = 某主键盘的次级键盘（跳转用），不出现在主列表。 */
         var secondaryOf: String = "",
+        /**
+         * 非空 = 系统进入暗色模式时整套换成这套键盘（布局、按键、外观一起换）。
+         * 亮色仍用本套；只跟一层，替身自己的 [nightId] 不再生效。
+         */
+        var nightId: String = "",
         var surfaceAppearance: com.osfans.trime.ime.appearance.SurfaceAppearanceConfig? = null,
         var unifiedBackground: Boolean? = null,
         var typography: Map<String, FontSpec> = emptyMap(),
@@ -140,9 +163,18 @@ object CustomKeyboards {
         }
 
         /** The height the keyboard actually renders at, in dp, honoring the dp override first. */
-        fun effectiveToolbarHeightDp(): Int =
-            if (toolbarHeightDp > 0) toolbarHeightDp
-            else StandaloneKeyboardTheme.base().style.run { candidateViewHeight + commentHeight }
+        fun effectiveToolbarHeightDp(): Int {
+            val legacy = StandaloneKeyboardTheme.base().style.run { candidateViewHeight + commentHeight }
+            val top = toolbarTopPadDp.coerceIn(0, 60)
+            val bottom = toolbarBottomPadDp.coerceIn(0, 60)
+            // 上/下留白任一设置过：总高 = 上 + 下 + 紧凑图标行高，图标贴着上高度排，
+            // 不再叠加主题默认整高，也不读旧的整高覆盖值。
+            if (top > 0 || bottom > 0) return top + bottom + TOOLBAR_ICON_ROW_DP
+            return if (toolbarHeightDp > 0) toolbarHeightDp else legacy
+        }
+
+        /** 上/下留白是否生效（决定渲染端是否按留白排图标）。 */
+        fun toolbarPadsEnabled(): Boolean = toolbarTopPadDp.coerceIn(0, 60) > 0 || toolbarBottomPadDp.coerceIn(0, 60) > 0
 
         fun effectivePortraitHeightDp(): Int = if (keyboardHeightDp > 0) keyboardHeightDp
             else if (importedSkin != null) 240 * importedHeightPercent / 100
@@ -296,6 +328,9 @@ object CustomKeyboards {
         synchronized(lock) {
             appContext = com.osfans.trime.util.storageContext(context)
             layoutStorage = KeyboardLayoutStorage.resolve(appContext!!)
+            // 记下启动时的日夜状态：否则「启动就在暗色，随后切亮色」会因为没有基准值
+            // 被判成「没变化」，整套键盘不重建，一直停在夜间那套上。
+            lastSyncedNight = systemNight()
             runCatching {
                 val file = storeFile()
                 val contents = file.readAtomicText()
@@ -663,6 +698,55 @@ object CustomKeyboards {
     fun sharedProfiles(): List<KeyboardSharedProfile> = synchronized(lock) { store.sharedProfiles.values.toList() }
     fun setRoot(id: String): String = synchronized(lock) { KeyboardSets.rootOf(id, store.keyboards) }
 
+    /**
+     * 整套（全局）的工具栏上/下留白（dp，0–60）。
+     *
+     * 工具栏留白是「外观」，不是「某一页」的属性：中文页、英文页、符号页共用同一块
+     * 顶栏，改一处处处生效。以前渲染端读 [KeyboardWindow.lastAttachedId] 那一页自己的
+     * `toolbarTopPadDp/BottomPadDp`，切中英文时中文页设了留白、英文页没设，按钮尺寸
+     * 就在 36dp ↔ 46dp 之间来回跳（图标忽大忽小）。这里统一读整套根键盘，切页不再变。
+     */
+    fun setToolbarPads(runtimeId: String): Pair<Int, Int> {
+        // 预设页（.ascii / number / email 等）不在自定义键盘库里，`resolveId` 会原样
+        // 返回它们，`setRoot` 直接抛「键盘已删除」，于是留白读成 0 → 按钮跳回 defaultButtonSize。
+        // 这里先回退到当前活动键盘，再取整套根，保证数字/密码/英文页与中文页读同一份留白。
+        val id = resolveId(runtimeId)
+        val resolved = if (get(id) != null) id else resolveId("default")
+        val root = runCatching { setRoot(resolved) }.getOrNull() ?: resolved
+        val kb = get(root)
+        val top = kb?.toolbarTopPadDp?.coerceIn(0, 60) ?: 0
+        val bottom = kb?.toolbarBottomPadDp?.coerceIn(0, 60) ?: 0
+        return top to bottom
+    }
+
+    /**
+     * 整套（全局）的排版规格（字号/字体/颜色），读整套根键盘。
+     *
+     * 「工具栏」这类外观是整套共享的：中文页、英文页、符号页共用同一块顶栏，其图标
+     * 字号、文字颜色都该一致。以前 [LayoutTypography] 读 [KeyboardWindow.lastAttachedId]
+     * 那一页自己的 `typography[role]`，切中英文时中文页和英文页字号不同，工具栏图标
+     * 就忽大忽小。这里统一读整套根键盘，切页不再变。
+     */
+    fun setTypography(runtimeId: String, role: String): FontSpec? {
+        val id = resolveId(runtimeId)
+        val resolved = if (get(id) != null) id else resolveId("default")
+        val root = runCatching { setRoot(resolved) }.getOrNull() ?: resolved
+        return get(root)?.typography?.get(role)
+    }
+
+    /**
+     * 整套（全局）的工具栏图标统一大小（dp，0=跟随主题按钮自带的尺寸，8–96）。
+     *
+     * 图标大小与留白、字号一样是整套外观：改一处处处生效。读整套根键盘，
+     * 预设页（数字/密码/英文页）回退到活动键盘后再取根，与 [setToolbarPads] 一致。
+     */
+    fun setToolbarIconSize(runtimeId: String): Int {
+        val id = resolveId(runtimeId)
+        val resolved = if (get(id) != null) id else resolveId("default")
+        val root = runCatching { setRoot(resolved) }.getOrNull() ?: resolved
+        return get(root)?.toolbarIconSizeDp?.coerceIn(0, 96) ?: 0
+    }
+
     @Serializable private data class SetUndo(val before: String, val afterFingerprint: String)
     private fun setFingerprint(pages: Map<String, CustomKeyboard>, profiles: Map<String, KeyboardSharedProfile>): String {
         val snapshot = kotlinx.serialization.json.buildJsonObject {
@@ -728,14 +812,118 @@ object CustomKeyboards {
         ""
     }
 
-    private fun effectiveActiveId(): String = store.activeId.takeIf { it in store.keyboards } ?: store.keyboards.keys.firstOrNull().orEmpty()
+    /** 系统当前是否处于暗色模式。直接读配置，不缓存：切换后调用方会重建键盘。 */
+    private fun systemNight(): Boolean =
+        appContext?.resources?.configuration?.uiMode?.and(android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
+            android.content.res.Configuration.UI_MODE_NIGHT_YES
+
+    /**
+     * 当前是否暗色：优先用系统广播过来的值，没收到过就现读配置。
+     *
+     * 广播里带的是「新」配置，而 [appContext] 的 resources 有可能还没跟着更新，
+     * 收到通知那一刻以广播为准，其余时刻以配置为准。
+     */
+    private fun isNightNow(): Boolean = lastSyncedNight ?: systemNight()
+
+    /**
+     * 这套键盘在暗色模式下指定的替身，没有则返回空串。
+     *
+     * 只认一层：替身自己再指定 [CustomKeyboard.nightId] 也不会继续跳，
+     * 既避免 A→B→A 来回循环，也让「夜间那套」始终是用户明确选的那套。
+     */
+    fun nightKeyboardOf(id: String): String = synchronized(lock) {
+        store.keyboards[id]?.nightId.orEmpty()
+            .takeIf { it.isNotBlank() && it != id && it in store.keyboards }.orEmpty()
+    }
+
+    /**
+     * 设定（或清除，[target] 传空）暗色模式替身，返回是否落盘成功。
+     *
+     * 直接改 store 里那一条，不经过 [mutate]：nightId 不是布局字段，走布局改写那条链
+     * 只会白白重算一遍按键身份，出问题还不容易看出来。保存失败时回滚并保留 dirty，
+     * 让调用方能把「没存住」提示给用户。
+     */
+    fun setNightTarget(
+        id: String,
+        target: String,
+    ): Boolean = synchronized(lock) {
+        val before = store.keyboards[id] ?: return@synchronized false
+        val next = target.takeIf { it.isNotBlank() && it != id && it in store.keyboards }.orEmpty()
+        if (before.nightId == next) return@synchronized true
+        store.keyboards[id] = before.copy(nightId = next)
+        store.version++
+        dirty = true
+        if (flush()) {
+            true
+        } else {
+            store.keyboards[id] = before
+            store.version++
+            dirty = true
+            false
+        }
+    }
+
+    /** 当前真正要渲染的整套键盘：暗色时优先用替身。 */
+    private fun effectiveActiveId(): String {
+        val base = store.activeId.takeIf { it in store.keyboards } ?: store.keyboards.keys.firstOrNull().orEmpty()
+        if (!isNightNow()) return base
+        // activeId 可能指向某套里的某一页（布局），而替身是按整套（root）存的：先归到 root，
+        // 否则「切到暗色不换」——页 id 上永远读不到 nightId。
+        val root = runCatching { KeyboardSets.rootOf(base, store.keyboards) }.getOrNull().orEmpty()
+        return nightKeyboardOf(root.ifEmpty { base }).ifEmpty { base }
+    }
+
+    /**
+     * 运行时该挂载哪一页：暗色且配了替身时是替身那套，否则就是用户选的那套。
+     *
+     * [activeId] 记的是「用户选了哪套」，不随日夜变；键盘窗口起首挂载必须用这个，
+     * 否则新建窗口时按 `.default` 会按 [activeId] 回到日间那套，替身等于白配。
+     */
+    fun runtimeActiveId(): String = synchronized(lock) { effectiveActiveId() }
+
+    /**
+     * 此刻是否正被「夜间替身」接管（暗色 + 日间那套配了替身）。
+     *
+     * 为 true 时运行时切页不能写回 [activeId]：那是「日间用哪套」的记录，
+     * 一旦写成夜间那套的页 id，切回亮色就再也回不到原来那套了。
+     */
+    fun isNightShadowed(): Boolean = synchronized(lock) { nightTargetOfActiveLocked().isNotEmpty() }
+
+    /** 暗色替身目标；不在暗色、没配替身或 id 不合法时为空串。 */
+    private fun nightTargetOfActiveLocked(): String {
+        if (!isNightNow()) return ""
+        val base = store.activeId.takeIf { it in store.keyboards } ?: return ""
+        val root = runCatching { KeyboardSets.rootOf(base, store.keyboards) }.getOrNull() ?: return ""
+        return nightKeyboardOf(root)
+    }
+
+    /**
+     * 系统日夜变化后调用：返回 true 表示需要重建整套键盘。
+     *
+     * 幂等：日夜值没真的变化时返回 false，所以应用层和输入法服务层可以都调一次。
+     * 切到暗色看有没有替身；切回亮色只要配过替身就必须重建（要回到日间那套）。
+     */
+    fun syncNightMode(night: Boolean = systemNight()): Boolean = synchronized(lock) {
+        val previous = lastSyncedNight
+        lastSyncedNight = night
+        if (previous == null || previous == night) return@synchronized false
+        val base = store.activeId.takeIf { it in store.keyboards } ?: return@synchronized false
+        val root = runCatching { KeyboardSets.rootOf(base, store.keyboards) }.getOrNull() ?: return@synchronized false
+        nightKeyboardOf(root).isNotEmpty()
+    }
+
+    /** 上一次同步时的日夜状态；null = 还没同步过（首帧按 theme 构建，不需要重建）。 */
+    private var lastSyncedNight: Boolean? = null
 
     private fun normalizedCopy(kb: CustomKeyboard): CustomKeyboard = kb.copy(
         options = kb.options.validated(),
         importedActions = kb.importedActions.toMap(),
         surfaceAppearance=kb.surfaceAppearance?.sanitized(),
         floatingCandidates=kb.floatingCandidates?.sanitized(),
-        typography=kb.typography.filterKeys { it in com.osfans.trime.data.theme.FontOverrides.roles || it in setOf("latin", "hanb") || it == LayoutTypography.GLOBAL }.mapValues { (role,spec) -> spec.copy(size=if(role != LayoutTypography.GLOBAL && spec.size.isFinite()) spec.size.coerceIn(0f,200f) else 0f) },
+        typography=kb.typography.filterKeys { it in com.osfans.trime.data.theme.FontOverrides.roles || it in setOf("latin", "hanb") || it == LayoutTypography.GLOBAL }.mapValues { (role,spec) -> spec.copy(
+            size=if(role != LayoutTypography.GLOBAL && spec.size.isFinite()) spec.size.coerceIn(0f,200f) else 0f,
+            color=spec.color.trim().takeIf { runCatching { android.graphics.Color.parseColor(it) }.isSuccess } ?: "",
+        ) },
         bgColor = "", bgImage = "", background = kb.resolvedBackground(),
         toolbar = kb.toolbar.toMutableList(),
         toolbarAlignment = kb.toolbarAlignment.takeIf { it == "legacy" || it in ButtonAlignment.choices } ?: "legacy",

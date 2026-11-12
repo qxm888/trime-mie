@@ -13,6 +13,9 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -194,19 +197,13 @@ class CustomKeyboardActivity : AppCompatActivity() {
                         .setMessage(error.message).setPositiveButton(android.R.string.ok, null).show()
                     return@launch
                 }
-                val options =
-                    arrayOf(
-                        getString(R.string.key_editor_import_merge),
-                        getString(R.string.key_editor_import_replace),
-                    )
-                var choice = 0
                 MaterialAlertDialogBuilder(this@CustomKeyboardActivity)
                     .setTitle(R.string.key_editor_import_mode)
-                    .setSingleChoiceItems(options, 0) { _, which -> choice = which }
+                    .setSingleChoiceItems(arrayOf(getString(R.string.key_editor_import_merge)), 0) { _, _ -> }
                     .setPositiveButton(R.string.ok) { _, _ ->
                         lifecycleScope.launch {
                             val imported = runCatching { withContext(Dispatchers.IO) {
-                                CustomKeyboards.importDocument(text, choice == 1)
+                                CustomKeyboards.importDocument(text, false)
                                 check(CustomKeyboards.flush()) { "布局保存失败，请检查剩余存储空间" }
                             } }
                             if (!isActive || isFinishing || isDestroyed) return@launch
@@ -461,7 +458,7 @@ class CustomKeyboardActivity : AppCompatActivity() {
         emptyHint.text = if(showBuiltinSets) "暂无内置整套，可在右上角恢复内置键盘" else "还没有自定义整套，点下方创建"
 
         entries.forEach { entry ->
-            val active = runCatching { CustomKeyboards.setRoot(CustomKeyboards.activeId) == entry.id }.getOrDefault(false)
+            val active = runCatching { CustomKeyboards.runtimeActiveId() == entry.id }.getOrDefault(false)
             val card = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_VERTICAL
@@ -483,9 +480,13 @@ class CustomKeyboardActivity : AppCompatActivity() {
                         }
                     val meta =
                         TextView(this@CustomKeyboardActivity).apply {
+                            val night = CustomKeyboards.nightKeyboardOf(entry.id)
                             text =
                                 "整套 · ${CustomKeyboards.familyIds(listOf(entry.id)).size} 个布局" +
-                                    if (active) " · " + getString(R.string.custom_kb_in_use) else ""
+                                    (if (active) " · " + getString(R.string.custom_kb_in_use) else "") +
+                                    (if (night.isNotEmpty()) " · 夜间 " + (CustomKeyboards.get(night)?.name ?: night) else "")
+                            maxLines = 2
+                            ellipsize = android.text.TextUtils.TruncateAt.END
                             textSize = 12f
                             setTextColor(
                                 ContextCompat.getColor(
@@ -525,6 +526,8 @@ class CustomKeyboardActivity : AppCompatActivity() {
             card.addView(rename)
             card.addView(delete)
             card.setOnClickListener { KeyboardSetActivity.start(this, entry.id) }
+            // 长按设「夜间模式用哪一套」。卡片上的齿轮只做编辑，不能塞下这一项。
+            card.setOnLongClickListener { pickNightKeyboard(entry.id); true }
 
             list.addView(
                 card,
@@ -533,6 +536,98 @@ class CustomKeyboardActivity : AppCompatActivity() {
                 },
             )
         }
+    }
+
+    /**
+     * 长按整套卡片：设定系统进入暗色模式时改用哪一套。
+     *
+     * 整套替换（布局、按键、外观一起换），亮色仍用本套。候选里排除自己，
+     * 只跟一层，所以即使两套互相指定也不会来回跳。
+     */
+    private fun pickNightKeyboard(sourceId: String) {
+        val current = CustomKeyboards.nightKeyboardOf(sourceId)
+        val candidates = CustomKeyboards.list()
+            .filter { it.secondaryOf.isEmpty() && it.id != sourceId }
+            .sortedBy { it.name }
+        if (candidates.isEmpty()) {
+            Toast.makeText(this, "没有其它整套键盘可指派，先创建或恢复一套", Toast.LENGTH_SHORT).show()
+            return
+        }
+        // 内容自己搭，不用 setSingleChoiceItems + setMessage：Material 的 AlertController
+        // 一旦有 message 就会把列表整个丢掉（只剩提示文字），两者不能共存。自己搭还能把
+        // 「不切换」钉在第一行，不会被滚动到选中项时顶出可视区。
+        val body =
+            LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(dp(20), 0, dp(20), 0)
+            }
+        body.addView(
+            TextView(this).apply {
+                text = "系统切到暗色时，整套换成选中这套（布局、按键、外观一起换）。"
+                textSize = 13f
+                setTextColor(ContextCompat.getColor(this@CustomKeyboardActivity, R.color.framework_text_secondary))
+                setPadding(0, dp(4), 0, dp(10))
+            },
+        )
+        val group = RadioGroup(this).apply { orientation = LinearLayout.VERTICAL }
+        val values = mutableListOf<String>()
+        fun addOption(
+            label: String,
+            value: String,
+        ) {
+            group.addView(
+                RadioButton(this).apply {
+                    text = label
+                    textSize = 15f
+                    id = View.generateViewId()
+                    setPadding(0, dp(5), 0, dp(5))
+                    isChecked = value == current
+                },
+            )
+            values.add(value)
+        }
+        addOption("不切换（暗色也用本套）", "")
+        candidates.forEach { addOption(it.name, it.id) }
+        // 存的目标已被删时什么都不勾，这里兜底落到「不切换」，避免空选。
+        if (group.checkedRadioButtonId == -1) (group.getChildAt(0) as? RadioButton)?.isChecked = true
+        body.addView(
+            ScrollView(this).apply {
+                addView(
+                    group,
+                    ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT),
+                )
+            },
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(44) * minOf(values.size, 6) + dp(2),
+            ),
+        )
+        MaterialAlertDialogBuilder(this)
+            .setTitle("夜间模式使用")
+            .setView(body)
+            .setPositiveButton("确定") { _, _ ->
+                val index = group.indexOfChild(group.findViewById(group.checkedRadioButtonId))
+                val target = values.getOrElse(index) { "" }
+                applyNightTarget(sourceId, target, candidates.firstOrNull { it.id == target }?.name.orEmpty())
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    /** 写入夜间替身并立即生效；保存失败要说出来，不允许静默。 */
+    private fun applyNightTarget(
+        sourceId: String,
+        target: String,
+        name: String,
+    ) {
+        if (!CustomKeyboards.setNightTarget(sourceId, target)) {
+            Toast.makeText(this, "保存失败，请检查可用存储空间", Toast.LENGTH_SHORT).show()
+            return
+        }
+        ThemeManager.requestLayoutSwitch()
+        renderList()
+        val text = if (target.isEmpty()) "夜间：不切换（暗色也用本套）" else "夜间：$name"
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
     }
 
     private fun renameKeyboard(

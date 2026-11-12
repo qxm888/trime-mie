@@ -16,6 +16,8 @@ import kotlin.math.roundToInt
 class BackdropBlur(
     private val root: ViewGroup,
     private val appearance: () -> SurfaceAppearanceConfig = { SurfaceAppearance.current() },
+    /** 这一层要不要工作。默认看按键/工具栏的 blur 开关；面板玻璃会额外把它打开。 */
+    private val active: () -> Boolean = { appearance().needsBlur },
     private val capture: (Canvas) -> Unit,
 ) : View.OnAttachStateChangeListener {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -27,6 +29,8 @@ class BackdropBlur(
     private var blurPixels = IntArray(0)
     private var blurWork = IntArray(0)
     private var front: Bitmap? = null
+    /** 按键专用的一帧：同一次抓图，但按 [SurfaceAppearanceConfig.keyBlur] 糊得更狠/更轻。 */
+    private var frontKey: Bitmap? = null
     private var back: Bitmap? = null
     private val paint = Paint(Paint.FILTER_BITMAP_FLAG)
     private val source = RectF()
@@ -36,19 +40,39 @@ class BackdropBlur(
     private val viewLocation = IntArray(2)
     private var scheduled = false
     private var lastCapture = 0L
-    private val layoutObserver = android.view.ViewTreeObserver.OnGlobalLayoutListener { schedule() }
-    private val windowObserver=android.view.ViewTreeObserver.OnWindowVisibilityChangeListener { if(it==View.VISIBLE) schedule() }
+    /** tick 撞上「窗口暂时不可见 / 还在忙」时的重排队次数，防止无限空转。 */
+    private var guardRetries = 0
+    private val layoutObserver = android.view.ViewTreeObserver.OnGlobalLayoutListener { requestFresh() }
+    private val windowObserver=android.view.ViewTreeObserver.OnWindowVisibilityChangeListener { if(it==View.VISIBLE) requestFresh() }
     private var observedTree: android.view.ViewTreeObserver? = null
-    private val tick = Runnable {
+    private val tick: Runnable = Runnable {
         scheduled = false
-        if(attached && root.isShown && root.windowVisibility==View.VISIBLE && !busy && requestedVersion!=renderedVersion && appearance().needsBlur) update()
+        val ready = attached && root.isShown && root.windowVisibility==View.VISIBLE && !busy && active()
+        if (ready && requestedVersion!=renderedVersion) {
+            guardRetries = 0
+            update()
+        } else if (ready) {
+            // 版本已对齐，没有待处理的请求，正常收尾。
+            guardRetries = 0
+        } else if (requestedVersion != renderedVersion && guardRetries < MAX_GUARD_RETRIES) {
+            // 以前这里直接 return：请求被静默丢掉，要等下一次 layout/可见性事件才
+            // 会重来，表现就是「模糊有时候不加载、过一会才出来」。带上限地重排队，
+            // 窗口从短暂不可见恢复后能自己补上，又不会在键盘长期隐藏时空转。
+            guardRetries++
+            scheduled = true
+            root.postDelayed(tick, GUARD_RETRY_MS)
+        } else {
+            guardRetries = 0
+        }
     }
     private fun schedule() {
-        if(!attached || scheduled || busy || requestedVersion==renderedVersion || !appearance().needsBlur || !root.isShown || root.windowVisibility!=View.VISIBLE) return
+        if(!attached || scheduled || busy || requestedVersion==renderedVersion || !active() || !root.isShown || root.windowVisibility!=View.VISIBLE) return
         scheduled=true
         root.postDelayed(tick,(100L-(android.os.SystemClock.uptimeMillis()-lastCapture)).coerceAtLeast(0L))
     }
-    private fun request() { requestedVersion++;schedule() }
+    /** 外部事件（布局/可见性）来了，重置守卫计数再排一次，保证不会因之前放弃而卡死。 */
+    private fun requestFresh() { guardRetries = 0; schedule() }
+    private fun request() { requestedVersion++;guardRetries = 0;schedule() }
 
     init {
         root.setTag(R.id.keyboard_backdrop_blur, this)
@@ -70,6 +94,7 @@ class BackdropBlur(
         // The private work bitmap may still be owned by the worker. Published frames
         // are immutable and never reused as scratch memory for a future GPU frame.
         front=null
+        frontKey=null
         if(!busy) back=null
     }
 
@@ -95,17 +120,30 @@ class BackdropBlur(
         val version = generation
         val capturedVersion = requestedVersion
         val radius = (appearance().blurRadius * root.resources.displayMetrics.density * scale).roundToInt().coerceIn(1, 24)
+        // 按键要的是"和面板不一样的糊"，所以同一次抓图再糊一遍，强度单独取。
+        val saturation = appearance().blurSaturation.coerceIn(100, 200)
+        val keyPercent = appearance().keyBlur.coerceIn(0, 100)
+        val keyRadius = if (keyPercent <= 0) 0 else (keyPercent / 100f * 24f).roundToInt().coerceIn(1, 24)
         busy = true
         scope.launch {
             try {
-                val frame=withContext(Dispatchers.Default) {
+                val frames=withContext(Dispatchers.Default) {
                     val size = bitmap.width * bitmap.height
                     if (blurPixels.size != size) { blurPixels = IntArray(size); blurWork = IntArray(size) }
+                    val source = if (keyRadius > 0) bitmap.copy(Bitmap.Config.ARGB_8888, false) else null
                     blur(bitmap, radius, blurPixels, blurWork)
-                    bitmap.copy(Bitmap.Config.ARGB_8888,false)
+                    boostSaturation(bitmap, saturation, blurPixels)
+                    val panel = bitmap.copy(Bitmap.Config.ARGB_8888,false)
+                    val keys = source?.let {
+                        blur(it, keyRadius, blurPixels, blurWork)
+                        boostSaturation(it, saturation, blurPixels)
+                        it.copy(Bitmap.Config.ARGB_8888, false)
+                    }
+                    panel to keys
                 }
-                if (attached && generation == version && root.width==capturedWidth && root.height==capturedHeight && appearance().needsBlur) {
-                    front = frame
+                if (attached && generation == version && root.width==capturedWidth && root.height==capturedHeight && active()) {
+                    front = frames.first
+                    frontKey = frames.second
                     renderedVersion = capturedVersion
                     invalidateChildren(root)
                 }
@@ -125,8 +163,9 @@ class BackdropBlur(
         if (view is ViewGroup) for (i in 0 until view.childCount) invalidateChildren(view.getChildAt(i))
     }
 
-    private fun draw(view: View, canvas: Canvas, area: RectF): Boolean {
-        val bitmap = front ?: run { schedule();return false }
+    private fun draw(view: View, canvas: Canvas, area: RectF, alpha: Int = 255, keyFrame: Boolean = false): Boolean {
+        // 按键帧还没算出来时退回面板帧，避免开关一改就闪一下没糊。
+        val bitmap = (if (keyFrame) frontKey ?: front else front) ?: run { schedule();return false }
         if (view.width == 0 || view.height == 0 || root.width == 0 || root.height == 0) return false
         relativeBounds(root, view, location, rootLocation, viewLocation)
         if (location.width() <= 0 || location.height() <= 0) return false
@@ -141,12 +180,17 @@ class BackdropBlur(
         canvas.clipRect(area)
         target.set(area.left - source.left * area.width() / source.width(), area.top - source.top * area.height() / source.height(),
             area.left + (bitmap.width - source.left) * area.width() / source.width(), area.top + (bitmap.height - source.top) * area.height() / source.height())
-        canvas.drawBitmap(bitmap, null, target, paint)
+        canvas.drawBitmap(bitmap, null, target, paint.also { it.alpha = alpha.coerceIn(0, 255) })
+        paint.alpha = 255
         canvas.restoreToCount(saved)
         return true
     }
 
     companion object {
+        /** tick 守卫重排队上限与间隔（约 1.4 秒），窗口长期隐藏时不空转。 */
+        private const val MAX_GUARD_RETRIES = 12
+        private const val GUARD_RETRY_MS = 120L
+
         /** Coalesce video frames/background changes; static skins keep their existing blur. */
         fun invalidateBackground(view: View) {
             var ancestor: View? = view
@@ -178,11 +222,11 @@ class BackdropBlur(
             out.set(x, y, x + view.width * sx, y + view.height * sy)
         }
 
-        fun draw(view: View, canvas: Canvas, area: RectF): Boolean {
+        fun draw(view: View, canvas: Canvas, area: RectF, alpha: Int = 255, keyFrame: Boolean = false): Boolean {
             var ancestor: View? = view
             while (ancestor != null) {
                 val blur = ancestor.getTag(R.id.keyboard_backdrop_blur) as? BackdropBlur
-                if (blur != null) return blur.draw(view, canvas, area)
+                if (blur != null) return blur.draw(view, canvas, area, alpha, keyFrame)
                 ancestor = ancestor.parent as? View
             }
             return false
@@ -201,6 +245,30 @@ class BackdropBlur(
         }
 
         /** Two separable box passes at thumbnail resolution. No UI thread pixel processing. */
+        /**
+         * 模糊会把局部色差抹平，视觉上"发灰、发白"。按比例把饱和度补回来：
+         * 以每个像素的亮度为轴拉开色度，颜色回到原图的浓淡，但颗粒仍然是糊的。
+         * [percent] 100 = 不动，140 = 常见毛玻璃观感。
+         */
+        private fun boostSaturation(bitmap: Bitmap, percent: Int, pixels: IntArray) {
+            if (percent == 100) return
+            val w = bitmap.width; val h = bitmap.height
+            val k = percent / 100f
+            bitmap.getPixels(pixels, 0, w, 0, 0, w, h)
+            for (i in pixels.indices) {
+                val c = pixels[i]
+                val a = c ushr 24
+                if (a == 0) continue
+                val r = c ushr 16 and 255
+                val g = c ushr 8 and 255
+                val b = c and 255
+                val gray = (r * 299 + g * 587 + b * 114) / 1000
+                fun ch(v: Int) = (gray + ((v - gray) * k).toInt()).coerceIn(0, 255)
+                pixels[i] = (a shl 24) or (ch(r) shl 16) or (ch(g) shl 8) or ch(b)
+            }
+            bitmap.setPixels(pixels, 0, w, 0, 0, w, h)
+        }
+
         private fun blur(bitmap: Bitmap, radius: Int, pixels: IntArray, work: IntArray) {
             val w = bitmap.width; val h = bitmap.height
             bitmap.getPixels(pixels, 0, w, 0, 0, w, h)

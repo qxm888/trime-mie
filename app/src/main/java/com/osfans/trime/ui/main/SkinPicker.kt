@@ -66,7 +66,12 @@ object SkinPicker {
         val grid = GridLayout(activity).apply { columnCount = 5; setPadding(dp(12), dp(8), dp(12), dp(8)) }
         val dialog = MaterialAlertDialogBuilder(activity).setTitle(title)
             .setView(ScrollView(activity).apply { addView(grid) })
-            .setPositiveButton(R.string.custom_kb_bg_more) { _, _ -> showCustomHex(activity, title, current, onPicked) }
+            .setPositiveButton(R.string.custom_kb_bg_more) { _, _ ->
+                // 统一走取色面板：拖动选色，也能直接手输 6 位 / 8 位色值。
+                ColorPickerDialog.show(activity, title, current.color.ifEmpty { "#3388FF" }) { hex ->
+                    onPicked(CustomBackground(color = hex).normalized())
+                }
+            }
             .setNegativeButton(R.string.cancel, null).create()
         palette.forEach { hex ->
             grid.addView(android.view.View(activity).apply {
@@ -76,25 +81,6 @@ object SkinPicker {
             }, GridLayout.LayoutParams().apply { width = dp(40); height = dp(40); setMargins(dp(4), dp(6), dp(4), dp(6)) })
         }
         dialog.show()
-    }
-
-    private fun showCustomHex(activity: FragmentActivity, title: String, current: CustomBackground, onPicked: (CustomBackground) -> Unit) {
-        val padding = (20 * activity.resources.displayMetrics.density).toInt()
-        val layout = TextInputLayout(activity).apply { hint = activity.getString(R.string.custom_kb_bg_hex_hint); setPadding(padding, padding / 2, padding, 0) }
-        val input = TextInputEditText(layout.context).apply { setSingleLine(true); setText(current.color.ifEmpty { "#3388FF" }) }
-        layout.addView(input, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-        val dialog = MaterialAlertDialogBuilder(activity).setTitle(title).setView(layout)
-            .setPositiveButton(R.string.ok, null).setNegativeButton(R.string.cancel, null).create()
-        dialog.show()
-        dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-            val hex = input.text?.toString()?.trim().orEmpty()
-            if (!Regex("#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?").matches(hex)) {
-                layout.error = activity.getString(R.string.custom_bg_invalid_color)
-            } else {
-                onPicked(CustomBackground(color = hex).normalized())
-                dialog.dismiss()
-            }
-        }
     }
 
     /** Background import with bounded bytes and pixel count, followed by a main-thread result. */

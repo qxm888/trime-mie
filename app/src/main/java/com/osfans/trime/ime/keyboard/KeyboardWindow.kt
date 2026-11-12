@@ -311,8 +311,12 @@ class KeyboardWindow(di: DI) :
         // 「统一背景」也按解析后的皮肤 id 判断：沿用原逻辑走全局偏好时，
         // 数字键盘会退回另一套设置，与主键盘画出不一致的底。
         val unified = com.osfans.trime.ime.appearance.SurfaceAppearance.unifiedBackground(theme.isCustom, skinId)
-        keyboardView.background = if (unified) null else background?.drawable(context, width.coerceAtLeast(1))
-        val videoPath = background?.takeIf { !unified && it.type == com.osfans.trime.data.keymap.CustomBackground.Type.VIDEO }?.image
+        // 面板渐变开着时它也占这一层，否则会在渐变上再糊一层纯色/图片。
+        // 真模糊背板同样：键区自己的底色会把背板盖死。
+        val gradient = com.osfans.trime.ime.appearance.SurfaceAppearance.panelGradient(theme.isCustom, skinId) != null ||
+            com.osfans.trime.ime.appearance.SurfaceAppearance.panelBackdrop(theme.isCustom, skinId)?.enabled == true
+        keyboardView.background = if (unified || gradient) null else background?.drawable(context, width.coerceAtLeast(1))
+        val videoPath = if (gradient) null else background?.takeIf { !unified && it.type == com.osfans.trime.data.keymap.CustomBackground.Type.VIDEO }?.image
         if (videoPath == videoBackgroundPath && videoBackground != null) return
         videoBackground?.also { it.release(); keyboardView.removeView(it) }
         videoBackground = null
@@ -465,7 +469,10 @@ class KeyboardWindow(di: DI) :
             current = currentKeyboardId,
             resolvedCurrent = if (theme.isCustom) CustomKeyboards.resolveId(currentKeyboardId) else currentKeyboardId,
             last = lastKeyboardId,
-            locked = lastMainKeyboardId.ifEmpty { lastLockKeyboardId }.ifEmpty { if (theme.isCustom) CustomKeyboards.resolveId("default") else "" },
+            // 兜底的「主键盘」必须取运行时生效的那套：暗色且配了夜间替身时是替身，
+            // 否则新建窗口按 `.default` 会优先取这个 locked，一路回到日间那套，
+            // 表现为「配了夜间键盘、切暗色却纹丝不动」。
+            locked = lastMainKeyboardId.ifEmpty { lastLockKeyboardId }.ifEmpty { if (theme.isCustom) CustomKeyboards.runtimeActiveId() else "" },
             ascii = activeKeyboard?.asciiKeyboard,
             currentIsLocked = activeKeyboard?.isLock == true,
             schema = rime.run { statusCached }.schemaId,
@@ -497,7 +504,9 @@ class KeyboardWindow(di: DI) :
         if (isMainKeyboard(target)) {
             val resolved = CustomKeyboards.resolveId(target)
             lastMainKeyboardId = resolved
-            if (CustomKeyboards.activeId != resolved) {
+            // 暗色下正被夜间替身接管时不能写回 activeId：它记的是「日间用哪套」，
+            // 写成夜间那套的页 id 之后，切回亮色就永远回不到原来那套了。
+            if (!CustomKeyboards.isNightShadowed() && CustomKeyboards.activeId != resolved) {
                 CustomKeyboards.activeId = resolved
                 com.osfans.trime.data.theme.ThemeManager.requestCustomizationRefresh()
             }

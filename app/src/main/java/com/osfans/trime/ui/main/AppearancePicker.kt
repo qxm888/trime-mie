@@ -30,6 +30,13 @@ object AppearancePicker {
                 else GradientDrawable().apply { cornerRadius = dp(16).toFloat(); setColor(runCatching { Color.parseColor(text) }.getOrDefault(Color.TRANSPARENT)); setStroke(dp(1), Color.GRAY) })
         }
         update(value)
+        // 取色面板：拖动选色，也能直接打字。手输框仍保留（留空 = 继承）。
+        body.addView(MaterialButton(context, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+            text = "取色板…"; isAllCaps = false
+            setOnClickListener {
+                ColorPickerDialog.show(context, title, input.text?.toString().orEmpty().ifBlank { "#FF888888" }) { hex -> update(hex) }
+            }
+        })
         val palette = GridLayout(context).apply { columnCount = 6 }
         colors.forEach { color ->
             palette.addView(TextView(context).apply {

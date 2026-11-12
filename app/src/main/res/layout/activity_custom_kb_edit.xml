@@ -82,6 +82,30 @@ SPDX-License-Identifier: GPL-3.0-or-later
                 android:layout_height="wrap_content"
                 android:paddingTop="16dp"
                 android:paddingBottom="6dp"
+                android:text="跟随整套设置"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="6dp"
+                android:text="关闭 = 套用整套设置的外观；打开 = 本页独立设置"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="12sp" />
+
+            <LinearLayout
+                android:id="@+id/cbe_follow_switches"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="16dp"
+                android:paddingBottom="6dp"
                 android:text="快速设定"
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="14sp"

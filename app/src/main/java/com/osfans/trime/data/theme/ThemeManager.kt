@@ -40,10 +40,34 @@ object ThemeManager {
         }
     }
 
+    /**
+     * 换成另一整套键盘用：重建主题，且**不保留**当前可见的那一页。
+     *
+     * [requestCustomizationRefresh] 会把当前键盘页原样接回来（后台改个颜色不该跳页），
+     * 但换整套时旧页属于另一套，接回来等于把刚换上的那一套又顶掉 —— 表现就是
+     * 「配了夜间键盘，切暗色却不换」。
+     */
+    fun requestLayoutSwitch() {
+        customizationRefreshJob?.cancel()
+        customizationRefreshJob = customizationScope.launch {
+            try {
+                val ticket = selectionGate.begin()
+                try {
+                    selectThemeInternal(prefs.selectedTheme.getValue(), forceReload = true)
+                } finally {
+                    selectionGate.finish(ticket)
+                }
+            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                Timber.e(error, "Could not switch the keyboard layout set")
+            }
+        }
+    }
+
     fun interface OnThemeChangeListener {
         fun onThemeChange(theme: Theme)
     }
-
     fun getAllThemes(): List<ThemeItem> {
         val sharedThemes = ThemeFilesManager.listThemes(DataManager.sharedDataDir)
         val userThemes = ThemeFilesManager.listThemes(DataManager.userDataDir)
@@ -266,7 +290,7 @@ object ThemeManager {
                 .also {
                     it.theme.fonts.preload()
                     if (custom) {
-                        CustomKeyboards.get(customLayoutId ?: CustomKeyboards.activeId)?.let { layout ->
+                        CustomKeyboards.get(customLayoutId ?: CustomKeyboards.runtimeActiveId())?.let { layout ->
                             (layout.typography.values + layout.floatingCandidates?.fonts.orEmpty().values)
                                 .map { spec -> spec.font }.distinct().forEach(FontOverrides::fromSelection)
                         }

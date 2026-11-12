@@ -38,8 +38,8 @@ internal class CornerClipDrawable(private val wrapped: Drawable) : Drawable() {
         }
         val save = canvas.save()
         rect.set(wrapped.bounds)
-        path.reset()
-        path.addRoundRect(rect, radii, Path.Direction.CW)
+        // 曲率连续的圆角见 [Squircle]：面板背景走的是同一条 G2 曲线，不是四分之一圆弧。
+        Squircle.into(path, rect, radii)
         canvas.clipPath(path)
         wrapped.draw(canvas)
         canvas.restoreToCount(save)

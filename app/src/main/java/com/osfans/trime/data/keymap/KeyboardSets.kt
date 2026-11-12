@@ -30,7 +30,7 @@ object KeyboardSets {
         "background" to setOf("background", "toolbarBackground", "unifiedBackground"),
         "appearance" to setOf("surfaceAppearance", "keyAppearance", "allKeysBackground", "setKeyStyles"),
         "fonts" to setOf("typography"),
-        "toolbar" to setOf("toolbar", "toolbarAlignment", "toolbarHeightDp", "importedActions"),
+        "toolbar" to setOf("toolbar", "toolbarAlignment", "toolbarHeightDp", "toolbarTopPadDp", "toolbarBottomPadDp", "importedActions"),
         "menus" to setOf("hiddenMenuItems"),
         "floating" to setOf("floatingCandidates"),
         "bindings" to setOf("setBindings", "importedActions"),

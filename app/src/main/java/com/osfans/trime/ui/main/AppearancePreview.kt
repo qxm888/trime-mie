@@ -27,14 +27,41 @@ class AppearancePreview(context: Context) : View(context) {
     override fun onDraw(canvas:Canvas) {
         super.onDraw(canvas)
         rect.set(0f,0f,width.toFloat(),height.toFloat())
-        paint.shader=LinearGradient(0f,0f,width.toFloat(),height.toFloat(),intArrayOf(0xFFAAC8DC.toInt(),0xFFE9D5CD.toInt(),0xFFB4C5AE.toInt()),null,Shader.TileMode.CLAMP)
-        canvas.drawRoundRect(rect,18*d,18*d,paint); paint.shader=null
-        bar?.let { it.setBounds((8*d).toInt(),(8*d).toInt(),width-(8*d).toInt(),(51*d).toInt()); it.draw(canvas) }
+        // 开了面板渐变就照真机那样铺满整块：预览底不再是那条固定的示意色带，
+        // 改一个颜色马上能看出来，不用等回到键盘。
+        val panel = config.gradient.takeIf { it.enabled }
+        val night = resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK ==
+            android.content.res.Configuration.UI_MODE_NIGHT_YES
+        val backdrop = config.backdrop.takeIf { it.enabled }
+        if (backdrop != null) {
+            // 预览里没法真糊背后的窗口，只能示意：一条柔和色带当「后面的内容」。
+            // 模糊本身不带颜色，颜色由外边的纯色/渐变决定。
+            paint.shader=LinearGradient(0f,0f,width.toFloat(),height.toFloat(),intArrayOf(0xFFAAC8DC.toInt(),0xFFE9D5CD.toInt(),0xFFB4C5AE.toInt()),null,Shader.TileMode.CLAMP)
+            canvas.drawRoundRect(rect,18*d,18*d,paint); paint.shader=null
+        }
+        if (panel != null) {
+            val saved = canvas.save()
+            canvas.clipPath(Path().apply { addRoundRect(rect, 18*d, 18*d, Path.Direction.CW) })
+            PanelGradientDrawable(panel, night).apply { setBounds(0, 0, width, height); draw(canvas) }
+            canvas.restoreToCount(saved)
+        } else if (backdrop == null) {
+            paint.shader=LinearGradient(0f,0f,width.toFloat(),height.toFloat(),intArrayOf(0xFFAAC8DC.toInt(),0xFFE9D5CD.toInt(),0xFFB4C5AE.toInt()),null,Shader.TileMode.CLAMP)
+            canvas.drawRoundRect(rect,18*d,18*d,paint); paint.shader=null
+        }
+        // 键盘整体左右留白：内容（工具栏条 + 示例键）两侧收进，背景仍铺满整块面板。
+        val side = config.keyboardSideMargin.coerceIn(0f,20f) * d
+        bar?.let { it.setBounds((8*d+side).toInt(),(8*d).toInt(),width-(8*d+side).toInt(),(51*d).toInt()); it.draw(canvas) }
+        // 上下留白：只挤按键区（工具栏那条不动），按键行在缩小的行盒里重新分配高度。
+        val topMargin = config.keyboardTopMargin.coerceIn(0f,20f) * d
+        val bottomMargin = config.keyboardBottomMargin.coerceIn(0f,20f) * d
+        val keysTop = 58*d + topMargin
+        val keysBottom = (124*d).coerceAtMost(height - 8*d - bottomMargin)
+        val keysHeight = (keysBottom - keysTop).coerceAtLeast(12*d)
         (0..5).forEach { i ->
-            val top=if(i<3) 58*d else 8*d
-            val height=if(i<3) 66*d else 42*d
-            val left=8*d+(i%3)*(width-16*d)/3f
-            val w=(width-16*d)/3f
+            val top=if(i<3) keysTop else 8*d
+            val height=if(i<3) keysHeight else 42*d
+            val left=8*d+side+(i%3)*(width-16*d-2*side)/3f
+            val w=(width-16*d-2*side)/3f
             val saved=canvas.save()
             canvas.translate(left,top)
             if(isPressed && i<3) { val scale=1f-config.effects.pressScale/100; canvas.translate(0f,config.effects.pressSink*d); canvas.scale(scale,scale,w/2,height/2) }

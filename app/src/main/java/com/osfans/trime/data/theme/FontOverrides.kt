@@ -8,9 +8,23 @@ import java.io.File
 /** App-owned font overrides; neither layout mode nor YAML files are changed. */
 object FontOverrides {
     private const val GLOBAL_PREFIX = "theme_global."
-    val roles = linkedMapOf("key" to "键盘按键", "candidate" to "候选文字", "comment" to "候选注释",
+    val roles = linkedMapOf("key" to "键盘按键", "candidate" to "候选文字", "candidateHl" to "高亮候选文字",
+        "comment" to "候选注释",
         "symbol" to "按键符号", "hint" to "按键注解", "popup" to "按键弹出预览", "text" to "编码 / 预编辑文字",
         "label" to "候选序号", "toolbar" to "工具栏")
+
+    /** 主题模式下的文字颜色（全局页保存，`color.<role>`；空 = 跟随主题配色）。 */
+    fun color(role: String): String = (snapshot["color.$role"] as? String).orEmpty()
+
+    fun setColor(role: String, value: String, refresh: Boolean = true) {
+        require(role in roles)
+        val edit = prefs.edit()
+        val hex = value.trim()
+        if (hex.isEmpty()) edit.remove("color.$role") else edit.putString("color.$role", hex)
+        check(edit.putLong("version", version + 1).commit()) { "颜色保存失败" }
+        snapshot = prefs.all.toMap()
+        if (refresh) ThemeManager.requestCustomizationRefresh()
+    }
     private var context: Context? = null
     private val cache = mutableMapOf<String, Typeface>()
     private val failed = mutableSetOf<String>()

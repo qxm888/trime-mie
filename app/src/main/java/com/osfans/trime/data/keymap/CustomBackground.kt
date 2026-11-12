@@ -16,10 +16,18 @@ data class CustomBackground(
     val color: String = "",
     val image: String = "",
 ) {
-    @Serializable enum class Type { COLOR, TRANSPARENT, IMAGE, VIDEO }
+    @Serializable
+    enum class Type {
+        COLOR, TRANSPARENT, IMAGE, VIDEO,
+
+        /** 墓碑值：旧版本存过的「半透磨砂」已下线。保留常量只为让旧配置能解析，读到即按透明处理。 */
+        FROST,
+    }
 
     fun normalized(defaultColor: String = KEY_COLOR): CustomBackground = when (type) {
         Type.TRANSPARENT -> CustomBackground(Type.TRANSPARENT)
+        // 已下线的半透磨砂：旧配置退回透明，不报错也不留残影。
+        Type.FROST -> CustomBackground(Type.TRANSPARENT)
         Type.VIDEO -> if (image.isBlank()) CustomBackground(Type.TRANSPARENT) else CustomBackground(Type.VIDEO, image = image)
         Type.IMAGE -> if (image.isBlank()) CustomBackground(Type.TRANSPARENT) else CustomBackground(Type.IMAGE, image = image)
         Type.COLOR -> {
@@ -35,7 +43,7 @@ data class CustomBackground(
     fun drawable(context: Context, targetWidth: Int): Drawable {
         val bg = normalized()
         return when (bg.type) {
-            Type.TRANSPARENT -> ColorDrawable(Color.TRANSPARENT)
+            Type.TRANSPARENT, Type.FROST -> ColorDrawable(Color.TRANSPARENT)
             Type.COLOR -> ColorDrawable(Color.parseColor(bg.color))
             Type.VIDEO -> ColorDrawable(Color.BLACK)
             Type.IMAGE -> com.osfans.trime.data.theme.AssetBitmapDrawable(

@@ -235,6 +235,13 @@ class TrimeApplication : Application() {
         try {
             ColorManager.onSystemNightModeChange(newConfig.isNightMode())
             com.osfans.trime.data.theme.KeyboardColorGroups.onNightModeChanged(newConfig.isNightMode())
+            // 整套键盘可以配「夜间用另一套」。只切配色方案不够：布局、按键、外观
+            // 都是另一套，必须整体重建。syncNightMode 幂等，输入法服务层也会调一次。
+            if (com.osfans.trime.data.keymap.CustomKeyboards.syncNightMode(newConfig.isNightMode())) {
+                // 必须用「换整套」的刷新：普通刷新会把当前这一页接回来，等于把夜间那套顶掉。
+                com.osfans.trime.util.DiagnosticLog.event("keyboard", "night_switch", "night=${newConfig.isNightMode()}")
+                com.osfans.trime.data.theme.ThemeManager.requestLayoutSwitch()
+            }
         } catch (e: Exception) {
             Timber.w(e, "Something wrong on configuration changed")
         }

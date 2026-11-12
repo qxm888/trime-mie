@@ -74,23 +74,39 @@ object LayoutTypographyEditor {
             }
         })
         val sizes=mutableMapOf<String,TextInputEditText>()
+        val colors=mutableMapOf<String,String>()
         FontOverrides.roles.forEach { (role,label) ->
             val original=draft[role] ?: FontSpec()
             val content=drawers.section(label)
-            val button=MaterialButton(activity,null,com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
-                text=roleLabel(role); isAllCaps=false
+            // 「高亮候选文字」只开放颜色：字形与字号跟随「候选文字」，单独设不会生效。
+            if (role != "candidateHl") {
+                val button=MaterialButton(activity,null,com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+                    text=roleLabel(role); isAllCaps=false
+                    setOnClickListener {
+                        FontChainPicker.show(activity, label, (draft[role] ?: FontSpec()).font,
+                            defaultLabel="跟随当前键盘全局字体 / 主键盘全局字体") { value ->
+                            draft[role]=(draft[role] ?: FontSpec()).copy(font=value)
+                            text=roleLabel(role)
+                        }
+                    }
+                }
+                buttons[role]=button
+                content.addView(button)
+                val size=TextInputEditText(activity).apply { setSingleLine(); setText(original.size.toString()); inputType=android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL }
+                content.addView(TextInputLayout(activity).apply { hint="字号 sp（0 跟随默认，最大200）"; addView(size) }); sizes[role]=size
+            }
+            colors[role]=original.color
+            val colorButton=MaterialButton(activity,null,com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+                fun colorLabel() = "颜色 · " + (colors[role]?.takeIf { it.isNotBlank() } ?: "跟随主题配色")
+                text=colorLabel(); isAllCaps=false
                 setOnClickListener {
-                    FontChainPicker.show(activity, label, (draft[role] ?: FontSpec()).font,
-                        defaultLabel="跟随当前键盘全局字体 / 主键盘全局字体") { value ->
-                        draft[role]=(draft[role] ?: FontSpec()).copy(font=value)
-                        text=roleLabel(role)
+                    AppearancePicker.show(activity, "$label 颜色", colors[role].orEmpty(), false) { value ->
+                        colors[role]=value
+                        text=colorLabel()
                     }
                 }
             }
-            buttons[role]=button
-            content.addView(button)
-            val size=TextInputEditText(activity).apply { setSingleLine(); setText(original.size.toString()); inputType=android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL }
-            content.addView(TextInputLayout(activity).apply { hint="字号 sp（0 跟随默认，最大200）"; addView(size) }); sizes[role]=size
+            content.addView(colorButton)
         }
         val dialog=MaterialAlertDialogBuilder(activity).setTitle("${keyboard.name} · 字体与字号").setView(ScrollView(activity).apply { addView(body) })
             .setPositiveButton("保存",null).setNegativeButton("取消",null).setNeutralButton("恢复默认") { _, _ -> CustomKeyboards.mutate(id) { it.typography=emptyMap() }; CustomKeyboards.flush(); ThemeManager.requestCustomizationRefresh() }.create()
@@ -102,6 +118,7 @@ object LayoutTypographyEditor {
                 if(value==null || !value.isFinite() || value !in 0f..200f) { input.error="请输入0–200"; valid=false }
                 else draft[role]=(draft[role] ?: FontSpec()).copy(size=value)
             }
+            colors.forEach { (role, hex) -> draft[role]=(draft[role] ?: FontSpec()).copy(color=hex) }
             if(valid) { CustomKeyboards.mutate(id) { it.typography=draft.toMap() }; if(CustomKeyboards.flush()) { ThemeManager.requestCustomizationRefresh(); dialog.dismiss() } else android.widget.Toast.makeText(activity,"保存失败",1).show() }
         } }; dialog.show()
     }
