@@ -16,10 +16,21 @@ object FloatingCandidateRenderer {
         if(raw.isBlank()) scope.drawable("text_back_color") else if(raw.startsWith("/")) AssetBitmapDrawable(raw)
         else ColorDrawable(runCatching { Color.parseColor(raw) }.getOrDefault(Color.TRANSPARENT))
     }
+    /**
+     * 第三方主题常不写 candidate_border_color（它是无内置 fallback 的终止键），
+     * 或把它写成图片；强类型 getter 会直接抛 "'candidate_border_color' is not a color"，
+     * 冒泡到切主题流程会把整个切换回滚。这里沿用 decorDrawable 老路径的容错口径：
+     * 优先取主题值，取不到退 border_color，再退透明；绝不因一个可选颜色打断主题加载。
+     */
+    private fun ThemeScope.candidateBorderColorOrFallback(): Int =
+        runCatching { colors.candidateBorderColor }
+            .recoverCatching { colors.borderColor }
+            .getOrDefault(Color.TRANSPARENT)
+
     fun panel(view: View, scope: ThemeScope, style: FloatingCandidateStyle, base: Drawable?): Drawable = SurfaceDrawable(
         view, base?.constantState?.newDrawable()?.mutate() ?: base,
         style.panel.copy(background="", borderWidth=style.panel.borderWidth ?: scope.theme.window.border.toFloat()),
-        defaultRadius=scope.theme.window.cornerRadius.toFloat(), inset=0f, defaultBorderColor=scope.colors.candidateBorderColor,
+        defaultRadius=scope.theme.window.cornerRadius.toFloat(), inset=0f, defaultBorderColor=scope.candidateBorderColorOrFallback(),
         effects=style.panelEffects, glassOpacity=style.glassOpacity)
 
     fun surface(view: View, style: SurfaceStyle, effects: KeyEffects, fallback: Int, radius: Float, glassOpacity: Int): Drawable {
