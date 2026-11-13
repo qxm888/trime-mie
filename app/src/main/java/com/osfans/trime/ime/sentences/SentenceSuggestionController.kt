@@ -34,6 +34,9 @@ internal class SentenceSuggestionController(private val service: TrimeInputMetho
     private val repository get() = SentenceRepository.get(service)
     private val prefs get() = AppPrefs.defaultInstance().general
     private var allowed = false
+    private data class Editor(val packageName: String?, val fieldId: Int, val fieldName: String?, val type: Int, val options: Int)
+    private var editor: Editor? = null
+    private var inlineCandidate = ""
     private var editorToken = 0L
     private var version = 0L
     private var preview = ""
@@ -66,20 +69,56 @@ internal class SentenceSuggestionController(private val service: TrimeInputMetho
         !TrimeApplication.getInstance().isDirectBootMode
     private fun dp(value: Int) = (value * service.resources.displayMetrics.density).toInt()
 
-    fun start(info: EditorInfo) {
-        reset(); editorToken++
-        allowed = WordCloudVocabulary.allows(info.inputType, info.imeOptions)
+    fun start(info: EditorInfo, restarting: Boolean = false) {
+        val next = Editor(info.packageName, info.fieldId, info.fieldName, info.inputType, info.imeOptions)
+        val permitted = WordCloudVocabulary.allows(info.inputType, info.imeOptions)
+        if (restarting && editor == next && permitted && enabled()) {
+            // restartInput can replace the connection before a final selection update.
+            // Resolve a Send clear before resetting, or retain an unchanged draft.
+            val ic = service.currentInputConnection
+            val tail = accumulator.prefix + inlineCandidate
+            val before = ic?.getTextBeforeCursor(minOf(SentenceRules.MAX_UTF16 + 1, tail.length + 1), 0)?.toString()
+            if (!finishCleared(before, ic?.getTextAfterCursor(1, 0)?.toString())) {
+                if (tail.isNotEmpty() && before?.endsWith(tail) == true) {
+                    // The service clears Rime composition on restart. A visible candidate
+                    // may have become ordinary editor text without a Rime commit event.
+                    accumulator.append(inlineCandidate)
+                } else reset()
+            }
+            inlineCandidate = ""; preview = ""; preedit = ""
+            version++; query?.cancel(); hide()
+        } else reset()
+        editorToken++; editor = next; allowed = permitted
     }
+    fun viewHidden() { version++; query?.cancel(); hide() }
     fun stop() {
-        if (enabled() && accumulator.prefix.isNotEmpty()) {
-            val prefix = accumulator.prefix
-            val before = service.currentInputConnection?.getTextBeforeCursor(prefix.length, 0)?.toString()
-            if (before?.endsWith(prefix) == true) accumulator.finish()
+        if (enabled() && (accumulator.prefix.isNotEmpty() || inlineCandidate.isNotEmpty())) {
+            val tail = accumulator.prefix + inlineCandidate
+            val ic = service.currentInputConnection
+            val before = ic?.getTextBeforeCursor(minOf(SentenceRules.MAX_UTF16 + 1, tail.length + 1), 0)?.toString()
+            if (!finishCleared(before, ic?.getTextAfterCursor(1, 0)?.toString()) && before?.endsWith(tail) == true) {
+                accumulator.append(inlineCandidate); accumulator.finish()
+            }
         }
-        reset(); allowed = false; editorToken++
+        reset(); allowed = false; editor = null; editorToken++
+    }
+    private fun finishCleared(before: String?, after: String?): Boolean {
+        val hadInline = inlineCandidate.isNotEmpty()
+        val cleared = accumulator.finishClearedEditor(before, after, inlineCandidate,
+            SystemClock.uptimeMillis() <= deletingUntil)
+        if (cleared) {
+            inlineCandidate = ""; preview = ""; preedit = ""; dismissed = false
+            if (hadInline) service.postRimeJob { clearComposition() }
+            changed()
+        }
+        return cleared
+    }
+    fun inlineChanged(text: String) {
+        inlineCandidate = if (enabled() && prefs.inlinePreeditMode.getValue() ==
+            com.osfans.trime.ime.core.InlinePreeditMode.COMMIT_TEXT_PREVIEW) text.take(SentenceRules.MAX_UTF16) else ""
     }
     private fun reset() {
-        accumulator.reset(); preview = ""; preedit = ""; dismissed = false
+        accumulator.reset(); inlineCandidate = ""; preview = ""; preedit = ""; dismissed = false
         version++; query?.cancel(); query = null; queryPrefix = ""; hide()
     }
     fun committed(text: String, fromEngine: Boolean) {
@@ -87,7 +126,7 @@ internal class SentenceSuggestionController(private val service: TrimeInputMetho
         // Multi-character paste/voice/literal actions do not train the sentence recorder.
         if (!fromEngine && text.codePointCount(0, text.length) != 1) { reset(); return }
         editingUntil = SystemClock.uptimeMillis() + 500
-        preview = ""; preedit = ""
+        inlineCandidate = ""; preview = ""; preedit = ""
         accumulator.append(text)
         changed()
     }
@@ -122,14 +161,19 @@ internal class SentenceSuggestionController(private val service: TrimeInputMetho
     fun selection(oldStart: Int, start: Int, end: Int, composingStart: Int) {
         if (!enabled()) return
         if (start != end) { reset(); return }
-        if (accumulator.prefix.isEmpty()) return
-        if (start == 0 && oldStart > 0 && composingStart < 0 && SystemClock.uptimeMillis() > deletingUntil) {
-            // Apps commonly clear their editor after Send. A cursor move to the start has
-            // text after the caret and must not be mistaken for a completed message.
+        if (accumulator.prefix.isEmpty() && inlineCandidate.isEmpty()) return
+        if (start == 0) {
+            // Verify both sides; old selection/composing offsets may be coalesced or
+            // stale after an app-side Send. A caret move leaves text after the cursor.
             val ic = service.currentInputConnection
-            if (ic?.getTextAfterCursor(1, 0)?.isEmpty() == true) finishSentence() else reset()
+            val before = ic?.getTextBeforeCursor(1, 0)?.toString()
+            val after = ic?.getTextAfterCursor(1, 0)?.toString()
+            // A queued zero-position callback may arrive after fresh text was inserted.
+            // In that case the live cursor is no longer at zero; keep the new draft.
+            if (!finishCleared(before, after) && before.isNullOrEmpty()) reset()
         } else if (start < oldStart && composingStart < 0 && SystemClock.uptimeMillis() > editingUntil) reset()
     }
+
     fun preferenceChanged() { reset() }
     fun dismiss() { dismissed = true; version++; query?.cancel(); hide() }
     fun dispose() { reset(); allowed = false }

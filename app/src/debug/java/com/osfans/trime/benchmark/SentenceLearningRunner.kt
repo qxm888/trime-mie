@@ -43,7 +43,13 @@ import org.json.JSONObject
 
 /** Only for a freshly installed, disposable debug application; no real editor/user dictionary. */
 class SentenceLearningRunner : Instrumentation() {
-    override fun onCreate(args: Bundle?) { super.onCreate(args); start() }
+    private var sendDelay = 200L
+    private var forceSelection = false
+    override fun onCreate(args: Bundle?) {
+        sendDelay = args?.getString("sendDelay")?.toLongOrNull() ?: 200L
+        forceSelection = args?.getString("forceSelection") == "true"
+        super.onCreate(args); start()
+    }
     private fun <T> ui(action: () -> T): T {
         var result: Result<T>? = null
         runOnMainSync { result = runCatching(action) }
@@ -104,6 +110,63 @@ class SentenceLearningRunner : Instrumentation() {
                 waitForIdleSync(); SystemClock.sleep(100)
             }
             fun commit(text: String) { ui { ime.commitText(text, fromEngine = true) }; waitForIdleSync() }
+            // App-side Send has no punctuation or IME action. Exercise real EditText
+            // clears, with and without an InputConnection restart, using the reported text.
+            val sent = "好了好了这下好了"
+            for (restart in listOf(false, true)) {
+                repository.clear(); clearEditor()
+                repeat(3) { count ->
+                    for (fragment in listOf("好了", "好了", "这下", "好了")) commit(fragment)
+                    check(ui { own.input.text.toString() } == sent)
+                    ui {
+                        own.input.setText("")
+                        if (restart) (own.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager).restartInput(own.input)
+                    }
+                    waitForIdleSync(); SystemClock.sleep(300); repository.awaitIdle()
+                    check(repository.search("好了").isNotEmpty() == (count == 2)) {
+                        "App Send promotion wrong restart=$restart count=${count + 1}; ${repository.counts()}"
+                    }
+                }
+                check(repository.learned().single().text == sent && repository.learned().single().frequency == 3L)
+                status("PASS_APP_SEND restart=$restart three Send clears without punctuation learned the exact reported sentence")
+            }
+            // A real synthetic Rime translator supplies a Chinese candidate; avoid
+            // manually setting composing text unrelated to the live engine state.
+            repository.clear(); clearEditor()
+            val inlineFixture = SyntheticInputSchema.create(session, candidate = "好了")
+            try {
+                ui { prefs.general.inlinePreeditMode.setValue(InlinePreeditMode.COMMIT_TEXT_PREVIEW) }
+                repeat(3) {
+                    clearEditor()
+                    commit("好了好了这下")
+                    session.runOnReady { processKey('h'.code) }
+                    await("Chinese inline candidate missing") { own.input.text.toString() == sent }
+                    SystemClock.sleep(sendDelay)
+                    status("INLINE_BEFORE prefix=${ui { (member(controller, "accumulator") as SentenceAccumulator).prefix }} inline=${ui { member(controller, "inlineCandidate") }} preview=${ui { member(controller, "preview") }} editor=${ui { own.input.text.toString() }}")
+                    ui { own.input.setText("") }
+                    waitForIdleSync()
+                    if (forceSelection) ui { controller.selection(0, 0, 0, 0) }
+                    SystemClock.sleep(350)
+                    repository.awaitIdle()
+                    status("INLINE_AFTER counts=${repository.counts()} learned=${repository.learned().map { it.text to it.frequency }} prefix=${ui { (member(controller, "accumulator") as SentenceAccumulator).prefix }}")
+                }
+                repository.awaitIdle()
+                check(repository.learned().single().text == sent && repository.learned().single().frequency == 3L)
+                status("PASS_INLINE_SEND real engine candidate; exact reported sentence; app-side Send clear; no double counting")
+            } finally { inlineFixture.restore() }
+            // Restart while the draft is still present must preserve its first half.
+            repository.clear(); clearEditor()
+            repeat(3) {
+                commit("好了好了")
+                ui { (own.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager).restartInput(own.input) }
+                waitForIdleSync(); SystemClock.sleep(200)
+                commit("这下好了")
+                ui { own.input.setText("") }; waitForIdleSync(); SystemClock.sleep(200)
+            }
+            repository.awaitIdle()
+            check(repository.learned().single().text == sent && repository.learned().single().frequency == 3L)
+            status("PASS_DRAFT_RESTART unchanged draft survives restart; no fragment promotion")
+            repository.clear(); clearEditor()
             val sentence = "感谢gpt帮我做项目"
             repeat(3) { count ->
                 clearEditor()

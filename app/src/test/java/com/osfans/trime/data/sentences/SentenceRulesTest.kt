@@ -39,6 +39,40 @@ class SentenceRulesTest : FunSpec({
         result shouldBe listOf("感谢gpt帮我做项目")
         input.prefix shouldBe ""
     }
+    test("three app Send clears finish automatic commits without punctuation") {
+        val result = mutableListOf<String>(); val input = SentenceAccumulator { result += it }
+        repeat(3) {
+            listOf("好了", "好了", "这下", "好了").forEach(input::append)
+            input.finishClearedEditor("", "") shouldBe true
+            // A following restart/selection notification must not count the Send twice.
+            input.finishClearedEditor("", "") shouldBe true
+        }
+        result shouldBe List(3) { "好了好了这下好了" }
+    }
+    test("a candidate actually displayed in the editor is included on app Send") {
+        val result = mutableListOf<String>(); val input = SentenceAccumulator { result += it }
+        input.append("好了好了这下")
+        input.finishClearedEditor("", "", inline = "好了") shouldBe true
+        result shouldBe listOf("好了好了这下好了")
+        input.prefix shouldBe ""
+    }
+    test("moving the caret to the start or failing to read an editor cannot complete a sentence") {
+        val result = mutableListOf<String>(); val input = SentenceAccumulator { result += it }
+        input.append("好了好了这下好了")
+        input.finishClearedEditor("", "好") shouldBe false
+        input.finishClearedEditor(null, "") shouldBe false
+        input.finishClearedEditor("", null) shouldBe false
+        result shouldBe emptyList()
+        input.prefix shouldBe "好了好了这下好了"
+    }
+    test("a keyboard deletion clear discards the draft and cannot train the next sentence") {
+        val result = mutableListOf<String>(); val input = SentenceAccumulator { result += it }
+        input.append("这段删除以后不能学习")
+        input.finishClearedEditor("", "", deleting = true) shouldBe true
+        input.append("好了好了这下好了")
+        input.finishClearedEditor("", "")
+        result shouldBe listOf("好了好了这下好了")
+    }
     test("a completed sentence is emitted once, not on subsequent finish callbacks") {
         val result = mutableListOf<String>(); val input = SentenceAccumulator { result += it }
         input.append("感谢gpt帮我做项目"); input.finish(); input.finish()

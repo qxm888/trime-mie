@@ -938,7 +938,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         attribute: EditorInfo,
         restarting: Boolean,
     ) {
-        sentenceSuggestions.value.start(attribute)
+        sentenceSuggestions.value.start(attribute, restarting)
         com.osfans.trime.data.stats.InputStats.setWordCloudEditor(attribute)
         com.osfans.trime.data.pets.PetHouse.editor(attribute)
         if(petCompanionDelegate.isInitialized()) petCompanionDelegate.value.editor(attribute)
@@ -978,7 +978,6 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         restarting: Boolean,
     ) {
         inputView?.post { syncPetCompanion() }
-        sentenceSuggestions.value.start(attribute)
         isRestartingInputView = restarting
         Timber.d("onStartInputView: restarting=$restarting")
         com.osfans.trime.data.sync.ClipboardSync.setWindowVisible(true)
@@ -1010,8 +1009,15 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         }
     }
 
-    override fun onFinishInputView(finishingInput: Boolean) {
+    override fun onFinishInput() {
         if (sentenceSuggestions.isInitialized()) sentenceSuggestions.value.stop()
+        super.onFinishInput()
+    }
+
+    override fun onFinishInputView(finishingInput: Boolean) {
+        if (sentenceSuggestions.isInitialized()) {
+            if (finishingInput) sentenceSuggestions.value.stop() else sentenceSuggestions.value.viewHidden()
+        }
         com.osfans.trime.data.stats.InputStats.setWordCloudEditor(null)
         com.osfans.trime.data.pets.PetHouse.editor(null)
         if(petCompanionDelegate.isInitialized()) petCompanionDelegate.value.hideInput()
@@ -1428,7 +1434,8 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
             if (!ic.getSelectedText(0).isNullOrEmpty()) {
                 ic.deleteSurroundingText(1, 0)
             }
-            ic.setComposingText(text, 1)
+            val applied = ic.setComposingText(text, 1)
+            if (applied) sentenceSuggestions.value.inlineChanged(text)
             if (text.isEmpty()) {
                 ic.finishComposingText()
             }

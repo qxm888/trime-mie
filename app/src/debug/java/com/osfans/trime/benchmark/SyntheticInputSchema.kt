@@ -18,9 +18,12 @@ internal class SyntheticInputSchema private constructor(
         } finally { files.forEach { it.delete() } }
     }
     companion object {
-        suspend fun create(session: RimeSession): SyntheticInputSchema {
+        suspend fun create(session: RimeSession, candidate: String? = null): SyntheticInputSchema {
+            require(candidate == null || (candidate.length in 1..20 && candidate.all { it.isLetter() }))
             val id = "mie_audit_${java.util.UUID.randomUUID().toString().replace("-", "") }"
-            val files = listOf(File(DataManager.userDataDir, "$id.schema.yaml"), File(DataManager.stagingDir, "$id.schema.yaml"))
+            val schemaFiles = listOf(File(DataManager.userDataDir, "$id.schema.yaml"), File(DataManager.stagingDir, "$id.schema.yaml"))
+            val luaFile = if (candidate != null) File(DataManager.userDataDir, "lua/$id.lua") else null
+            val files = schemaFiles + listOfNotNull(luaFile)
             check(files.none { it.exists() })
             val fixture = SyntheticInputSchema(session, session.runOnReady { selectedSchemaId() },
                 session.runOnReady { getRuntimeOption("ascii_mode") }, files)
@@ -34,12 +37,13 @@ internal class SyntheticInputSchema private constructor(
                 engine:
                   processors: [ascii_composer, speller, selector, express_editor]
                   segmentors: [ascii_segmentor, abc_segmentor, fallback_segmentor]
-                  translators: [echo_translator]
+                  translators: [${if (candidate == null) "echo_translator" else "lua_translator@*$id"}]
                 speller:
                   alphabet: abcdefghijklmnopqrstuvwxyz
             """.trimIndent()
             try {
-                files.forEach { it.parentFile?.mkdirs(); it.writeText(source) }
+                schemaFiles.forEach { it.parentFile?.mkdirs(); it.writeText(source) }
+                luaFile?.also { it.parentFile?.mkdirs(); it.writeText("return function(input, seg) yield(Candidate(\"audit\", seg.start, seg._end, \"$candidate\", \"\")) end") }
                 check(session.runOnReady { selectSchema(id) }) { "Cannot select synthetic input schema" }
                 return fixture
             } catch (error: Throwable) { fixture.restore(); throw error }

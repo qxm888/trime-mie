@@ -6,7 +6,16 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前版本：**V3.7.0 / versionCode 20271114**，正式安装包 `trime-mie-v3.7.0.apk`。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+> 当前版本：**V3.7.1 / versionCode 20271115**，安装包 `trime-mie-v3.7.1.apk`。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+
+## V3.7.1 键灵打字战斗与句子发送修复
+
+- 打字游戏通关永久解锁下一关，分页点选关卡，兼容旧最高关卡记录并记住起始关卡。
+- 上方落字、下方当前键灵发射弹丸，命中后消除计分；普通键灵使用小圆球，小咩使用粉色爱心并配合动作。
+- 新增发射与命中短音效；菜单、游戏中及暂停时可开关并保存选择。
+- 修复应用直接发送、清空和输入连接重启时的常用句漏记。
+
+[更新与验证](docs/v3.7.1/更新与验证.md) · [常用句检查范围](docs/v3.7.1/常用句验证.md)。
 
 ## V3.7.0 常用句联想与输入修复
 

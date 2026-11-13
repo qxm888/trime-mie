@@ -62,6 +62,15 @@ internal class SentenceAccumulator(private val completed: (String) -> Unit) {
         if (!overflow) SentenceRules.normalize(text.toString())?.let(completed)
         reset()
     }
+    /** A Send button belongs to the app, so no IME Enter/commit event is guaranteed.
+     * Only a confirmed empty editor completes the buffered text; null means unknown.
+     * [inline] is an actual candidate written into the editor, never raw coding text.
+     */
+    fun finishClearedEditor(before: String?, after: String?, inline: String = "", deleting: Boolean = false): Boolean {
+        if (before != "" || after != "") return false
+        if (!deleting) { append(inline); finish() } else reset()
+        return true
+    }
     fun backspace() {
         if (overflow || text.isEmpty()) { reset(); return }
         val end = text.length

@@ -78,7 +78,7 @@ class PetCompanionController(private val service:TrimeInputMethodService) {
         }
         update(PetHouse.state.value)
     }
-    fun hideInput() { inputVisible=false;dismiss();lastSpec="" }
+    fun hideInput() { TypingGame.stop();inputVisible=false;dismiss();lastSpec="" }
     fun editor(info:EditorInfo?) {
         editorAllowed=info!=null && WordCloudVocabulary.allows(info.inputType,info.imeOptions)
         if(!editorAllowed) dismiss()
