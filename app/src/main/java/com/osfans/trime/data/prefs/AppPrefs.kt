@@ -123,6 +123,8 @@ class AppPrefs(
         val inlineSuggestions = switch(R.string.inline_suggestions, INLINE_SUGGESTIONS, true)
         val inputStatsEnabled = switch(R.string.input_stats_enabled, INPUT_STATS_ENABLED, true, R.string.input_stats_enabled_summary)
 
+        val sentenceLearningEnabled = switch(R.string.sentence_learning_enabled, "sentence_learning_enabled", false, R.string.sentence_learning_summary)
+
         val preferredVoiceInput = list(
             R.string.preferred_voice_input,
             PREFERRED_VOICE_INPUT,

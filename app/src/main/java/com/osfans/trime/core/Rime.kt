@@ -472,6 +472,16 @@ class Rime :
         Unit
     }
 
+    override suspend fun completeSentence(data: RimeMessage.SentenceCompletionMessage.Data) = withRimeContext {
+        if (compositionCached.preedit.orEmpty() != data.expectedPreedit) return@withRimeContext
+        clearRimeComposition()
+        com.osfans.trime.data.pets.PetHouse.clearProof()
+        InputStats.onKeyProcessed("", committed = false)
+        emitResponse()
+        // Keep editor completion ordered after the clear/inline-preedit responses.
+        messageFlow_.emit(RimeMessage.SentenceCompletionMessage(data))
+    }
+
     override suspend fun getRawInput(): String = withRimeContext {
         getRimeRawInput()
     }
@@ -554,9 +564,16 @@ class Rime :
             }
         }
         val started = android.os.SystemClock.elapsedRealtime()
+        // Only unmodified code characters can extend the composition. Selection keys,
+        // shortcuts and release events must not be mistaken for the last code of a word.
+        val statsModifiers = KeyModifiers.of(modifiers)
+        val statsInputKey = !status.isAsciiMode && value in 0x21..0x7e &&
+            value.toChar() in schemaCached.alphabet && !statsModifiers.ctrl &&
+            !statsModifiers.alt && !statsModifiers.meta && !statsModifiers.has(KeyModifier.Super) &&
+            !statsModifiers.release
         val handled = processRimeKey(value, modifiers)
         val engineDone = android.os.SystemClock.elapsedRealtime()
-        val committed = emitResponse(rawInputBefore = rawInputBefore)
+        val committed = emitResponse(rawInputBefore = rawInputBefore, statsInputKey = statsInputKey)
         val total = android.os.SystemClock.elapsedRealtime() - started
         if (total >= 48) {
             slowInputCount++
@@ -587,9 +604,14 @@ class Rime :
         else -> ""
     }
 
-    private fun emitResponse(commit: CommitProto? = null, rawInputBefore: String? = null): Boolean {
+    private fun emitResponse(
+        commit: CommitProto? = null,
+        rawInputBefore: String? = null,
+        statsInputKey: Boolean = false,
+    ): Boolean {
         val response = getRimeResponse(pagingMode)
-        updateCandidateProjection(response.status.schemaId, getRimeRawInput())
+        val afterInput = getRimeRawInput()
+        updateCandidateProjection(response.status.schemaId, afterInput)
         val commitProto = commit ?: projectedCommit ?: response.commit
         projectedCommit = null
         val commitText = commitProto.text
@@ -626,6 +648,8 @@ class Rime :
                 rawInputBefore,
                 response.status.schemaId,
                 response.status.schemaName,
+                afterInput = afterInput,
+                inputKey = statsInputKey,
             )
         }
         return isCommit

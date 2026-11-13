@@ -1,0 +1,23 @@
+{
+  "suggestionHeightDp": 40,
+  "suggestionWidthDp": 169.14285,
+  "beforePrivacyPending": 0,
+  "beforePrivacyLearned": 1,
+  "privacyGuardTest": "synthetic EditorInfo in the real controller; OEM secure keyboard unchanged",
+  "pendingRows": 5000,
+  "learnedRows": 2000,
+  "lookupP50Ms": 0.92625,
+  "lookupP95Ms": 1.697708,
+  "lookupMaxMs": 5.02724,
+  "queryPlan": "SEARCH sentences USING INDEX sentence_prefix (learned=? AND lookup>? AND lookup<?); USE TEMP B-TREE FOR ORDER BY",
+  "prefixRangeIndex": true,
+  "keySamplesPerState": 264,
+  "disabledKeyP50Ms": 18.655156,
+  "disabledKeyP95Ms": 49.708854,
+  "enabledKeyP50Ms": 18.510156,
+  "enabledKeyP95Ms": 49.779375,
+  "disabledFrameGapP95Ms": 16.579718,
+  "enabledFrameGapP95Ms": 16.580224,
+  "droppedLearningEvents": 0,
+  "accumulatorP95Us": 13.646
+}

@@ -549,4 +549,7 @@
     <string name="ball_fan_menu_empty">还没有菜单项。添加后在长按悬浮球时以扇形显示。</string>
     <string name="ball_fan_menu_entry">悬浮球扇形菜单…</string>
     <string name="ball_fan_menu_entry_summary">长按悬浮球弹出的动作，点击可编辑</string>
+    <string name="sentence_learning_enabled">学习与联想常用句</string>
+    <string name="sentence_learning_summary">本地记录；最近7天重复3次的句子加入常用句，在键盘右上方联想。密码框不记录。</string>
+    <string name="sentence_learning_manage">管理常用句与学习数据</string>
 </resources>

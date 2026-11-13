@@ -6,7 +6,16 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前版本：**V3.3.2 / versionCode 20270103**，正式安装包 `trime-mie-v3.3.2.apk`。新增内容以 Releases 实际状态为准。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+> 当前版本：**V3.7.0 / versionCode 20271114**，正式安装包 `trime-mie-v3.7.0.apk`。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+
+## V3.7.0 常用句联想与输入修复
+
+- 新增本地常用句学习：同一句滚动7天内完成输入3次后加入，输入句首可点击补全。默认关闭，入口为“设置 → 便捷功能 → 学习与联想常用句”。
+- 联想提示改为紧凑单行，约40dp高，宽度随内容变化，自动避让原候选悬浮窗；支持关闭、长按删除和设置内管理。
+- 修复自动顶字上屏时的码长归属；单手模式的编码区作为浮层显示，避免顶起应用输入框。
+- 58项针对性本地回归、独立测试包真机功能与容量性能检查通过。原签名正式包可覆盖安装。
+
+[更新说明](docs/v3.7.0/更新说明.md) · [验证范围](docs/v3.7.0/验证记录.md)。
 
 ## V3.3.2 键灵蹦跳踩键与 UR 伙伴
 

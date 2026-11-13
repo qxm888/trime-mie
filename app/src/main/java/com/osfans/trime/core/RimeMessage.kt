@@ -80,6 +80,11 @@ sealed class RimeMessage<T>(
         override val messageType = MessageType.InlinePreedit
     }
 
+    data class SentenceCompletionMessage(override val data: Data) : RimeMessage<SentenceCompletionMessage.Data>(data) {
+        override val messageType = MessageType.Commit
+        data class Data(val editorToken: Long, val prefix: String, val sentence: String, val expectedPreedit: String)
+    }
+
     data class CompositionMessage(
         override val data: CompositionProto,
     ) : RimeMessage<CompositionProto>(data) {

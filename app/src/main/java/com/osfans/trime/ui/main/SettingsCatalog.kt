@@ -10,7 +10,7 @@ object SettingsCatalog {
         Page("input", "输入与候选", "方案、词典、输入行为与候选", icon = R.drawable.ic_baseline_list_alt_24),
         Page("keyboard", "键盘", "布局、工具栏、单手、反馈与手势", icon = R.drawable.ic_baseline_keyboard_24),
         Page("appearance", "外观", "主题、背景、样式与字体", icon = R.drawable.ic_baseline_color_lens_24),
-        Page("tools", "便捷功能", "语音输入、剪贴板、输入统计与键灵小屋", icon = R.drawable.ic_clipboard_24),
+        Page("tools", "便捷功能", "常用句联想、语音输入、剪贴板、输入统计与键灵小屋", keys = listOf("sentence_learning_enabled"), icon = R.drawable.ic_clipboard_24),
         Page("data", "数据与备份", "存储位置、同步与导入导出", icon = R.drawable.ic_baseline_snippet_folder_24),
         Page("advanced", "高级与关于", "系统兼容、诊断、开发者与版本信息", icon = R.drawable.ic_baseline_more_horiz_24),
         Page("schema", "输入方案", "选择方案与部署配置", "input"),

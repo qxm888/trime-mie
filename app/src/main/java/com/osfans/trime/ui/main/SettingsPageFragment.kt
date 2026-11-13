@@ -138,6 +138,9 @@ class SettingsPageFragment : PaddingPreferenceFragment() {
             preferenceScreen.addPreference("主题键盘全局外观", "主题模式的按键与状态栏样式") { SurfaceAppearanceEditor.show(requireActivity(), false) }
         }
         if (pageId == "tools") {
+            preferenceScreen.addPreference(getString(com.osfans.trime.R.string.sentence_learning_manage), "查看、删除常用句，或清空学习数据") {
+                SentenceManagement.show(this)
+            }
             preferenceScreen.addPreference(
                 androidx.preference.SwitchPreferenceCompat(requireContext()).apply {
                     key = AppPrefs.General.INPUT_STATS_ENABLED

@@ -79,6 +79,22 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
     private lateinit var contentView: FrameLayout
     private lateinit var lastKnownConfig: Configuration
     private var inputView: InputView? = null
+    private val sentenceSuggestions = lazy { com.osfans.trime.ime.sentences.SentenceSuggestionController(this) }
+    @Keep
+    private val sentencePreferenceListener = PreferenceDelegate.OnChangeListener<Boolean> { _, _ ->
+        if (sentenceSuggestions.isInitialized()) sentenceSuggestions.value.preferenceChanged()
+    }
+    fun sentenceSuggestionAnchor(outBounds: android.graphics.Rect): Boolean = inputView?.getSentenceSuggestionAnchor(outBounds) == true
+    fun sentenceSuggestionObstruction(outBounds: android.graphics.Rect): Boolean {
+        outBounds.setEmpty()
+        val view = candidatesView?.takeIf { it.isShown && it.width > 0 && it.height > 0 } ?: return false
+        val location = IntArray(2); view.getLocationInWindow(location)
+        outBounds.set(location[0], location[1], location[0] + view.width, location[1] + view.height)
+        return true
+    }
+    fun requestSentenceCompletion(data: RimeMessage.SentenceCompletionMessage.Data) {
+        postRimeJob { completeSentence(data) }
+    }
     private val petCompanionDelegate=lazy { com.osfans.trime.ui.pets.PetCompanionController(this) }
     private fun syncPetCompanion() {
         val current=inputView ?: return
@@ -322,6 +338,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
                 handleRimeMessage(it)
             }
         }
+        prefs.general.sentenceLearningEnabled.registerOnChangeListener(sentencePreferenceListener)
         recreateInputViewPrefs.forEach {
             it.registerOnChangeListener(recreateInputViewListener)
         }
@@ -360,6 +377,9 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
                     commitText(it.data.text, fromEngine = true)
                 }
             }
+
+            is RimeMessage.SentenceCompletionMessage -> sentenceSuggestions.value.complete(it.data)
+            is RimeMessage.CompositionMessage -> sentenceSuggestions.value.composition(it.data)
 
             is RimeMessage.InlinePreeditMessage -> {
                 updateComposingText(it.data)
@@ -554,6 +574,8 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         recreateInputViewPrefs.forEach {
             it.unregisterOnChangeListener(recreateInputViewListener)
         }
+        prefs.general.sentenceLearningEnabled.unregisterOnChangeListener(sentencePreferenceListener)
+        if (sentenceSuggestions.isInitialized()) sentenceSuggestions.value.dispose()
         prefs.candidates.unregisterOnChangeListener(recreateCandidatesViewListener)
         ThemeManager.removeOnChangedListener(onThemeChangeListener)
         ColorManager.removeOnChangedListener(onColorChangeListener)
@@ -563,6 +585,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
     }
 
     private fun handleReturnKey() {
+        sentenceSuggestions.value.finishSentence()
         currentInputEditorInfo.run {
             if (inputType and InputType.TYPE_MASK_CLASS == InputType.TYPE_NULL ||
                 imeOptions.hasFlag(EditorInfo.IME_FLAG_NO_ENTER_ACTION)
@@ -693,6 +716,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
             candidatesEnd,
         )
         cursorUpdateIndex += 1
+        sentenceSuggestions.value.selection(oldSelStart, newSelStart, newSelEnd, candidatesStart)
         builtInVoice.selectionChanged(newSelStart, newSelEnd, candidatesStart, candidatesEnd)
         if (builtInVoice.isActive) return
         handleCursorUpdate(newSelStart, newSelEnd, candidatesStart, candidatesEnd, cursorUpdateIndex)
@@ -837,10 +861,12 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         if (inputDeviceManager.useVirtualKeyboard && inputView?.getFloatingKeyboardBoundsInWindow(floatingBounds) == true) {
             outInsets.apply {
                 if (inputView?.isOneHandMode == true) {
-                    // 单手模式 = 悬浮卡片沉底变体：内容顶到卡片上沿（顶起输入框），
-                    // 但卡片之外仍可穿透触摸（TOUCHABLE_INSETS_REGION）。
-                    contentTopInsets = floatingBounds.top
-                    visibleTopInsets = floatingBounds.top
+                    // Only the panel pushes the editor up. The preedit stays above the app
+                    // as an overlay, just like docked mode, while retaining its touch region.
+                    val panelBounds = android.graphics.Rect()
+                    inputView?.getFloatingKeyboardPanelBoundsInWindow(panelBounds)
+                    contentTopInsets = panelBounds.top
+                    visibleTopInsets = panelBounds.top
                 } else {
                     contentTopInsets = decorView.height
                     visibleTopInsets = decorView.height
@@ -912,6 +938,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         attribute: EditorInfo,
         restarting: Boolean,
     ) {
+        sentenceSuggestions.value.start(attribute)
         com.osfans.trime.data.stats.InputStats.setWordCloudEditor(attribute)
         com.osfans.trime.data.pets.PetHouse.editor(attribute)
         if(petCompanionDelegate.isInitialized()) petCompanionDelegate.value.editor(attribute)
@@ -951,6 +978,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         restarting: Boolean,
     ) {
         inputView?.post { syncPetCompanion() }
+        sentenceSuggestions.value.start(attribute)
         isRestartingInputView = restarting
         Timber.d("onStartInputView: restarting=$restarting")
         com.osfans.trime.data.sync.ClipboardSync.setWindowVisible(true)
@@ -983,6 +1011,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
     }
 
     override fun onFinishInputView(finishingInput: Boolean) {
+        if (sentenceSuggestions.isInitialized()) sentenceSuggestions.value.stop()
         com.osfans.trime.data.stats.InputStats.setWordCloudEditor(null)
         com.osfans.trime.data.pets.PetHouse.editor(null)
         if(petCompanionDelegate.isInitialized()) petCompanionDelegate.value.hideInput()
@@ -1016,11 +1045,12 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         val ic = currentInputConnection ?: return
 
         // when composing text equals commit content, finish composing text as-is
-        if (composingText.isNotEmpty() && composingText == text) {
+        val committed = if (composingText.isNotEmpty() && composingText == text) {
             ic.finishComposingText()
         } else {
             ic.commitText(text, 1)
         }
+        if (committed) sentenceSuggestions.value.committed(text, fromEngine)
         lastCommittedText = text
         composingText = ""
         InputFeedbackManager.textCommitSpeak(text)
@@ -1059,8 +1089,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         metaState: Int = 0,
     ): Boolean {
         val ic = currentInputConnection ?: return false
-        return ic.sendKeyEvent(
-            KeyEvent(
+        val event = KeyEvent(
                 eventTime,
                 eventTime,
                 KeyEvent.ACTION_DOWN,
@@ -1071,8 +1100,10 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
                 0,
                 KeyEvent.FLAG_SOFT_KEYBOARD or KeyEvent.FLAG_KEEP_TOUCH_MODE,
                 InputDevice.SOURCE_KEYBOARD,
-            ),
-        )
+            )
+        val handled = ic.sendKeyEvent(event)
+        if (handled) sentenceSuggestions.value.key(keyEventCode, metaState)
+        return handled
     }
 
     private fun sendUpKeyEvent(

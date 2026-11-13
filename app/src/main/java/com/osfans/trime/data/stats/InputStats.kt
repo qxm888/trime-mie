@@ -226,11 +226,7 @@ object InputStats {
     private var sessionChars = 0
     private var sessionCodeLen = 0
 
-    /** Keystrokes counted but not yet merged into a period (merged on commit). */
-    private var pendingKeys = 0L
-
-    /** Raw composition at the previous key event, used to detect new keystrokes. */
-    private var lastRawInput = ""
+    private val compositionCodes = CompositionCodeCounter()
 
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var saveJob: Job? = null
@@ -411,7 +407,7 @@ object InputStats {
             storeFile().writeAtomicText(json.encodeToString(imported))
             synchronized(lock) {
                 sessionStart = 0L; lastClick = 0L; lastCommit = 0L; sessionChars = 0; sessionCodeLen = 0
-                sessionSchemaId = ""; pendingKeys = 0; lastRawInput = ""
+                sessionSchemaId = ""; compositionCodes.reset()
                 store = imported
                 store.schemas.values.forEach { normalizePeriods(it) }
                 scheduleSaveLocked()
@@ -503,7 +499,7 @@ object InputStats {
             // Settle the old characters against their OWN elapsed time before starting again.
             // A pause while a composition is unfinished belongs to that composition's time.
             if (sessionStart != 0L && (nowMs < lastClick ||
-                    nowMs - lastClick > SESSION_GAP_MS && lastRawInput.isEmpty())) {
+                    nowMs - lastClick > SESSION_GAP_MS && compositionCodes.rawInput.isEmpty())) {
                 flushSessionLocked()
             }
             if (sessionStart == 0L) sessionStart = nowMs
@@ -511,37 +507,12 @@ object InputStats {
         }
     }
 
-    /**
-     * Called after the key was processed. Counts a keystroke when the raw
-     * composition grew, mirroring the Lua heuristic (including its
-     * first-key-after-escape special cases). [committed] means librime
-     * committed on this very key, which resets the composition.
-     */
-    fun onKeyProcessed(
-        after: String,
-        committed: Boolean,
-    ) {
+    /** Keep any uncommitted suffix as the baseline for the next key. */
+    fun onKeyProcessed(after: String, committed: Boolean) {
+        if (!enabled) return
         synchronized(lock) {
             if (appContext == null) return
-            val effectiveAfter = if (committed) "" else after
-            val before = lastRawInput
-            if (effectiveAfter.isNotEmpty() && effectiveAfter[0] != '/') {
-                if (before != effectiveAfter) {
-                    val beforeLen = before.length
-                    val afterLen = effectiveAfter.length
-                    when {
-                        afterLen > beforeLen -> pendingKeys++
-                        afterLen == 1 -> when {
-                            beforeLen == 1 -> pendingKeys++
-                            beforeLen > 2 -> pendingKeys++
-                            beforeLen == 2 && effectiveAfter[0] != before[0] -> pendingKeys++
-                        }
-                    }
-                }
-                lastRawInput = effectiveAfter
-            } else {
-                lastRawInput = ""
-            }
+            compositionCodes.processed(after, committed)
         }
     }
 
@@ -570,30 +541,31 @@ object InputStats {
         collectWords=info!=null && WordCloudVocabulary.allows(info.inputType,info.imeOptions)
     }
 
-    /** Called when librime commits text. [rawInputBefore] is the composition that produced it. */
+    /** Record a commit using the codes consumed by this event, excluding its remaining suffix. */
     fun onCommit(
         text: String,
         rawInputBefore: String?,
         schemaId: String,
         schemaName: String,
         nowMs: Long = SystemClock.elapsedRealtime(),
+        afterInput: String = "",
+        inputKey: Boolean = false,
     ) {
-        if (!enabled || text.isEmpty() || !isAllChinese(text)) return
-        if (schemaId.isEmpty()) return
-        if (rawInputBefore != null && rawInputBefore.startsWith("/")) return
-        val rawLen = rawInputBefore?.length ?: 0
+        if (!enabled || text.isEmpty() || schemaId.isEmpty()) return
         val chars = text.codePointCount(0, text.length)
         // Bound work on the typing path; cloud layout and sorting happen only in the dashboard.
         val cloudWords=if(collectWords) WordCloudVocabulary.terms(text) else emptyList()
         synchronized(lock) {
             if (appContext == null) return
             switchSchema(schemaId)
-            if (schemaName.isNotEmpty()) store.schemaNames[schemaId] = schemaName
             val stats = bucket(schemaId)
             normalizePeriods(stats)
+            val codes = compositionCodes.commit(rawInputBefore, afterInput, inputKey)
+            // Settle excluded commits too, so their pending keys cannot leak into Chinese input.
+            if (!isAllChinese(text) || rawInputBefore?.startsWith("/") == true) return
+            if (schemaName.isNotEmpty()) store.schemaNames[schemaId] = schemaName
 
-            // one extra key (space / enter / tap) triggers the commit
-            val codeLen = rawLen + 1
+            val codeLen = codes.codeLength
             // A commit with no observed start has no measurable typing duration.
             if (sessionStart != 0L && nowMs >= sessionStart) {
                 lastCommit = nowMs
@@ -602,18 +574,15 @@ object InputStats {
             }
 
             for (p in arrayOf(stats.daily, stats.weekly, stats.monthly, stats.yearly)) {
-                p.keyTouchCnt += pendingKeys
-                p.codeLenNoSpace += rawLen.toLong()
+                p.keyTouchCnt += codes.keyTouches
+                p.codeLenNoSpace += codes.rawLength.toLong()
                 p.count++
                 p.length += chars
                 p.lengths[chars.toString()] = (p.lengths[chars.toString()] ?: 0) + 1
                 p.codeLengths[codeLen.toString()] = (p.codeLengths[codeLen.toString()] ?: 0) + 1
                 WordCloudVocabulary.add(p.wordCounts,cloudWords)
             }
-            pendingKeys = 0
             stats.careerTotal += chars.toLong()
-            // the composition is consumed by this commit, like the Lua commit_notifier
-            lastRawInput = ""
 
             scheduleSaveLocked()
         }
@@ -653,8 +622,7 @@ object InputStats {
         synchronized(lock) {
             if (appContext == null) return
             flushSessionLocked()
-            pendingKeys = 0
-            lastRawInput = ""
+            compositionCodes.reset()
         }
         saveSoon()
     }
@@ -669,8 +637,7 @@ object InputStats {
         if (sessionSchemaId != id) {
             flushSessionLocked()
             sessionSchemaId = id
-            lastRawInput = ""
-            pendingKeys = 0
+            compositionCodes.reset()
         }
         if (store.activeId != id) { store.activeId = id; dirty = true; revision++ }
     }
@@ -709,7 +676,7 @@ object InputStats {
         if (stats.daily.ts != dayTs) {
             // Attribute completed text to the previous day before rolling the periods over.
             if (store.schemas[sessionSchemaId] === stats) {
-                val unfinishedStart = if (lastRawInput.isNotEmpty()) {
+                val unfinishedStart = if (compositionCodes.rawInput.isNotEmpty()) {
                     if (lastCommit >= sessionStart) lastCommit else sessionStart
                 } else 0L
                 val previousClick = lastClick

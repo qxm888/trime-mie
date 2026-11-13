@@ -905,7 +905,8 @@ class InputView(
     fun dragFloatingKeyboardFromToolbar(event: MotionEvent): Boolean =
         isFloatingKeyboardEnabled && !isOneHandMode && handleFloatingDrag(event, allowTap = false)
 
-    fun getFloatingKeyboardBoundsInWindow(outBounds: Rect): Boolean {
+    /** Panel space reserved above the app; the preedit is an overlay and reserves no height. */
+    fun getFloatingKeyboardPanelBoundsInWindow(outBounds: Rect): Boolean {
         if (!isFloatingKeyboardEnabled || !keyboardView.isShown || keyboardView.width == 0) return false
         keyboardView.getLocationInWindow(inputViewLocation)
         val visualWidth = (keyboardView.width * keyboardView.scaleX).roundToInt()
@@ -916,10 +917,18 @@ class InputView(
             inputViewLocation[0] + visualWidth,
             inputViewLocation[1] + visualHeight,
         )
+        bottomOverlay?.takeIf { it.isShown }?.let { overlay ->
+            overlay.getLocationInWindow(preeditViewLocation)
+            outBounds.union(preeditViewLocation[0], preeditViewLocation[1],
+                preeditViewLocation[0] + overlay.width, preeditViewLocation[1] + overlay.height)
+        }
+        return true
+    }
+
+    /** Bounds for hit testing and candidate avoidance, including the overlaid preedit. */
+    fun getFloatingKeyboardBoundsInWindow(outBounds: Rect): Boolean {
+        if (!getFloatingKeyboardPanelBoundsInWindow(outBounds)) return false
         val preeditRoot = preedit.ui.root
-        // 编码栏槽位无论可见与否都计入悬浮边界：编码出现/消失不再改变上报高度，
-        // 应用窗口不会随之顶起/回落，输入框与键盘（含候选栏）始终保持贴合。
-        // INVISIBLE 视图仍参与布局，此处位置/尺寸有效。
         if (preeditRoot.width > 0 && preeditRoot.height > 0) {
             preeditRoot.getLocationInWindow(preeditViewLocation)
             outBounds.union(
@@ -929,10 +938,18 @@ class InputView(
                 preeditViewLocation[1] + preeditRoot.height,
             )
         }
-        bottomOverlay?.takeIf { it.isShown }?.let { overlay ->
-            overlay.getLocationInWindow(preeditViewLocation)
-            outBounds.union(preeditViewLocation[0], preeditViewLocation[1],
-                preeditViewLocation[0] + overlay.width, preeditViewLocation[1] + overlay.height)
+        return true
+    }
+
+    fun getSentenceSuggestionAnchor(outBounds: Rect): Boolean {
+        if (getFloatingKeyboardBoundsInWindow(outBounds)) return true
+        if (!keyboardView.isShown || keyboardView.width == 0) return false
+        keyboardView.getLocationInWindow(inputViewLocation)
+        outBounds.set(inputViewLocation[0], inputViewLocation[1], inputViewLocation[0] + keyboardView.width,
+            inputViewLocation[1] + keyboardView.height)
+        if (preedit.ui.root.isShown) {
+            preedit.ui.root.getLocationInWindow(preeditViewLocation)
+            outBounds.top = minOf(outBounds.top, preeditViewLocation[1])
         }
         return true
     }

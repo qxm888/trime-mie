@@ -78,6 +78,8 @@ interface RimeApi {
     /** Commit pending composition, then literal text without interpreting key sequences. */
     suspend fun commitLiteralText(text: String)
 
+    suspend fun completeSentence(data: RimeMessage.SentenceCompletionMessage.Data)
+
     suspend fun clearComposition()
 
     suspend fun getRawInput(): String
