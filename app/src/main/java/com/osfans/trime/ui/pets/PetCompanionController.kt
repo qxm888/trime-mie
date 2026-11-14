@@ -29,7 +29,8 @@ import kotlin.math.roundToInt
 
 /** A non-focusable IME child window; dismissed with the IME, with no overlay permission. */
 class PetCompanionController(private val service:TrimeInputMethodService) {
-    private val mini=PetMiniKeyboardView(service)
+    private var mini:PetMiniKeyboardBase=PetMiniKeyboardView(service)
+    private var miniRenderer=PetMiniStyle.Renderer.STANCE
     private val popup=PopupWindow(mini,1,1,false).apply {
         isTouchable=true;isOutsideTouchable=false;isSplitTouchEnabled=true
         setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT));animationStyle=0
@@ -58,13 +59,26 @@ class PetCompanionController(private val service:TrimeInputMethodService) {
         }
     }
     private val collector:Job
-    init {
+    private fun configureMini() {
         mini.onDrag={ dx,dy ->
             if(popup.isShowing) { x+=dx;y+=dy;clamp();if(!moveQueued) { moveQueued=true;mini.postOnAnimation(moveFrame) } }
         }
         mini.onDrop={ mini.removeCallbacks(moveFrame);moveQueued=false;place();persistPosition() }
         mini.onControls={ controls() }
+    }
+    init {
+        configureMini()
         collector=service.lifecycleScope.launch { PetHouse.state.collect { update(it) } }
+    }
+    private fun selectRenderer(id:String) {
+        val renderer=PetMiniStyle.rendererFor(id)
+        if(renderer==miniRenderer) return
+        dismiss()
+        mini=PetMiniStyle.create(service,id)
+        miniRenderer=renderer
+        popup.contentView=mini
+        configureMini()
+        appearance="";lastSpec=""
     }
     fun showForInput(view:View,info:EditorInfo?) {
         if(disposed) return
@@ -114,15 +128,17 @@ class PetCompanionController(private val service:TrimeInputMethodService) {
         if(!inputVisible || !editorAllowed || !state.started || state.mode==0 || !state.miniExpanded || state.error.isNotEmpty() || pet==null || view?.isAttachedToWindow!=true) {
             dismiss();return
         }
+        selectRenderer(pet.id)
         val signature="${pet.id}/${pet.nickname}/${pet.stage}/${pet.accessory}"
         if(signature!=appearance) { appearance=signature;mini.bind(pet) }
         mini.setKeyboard(KeyboardWindow.currentKeyboardOrNull)
         val area=bounds()
         if(area.width()<40 || area.height()<40) { dismiss();return }
         val density=service.resources.displayMetrics.density
-        val sceneHeight=PetMiniScene.HEIGHT
-        popupWidth=minOf((154*density*state.miniScale/100f*PetMiniScene.WIDTH/212f).roundToInt(),area.width(),(area.height()*PetMiniScene.WIDTH/sceneHeight).toInt()).coerceAtLeast(1)
-        popupHeight=(popupWidth*sceneHeight/PetMiniScene.WIDTH).roundToInt().coerceAtLeast(1)
+        val sceneHeight=mini.sceneHeight
+        val sceneWidth=mini.sceneWidth
+        popupWidth=minOf((154*density*state.miniScale/100f*sceneWidth/212f).roundToInt(),area.width(),(area.height()*sceneWidth/sceneHeight).toInt()).coerceAtLeast(1)
+        popupHeight=(popupWidth*sceneHeight/sceneWidth).roundToInt().coerceAtLeast(1)
         val land=landscape()
         val nx=if(land) state.miniLandscapeX else state.miniX
         val ny=if(land) state.miniLandscapeY else state.miniY

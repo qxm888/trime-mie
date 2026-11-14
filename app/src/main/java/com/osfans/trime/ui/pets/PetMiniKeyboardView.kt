@@ -23,7 +23,7 @@ import kotlin.math.hypot
 
 /** A miniature of the real layout. Only live touch identities enter this view, never committed text. */
 @SuppressLint("ViewConstructor")
-class PetMiniKeyboardView(context:Context):View(context) {
+class PetMiniKeyboardView(context:Context):PetMiniKeyboardBase(context) {
     data class MiniKey(val index:Int,val code:Int,val label:String,val bounds:RectF)
     private val portrait=PetPortraitView(context).apply { halo=false;layout(0,0,80,80) }
     private val reactions=PetReactionPlayer(this)
@@ -50,9 +50,6 @@ class PetMiniKeyboardView(context:Context):View(context) {
     private var longClicked=false
     private var tappedPet=false
     private val touchSlop=ViewConfiguration.get(context).scaledTouchSlop
-    var onDrag:((Float,Float)->Unit)?=null
-    var onDrop:(()->Unit)?=null
-    var onControls:(()->Unit)?=null
     private val longPress=Runnable { if(!dragging) { longClicked=true;performLongClick() } }
     init {
         isClickable=true;isFocusable=true
@@ -60,13 +57,13 @@ class PetMiniKeyboardView(context:Context):View(context) {
         setOnClickListener { if(tappedPet) playInteraction(PetInteraction.PET) else onControls?.invoke() }
         setOnLongClickListener { onControls?.invoke();true }
     }
-    fun bind(value:PetHouse.Pet) {
+    override fun bind(value:PetHouse.Pet) {
         if(pet==value) return
         val changed=pet.id!=value.id
         if(changed) clearPresses()
         pet=value;accent=PetCatalog.get(value.id).color;portrait.bind(value);if(changed) reactions.species(value.id);invalidate()
     }
-    fun setKeyboard(keyboard:Keyboard?,force:Boolean=false) {
+    override fun setKeyboard(keyboard:Keyboard?,force:Boolean) {
         if(keyboard==null) return
         if(!force && layout===keyboard && shifted==keyboard.isShifted) return
         clearPresses();layout=keyboard;shifted=keyboard.isShifted
@@ -93,7 +90,7 @@ class PetMiniKeyboardView(context:Context):View(context) {
         }
         invalidate()
     }
-    fun press(index:Int) {
+    override fun press(index:Int) {
         val key=keys.firstOrNull { it.index==index } ?: return
         removeCallbacks(rest)
         held.remove(index);held.add(index)
@@ -103,7 +100,7 @@ class PetMiniKeyboardView(context:Context):View(context) {
         val duration=if(lastPress==0L) 280L else ((now-lastPress)*.85f).toLong().coerceIn(110L,280L)
         lastPress=now;hopTo(key,duration);invalidate()
     }
-    fun release(index:Int,cancel:Boolean=false) {
+    override fun release(index:Int,cancel:Boolean) {
         if(!held.remove(index)) return
         if(held.isEmpty()) {
             if(!cancel) reactions.released()
@@ -111,7 +108,7 @@ class PetMiniKeyboardView(context:Context):View(context) {
         }
         invalidate()
     }
-    fun pressCode(code:Int,down:Boolean) {
+    override fun pressCode(code:Int,down:Boolean) {
         keys.firstOrNull { it.code==code }?.let { if(down) press(it.index) else release(it.index) }
     }
     /** The selected sole lands on the actual key center, with a short cushioned landing. */
@@ -159,8 +156,8 @@ class PetMiniKeyboardView(context:Context):View(context) {
             start()
         }
     }
-    fun playInteraction(interaction:PetInteraction) { reactions.interact(interaction) }
-    fun clearPresses() {
+    override fun playInteraction(interaction:PetInteraction) { reactions.interact(interaction) }
+    override fun clearPresses() {
         reactions.clear();removeCallbacks(rest)
         val previous=bodyAnimation;bodyAnimation=null;previous?.cancel()
         soleX=PetMiniScene.CENTER;soleY=PetMiniScene.BOARD_TOP;jumpY=0f

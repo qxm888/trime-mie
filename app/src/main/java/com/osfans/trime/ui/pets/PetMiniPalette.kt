@@ -61,6 +61,7 @@ internal object PetMiniPalette {
         "axolotl" -> 0xffefc0ce.toInt()
         "hummingbird" -> 0xffa377c7.toInt()
         "monkey" -> 0xff3e495e.toInt()
+        "jizai" -> 0xff8c3b3b.toInt()
         else -> fallback
     }
 }

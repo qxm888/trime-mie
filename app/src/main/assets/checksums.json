@@ -1,6 +1,8 @@
 {
-    "sha256": "7d1a5ca7caad4f03769de604c728ab1ffcc6ed732dbac91eedc38581b62d216b",
+    "sha256": "ae91fc68aed2019d17b9122ae505bb97c09a77fa383bd822cf0bcbfb9f79f123",
     "files": {
+        "eldritch": "",
+        "eldritch/jizai.png": "53e620fea7b2475b1b9f951d70f11ac90439ad7ddc2b40e0c3770c4836748a06",
         "licenses": "",
         "licenses/Apache-2.0.txt": "6c11db5f4f0d8521559233b532c635692b6525bde771139723dc1ee489fac393",
         "licenses/bibi-builtin-NOTICE.txt": "d021524e86f55f9405d8fc6b3f1182f8573aed6eca6b171670d72c81bd9b0f77",

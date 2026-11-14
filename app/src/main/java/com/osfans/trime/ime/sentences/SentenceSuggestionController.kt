@@ -89,6 +89,7 @@ internal class SentenceSuggestionController(private val service: TrimeInputMetho
             version++; query?.cancel(); hide()
         } else reset()
         editorToken++; editor = next; allowed = permitted
+        if (enabled()) repository.maintain()
     }
     fun viewHidden() { version++; query?.cancel(); hide() }
     fun stop() {
@@ -303,7 +304,7 @@ internal class SentenceSuggestionController(private val service: TrimeInputMetho
         if (suffix.isNotEmpty()) {
             // The engine's clear response has already removed any inline composition.
             // This insertion deliberately bypasses the learning hook, so it cannot self-promote.
-            ic.commitText(suffix, 1)
+            if (ic.commitText(suffix, 1)) repository.used(data.sentence)
             reset()
         }
     }

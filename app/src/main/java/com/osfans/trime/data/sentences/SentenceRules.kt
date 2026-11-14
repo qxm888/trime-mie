@@ -4,7 +4,9 @@ package com.osfans.trime.data.sentences
 import java.util.Locale
 
 internal object SentenceRules {
-    const val WEEK_MS = 7L * 24 * 60 * 60 * 1000
+    const val DAY_MS = 24L * 60 * 60 * 1000
+    const val WEEK_MS = 7L * DAY_MS
+    const val LEARNED_RETENTION_MS = 30L * DAY_MS
     const val MAX_CHARS = 256
     const val MAX_UTF16 = MAX_CHARS * 2
     const val PENDING_LIMIT = 5000

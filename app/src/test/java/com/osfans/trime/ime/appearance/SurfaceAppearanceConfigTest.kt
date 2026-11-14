@@ -144,8 +144,8 @@ class SurfaceAppearanceConfigTest : FunSpec({
         PanelBackdrop().imageAlpha shouldBe 55
         PanelBackdrop(imageOpacity = 999).sanitized().imageOpacity shouldBe 100
         PanelBackdrop(imageOpacity = -5).sanitized().imageOpacity shouldBe 0
-        // 旧配置没有这个字段：反序列化后要落在默认值上，不能变成全透明。
+        // 旧配置没有这个字段：沿用已发布版本的 100% 不透明默认值。
         json.decodeFromString<SurfaceAppearanceConfig>("""{"backdrop":{"enabled":true}}""")
-            .backdrop.imageOpacity shouldBe 70
+            .backdrop.imageOpacity shouldBe 100
     }
 })

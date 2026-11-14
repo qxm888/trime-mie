@@ -43,7 +43,13 @@ class BackdropBlur(
     /** tick 撞上「窗口暂时不可见 / 还在忙」时的重排队次数，防止无限空转。 */
     private var guardRetries = 0
     private val layoutObserver = android.view.ViewTreeObserver.OnGlobalLayoutListener { requestFresh() }
-    private val windowObserver=android.view.ViewTreeObserver.OnWindowVisibilityChangeListener { if(it==View.VISIBLE) requestFresh() }
+    // Pre-draw is available on every supported Android version. It resumes pending
+    // work when an IME window reappears, without requesting frames or recapturing
+    // an unchanged background. The window-visibility listener requires API 34.
+    private val drawObserver = android.view.ViewTreeObserver.OnPreDrawListener {
+        if (requestedVersion != renderedVersion) requestFresh()
+        true
+    }
     private var observedTree: android.view.ViewTreeObserver? = null
     private val tick: Runnable = Runnable {
         scheduled = false
@@ -84,13 +90,13 @@ class BackdropBlur(
     }
     override fun onViewAttachedToWindow(v: View) {
         attached=true;generation++
-        observedTree?.takeIf { it.isAlive }?.let { it.removeOnGlobalLayoutListener(layoutObserver);it.removeOnWindowVisibilityChangeListener(windowObserver) }
-        observedTree=root.viewTreeObserver.also { it.addOnGlobalLayoutListener(layoutObserver);it.addOnWindowVisibilityChangeListener(windowObserver) }
+        observedTree?.takeIf { it.isAlive }?.let { it.removeOnGlobalLayoutListener(layoutObserver);it.removeOnPreDrawListener(drawObserver) }
+        observedTree=root.viewTreeObserver.also { it.addOnGlobalLayoutListener(layoutObserver);it.addOnPreDrawListener(drawObserver) }
         request()
     }
     override fun onViewDetachedFromWindow(v: View) {
         attached=false;generation++;root.removeCallbacks(tick);scheduled=false
-        observedTree?.takeIf { it.isAlive }?.let { it.removeOnGlobalLayoutListener(layoutObserver);it.removeOnWindowVisibilityChangeListener(windowObserver) };observedTree=null
+        observedTree?.takeIf { it.isAlive }?.let { it.removeOnGlobalLayoutListener(layoutObserver);it.removeOnPreDrawListener(drawObserver) };observedTree=null
         // The private work bitmap may still be owned by the worker. Published frames
         // are immutable and never reused as scratch memory for a future GPU frame.
         front=null

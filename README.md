@@ -6,7 +6,16 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前版本：**V3.7.4 / versionCode 20271118**，正式包 `trime-mie-v3.7.4.apk`。修复全屏游戏遮住候选浮窗，升级请使用 V3.7.4。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+> 当前版本：**V3.7.5 / versionCode 20271119**，正式包 `trime-mie-v3.7.5.apk`。新增 SSR 季灾、常用句过期清理，并修复 Android 13 日志中的键盘启动闪退。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+
+## V3.7.5 季灾与常用句清理
+
+- 新增 SSR「季灾 / 迷惘司命」，加入 SSR 孵化池；迷你键盘使用6条触手按键，其他键灵保留原踩键动作。
+- 常用句30天未使用删除，待学习记录7天未再次学习删除；手打整句或点击补全续期，仅展示联想不续期。旧常用句升级后获得一次30天保护期。
+- 移除日志中导致 Android 13 闪退的 API34 窗口监听引用；最终签名包已检查，Android 13 仍需原机复测。
+- 103项相关单元测试及 Android16 六组真机回归通过；完整 Lint 仍有62项既有错误，无新增错误。
+
+[更新与验证](docs/v3.7.5/更新与验证.md) · [V3.7.5 下载](https://github.com/qxm888/trime-mie/releases/tag/v3.7.5)。
 
 ## V3.7.4 游戏候选浮窗修复
 

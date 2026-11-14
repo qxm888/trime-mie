@@ -64,7 +64,9 @@ object PetCatalog {
         Species("jige","鸡哥",3,"银灰中分、黑色背带裤，侧肩一靠就跟上打字节拍。",0xffffd04a.toInt()),
         Species("xiaomie","小咩",4,"把你的每次敲键，都变成闪闪发光的小心意。",0xffedc48d.toInt(),false),
         Species("monkey","猴哥",4,"金箍棒换成键盘，一个字就是一个筋斗。",0xffe05560.toInt()),
-    )
+    ) + EldritchCatalog.specs.map { spec ->
+        Species(spec.id,spec.name,spec.rarity,"${spec.title} · ${spec.description}",spec.color)
+    }
     val hatchPool get()=species.filter { it.id!="xiaomie" }
     fun get(id:String)=species.first { it.id==id }
     data class Item(val id:String,val name:String,val cost:Int,val hunger:Int,val mood:Int,val bond:Int,val description:String)

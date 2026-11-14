@@ -184,6 +184,12 @@ class SentenceLearningRunner : Instrumentation() {
             for (inline in listOf(InlinePreeditMode.DISABLE, InlinePreeditMode.COMPOSING_TEXT, InlinePreeditMode.COMMIT_TEXT_PREVIEW)) {
                 clearEditor()
                 ui { prefs.general.inlinePreeditMode.setValue(inline) }
+                val aged=System.currentTimeMillis()-29*SentenceRules.DAY_MS
+                repository.awaitIdle()
+                withContext(Dispatchers.IO) {
+                    (member(repository,"database") as SQLiteOpenHelper).writableDatabase.execSQL(
+                        "UPDATE sentences SET updated=? WHERE text=?",arrayOf<Any>(aged,sentence))
+                }
                 commit("感谢")
                 for (key in "gpt") session.runOnReady { processKey(key.code) }
                 waitForIdleSync()
@@ -229,6 +235,8 @@ class SentenceLearningRunner : Instrumentation() {
                     val location = IntArray(2); row.getLocationOnScreen(location)
                     floatArrayOf(location[0] + row.width / 2f, location[1] + row.height / 2f)
                 }
+                check(repository.learned().single().updated==aged) { "Merely showing a suggestion renewed its usage" }
+                val clickedAt=System.currentTimeMillis()
                 val down = SystemClock.uptimeMillis()
                 for (action in listOf(android.view.MotionEvent.ACTION_DOWN, android.view.MotionEvent.ACTION_UP)) {
                     val event = android.view.MotionEvent.obtain(down, SystemClock.uptimeMillis(), action, tap[0], tap[1], 0)
@@ -238,6 +246,7 @@ class SentenceLearningRunner : Instrumentation() {
                 await("Completion duplicated or lost text for $inline") { own.input.text.toString() == sentence }
                 repository.awaitIdle()
                 check(repository.learned().single().frequency == 3L) { "Completion trained itself" }
+                check(repository.learned().single().updated>=clickedAt) { "Successful completion did not renew retention" }
                 status("PASS_COMPLETION inline=$inline exactly one full sentence; no self-learning; fixed app inset")
             }
             clearEditor()

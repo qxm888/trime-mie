@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicLong
 /** Separate, bounded local database. No file/database operation runs in the key callback. */
 internal class SentenceRepository private constructor(context: Context) {
     data class Entry(val text: String, val frequency: Long, val updated: Long)
-    private class Database(context: Context) : SQLiteOpenHelper(context, "frequent_sentences.db", null, 2) {
+    private class Database(context: Context) : SQLiteOpenHelper(context, "frequent_sentences.db", null, 3) {
         override fun onConfigure(db: SQLiteDatabase) { db.enableWriteAheadLogging() }
         override fun onCreate(db: SQLiteDatabase) {
             db.execSQL("CREATE TABLE sentences (text TEXT PRIMARY KEY NOT NULL, lookup TEXT NOT NULL COLLATE NOCASE, t1 INTEGER NOT NULL, t2 INTEGER NOT NULL, t3 INTEGER NOT NULL, frequency INTEGER NOT NULL, learned INTEGER NOT NULL, updated INTEGER NOT NULL)")
@@ -33,10 +33,18 @@ internal class SentenceRepository private constructor(context: Context) {
                 db.execSQL("DROP INDEX IF EXISTS sentence_prefix")
                 db.execSQL("CREATE INDEX sentence_prefix ON sentences(learned, lookup COLLATE BINARY)")
             }
+            if (oldVersion < 3) {
+                // Older releases did not timestamp successful completion clicks. Keep
+                // existing learned phrases for one grace period rather than treating
+                // their last manual learning timestamp as their last actual use.
+                db.execSQL("UPDATE sentences SET updated=MAX(updated,?) WHERE learned=1", arrayOf(System.currentTimeMillis()))
+            }
         }
     }
     private sealed interface Work {
         data class Learn(val text: String, val now: Long, val epoch: Long) : Work
+        data class Used(val text: String, val now: Long, val epoch: Long) : Work
+        data class Maintain(val now: Long, val epoch: Long) : Work
         data class Barrier(val done: CompletableDeferred<Unit>) : Work
         data class Clear(val done: CompletableDeferred<Unit>) : Work
     }
@@ -47,11 +55,17 @@ internal class SentenceRepository private constructor(context: Context) {
     private val epoch = AtomicLong()
     private val clearing = AtomicBoolean()
     val dropped = AtomicLong()
+    private var lastPruned: Long? = null
     init {
         scope.launch {
             for (work in inbox) when (work) {
                 is Work.Learn -> if (work.epoch == epoch.get()) runCatching { record(work.text, work.now) }
                     .onFailure { Timber.w(it, "Sentence learning write failed") }
+                is Work.Used -> if (work.epoch == epoch.get()) runCatching { touch(work.text, work.now) }
+                    .onFailure { Timber.w(it, "Sentence usage update failed") }
+                is Work.Maintain -> if (work.epoch == epoch.get()) runCatching {
+                    lock.withLock { prune(database.writableDatabase, work.now) }
+                }.onFailure { Timber.w(it, "Sentence retention cleanup failed") }
                 is Work.Barrier -> work.done.complete(Unit)
                 is Work.Clear -> runCatching { lock.withLock { database.writableDatabase.delete("sentences", null, null) } }
                     .fold({ work.done.complete(Unit) }, { work.done.completeExceptionally(it) })
@@ -61,6 +75,29 @@ internal class SentenceRepository private constructor(context: Context) {
     fun offer(text: String, now: Long = System.currentTimeMillis()) {
         if (clearing.get()) return
         if (inbox.trySend(Work.Learn(text, now, epoch.get())).isFailure) dropped.incrementAndGet()
+    }
+    /** Called only after a successful completion insertion; viewing a suggestion is not use. */
+    fun used(text: String, now: Long = System.currentTimeMillis()) {
+        if (!clearing.get()) inbox.trySend(Work.Used(text, now, epoch.get()))
+    }
+    /** IME start requests cheap, throttled IO maintenance, including sessions with no new text. */
+    fun maintain(now: Long = System.currentTimeMillis()) {
+        if (!clearing.get()) inbox.trySend(Work.Maintain(now, epoch.get()))
+    }
+    private fun prune(db: SQLiteDatabase, now: Long, force: Boolean = false) {
+        val previous = lastPruned
+        if (!force && previous != null && now >= previous && now - previous < 60L * 60 * 1000) return
+        db.delete("sentences", "learned=0 AND updated<=?", arrayOf((now - SentenceRules.WEEK_MS).toString()))
+        db.delete("sentences", "learned=1 AND updated<=?", arrayOf((now - SentenceRules.LEARNED_RETENTION_MS).toString()))
+        lastPruned = now
+    }
+    private suspend fun touch(text: String, now: Long) = withContext(Dispatchers.IO) {
+        lock.withLock {
+            val db = database.writableDatabase
+            // An already expired/deleted phrase cannot be resurrected by a stale popup.
+            db.update("sentences", ContentValues().apply { put("updated", now) },
+                "text=? AND learned=1 AND updated>?", arrayOf(text, (now - SentenceRules.LEARNED_RETENTION_MS).toString()))
+        }
     }
     suspend fun awaitIdle() {
         val done = CompletableDeferred<Unit>(); inbox.send(Work.Barrier(done)); done.await()
@@ -80,6 +117,9 @@ internal class SentenceRepository private constructor(context: Context) {
             val db = database.writableDatabase
             db.beginTransaction()
             try {
+                // Expire before looking up this sentence: after a month of disuse it
+                // must qualify again, instead of keeping a permanent learned flag.
+                prune(db, now, force = true)
                 var times = emptyList<Long>(); var frequency = 0L; var learned = false
                 db.rawQuery("SELECT t1,t2,t3,frequency,learned FROM sentences WHERE text=?", arrayOf(text)).use {
                     if (it.moveToFirst()) {
@@ -95,7 +135,6 @@ internal class SentenceRepository private constructor(context: Context) {
                     put("learned", if (learned || recent.size >= 3) 1 else 0); put("updated", now)
                 }
                 check(db.insertWithOnConflict("sentences", null, row, SQLiteDatabase.CONFLICT_REPLACE) != -1L)
-                db.delete("sentences", "learned=0 AND updated<=?", arrayOf((now - SentenceRules.WEEK_MS).toString()))
                 for ((kind, limit) in listOf(0 to SentenceRules.PENDING_LIMIT, 1 to SentenceRules.LEARNED_LIMIT)) {
                     db.execSQL("DELETE FROM sentences WHERE text IN (SELECT text FROM sentences WHERE learned=$kind ORDER BY updated DESC, text LIMIT -1 OFFSET $limit)")
                 }
@@ -103,17 +142,20 @@ internal class SentenceRepository private constructor(context: Context) {
             } finally { db.endTransaction() }
         }
     }
-    suspend fun search(prefix: String): List<Entry> = withContext(Dispatchers.IO) {
+    suspend fun search(prefix: String, now: Long = System.currentTimeMillis()): List<Entry> = withContext(Dispatchers.IO) {
         if (prefix.length !in 2..SentenceRules.MAX_UTF16 || prefix.codePointCount(0, prefix.length) < 2) return@withContext emptyList()
         // Android's ICU LIKE implementation does not reliably use prefix range indexes.
         // Store normalized keys and query an explicit binary range instead.
         val lower = SentenceRules.lookup(prefix)
         val upper = SentenceRules.prefixEnd(lower)
         val range = if (upper == null) "lookup COLLATE BINARY>=?" else "lookup COLLATE BINARY>=? AND lookup COLLATE BINARY<?"
-        val args = if (upper == null) arrayOf(lower) else arrayOf(lower, upper)
+        val args = arrayOf((now - SentenceRules.LEARNED_RETENTION_MS).toString()) +
+            (if (upper == null) arrayOf(lower) else arrayOf(lower, upper))
         lock.withLock {
-            database.readableDatabase.rawQuery(
-                "SELECT text,frequency,updated FROM sentences WHERE learned=1 AND $range ORDER BY frequency DESC, updated DESC LIMIT 4", args,
+            val db = database.writableDatabase
+            prune(db, now)
+            db.rawQuery(
+                "SELECT text,frequency,updated FROM sentences INDEXED BY sentence_prefix WHERE learned=1 AND updated>? AND $range ORDER BY frequency DESC, updated DESC LIMIT 4", args,
             ).use { cursor -> buildList {
                 while (cursor.moveToNext()) {
                     val text = cursor.getString(0)
@@ -122,17 +164,25 @@ internal class SentenceRepository private constructor(context: Context) {
             } }
         }
     }
-    suspend fun learned(): List<Entry> = withContext(Dispatchers.IO) {
-        lock.withLock { database.readableDatabase.rawQuery(
-            "SELECT text,frequency,updated FROM sentences WHERE learned=1 ORDER BY updated DESC LIMIT ${SentenceRules.LEARNED_LIMIT}", null,
-        ).use { cursor -> buildList { while (cursor.moveToNext()) add(Entry(cursor.getString(0), cursor.getLong(1), cursor.getLong(2))) } } }
+    suspend fun learned(now: Long = System.currentTimeMillis()): List<Entry> = withContext(Dispatchers.IO) {
+        lock.withLock {
+            val db = database.writableDatabase
+            prune(db, now, force = true)
+            db.rawQuery(
+                "SELECT text,frequency,updated FROM sentences WHERE learned=1 ORDER BY updated DESC LIMIT ${SentenceRules.LEARNED_LIMIT}", null,
+            ).use { cursor -> buildList { while (cursor.moveToNext()) add(Entry(cursor.getString(0), cursor.getLong(1), cursor.getLong(2))) } }
+        }
     }
-    suspend fun counts(): Pair<Int, Int> = withContext(Dispatchers.IO) {
-        lock.withLock { database.readableDatabase.rawQuery("SELECT learned,COUNT(*) FROM sentences GROUP BY learned", null).use {
-            var pending = 0; var learned = 0
-            while (it.moveToNext()) if (it.getInt(0) == 0) pending = it.getInt(1) else learned = it.getInt(1)
-            pending to learned
-        } }
+    suspend fun counts(now: Long = System.currentTimeMillis()): Pair<Int, Int> = withContext(Dispatchers.IO) {
+        lock.withLock {
+            val db = database.writableDatabase
+            prune(db, now, force = true)
+            db.rawQuery("SELECT learned,COUNT(*) FROM sentences GROUP BY learned", null).use {
+                var pending = 0; var learned = 0
+                while (it.moveToNext()) if (it.getInt(0) == 0) pending = it.getInt(1) else learned = it.getInt(1)
+                pending to learned
+            }
+        }
     }
     companion object {
         @Volatile private var instance: SentenceRepository? = null

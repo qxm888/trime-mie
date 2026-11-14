@@ -43,8 +43,8 @@ class PetPortraitView(context:Context):View(context) {
         beak=value.id in listOf("bird","duck","penguin","crane","phoenix")
         muzzle=value.id in listOf("pig","cow","koala")
         blushY=if(value.id=="frog" || value.id=="jellyfish") 74f else 77f
-        back=if(value.id=="xiaomie" || value.id=="jige") null else AppCompatResources.getDrawable(context,PetArtwork.back(value.id))?.mutate()?.also { it.setBounds(0,0,128,128) }
-        body=if(value.id=="xiaomie" || value.id=="jige") null else AppCompatResources.getDrawable(context,PetArtwork.body(value.id))?.mutate()?.also { it.setBounds(0,0,128,128) }
+        back=if(value.id=="xiaomie" || value.id=="jige" || EldritchArt.handles(value.id)) null else AppCompatResources.getDrawable(context,PetArtwork.back(value.id))?.mutate()?.also { it.setBounds(0,0,128,128) }
+        body=if(value.id=="xiaomie" || value.id=="jige" || EldritchArt.handles(value.id)) null else AppCompatResources.getDrawable(context,PetArtwork.body(value.id))?.mutate()?.also { it.setBounds(0,0,128,128) }
         front=if(value.id=="monkey") AppCompatResources.getDrawable(context,com.osfans.trime.R.drawable.pet_monkey_front)?.mutate()?.also { it.setBounds(0,0,128,128) } else null
         eyeShader=makeEyeShader(if(value.id=="frog") 31.5f else 64f)
         if(changed) player.species(value.id)
@@ -53,6 +53,10 @@ class PetPortraitView(context:Context):View(context) {
     }
     override fun onDraw(canvas:Canvas) { super.onDraw(canvas);drawAt(canvas,width.toFloat(),height.toFloat(),player.pose) }
     internal fun drawAt(canvas:Canvas,width:Float,height:Float,pose:PetPose,miniature:Boolean=false,urAim:PetUrAim?=null,step:PetMiniStance?=null) {
+        if(EldritchArt.handles(pet.id)) {
+            EldritchArt.draw(context,canvas,width,height,pet,pose)
+            return
+        }
         val side=minOf(width,height);canvas.save();canvas.translate((width-side)/2,(height-side)/2);canvas.scale(side/128f,side/128f)
         resetPaint()
         if(halo) { paint.color=(color and 0xffffff) or 0x28000000;canvas.drawCircle(64f,65f,53f,paint) }

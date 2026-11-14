@@ -101,7 +101,7 @@ class PetFootstepRunner:Instrumentation() {
             pass("real PopupWindow uses compact 264x156 scene; last-row bottom padding under 8 units")
             shot("01-小咩站姿-紧凑键盘")
             val targets=listOf(keys.first(),keys[keys.size/2],keys.last())
-            for(species in PetCatalog.species) main {
+            for(species in PetCatalog.species.filterNot { com.osfans.trime.data.pets.EldritchCatalog.handles(it.id) }) main {
                 mini.bind(PetHouse.Pet(species.id));mini.setKeyboard(keyboard)
                 targets.forEach { key ->
                     mini.press(key.index)
@@ -119,7 +119,7 @@ class PetFootstepRunner:Instrumentation() {
                     image.recycle();animator.end();mini.release(key.index);mini.clearPresses()
                 }
             }
-            pass("${PetCatalog.species.size} real-device character renders x 3 target keys; airborne pose and sole-to-key landing checked")
+            pass("${PetCatalog.species.count { !com.osfans.trime.data.pets.EldritchCatalog.handles(it.id) }} real-device character renders x 3 target keys; airborne pose and sole-to-key landing checked")
             main {
                 mini.bind(PetHouse.Pet("xiaomie"));mini.clearPresses()
                 val key=keys.first();mini.press(key.index)
