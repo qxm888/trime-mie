@@ -31,7 +31,7 @@ object PetHouse {
         val ledger:List<Entry> = emptyList(),val history:List<Entry> = emptyList(),val error:String="",
         val miniExpanded:Boolean=false,val miniScale:Int=100,
         val miniX:Float=-1f,val miniY:Float=-1f,val miniLandscapeX:Float=-1f,val miniLandscapeY:Float=-1f,
-        val redeemed:Boolean=false,val xiaomieRedeemed:Boolean=false,val monkeyRedeemed:Boolean=false,val pityUR:Int=0,
+        val redeemed:Boolean=false,val xiaomieRedeemed:Boolean=false,val monkeyRedeemed:Boolean=false,val pityUR:Int=0,val jigeRedeemed:Boolean=false,
     ) { fun companion()=pets.firstOrNull { it.id==selected } }
     private val mutable=MutableStateFlow(State())
     val state=mutable.asStateFlow()
@@ -246,17 +246,14 @@ object PetHouse {
                     "redeem" -> {
                         val parts=id.split(":"); require(parts.size==2) { "兑换格式不正确" }
                         val (code,petId)=parts
-                        val special=code=="qxm520"
-                        val monkeyCode=code=="qxm555"
-                        check(special || monkeyCode || code=="qxm888") { "兑换码无效" }
-                        check(when { special -> !s.xiaomieRedeemed;monkeyCode -> !s.monkeyRedeemed;else -> !s.redeemed }) { "这个兑换码已经用过了" }
+                        val gift=PetRedeemCode.find(code) ?: error("兑换码无效")
                         val species=PetCatalog.species.firstOrNull { it.id==petId } ?: error("没有这位伙伴")
-                        check(when { special -> species.id=="xiaomie";monkeyCode -> species.id=="monkey";else -> species.rarity<4 }) { "此兑换码不支持这位伙伴" }
+                        gift.requireAvailable(s,species)
                         val owned=s.pets.any { it.id==species.id }
                         val giftFragments=if(species.rarity>=4) 50 else 20
                         s=if(owned) s.copy(pets=s.pets.map { if(it.id==species.id) it.copy(fragments=(it.fragments+giftFragments).coerceAtMost(1_000_000)) else it })
                           else s.copy(pets=s.pets+Pet(species.id),started=true,selected=species.id)
-                        s=log(when { special -> s.copy(xiaomieRedeemed=true);monkeyCode -> s.copy(monkeyRedeemed=true);else -> s.copy(redeemed=true) },"兑换码 · ${species.name}",0)
+                        s=log(gift.claim(s),"兑换码 · ${species.name}",0)
                         message=if(owned) "已拥有${species.name}，转化为同名碎片 ×$giftFragments" else "${species.name}来到你的小屋！"
                     }
                     else -> error("未知操作")
@@ -272,7 +269,7 @@ object PetHouse {
         return JSONObject().put("version",1).put("started",s.started).put("enabled",s.enabled).put("coins",s.coins).put("selected",s.selected)
             .put("day",s.day).put("dayPoints",s.dayPoints).put("claims",s.claims).put("pats",s.pats).put("totalPoints",s.totalPoints)
             .put("miniExpanded",s.miniExpanded).put("miniScale",s.miniScale).put("miniX",s.miniX).put("miniY",s.miniY).put("miniLandscapeX",s.miniLandscapeX).put("miniLandscapeY",s.miniLandscapeY)
-            .put("redeemed",s.redeemed).put("xiaomieRedeemed",s.xiaomieRedeemed).put("monkeyRedeemed",s.monkeyRedeemed).put("pityUR",s.pityUR)
+            .put("redeemed",s.redeemed).put("xiaomieRedeemed",s.xiaomieRedeemed).put("monkeyRedeemed",s.monkeyRedeemed).put("jigeRedeemed",s.jigeRedeemed).put("pityUR",s.pityUR)
             .put("pitySR",s.pitySR).put("pitySSR",s.pitySSR).put("draws",s.draws).put("mode",s.mode).put("inventory",JSONObject(s.inventory))
             .put("pets",JSONArray().apply { s.pets.forEach { p -> put(JSONObject().put("id",p.id).put("nickname",p.nickname).put("exp",p.exp).put("hunger",p.hunger).put("mood",p.mood).put("bond",p.bond).put("fragments",p.fragments).put("stage",p.stage).put("accessory",p.accessory)) } })
             .put("ledger",entries(s.ledger)).put("history",entries(s.history)).toString()
@@ -294,6 +291,6 @@ object PetHouse {
         return State(started,o.optBoolean("enabled",true),number("coins",1_000_000_000).toInt(),selected,pets,inventory,number("day",1_000_000,today()),number("dayPoints",10000).toInt(),number("claims",7).toInt(),number("pats",3).toInt(),number("totalPoints",1_000_000_000_000),number("pitySR",9).toInt(),number("pitySSR",49).toInt(),number("draws",1_000_000_000).toInt(),number("mode",2).toInt(),entries("ledger"),entries("history")).copy(
             miniExpanded=o.optBoolean("miniExpanded",o.optInt("mode")==2),miniScale=number("miniScale",150,100).toInt().also { require(it>=60) },
             miniX=position("miniX"),miniY=position("miniY"),miniLandscapeX=position("miniLandscapeX"),miniLandscapeY=position("miniLandscapeY"),
-            redeemed=o.optBoolean("redeemed",false),xiaomieRedeemed=o.optBoolean("xiaomieRedeemed",false),monkeyRedeemed=o.optBoolean("monkeyRedeemed",false),pityUR=number("pityUR",199).toInt())
+            redeemed=o.optBoolean("redeemed",false),xiaomieRedeemed=o.optBoolean("xiaomieRedeemed",false),monkeyRedeemed=o.optBoolean("monkeyRedeemed",false),jigeRedeemed=o.optBoolean("jigeRedeemed",false),pityUR=number("pityUR",199).toInt())
     }
 }

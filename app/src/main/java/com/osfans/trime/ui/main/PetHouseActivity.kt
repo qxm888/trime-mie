@@ -258,10 +258,11 @@ class PetHouseActivity:AppCompatActivity() {
         } }
         card {
             addView(text("兑换口",20,ink,true))
-            addView(text("输入兑换码，领取对应伙伴；小咩和猴哥支持专属兑换。",13,muted),lp().apply { topMargin=dp(8);bottomMargin=dp(12) })
+            addView(text("输入兑换码，领取对应伙伴；小咩、猴哥和鸡哥支持专属兑换。",13,muted),lp().apply { topMargin=dp(8);bottomMargin=dp(12) })
             if(data.redeemed) addView(text("任选伙伴兑换已领取，可继续输入其它兑换码。",13,muted))
             if(data.xiaomieRedeemed) addView(text("小咩专属兑换已领取。",13,muted))
             if(data.monkeyRedeemed) addView(text("猴哥专属兑换已领取。",13,muted))
+            if(data.jigeRedeemed) addView(text("鸡哥专属兑换已领取。",13,muted))
             buttons("输入兑换码" to { redeemCode() })
         }
         content.addView(text("离线时饱腹每天降低 30，最低保留 20；伙伴不会死亡或离开。",12,muted))
@@ -278,13 +279,14 @@ class PetHouseActivity:AppCompatActivity() {
             .setPositiveButton("下一步") { _,_ ->
                 val code=field.text?.toString()?.trim() ?: ""
                 val account=PetHouse.state.value
-                if(code.isEmpty()) Toast.makeText(this,"请先输入兑换码",Toast.LENGTH_SHORT).show()
-                else if(code=="qxm520" && account.xiaomieRedeemed || code=="qxm888" && account.redeemed || code=="qxm555" && account.monkeyRedeemed)
-                    Toast.makeText(this,"这个兑换码已经用过了，可以输入其它兑换码",Toast.LENGTH_SHORT).show()
-                else if(code=="qxm520") redeemConfirm(code,"xiaomie","小咩")
-                else if(code=="qxm555") redeemConfirm(code,"monkey","猴哥")
-                else if(code=="qxm888") redeemPick(code)
-                else Toast.makeText(this,"兑换码无效",Toast.LENGTH_SHORT).show()
+                val gift=com.osfans.trime.data.pets.PetRedeemCode.find(code)
+                when {
+                    code.isEmpty() -> Toast.makeText(this,"请先输入兑换码",Toast.LENGTH_SHORT).show()
+                    gift==null -> Toast.makeText(this,"兑换码无效",Toast.LENGTH_SHORT).show()
+                    gift.used(account) -> Toast.makeText(this,"这个兑换码已经用过了，可以输入其它兑换码",Toast.LENGTH_SHORT).show()
+                    gift.petId==null -> redeemPick(code)
+                    else -> { val sp=PetCatalog.get(gift.petId);redeemConfirm(code,sp.id,sp.name) }
+                }
             }.show()
     }
     private fun redeemPick(code:String) {

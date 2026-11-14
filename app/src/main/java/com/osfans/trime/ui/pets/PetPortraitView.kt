@@ -21,6 +21,7 @@ class PetPortraitView(context:Context):View(context) {
     private var back:Drawable?=null
     private var body:Drawable?=null
     private var front:Drawable?=null
+    private val jigeArtwork by lazy { PetJigeArtwork(context) }
     private val urArms=PetUrArms(context)
     private val miniLimbs=PetMiniLimbs()
     private val stepAim=PetUrAim()
@@ -42,8 +43,8 @@ class PetPortraitView(context:Context):View(context) {
         beak=value.id in listOf("bird","duck","penguin","crane","phoenix")
         muzzle=value.id in listOf("pig","cow","koala")
         blushY=if(value.id=="frog" || value.id=="jellyfish") 74f else 77f
-        back=if(value.id=="xiaomie") null else AppCompatResources.getDrawable(context,PetArtwork.back(value.id))?.mutate()?.also { it.setBounds(0,0,128,128) }
-        body=if(value.id=="xiaomie") null else AppCompatResources.getDrawable(context,PetArtwork.body(value.id))?.mutate()?.also { it.setBounds(0,0,128,128) }
+        back=if(value.id=="xiaomie" || value.id=="jige") null else AppCompatResources.getDrawable(context,PetArtwork.back(value.id))?.mutate()?.also { it.setBounds(0,0,128,128) }
+        body=if(value.id=="xiaomie" || value.id=="jige") null else AppCompatResources.getDrawable(context,PetArtwork.body(value.id))?.mutate()?.also { it.setBounds(0,0,128,128) }
         front=if(value.id=="monkey") AppCompatResources.getDrawable(context,com.osfans.trime.R.drawable.pet_monkey_front)?.mutate()?.also { it.setBounds(0,0,128,128) } else null
         eyeShader=makeEyeShader(if(value.id=="frog") 31.5f else 64f)
         if(changed) player.species(value.id)
@@ -68,7 +69,9 @@ class PetPortraitView(context:Context):View(context) {
             canvas.translate(0f,pose.y);canvas.rotate(pose.angle,64f,87f)
             if(PetUrRig.profile(pet.id)==null) canvas.scale(1+pose.squash,1-pose.squash,64f,88f)
         }
-        if(pet.id=="xiaomie") {
+        if(pet.id=="jige") {
+            jigeArtwork.draw(canvas,pose,if(miniature) step else null)
+        } else if(pet.id=="xiaomie") {
             PetUrArtwork.draw(canvas,pose,if(miniature) step else null)
             urArms.draw(canvas,pet.id,pose,if(miniature) stepAim else urAim,miniature)
         } else {

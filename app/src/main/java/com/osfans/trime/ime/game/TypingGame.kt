@@ -5,10 +5,16 @@ import android.annotation.SuppressLint
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Rect
+import android.os.Build
 import android.text.TextPaint
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewTreeObserver
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import com.osfans.trime.ime.core.TrimeInputMethodService
 import android.widget.PopupWindow
 import com.osfans.trime.core.data.DataManager
 import com.osfans.trime.util.appContext
@@ -25,7 +31,14 @@ object TypingGame {
 
     private var window: PopupWindow? = null
     private var gameView: GameView? = null
-    private var service: android.inputmethodservice.InputMethodService? = null
+    private var service: TrimeInputMethodService? = null
+    private var observedRoot: View? = null
+    private val lastArea = Rect()
+    private val keyboardBounds = Rect()
+    private val visibleDisplayFrame = Rect()
+    private val location = IntArray(2)
+    private val windowLocation = IntArray(2)
+    private val geometryListener = ViewTreeObserver.OnPreDrawListener { refreshGeometry(); true }
 
     val isRunning: Boolean get() = window?.isShowing == true
 
@@ -33,19 +46,37 @@ object TypingGame {
     fun dictFiles(): List<File> = dictDir().listFiles().orEmpty()
         .filter { it.isFile && it.extension.lowercase() == "txt" }.sortedBy { it.name }
 
-    /** 由键灵弹出菜单调用：记录服务，区域取迷你键盘上方整屏。 */
-    fun attach(service: android.inputmethodservice.InputMethodService, anchor: View) {
-        this.service = service
-        val loc = IntArray(2)
-        anchor.getLocationOnScreen(loc)
-        val dm = anchor.resources.displayMetrics
-        pendingWidth = dm.widthPixels
-        pendingHeight = (loc[1] - statusBarHeight(anchor)).coerceAtLeast(dm.heightPixels / 3)
-        android.util.Log.d("TypingGame", "attach w=$pendingWidth h=$pendingHeight miniTop=${loc[1]}")
-    }
+    /** The mini companion opens the game but never controls its size or position. */
+    fun attach(service: TrimeInputMethodService) { this.service = service }
 
-    private var pendingWidth = 0
-    private var pendingHeight = 0
+    private fun area(anchor: View): TypingGameLayout.Area? {
+        val svc = service ?: return null
+        if (!svc.typingGameKeyboardBoundsOnScreen(keyboardBounds)) return null
+        val metrics = anchor.resources.displayMetrics
+        val insets = ViewCompat.getRootWindowInsets(anchor)?.getInsets(
+            WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
+        // Some IME windows report a zero status-bar inset because their window already
+        // starts below it. The visible frame retains that screen-space top boundary.
+        anchor.getWindowVisibleDisplayFrame(visibleDisplayFrame)
+        return TypingGameLayout.area(metrics.widthPixels, metrics.heightPixels,
+            insets?.left ?: 0, maxOf(insets?.top ?: 0, visibleDisplayFrame.top),
+            insets?.right ?: 0, insets?.bottom ?: 0, keyboardBounds.top)
+    }
+    private fun popupPosition(anchor: View, x: Int, y: Int): Pair<Int, Int> {
+        if (Build.VERSION.SDK_INT >= 29) return x to y
+        anchor.getLocationOnScreen(location); anchor.getLocationInWindow(windowLocation)
+        return x - location[0] + windowLocation[0] to y - location[1] + windowLocation[1]
+    }
+    private fun refreshGeometry() {
+        val popup = window?.takeIf { it.isShowing } ?: return
+        val root = observedRoot ?: return
+        val area = area(root) ?: return
+        if (lastArea.left == area.left && lastArea.top == area.top && lastArea.right == area.right && lastArea.bottom == area.bottom) return
+        lastArea.set(area.left, area.top, area.right, area.bottom)
+        gameView?.resizePlayfield(area.width, area.height)
+        val (x, y) = popupPosition(root, area.left, area.top)
+        popup.update(x, y, area.width, area.height)
+    }
 
     fun toggle() {
         if (isRunning) stop() else start()
@@ -55,22 +86,31 @@ object TypingGame {
         stop()
         val svc = service ?: return
         val anchor = svc.window?.window?.decorView ?: return
-        val width = pendingWidth.takeIf { it > 0 } ?: anchor.resources.displayMetrics.widthPixels
-        val height = pendingHeight.takeIf { it > 0 } ?: (anchor.height.coerceAtLeast(400))
-        val view = GameView(anchor, width, height, statusBarHeight(anchor))
+        val area = area(anchor) ?: return
+        // The panel itself starts below the status bar; no second top inset inside it.
+        val view = GameView(anchor, area.width, area.height, 0)
         gameView = view
-        window = PopupWindow(view, width, height, false).apply {
-            isTouchable = true
-            isOutsideTouchable = false
+        lastArea.set(area.left, area.top, area.right, area.bottom)
+        window = PopupWindow(view, area.width, area.height, false).apply {
+            isTouchable = true; isOutsideTouchable = false
             inputMethodMode = PopupWindow.INPUT_METHOD_NOT_NEEDED
-            animationStyle = 0
-            setOnDismissListener { view.stopLoop() }
-            showAtLocation(anchor, Gravity.TOP or Gravity.START, 0, 0)
+            isClippingEnabled = false; animationStyle = 0
+            if (Build.VERSION.SDK_INT >= 22) isAttachedInDecor = false
+            if (Build.VERSION.SDK_INT >= 29) setIsLaidOutInScreen(true)
+            setOnDismissListener {
+                observedRoot?.viewTreeObserver?.takeIf { it.isAlive }?.removeOnPreDrawListener(geometryListener)
+                observedRoot = null; view.stopLoop()
+            }
+            val (x, y) = popupPosition(anchor, area.left, area.top)
+            showAtLocation(anchor, Gravity.TOP or Gravity.LEFT, x, y)
         }
-        android.util.Log.d("TypingGame", "start w=$width h=$height")
+        observedRoot = anchor
+        anchor.viewTreeObserver.addOnPreDrawListener(geometryListener)
     }
 
     fun stop() {
+        observedRoot?.viewTreeObserver?.takeIf { it.isAlive }?.removeOnPreDrawListener(geometryListener)
+        observedRoot = null
         gameView?.stopLoop()
         gameView = null
         window?.dismiss()
@@ -81,11 +121,6 @@ object TypingGame {
         if (!isRunning) return
         val active = gameView ?: return
         active.post { if (gameView === active) active.onCommit(text) }
-    }
-
-    private fun statusBarHeight(anchor: View): Int {
-        val id = anchor.resources.getIdentifier("status_bar_height", "dimen", "android")
-        return if (id > 0) anchor.resources.getDimensionPixelSize(id) else 0
     }
 
     private fun prefs() = appContext.getSharedPreferences(PREFS, android.content.Context.MODE_PRIVATE)
@@ -99,7 +134,7 @@ object TypingGame {
     }
 
     @SuppressLint("ViewConstructor")
-    class GameView(anchor: View, private val widthPx: Int, private val heightPx: Int, private val statusBarHeight: Int) : View(anchor.context) {
+    class GameView(anchor: View, private var widthPx: Int, private var heightPx: Int, private val statusBarHeight: Int) : View(anchor.context) {
         init {
             android.util.Log.d("TypingGame", "GameView created ${widthPx}x$heightPx")
         }
@@ -182,7 +217,6 @@ object TypingGame {
             postInvalidateOnAnimation()
         }
 
-        private fun levelDuration() = (9000L - (level - 1) * 130L).coerceAtLeast(2800L)
         private fun levelQuota() = 8 + 2 * level
         private fun levelConcurrent() = min(4, 1 + (level - 1) / 8)
         private fun spawnInterval() = (1400f - level * 15f).coerceAtLeast(500f)
@@ -203,9 +237,9 @@ object TypingGame {
             }.coerceIn(dp(11f), dp(24f))
             val w = itemPaint.measureText(text)
             val x = Random.nextFloat() * (widthPx - dp(24f) - w).coerceAtLeast(0f) + dp(12f) + w / 2f
-            val duration = levelDuration().toFloat() / 1000f
             val spawnY = statusBarHeight + dp(76f)
-            items.add(FallingWord(text, x, spawnY, (effects.floorY - spawnY).coerceAtLeast(dp(40f)) / duration, itemPaint.textSize))
+            items.add(FallingWord(text, x, spawnY,
+                TypingGameLayout.fallSpeed(level, effects.floorY - spawnY, resources.displayMetrics.density), itemPaint.textSize))
         }
 
         fun onCommit(text: String) {
@@ -249,8 +283,24 @@ object TypingGame {
             soundRect.set(pauseRect.left - dp(70f), top, pauseRect.left - dp(6f), top + size)
         }
 
+        fun resizePlayfield(w: Int, h: Int) {
+            if (w <= 0 || h <= 0 || (w == widthPx && h == heightPx)) return
+            val oldWidth = widthPx
+            val spawnY = statusBarHeight + dp(76f)
+            val oldTravel = (effects.floorY - spawnY).coerceAtLeast(1f)
+            widthPx = w; heightPx = h; effects.resize(w, h)
+            val newTravel = (effects.floorY - spawnY).coerceAtLeast(1f)
+            for (item in items) {
+                val progress = (item.y - spawnY) / oldTravel
+                item.x = (item.x / oldWidth * w).coerceIn(0f, w.toFloat())
+                item.y = spawnY + progress * newTravel
+                item.speed *= newTravel / oldTravel
+            }
+            updateHudRects(); invalidate()
+        }
         override fun onSizeChanged(w: Int, h: Int, ow: Int, oh: Int) {
             super.onSizeChanged(w, h, ow, oh)
+            resizePlayfield(w, h)
             updateHudRects()
         }
 

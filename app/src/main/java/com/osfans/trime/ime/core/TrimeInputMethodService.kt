@@ -111,6 +111,14 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
     fun notifyPetKeyboard(keyboard:com.osfans.trime.ime.keyboard.Keyboard) {
         if(petCompanionDelegate.isInitialized()) petCompanionDelegate.value.keyboardChanged(keyboard)
     }
+    fun typingGameKeyboardBoundsOnScreen(outBounds: android.graphics.Rect): Boolean {
+        val view = inputView ?: return false
+        if (!view.getSentenceSuggestionAnchor(outBounds)) return false
+        val onScreen = IntArray(2); val inWindow = IntArray(2)
+        view.getLocationOnScreen(onScreen); view.getLocationInWindow(inWindow)
+        outBounds.offset(onScreen[0] - inWindow[0], onScreen[1] - inWindow[1])
+        return true
+    }
     fun petKeyboardTopOnScreen():Int {
         val view=inputView?.keyboardView ?: return (resources.displayMetrics.heightPixels*.72f).toInt()
         val location=IntArray(2);view.getLocationOnScreen(location);return location[1]

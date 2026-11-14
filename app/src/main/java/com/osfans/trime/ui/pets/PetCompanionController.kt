@@ -198,7 +198,7 @@ class PetCompanionController(private val service:TrimeInputMethodService) {
                     3 -> action("mini_scale",(scale-15).coerceAtLeast(60).toString())
                     4 -> action("mini_reset")
                     5 -> PetHouseActivity.start(service)
-                    9 -> { TypingGame.attach(service, mini); TypingGame.toggle() }
+                    9 -> { TypingGame.attach(service); TypingGame.toggle() }
                 };true
             }
             runCatching { show() }

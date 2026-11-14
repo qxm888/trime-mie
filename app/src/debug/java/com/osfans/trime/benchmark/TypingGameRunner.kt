@@ -5,6 +5,11 @@ import android.app.Activity
 import android.app.Instrumentation
 import android.content.Intent
 import android.graphics.RectF
+import android.graphics.Rect
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import com.osfans.trime.ime.core.InputView
+import kotlin.math.abs
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.MotionEvent
@@ -71,6 +76,7 @@ class TypingGameRunner : Instrumentation() {
         target
     }
     private fun screenshot(name: String) {
+        SystemClock.sleep(300) // Wait for the popup buffer to reach the compositor.
         val bitmap = checkNotNull(uiAutomation.takeScreenshot())
         File(targetContext.filesDir, "$name.png").outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
         bitmap.recycle()
@@ -92,16 +98,74 @@ class TypingGameRunner : Instrumentation() {
             val pets = member(PetHouse, "mutable") as MutableStateFlow<PetHouse.State>
             originalPets = pets.value
             ui { pets.value = PetHouse.State(started = true, selected = "sheep", pets = listOf(PetHouse.Pet("sheep"))) }
+            fun input() = member(ime, "inputView") as InputView
+            var lastGeometry = ""
+            fun fullScreen(): Boolean {
+                val view = game()
+                if (!view.isAttachedToWindow || view.width == 0) return false
+                val keyboard = Rect()
+                if (!ime.typingGameKeyboardBoundsOnScreen(keyboard)) return false
+                val at = IntArray(2); view.getLocationOnScreen(at)
+                val insets = ViewCompat.getRootWindowInsets(ime.window.window!!.decorView)?.getInsets(
+                    WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
+                val displayFrame = Rect(); ime.window.window!!.decorView.getWindowVisibleDisplayFrame(displayFrame)
+                val statusTop = maxOf(insets?.top ?: 0, displayFrame.top)
+                val geometry = "popup=${at[0]},${at[1]},${view.width},${view.height} keyboard=$keyboard insets=$insets visibleFrame=$displayFrame"
+                if (lastGeometry != geometry) { lastGeometry = geometry; status("GAME_GEOMETRY $geometry") }
+                return abs(at[1] - statusTop) <= 2 &&
+                    abs(at[1] + view.height - keyboard.top) <= 2 &&
+                    abs(at[0] - (insets?.left ?: 0)) <= 2 &&
+                    abs(view.width - (view.resources.displayMetrics.widthPixels - (insets?.left ?: 0) - (insets?.right ?: 0))) <= 2
+            }
             fun open() {
-                ui { TypingGame.attach(ime, own.input); TypingGame.start() }
-                await("Game menu missing") { game().isAttachedToWindow && game().width > 0 }
+                ui {
+                    val rect = Rect()
+                    val valid = ime.typingGameKeyboardBoundsOnScreen(rect)
+                    val root = ime.window.window!!.decorView
+                    val at = IntArray(2); input().keyboardView.getLocationOnScreen(at)
+                    status("BEFORE_OPEN valid=$valid bounds=$rect keyboard=${at.toList()} shown=${input().keyboardView.isShown} root=${root.width}x${root.height} metrics=${root.resources.displayMetrics} insets=${ViewCompat.getRootWindowInsets(root)}")
+                    TypingGame.attach(ime); TypingGame.start()
+                }
+                await("Game menu missing") { (field(TypingGame, "gameView").get(TypingGame) as? View)?.let { it.isAttachedToWindow && it.width > 0 } == true }
+                await("Game does not fill keyboard-to-status-bar space") { fullScreen() }
                 waitForIdleSync()
             }
+            for (mode in listOf(0, 1, 2)) {
+                ui { TypingGame.stop(); AppPrefs.defaultInstance().keyboard.oneHandMode.setValue(mode) }
+                await("Keyboard mode unavailable") { input().isOneHandMode == (mode != 0) && input().keyboardView.isShown }
+                SystemClock.sleep(500); open()
+                screenshot("game-full-mode-$mode")
+                status("PASS_FULLSCREEN mode=$mode actual popup spans all available space and leaves keyboard uncovered")
+            }
+            ui { TypingGame.stop(); AppPrefs.defaultInstance().keyboard.oneHandMode.setValue(0) }
+            await("Docked mode unavailable") { !input().isOneHandMode && input().keyboardView.isShown }
+            SystemClock.sleep(500)
             ui { prefs.edit().clear().putBoolean("soundEnabled", false).commit() }
             open(); screenshot("game-menu-initial")
             check(ui { member(game(), "startLevel") } == 1)
             check(ui { (member(game(), "menuRects") as List<*>).none { (it as Pair<*, *>).second == "level:2" } })
             menu("start")
+            hud("pauseRect")
+            val resizedView = ui { game() }
+            val movingTarget = seed(resizedView)
+            val effectsBefore = ui { member(resizedView, "effects") as TypingGameEffects }
+            val remaining = ui { movingTarget.speed = 100f; (effectsBefore.floorY - movingTarget.y) / movingTarget.speed }
+            val oldHeight = ui { resizedView.height }
+            val keyboardView = ui { input().keyboardView }
+            val oldTranslation = ui { keyboardView.translationY }
+            try {
+                ui { keyboardView.translationY = oldTranslation - own.resources.displayMetrics.density * 100; keyboardView.requestLayout() }
+                await("Popup did not follow changed keyboard geometry") { fullScreen() && resizedView.height != oldHeight }
+                ui {
+                    check(abs((effectsBefore.floorY - movingTarget.y) / movingTarget.speed - remaining) < .05f)
+                    check(member(resizedView, "state").toString() == "PAUSED" && member(resizedView, "score") == 0)
+                }
+                status("PASS_RESIZE keyboard movement updates field without resetting score, pause or remaining time")
+            } finally {
+                ui { keyboardView.translationY = oldTranslation; keyboardView.requestLayout() }
+                await("Popup did not restore geometry") { fullScreen() && resizedView.height == oldHeight }
+            }
+            hud("pauseRect")
             repeat(10) { index ->
                 val view = ui { game() }; seed(view)
                 ui { TypingGame.onCommit("的") }; waitForIdleSync()

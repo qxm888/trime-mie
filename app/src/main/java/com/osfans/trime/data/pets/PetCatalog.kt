@@ -61,6 +61,7 @@ object PetCatalog {
         Species("dragonfly","琥珀",2,"薄翼载着远古的光，停在指尖稍作停留。",0xfff2c14e.toInt()),
         Species("axolotl","珠露",2,"腮边的小花，是春天写在信上的落款。",0xffffb3c6.toInt()),
         Species("hummingbird","紫电",2,"快过闪电的翅膀，追上每一个灵感。",0xffc97fe8.toInt()),
+        Species("jige","鸡哥",3,"银灰中分、黑色背带裤，侧肩一靠就跟上打字节拍。",0xffffd04a.toInt()),
         Species("xiaomie","小咩",4,"把你的每次敲键，都变成闪闪发光的小心意。",0xffedc48d.toInt(),false),
         Species("monkey","猴哥",4,"金箍棒换成键盘，一个字就是一个筋斗。",0xffe05560.toInt()),
     )

@@ -1,0 +1,7 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="128dp" android:height="128dp" android:viewportWidth="128" android:viewportHeight="128">
+  <path android:pathData="M64,19 C48,9 30,16 24,30 L21,40 L27,43 L26,52 L42,53 L46,39 L47,52 L57,50 L62,34 L65,23 L71,24 L74,40 L86,49 L97,50 L97,43 L103,43 C105,27 88,11 74,16 L67,19 Z" android:fillColor="#BEC0C3" android:strokeColor="#19191D" android:strokeWidth="2.8" android:strokeLineJoin="round" android:strokeLineCap="round" />
+  <path android:pathData="M61,20 Q43,16 31,35 L30,46" android:fillColor="#00000000" android:strokeColor="#E5E5E3" android:strokeWidth="3.1" android:strokeLineJoin="round" android:strokeLineCap="round" />
+  <path android:pathData="M57,24 Q47,32 45,43 M39,30 L35,48 M80,22 Q92,29 94,40" android:fillColor="#00000000" android:strokeColor="#E7E7E4" android:strokeWidth="1.7" android:strokeLineJoin="round" android:strokeLineCap="round" />
+  <path android:pathData="M52,29 L49,46 M86,28 L89,44 M66,24 L62,36" android:fillColor="#00000000" android:strokeColor="#92949A" android:strokeWidth="1.3" android:strokeLineJoin="round" android:strokeLineCap="round" />
+</vector>

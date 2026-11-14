@@ -15,26 +15,35 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-internal data class FallingWord(val text: String, val x: Float, var y: Float,
-    val speed: Float, val size: Float, var typed: Int = 0)
+internal data class FallingWord(val text: String, var x: Float, var y: Float,
+    var speed: Float, val size: Float, var typed: Int = 0)
 
 /** One frame clock shared by projectiles and the existing layered character artwork. */
 internal class TypingGameEffects(context: Context, width: Int, height: Int) {
     private val pet = PetHouse.state.value.companion() ?: PetHouse.Pet("sheep")
     private val portrait = PetPortraitView(context).apply { halo = false; bind(pet) }
-    private val love = pet.id == "xiaomie"
+    private val attack = TypingGameAttack.forPet(pet.id)
+    private val love = attack == TypingGameAttack.HEART
+    private val chick = attack == TypingGameAttack.CHICK
     private val pose = PetPose()
     private val arms = PetUrAim()
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val path = Path()
     private var clock = 0L
     private var attackAt = -1000L
-    private val side = minOf(width * .32f, height * .25f)
-    private val left = (width - side) / 2f
-    private val top = height - side - 8f
-    val floorY = top + side * .08f
-    private val originX = width / 2f
-    private val originY = top + side * .42f
+    private var side = 0f
+    private var left = 0f
+    private var top = 0f
+    var floorY = 0f; private set
+    private var originX = 0f
+    private var originY = 0f
+    init { resize(width, height) }
+    fun resize(width: Int, height: Int) {
+        side = minOf(width * .32f, height * .25f)
+        left = (width - side) / 2f; top = height - side - 8f
+        floorY = top + side * .08f
+        originX = width / 2f; originY = top + side * .42f
+    }
     private data class Shot(val target: FallingWord, val finishing: Boolean, val born: Long)
     private data class Burst(val x: Float, val y: Float, val born: Long)
     private val shots = mutableListOf<Shot>()
@@ -42,6 +51,7 @@ internal class TypingGameEffects(context: Context, width: Int, height: Int) {
     var launches = 0; private set
     var impacts = 0; private set
     val heartAttacks get() = love
+    val chickAttacks get() = chick
     val activeShots get() = shots.size
 
     fun fire(target: FallingWord, finishing: Boolean) {
@@ -76,7 +86,7 @@ internal class TypingGameEffects(context: Context, width: Int, height: Int) {
         pose.reset(); pose.phase = phase; pose.amount = pulse
         pose.face = if (love) PetFace.LOVE else PetFace.FOCUSED
         pose.interaction = if (love) PetInteraction.LOVE else PetInteraction.PLAY
-        pose.y = -pulse * 5f; pose.angle = pulse * (if (love) -4f else 3f)
+        pose.y = if (chick) 0f else -pulse * 5f; pose.angle = if (chick) 0f else pulse * (if (love) -4f else 3f)
         pose.squash = pulse * .025f; pose.backAngle = -pose.angle
         arms.leftActive = true; arms.rightActive = true
         arms.leftAngle = 20f + pulse * 120f; arms.rightAngle = -20f - pulse * 120f
@@ -88,17 +98,21 @@ internal class TypingGameEffects(context: Context, width: Int, height: Int) {
             val endY = shot.target.y - shot.target.size * .35f
             val x = originX + (shot.target.x - originX) * t + sin(t * PI).toFloat() * (if (love) 12 else -8)
             val y = originY + (endY - originY) * t
-            val radius = side * .045f
-            paint.color = if (love) 0xffff7cac.toInt() else 0xffa6ecff.toInt()
+            val radius = side * (if (chick) .06f else .045f)
+            paint.color = when { chick -> 0xffffd04a.toInt(); love -> 0xffff7cac.toInt(); else -> 0xffa6ecff.toInt() }
             paint.alpha = 42
             canvas.drawCircle(x, y, radius * 2.1f, paint)
             paint.alpha = 255
-            if (love) heart(canvas, x, y, radius) else canvas.drawCircle(x, y, radius, paint)
+            when {
+                chick -> drawChick(canvas, x, y, radius, sin(t * PI * 4).toFloat() * 12f)
+                love -> heart(canvas, x, y, radius)
+                else -> canvas.drawCircle(x, y, radius, paint)
+            }
             paint.color = 0xd0ffffff.toInt(); canvas.drawCircle(x - radius * .23f, y - radius * .24f, radius * .22f, paint)
         }
         for (burst in bursts) {
             val t = (clock - burst.born) / 360f
-            paint.color = if (love) 0xffff9bc0.toInt() else 0xffc4f1ff.toInt()
+            paint.color = when { chick -> 0xffffdb71.toInt(); love -> 0xffff9bc0.toInt(); else -> 0xffc4f1ff.toInt() }
             paint.alpha = ((1 - t) * 230).toInt().coerceIn(0, 255)
             repeat(8) { i ->
                 val a = i * PI / 4
@@ -110,6 +124,22 @@ internal class TypingGameEffects(context: Context, width: Int, height: Int) {
             }
         }
         paint.alpha = 255
+    }
+    /** A tiny yellow bird silhouette, with its own beak, eyes and flapping wings. */
+    private fun drawChick(c:Canvas,x:Float,y:Float,r:Float,tilt:Float) {
+        c.save();c.translate(x,y);c.rotate(tilt)
+        paint.color=0xffffd04a.toInt();paint.alpha=255
+        c.drawOval(-r*.85f,-r*.35f,r*.85f,r,paint)
+        c.drawCircle(0f,-r*.45f,r*.83f,paint)
+        paint.color=0xffffe58b.toInt()
+        c.drawOval(-r*1.25f,-r*.05f,-r*.5f,r*.5f,paint)
+        c.drawOval(r*.5f,-r*.05f,r*1.25f,r*.5f,paint)
+        paint.color=0xff272125.toInt()
+        c.drawCircle(-r*.3f,-r*.5f,r*.105f,paint);c.drawCircle(r*.3f,-r*.5f,r*.105f,paint)
+        paint.color=0xfff3a126.toInt()
+        path.reset();path.moveTo(-r*.2f,-r*.2f);path.lineTo(r*.2f,-r*.2f);path.lineTo(0f,r*.05f);path.close();c.drawPath(path,paint)
+        c.drawOval(-r*.48f,r*.86f,-r*.04f,r*1.07f,paint);c.drawOval(r*.04f,r*.86f,r*.48f,r*1.07f,paint)
+        c.restore()
     }
     private fun heart(canvas: Canvas, x: Float, y: Float, r: Float) {
         path.reset(); path.moveTo(x, y + r)
