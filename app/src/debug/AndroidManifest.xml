@@ -36,6 +36,7 @@
     <instrumentation android:name="com.osfans.trime.benchmark.OneHandPreeditRunner" android:targetPackage="${applicationId}" />
     <instrumentation android:name="com.osfans.trime.benchmark.TypingGameRunner" android:targetPackage="${applicationId}" />
     <instrumentation android:name="com.osfans.trime.benchmark.SentenceLearningRunner" android:targetPackage="${applicationId}" />
+    <instrumentation android:name="com.osfans.trime.benchmark.TypingGameInputRunner" android:targetPackage="${applicationId}" />
     <application>
         <activity android:name="com.osfans.trime.benchmark.SentenceLearningActivity" android:exported="false" />
         <activity android:name="com.osfans.trime.benchmark.OneHandPreeditActivity" android:exported="false" />

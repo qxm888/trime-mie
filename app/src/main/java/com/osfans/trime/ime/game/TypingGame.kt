@@ -6,6 +6,8 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
+import android.content.Intent
+import android.view.inputmethod.EditorInfo
 import android.os.Build
 import android.text.TextPaint
 import android.view.Gravity
@@ -32,6 +34,9 @@ object TypingGame {
     private var window: PopupWindow? = null
     private var gameView: GameView? = null
     private var service: TrimeInputMethodService? = null
+    private var host: TypingGameActivity? = null
+    private var launching = false
+    private val editorLocation = IntArray(2)
     private var observedRoot: View? = null
     private val lastArea = Rect()
     private val keyboardBounds = Rect()
@@ -40,7 +45,7 @@ object TypingGame {
     private val windowLocation = IntArray(2)
     private val geometryListener = ViewTreeObserver.OnPreDrawListener { refreshGeometry(); true }
 
-    val isRunning: Boolean get() = window?.isShowing == true
+    val isRunning: Boolean get() = launching || host != null
 
     fun dictDir(): File = File(DataManager.userDataDir, DICT_DIR).apply { mkdirs() }
     fun dictFiles(): List<File> = dictDir().listFiles().orEmpty()
@@ -52,15 +57,19 @@ object TypingGame {
     private fun area(anchor: View): TypingGameLayout.Area? {
         val svc = service ?: return null
         if (!svc.typingGameKeyboardBoundsOnScreen(keyboardBounds)) return null
+        host?.alignEditor(keyboardBounds.top)
         val metrics = anchor.resources.displayMetrics
         val insets = ViewCompat.getRootWindowInsets(anchor)?.getInsets(
             WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
         // Some IME windows report a zero status-bar inset because their window already
         // starts below it. The visible frame retains that screen-space top boundary.
         anchor.getWindowVisibleDisplayFrame(visibleDisplayFrame)
+        val editor=host?.input ?: return null
+        if(!editor.isShown || editor.width==0) return null
+        editor.getLocationOnScreen(editorLocation)
         return TypingGameLayout.area(metrics.widthPixels, metrics.heightPixels,
             insets?.left ?: 0, maxOf(insets?.top ?: 0, visibleDisplayFrame.top),
-            insets?.right ?: 0, insets?.bottom ?: 0, keyboardBounds.top)
+            insets?.right ?: 0, insets?.bottom ?: 0, minOf(keyboardBounds.top,editorLocation[1]))
     }
     private fun popupPosition(anchor: View, x: Int, y: Int): Pair<Int, Int> {
         if (Build.VERSION.SDK_INT >= 29) return x to y
@@ -84,8 +93,23 @@ object TypingGame {
 
     fun start() {
         stop()
-        val svc = service ?: return
-        val anchor = svc.window?.window?.decorView ?: return
+        val svc=service ?: return
+        launching=true
+        try {
+            svc.startActivity(Intent(svc,TypingGameActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS))
+        } catch(error:RuntimeException) { launching=false;throw error }
+    }
+    internal fun claimHost(activity:TypingGameActivity):Boolean {
+        if(!launching || service==null) return false
+        host=activity;launching=false;return true
+    }
+    internal fun showForHost(activity:TypingGameActivity) {
+        if(host!==activity || activity.isFinishing) return
+        if(window?.isShowing==true) { refreshGeometry();return }
+        val svc=service ?: return
+        if(!svc.isInputViewShown || !ownsEditor(svc.currentInputEditorInfo)) return
+        val anchor=activity.window.decorView
         val area = area(anchor) ?: return
         // The panel itself starts below the status bar; no second top inset inside it.
         val view = GameView(anchor, area.width, area.height, 0)
@@ -108,13 +132,28 @@ object TypingGame {
         anchor.viewTreeObserver.addOnPreDrawListener(geometryListener)
     }
 
+    fun onKeyboardShown() { host?.window?.decorView?.post { host?.let { showForHost(it) } } }
+    fun onKeyboardHidden() {
+        if(host!=null || launching) gameView?.pauseForInput() else stop()
+    }
+    internal fun hostStopped(activity:TypingGameActivity) { if(host===activity) stop() }
+    private fun ownsEditor(info:EditorInfo?):Boolean {
+        val activity=host ?: return false
+        return info?.packageName==activity.packageName && info.fieldId==activity.input.id
+    }
+    fun onEditorCommit(info:EditorInfo?,text:String):Boolean {
+        if(!ownsEditor(info) || window?.isShowing!=true) return false
+        onCommit(text);return true
+    }
     fun stop() {
+        val previous=host;host=null;launching=false
         observedRoot?.viewTreeObserver?.takeIf { it.isAlive }?.removeOnPreDrawListener(geometryListener)
         observedRoot = null
         gameView?.stopLoop()
         gameView = null
         window?.dismiss()
         window = null
+        previous?.takeUnless { it.isFinishing }?.finish()
     }
 
     fun onCommit(text: String) {
@@ -211,6 +250,7 @@ object TypingGame {
             invalidate()
         }
 
+        fun pauseForInput() { if(state==State.PLAYING) { state=State.PAUSED;lastFrame=0;invalidate() } }
         fun stopLoop() { loopActive = false; sounds.release() }
 
         init {

@@ -91,6 +91,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
         <activity android:name=".ui.main.FontSettingsActivity" android:exported="false" />
         <activity android:name=".ui.main.VoiceSettingsActivity" android:exported="false" />
+        <activity android:name=".ime.game.TypingGameActivity"
+            android:taskAffinity="" android:configChanges="orientation|screenSize|keyboardHidden|uiMode"
+            android:exported="false" android:excludeFromRecents="true"
+            android:theme="@style/Theme.TrimeAppTheme"
+            android:windowSoftInputMode="stateAlwaysVisible|adjustResize" />
         <!-- Settings activity -->
         <activity
             android:name=".ui.main.MainActivity"

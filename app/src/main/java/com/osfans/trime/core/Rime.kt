@@ -617,7 +617,6 @@ class Rime :
         val commitText = commitProto.text
         if (!commitText.isNullOrEmpty() && !com.osfans.trime.ime.clipboard.ClipboardSearchBridge.active) {
             com.osfans.trime.data.pets.PetHouse.engineCommit(commitText)
-            com.osfans.trime.ime.game.TypingGame.onCommit(commitText)
         }
         handleRimeMessage(4, arrayOf(commitProto))
         handlePreedit(response.composition)

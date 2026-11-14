@@ -929,7 +929,7 @@ class InputView(
     fun getFloatingKeyboardBoundsInWindow(outBounds: Rect): Boolean {
         if (!getFloatingKeyboardPanelBoundsInWindow(outBounds)) return false
         val preeditRoot = preedit.ui.root
-        if (preeditRoot.width > 0 && preeditRoot.height > 0) {
+        if (preeditRoot.isShown && preeditRoot.width > 0 && preeditRoot.height > 0) {
             preeditRoot.getLocationInWindow(preeditViewLocation)
             outBounds.union(
                 preeditViewLocation[0],

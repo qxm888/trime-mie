@@ -21,6 +21,7 @@ import com.osfans.trime.data.prefs.AppPrefs
 import com.osfans.trime.ime.core.TrimeInputMethodService
 import com.osfans.trime.ime.game.FallingWord
 import com.osfans.trime.ime.game.TypingGame
+import com.osfans.trime.ime.game.TypingGameActivity
 import com.osfans.trime.ime.game.TypingGameEffects
 import com.osfans.trime.ime.game.TypingGameSound
 import com.osfans.trime.ime.keyboard.KeyboardWindow
@@ -110,10 +111,13 @@ class TypingGameRunner : Instrumentation() {
                     WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
                 val displayFrame = Rect(); ime.window.window!!.decorView.getWindowVisibleDisplayFrame(displayFrame)
                 val statusTop = maxOf(insets?.top ?: 0, displayFrame.top)
+                val editorAt=IntArray(2)
+                (member(TypingGame,"host") as TypingGameActivity).input.getLocationOnScreen(editorAt)
+                val fieldBottom=minOf(keyboard.top,editorAt[1])
                 val geometry = "popup=${at[0]},${at[1]},${view.width},${view.height} keyboard=$keyboard insets=$insets visibleFrame=$displayFrame"
                 if (lastGeometry != geometry) { lastGeometry = geometry; status("GAME_GEOMETRY $geometry") }
                 return abs(at[1] - statusTop) <= 2 &&
-                    abs(at[1] + view.height - keyboard.top) <= 2 &&
+                    abs(at[1] + view.height - fieldBottom) <= 2 &&
                     abs(at[0] - (insets?.left ?: 0)) <= 2 &&
                     abs(view.width - (view.resources.displayMetrics.widthPixels - (insets?.left ?: 0) - (insets?.right ?: 0))) <= 2
             }
@@ -135,7 +139,7 @@ class TypingGameRunner : Instrumentation() {
                 await("Keyboard mode unavailable") { input().isOneHandMode == (mode != 0) && input().keyboardView.isShown }
                 SystemClock.sleep(500); open()
                 screenshot("game-full-mode-$mode")
-                status("PASS_FULLSCREEN mode=$mode actual popup spans all available space and leaves keyboard uncovered")
+                status("PASS_FULLSCREEN mode=$mode actual popup fills area above the visible game editor and leaves keyboard uncovered")
             }
             ui { TypingGame.stop(); AppPrefs.defaultInstance().keyboard.oneHandMode.setValue(0) }
             await("Docked mode unavailable") { !input().isOneHandMode && input().keyboardView.isShown }
@@ -185,7 +189,7 @@ class TypingGameRunner : Instrumentation() {
             menu("level:37"); menu("start")
             check(ui { member(game(), "level") } == 37)
             status("PASS_LEGACY old highest reached level restored; selectable beyond level ten")
-            for (id in listOf("sheep", "xiaomie")) {
+            for (id in listOf("sheep", "xiaomie", "jige")) {
                 ui {
                     TypingGame.stop(); prefs.edit().putInt("bestLevel", 1).putInt("unlocked", 1).putInt("selectedLevel", 1).putBoolean("soundEnabled", false).commit()
                     pets.value = PetHouse.State(started = true, selected = id, pets = listOf(PetHouse.Pet(id)))
@@ -195,6 +199,7 @@ class TypingGameRunner : Instrumentation() {
                 val effects = ui { member(view, "effects") as TypingGameEffects }
                 val sounds = ui { member(view, "sounds") as TypingGameSound }
                 check(effects.heartAttacks == (id == "xiaomie"))
+                check(effects.chickAttacks == (id == "jige"))
                 seed(view); ui { TypingGame.onCommit("的") }; waitForIdleSync()
                 SystemClock.sleep(110); screenshot("game-attack-$id")
                 hud("pauseRect")

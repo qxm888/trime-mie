@@ -6,16 +6,25 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前版本：**V3.7.2 / versionCode 20271116**，安装包 `trime-mie-v3.7.2.apk`。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+> 当前版本：**V3.7.3 / versionCode 20271117**，正式包 `trime-mie-v3.7.3.apk`。V3.7.2 已因游戏输入问题撤回，升级请使用 V3.7.3。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
 
-## V3.7.2 SSR 鸡哥与全屏打字游戏
+## V3.7.3 游戏独立输入修复
+
+- 打字游戏使用独立页面和可见输入框，保留完整键盘焦点，不依赖被全屏遮住的聊天输入框。
+- 文字成功上屏后才触发游戏攻击，游戏内容只写入游戏输入框；退出后原应用草稿保留。
+- 修复单手模式隐藏编码区参与位置计算的问题，让输入框始终避开键盘和候选区。
+- 独立测试包实机验证普通、左右单手“真实触屏编码 → 候选 → 选字 → 小鸡命中”，以及选关、暂停、三种攻击和音效。
+
+[更新与验证](docs/v3.7.3/更新与验证.md) · [V3.7.3 下载](https://github.com/qxm888/trime-mie/releases/tag/v3.7.3)。
+
+## V3.7.2 SSR 鸡哥与全屏打字游戏 · 已撤回
 
 - 游戏铺满状态栏下方到键盘顶部的可用区域，遮住中间聊天与输入框留白；键盘继续用于打字。
 - 根据真实键盘位置适配普通、左右单手模式，区域变化时保留游戏状态和落字剩余时间。
 - 调整落字速度，加高场地提供更长反应时间；紧凑场地首关也至少保留约10秒下落时间。
 - 新增 SSR「鸡哥」：银灰中分、黑底白背带；专属兑换码 `qxm111`，独立限领一次，也加入 SSR 孵化池。游戏发射黄色小鸡并做肩靠动作。
 
-[更新与验证](docs/v3.7.2/更新与验证.md) · [V3.7.2 下载](https://github.com/qxm888/trime-mie/releases/tag/v3.7.2) · [鸡哥原画](docs/artwork/jige/jige.svg)。
+[更新与验证](docs/v3.7.2/更新与验证.md) · [鸡哥原画](docs/artwork/jige/jige.svg)。
 
 ## V3.7.1 键灵打字战斗与句子发送修复
 
@@ -200,7 +209,7 @@
 
 ## 下载与安装
 
-1. 已发布版本可在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 下载；当前正式安装包为 `trime-mie-v3.7.2.apk`。
+1. 已发布版本可在 [Releases](https://github.com/qxm888/trime-mie/releases/latest) 下载；当前稳定安装包为 `trime-mie-v3.7.3.apk`，V3.7.2 已撤回。
 2. 允许浏览器或文件管理器安装该 APK，安装后在系统设置启用“同文输入法咩版”并选为当前输入法。
 3. 配置 Rime 方案与词库并部署。需要沿用旧目录时，按[使用指南](docs/使用指南.md)切换外部目录。
 
@@ -208,7 +217,7 @@
 | --- | --- |
 | 应用名 | 同文输入法咩版 |
 | 包名 | `com.osfans.trime.mie`，可与原版同文共存 |
-| 当前版本 | `V3.7.2` / `20271116` |
+| 当前源码版本 | `V3.7.3` / `20271117` |
 | 系统 | Android 5.0 及以上 |
 | 架构 | **arm64-v8a**；本次未提供 32 位或 x86 包 |
 | 类型 | 签名正式版，无调试测试组件 |

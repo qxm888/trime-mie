@@ -125,6 +125,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
     }
     override fun onWindowShown() {
         super.onWindowShown()
+        com.osfans.trime.ime.game.TypingGame.onKeyboardShown()
         inputView?.post { syncPetCompanion() }
         // 窗口记录每次显示都可能被系统重建，底色和轮廓要按当前设置重新落一遍。
         inputView?.post { inputView?.refreshSurfaceCorners() }
@@ -1064,7 +1065,8 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         } else {
             ic.commitText(text, 1)
         }
-        if (committed) sentenceSuggestions.value.committed(text, fromEngine)
+        if (committed && !com.osfans.trime.ime.game.TypingGame.onEditorCommit(currentInputEditorInfo,text))
+            sentenceSuggestions.value.committed(text, fromEngine)
         lastCommittedText = text
         composingText = ""
         InputFeedbackManager.textCommitSpeak(text)
