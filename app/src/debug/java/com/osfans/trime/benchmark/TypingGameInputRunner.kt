@@ -6,6 +6,10 @@ import android.app.Instrumentation
 import android.content.Intent
 import android.graphics.RectF
 import android.graphics.Rect
+import android.graphics.Color
+import com.osfans.trime.ime.candidates.popup.PagedCandidatesUi
+import com.osfans.trime.ime.candidates.popup.PopupCandidatesMode
+import com.osfans.trime.ime.composition.PopupPosition
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.InputDevice
@@ -79,7 +83,12 @@ class TypingGameInputRunner:Instrumentation() {
             fixture=SyntheticInputSchema.create(rime,"的")
             targetContext.getSharedPreferences("typing_game",0).edit().clear().putBoolean("soundEnabled",false).commit()
             ui { pets.value=PetHouse.State(started=true,selected="jige",pets=listOf(PetHouse.Pet("jige"))) }
-            for(mode in listOf(0,1,2)) {
+            val cases=listOf(0,1,2).flatMap { mode ->
+                listOf(PopupPosition.TOP_RIGHT,PopupPosition.BOTTOM_RIGHT,PopupPosition.FOLLOW).map { mode to it }
+            }
+            for((caseIndex,case) in cases.withIndex()) {
+                val (mode,position)=case
+                ui { prefs.candidates.mode.setValue(PopupCandidatesMode.ALWAYS_SHOW);prefs.candidates.position.setValue(position) }
                 ui { prefs.keyboard.oneHandMode.setValue(mode) }
                 await("Keyboard mode $mode missing") { (member(ime,"inputView") as InputView).isOneHandMode==(mode!=0) }
                 ui { TypingGame.attach(ime);TypingGame.start() }
@@ -108,10 +117,37 @@ class TypingGameInputRunner:Instrumentation() {
                 await("No preedit/candidates after actual H tap mode=$mode") { rime.run { statusCached.isComposing && hasMenu } }
                 val raw=rime.runOnReady { getRawInput() }
                 check(raw=="h") { "Expected actual H tap to produce h; got $raw" }
-                picture("game-real-composition-$mode")
+                val candidates=ui { checkNotNull(member(ime,"candidatesView")) as View }
+                fun candidateItem():View? {
+                    val list=(member(candidates,"candidatesUi") as PagedCandidatesUi).root
+                    return list.findViewHolderForAdapterPosition(0)?.itemView
+                }
+                await("Floating candidate view missing mode=$mode position=$position") {
+                    candidates.isShown && candidateItem()?.let { it.isShown && it.width>0 && it.height>0 }==true
+                }
+                picture("game-real-composition-$caseIndex")
+                // hasMenu/isShown alone cannot detect a separate window covering the IME.
+                // Verify pixels in the candidate cell on the actual composed system screenshot.
+                val cell=ui { checkNotNull(candidateItem()) }
+                val cellBounds=ui {
+                    val at=IntArray(2);cell.getLocationOnScreen(at)
+                    Rect(at[0],at[1],at[0]+cell.width,at[1]+cell.height)
+                }
+                val screenshot=checkNotNull(uiAutomation.takeScreenshot())
+                var visiblePixels=0;var sampledPixels=0
+                for(y in cellBounds.top+4 until cellBounds.bottom-4 step 2) {
+                    for(x in cellBounds.left+4 until cellBounds.right-4 step 2) {
+                        val c=screenshot.getPixel(x,y)
+                        if(kotlin.math.abs(Color.red(c)-18)+kotlin.math.abs(Color.green(c)-24)+kotlin.math.abs(Color.blue(c)-35)>40) visiblePixels++
+                        sampledPixels++
+                    }
+                }
+                screenshot.recycle()
+                val visibleFraction=visiblePixels.toFloat()/sampledPixels.coerceAtLeast(1)
+                status("CANDIDATE_PIXELS case=$caseIndex mode=$mode position=$position bounds=$cellBounds visible=$visibleFraction")
+                check(visibleFraction>.65f) { "Floating candidate covered by game: $visibleFraction mode=$mode position=$position" }
                 status("PASS_COMPOSITION mode=$mode actual system H tap produces raw h and candidate menu")
-                val space=ui { KeyboardWindow.currentKeyboardOrNull!!.keys.first { it.code==android.view.KeyEvent.KEYCODE_SPACE } }
-                tapView(keyboard,space.x+space.width/2f,space.y+space.height/2f)
+                tapView(cell,cell.width/2f,cell.height/2f)
                 await("Own editor did not receive Chinese commit") { host().input.text.toString()=="的" }
                 await("Actual keyboard commit did not hit target") { member(view,"score")==1 }
                 ui {
@@ -126,9 +162,9 @@ class TypingGameInputRunner:Instrumentation() {
                     status("INPUT_GEOMETRY mode=$mode game=${gameAt.toList()} height=${view.height} editor=${editorAt.toList()} height=${host().input.height} keyboard=$bounds")
                     check(editorAt[1]+host().input.height<=bounds.top+2) { "Editor overlaps keyboard: editorBottom=${editorAt[1]+host().input.height} keyboardTop=${bounds.top}" }
                 }
-                picture("game-real-attack-$mode")
-                status("PASS_REAL_INPUT mode=$mode own visible editor, Chinese commit, exactly one chick shot/impact/score, original draft unchanged")
-                if(mode==2) {
+                picture("game-real-attack-$caseIndex")
+                status("PASS_REAL_INPUT case=$caseIndex mode=$mode position=$position actual floating candidate tap, own visible editor, Chinese commit, exactly one chick shot/impact/score, original draft unchanged")
+                if(caseIndex==cases.lastIndex) {
                     tapView(keyboard,key.x+key.width/2f,key.y+key.height/2f)
                     await("Pending composition before exit missing") { rime.run { statusCached.isComposing } }
                 }

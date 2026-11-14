@@ -6,7 +6,15 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前版本：**V3.7.3 / versionCode 20271117**，正式包 `trime-mie-v3.7.3.apk`。V3.7.2 已因游戏输入问题撤回，升级请使用 V3.7.3。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+> 当前版本：**V3.7.4 / versionCode 20271118**，正式包 `trime-mie-v3.7.4.apk`。修复全屏游戏遮住候选浮窗，升级请使用 V3.7.4。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+
+## V3.7.4 游戏候选浮窗修复
+
+- 游戏场地改为页面内绘制，修复编码已有候选、但浮窗被全屏游戏遮住的问题。
+- 普通和左右单手共9组设置完成候选截图检查与真实触摸选字，均能上屏、发射攻击并命中计分。
+- 保留全屏场地、真实游戏输入框、SSR 鸡哥、选关、暂停和音效；85项相关单元测试及原有游戏实机回归通过。
+
+[更新与验证](docs/v3.7.4/更新与验证.md) · [V3.7.4 下载](https://github.com/qxm888/trime-mie/releases/tag/v3.7.4)。
 
 ## V3.7.3 游戏独立输入修复
 

@@ -8,16 +8,12 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.content.Intent
 import android.view.inputmethod.EditorInfo
-import android.os.Build
 import android.text.TextPaint
-import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
-import android.view.ViewTreeObserver
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.osfans.trime.ime.core.TrimeInputMethodService
-import android.widget.PopupWindow
 import com.osfans.trime.core.data.DataManager
 import com.osfans.trime.util.appContext
 import java.io.File
@@ -31,19 +27,14 @@ object TypingGame {
     private const val MAX_LEVEL = 50
     private const val LIVES = 3
 
-    private var window: PopupWindow? = null
     private var gameView: GameView? = null
     private var service: TrimeInputMethodService? = null
     private var host: TypingGameActivity? = null
     private var launching = false
     private val editorLocation = IntArray(2)
-    private var observedRoot: View? = null
     private val lastArea = Rect()
     private val keyboardBounds = Rect()
     private val visibleDisplayFrame = Rect()
-    private val location = IntArray(2)
-    private val windowLocation = IntArray(2)
-    private val geometryListener = ViewTreeObserver.OnPreDrawListener { refreshGeometry(); true }
 
     val isRunning: Boolean get() = launching || host != null
 
@@ -71,20 +62,15 @@ object TypingGame {
             insets?.left ?: 0, maxOf(insets?.top ?: 0, visibleDisplayFrame.top),
             insets?.right ?: 0, insets?.bottom ?: 0, minOf(keyboardBounds.top,editorLocation[1]))
     }
-    private fun popupPosition(anchor: View, x: Int, y: Int): Pair<Int, Int> {
-        if (Build.VERSION.SDK_INT >= 29) return x to y
-        anchor.getLocationOnScreen(location); anchor.getLocationInWindow(windowLocation)
-        return x - location[0] + windowLocation[0] to y - location[1] + windowLocation[1]
-    }
     private fun refreshGeometry() {
-        val popup = window?.takeIf { it.isShowing } ?: return
-        val root = observedRoot ?: return
-        val area = area(root) ?: return
-        if (lastArea.left == area.left && lastArea.top == area.top && lastArea.right == area.right && lastArea.bottom == area.bottom) return
-        lastArea.set(area.left, area.top, area.right, area.bottom)
-        gameView?.resizePlayfield(area.width, area.height)
-        val (x, y) = popupPosition(root, area.left, area.top)
-        popup.update(x, y, area.width, area.height)
+        val activity = host ?: return
+        val view = gameView ?: return
+        val area = area(activity.window.decorView) ?: return
+        if (lastArea.left != area.left || lastArea.top != area.top || lastArea.right != area.right || lastArea.bottom != area.bottom) {
+            lastArea.set(area.left, area.top, area.right, area.bottom)
+            view.resizePlayfield(area.width, area.height)
+        }
+        activity.placePlayfield(view, area)
     }
 
     fun toggle() {
@@ -106,30 +92,19 @@ object TypingGame {
     }
     internal fun showForHost(activity:TypingGameActivity) {
         if(host!==activity || activity.isFinishing) return
-        if(window?.isShowing==true) { refreshGeometry();return }
+        if(gameView!=null) { refreshGeometry();return }
         val svc=service ?: return
         if(!svc.isInputViewShown || !ownsEditor(svc.currentInputEditorInfo)) return
         val anchor=activity.window.decorView
         val area = area(anchor) ?: return
-        // The panel itself starts below the status bar; no second top inset inside it.
+        // The board itself starts below the status bar; no second top inset inside it.
         val view = GameView(anchor, area.width, area.height, 0)
         gameView = view
         lastArea.set(area.left, area.top, area.right, area.bottom)
-        window = PopupWindow(view, area.width, area.height, false).apply {
-            isTouchable = true; isOutsideTouchable = false
-            inputMethodMode = PopupWindow.INPUT_METHOD_NOT_NEEDED
-            isClippingEnabled = false; animationStyle = 0
-            if (Build.VERSION.SDK_INT >= 22) isAttachedInDecor = false
-            if (Build.VERSION.SDK_INT >= 29) setIsLaidOutInScreen(true)
-            setOnDismissListener {
-                observedRoot?.viewTreeObserver?.takeIf { it.isAlive }?.removeOnPreDrawListener(geometryListener)
-                observedRoot = null; view.stopLoop()
-            }
-            val (x, y) = popupPosition(anchor, area.left, area.top)
-            showAtLocation(anchor, Gravity.TOP or Gravity.LEFT, x, y)
-        }
-        observedRoot = anchor
-        anchor.viewTreeObserver.addOnPreDrawListener(geometryListener)
+        // An application PopupWindow with INPUT_METHOD_NOT_NEEDED can sit above
+        // the IME's floating candidates. Keep the board in the Activity instead:
+        // Android then draws and dispatches touches to the IME above the whole game.
+        activity.placePlayfield(view, area)
     }
 
     fun onKeyboardShown() { host?.window?.decorView?.post { host?.let { showForHost(it) } } }
@@ -142,17 +117,16 @@ object TypingGame {
         return info?.packageName==activity.packageName && info.fieldId==activity.input.id
     }
     fun onEditorCommit(info:EditorInfo?,text:String):Boolean {
-        if(!ownsEditor(info) || window?.isShowing!=true) return false
+        if(!ownsEditor(info) || gameView?.isAttachedToWindow!=true) return false
         onCommit(text);return true
     }
     fun stop() {
         val previous=host;host=null;launching=false
-        observedRoot?.viewTreeObserver?.takeIf { it.isAlive }?.removeOnPreDrawListener(geometryListener)
-        observedRoot = null
-        gameView?.stopLoop()
+        gameView?.let { view ->
+            view.stopLoop()
+            previous?.removePlayfield(view)
+        }
         gameView = null
-        window?.dismiss()
-        window = null
         previous?.takeUnless { it.isFinishing }?.finish()
     }
 

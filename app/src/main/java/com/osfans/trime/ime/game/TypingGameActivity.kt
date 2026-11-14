@@ -59,6 +59,24 @@ class TypingGameActivity : Activity() {
         input.requestFocus();input.postDelayed({ showKeyboard() },300)
     }
     internal fun alignEditor(top:Int) { keyboardTop=top;updateInputMargin() }
+    /** Board and editor share the application window, below the IME candidate layer. */
+    internal fun placePlayfield(view: View, area: TypingGameLayout.Area) {
+        root.getLocationOnScreen(rootLocation)
+        val left = area.left - rootLocation[0] - root.paddingLeft
+        val top = area.top - rootLocation[1] - root.paddingTop
+        val current = view.layoutParams as? FrameLayout.LayoutParams
+        if (view.parent === root && current != null &&
+            current.width == area.width && current.height == area.height &&
+            current.leftMargin == left && current.topMargin == top) return
+        val params = FrameLayout.LayoutParams(area.width, area.height, Gravity.TOP or Gravity.LEFT).apply {
+            leftMargin = left
+            topMargin = top
+        }
+        if (view.parent == null) root.addView(view, 0, params) else view.layoutParams = params
+    }
+
+    internal fun removePlayfield(view: View) { root.removeView(view) }
+
     private fun updateInputMargin() {
         root.getLocationOnScreen(rootLocation)
         val margin=keyboardTop?.let { (rootLocation[1]+root.height-it).coerceAtLeast(0) } ?: imeBottom
