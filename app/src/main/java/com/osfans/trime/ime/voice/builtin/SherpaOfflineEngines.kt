@@ -298,7 +298,7 @@ class OfflineSherpaAsrEngine(
         val feat = Class.forName("com.k2fsa.sherpa.onnx.FeatureConfig").getDeclaredConstructor().newInstance()
         sherpaTrySetField(feat, "sampleRate", AudioRecorder.SAMPLE_RATE)
         sherpaTrySetField(feat, "featureDim", 80)
-        if (familyKey == "parakeet" || familyKey == "firered_asr") sherpaTrySetField(feat, "dither", 0.0f)
+        if (familyKey == "parakeet" || familyKey == "giga_am" || familyKey == "firered_asr") sherpaTrySetField(feat, "dither", 0.0f)
         return feat
     }
 
@@ -367,12 +367,12 @@ class OfflineSherpaAsrEngine(
             finalizeRecognizerConfig(modelConfig, withFeat = true)
         }
 
-        "parakeet" -> {
+        "parakeet", "giga_am" -> {
             val t = Class.forName("com.k2fsa.sherpa.onnx.OfflineTransducerModelConfig").getDeclaredConstructor().newInstance()
             sherpaTrySetField(t, "encoder", paths.getValue("encoder.int8.onnx"))
-            sherpaTrySetField(t, "decoder", paths.getValue("decoder.int8.onnx"))
-            sherpaTrySetField(t, "joiner", paths.getValue("joiner.int8.onnx"))
-            val modelConfig = baseModelConfig(paths.getValue("tokens.txt"), AsrSettings.localThreads("parakeet"))
+            sherpaTrySetField(t, "decoder", paths.getValue(if (familyKey == "giga_am") "decoder.onnx" else "decoder.int8.onnx"))
+            sherpaTrySetField(t, "joiner", paths.getValue(if (familyKey == "giga_am") "joiner.onnx" else "joiner.int8.onnx"))
+            val modelConfig = baseModelConfig(paths.getValue("tokens.txt"), AsrSettings.localThreads(familyKey))
             sherpaTrySetField(modelConfig, "modelType", "nemo_transducer")
             if (!sherpaTrySetField(modelConfig, "transducer", t)) sherpaTrySetField(modelConfig, "transducerModel", t)
             finalizeRecognizerConfig(modelConfig, withFeat = true)

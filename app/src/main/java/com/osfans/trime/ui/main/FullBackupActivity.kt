@@ -27,8 +27,8 @@ class FullBackupActivity : PersonalizationActivity() {
         }
         val previous=getSharedPreferences("settings_restore_result",MODE_PRIVATE).getString("message","").orEmpty()
         if(previous.isNotBlank()) note(previous)
-        val models=MaterialSwitch(this).apply { text="备份包含本地语音模型（可能较大）" }; body.addView(models)
-        val secrets=MaterialSwitch(this).apply { text="备份包含语音密钥与同步密码" }; body.addView(secrets)
+        val models=MaterialSwitch(this).apply { text="备份包含语音与离线翻译模型（可能较大）" }; body.addView(models)
+        val secrets=MaterialSwitch(this).apply { text="备份包含语音、AI 密钥与同步密码" }; body.addView(secrets)
         note("备份为未加密 ZIP；默认不包含服务密钥。导入会覆盖对应设置和同名资源，保留本机目录权限；剪贴板自动同步需重新开启。")
         button("备份到 rime/.mie") {
             if(!busy) { busy=true; lifecycleScope.launch {

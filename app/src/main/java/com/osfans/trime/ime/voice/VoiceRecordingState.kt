@@ -7,6 +7,6 @@ data class VoiceRecordingState(
     val level: Float = 0f,
     val phase: Phase = if (recording) Phase.RECORDING else Phase.IDLE,
 ) {
-    enum class Phase { IDLE, CONNECTING, RECORDING, PROCESSING, LOADING_MODEL }
+    enum class Phase { IDLE, CONNECTING, RECORDING, PROCESSING, LOADING_MODEL, POLISHING, TRANSLATING }
     val active get() = phase != Phase.IDLE
 }

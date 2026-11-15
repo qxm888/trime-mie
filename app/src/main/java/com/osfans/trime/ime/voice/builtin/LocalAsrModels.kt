@@ -48,6 +48,13 @@ object LocalAsrModels {
     private val SENSE_VOICE_TOKENS = spec("tokens.txt", 315_894L, "f449eb28dc567533d7fa59be34e2abca8784f771850c78a47fb731a31429a1dc")
 
     val FAMILIES = listOf(
+        LocalFamilyDef("giga_am", "GigaAM v3（俄语）", listOf(
+            LocalVariantSpec("giga-v3", "俄语 int8（约232MB）", "sherpa-onnx-nemo-transducer-punct-giga-am-v3-russian-2025-12-16.zip", listOf(
+                spec("tokens.txt", 13_354L, "39abae20e692998290c574e606f11a9edef2902a1995463fcff63d1490cf22b7"),
+                spec("encoder.int8.onnx", 224_570_820L, "369f35a71bf288d3b8e0391fabd8dba5f2314088d440bca474056b7b4b6e66bf"),
+                spec("decoder.onnx", 4_600_132L, "38fc7475443ea2a26f63211ca350f73ac50fff824ab7a3876ee2bd610c53bbc4"),
+                spec("joiner.onnx", 2_712_896L, "602ff7017a93311aad34df1437c8d7f49911353c13d6eae7a6ee7b041339465c"),
+            )))),
         LocalFamilyDef(
             "sensevoice", "SenseVoice",
             listOf(

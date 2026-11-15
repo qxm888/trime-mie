@@ -258,11 +258,12 @@ class PetHouseActivity:AppCompatActivity() {
         } }
         card {
             addView(text("兑换口",20,ink,true))
-            addView(text("输入兑换码，领取对应伙伴；小咩、猴哥和鸡哥支持专属兑换。",13,muted),lp().apply { topMargin=dp(8);bottomMargin=dp(12) })
+            addView(text("输入兑换码，领取对应伙伴；小咩、猴哥、鸡哥和季灾支持专属兑换。",13,muted),lp().apply { topMargin=dp(8);bottomMargin=dp(12) })
             if(data.redeemed) addView(text("任选伙伴兑换已领取，可继续输入其它兑换码。",13,muted))
             if(data.xiaomieRedeemed) addView(text("小咩专属兑换已领取。",13,muted))
             if(data.monkeyRedeemed) addView(text("猴哥专属兑换已领取。",13,muted))
             if(data.jigeRedeemed) addView(text("鸡哥专属兑换已领取。",13,muted))
+            if(data.jizaiRedeemed) addView(text("季灾专属兑换已领取。",13,muted))
             buttons("输入兑换码" to { redeemCode() })
         }
         content.addView(text("离线时饱腹每天降低 30，最低保留 20；伙伴不会死亡或离开。",12,muted))

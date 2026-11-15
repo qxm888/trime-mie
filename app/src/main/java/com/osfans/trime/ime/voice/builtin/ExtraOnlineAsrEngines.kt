@@ -243,7 +243,7 @@ class MiMoAsrEngine(
 
 /**
  * ElevenLabs：POST /v1/speech-to-text，头 xi-api-key，multipart
- * file/audio.wav + model_id=scribe_v1 + tag_audio_events=false + num_speakers=1。
+ * file/audio.wav + model_id=scribe_v3 + tag_audio_events=false + num_speakers=1。
  * 响应顶层 text（或 transcripts[] 逐项拼接）。
  */
 class ElevenLabsAsrEngine(
@@ -283,7 +283,7 @@ class ElevenLabsAsrEngine(
             try {
                 val multipart = MultipartBody.Builder().setType(MultipartBody.FORM)
                     .addFormDataPart("file", "audio.wav", pcmToWavBytes(pcm).toRequestBody("audio/wav".toMediaType()))
-                    .addFormDataPart("model_id", modelProvider().ifBlank { "scribe_v1" })
+                    .addFormDataPart("model_id", modelProvider().ifBlank { "scribe_v3" })
                     .addFormDataPart("tag_audio_events", "false")
                     .addFormDataPart("num_speakers", "1")
                 val lang = languageProvider().trim()
@@ -328,17 +328,18 @@ class ElevenLabsAsrEngine(
 
 /**
  * Soniox：上传文件 → 创建转写任务 → 轮询状态 → 拉取 tokens 拼接。
- * 全程 Bearer 鉴权；模型 stt-async-v5。
+ * 全程 Bearer 鉴权；模型 stt-async-v6。
  */
 class SonioxAsrEngine(
     private val scope: CoroutineScope,
     private val listener: AsrListener,
     private val apiKeyProvider: () -> String,
+    private val modelProvider: () -> String,
     private val languageProvider: () -> String,
 ) : AsrEngine {
     companion object {
         private const val BASE = "https://api.soniox.com"
-        private const val MODEL = "stt-async-v5"
+        private const val MODEL = "stt-async-v6"
     }
 
     private val running = AtomicBoolean(false)
@@ -388,7 +389,7 @@ class SonioxAsrEngine(
 
                 val taskBody = JSONObject().apply {
                     put("file_id", fileId)
-                    put("model", MODEL)
+                    put("model", modelProvider().ifBlank { MODEL })
                     put("enable_language_identification", true)
                     val lang = languageProvider().trim()
                     if (lang.isNotEmpty() && !lang.equals("auto", true)) {

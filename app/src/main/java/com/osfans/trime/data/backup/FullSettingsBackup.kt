@@ -62,7 +62,7 @@ object FullSettingsBackup {
         val direct=p.getString("profile_data_storage_mode","DIRECT_EXTERNAL")=="DIRECT_EXTERNAL"
         val rime=if(direct) DirectExternalStorage.validate(p.getString("profile_direct_external_path",DirectExternalStorage.defaultPath)!!) else File(context.getExternalFilesDir(null) ?: context.filesDir,"rime")
         val assets=if(direct) MieUserDirectory.directory(context) else context.filesDir
-        return linkedMapOf("state" to context.filesDir,"assets" to assets,"privateAssets" to context.filesDir,"rime" to rime,"models" to File(MieUserDirectory.directory(context),"语音模型"))
+        return linkedMapOf("state" to context.filesDir,"assets" to assets,"privateAssets" to context.filesDir,"rime" to rime,"models" to File(MieUserDirectory.directory(context),"语音模型"),"translation" to File(context.filesDir,"translation_models"))
     }
     @Synchronized fun create(context: Context,models: Boolean,secrets: Boolean): File {
         check(CustomKeyboards.flush() && KeyBindingOverrides.flush() && ToolbarOverrides.flush()) { "键盘设置未能保存" }
@@ -109,7 +109,10 @@ object FullSettingsBackup {
                         top !in setOf("mie","mie_resources",".mie","build",".git","installation.yaml")
                     }
                 }
-                if(models) tree(targets.getValue("models"),"models") { !it.name.startsWith('.') }
+                if(models) {
+                    tree(targets.getValue("models"),"models") { !it.name.startsWith('.') }
+                    tree(targets.getValue("translation"),"translation") { !it.name.startsWith('.') && !it.name.endsWith(".partial") }
+                }
                 val manifest=JSONObject().put("format",FORMAT).put("version",1).put("appVersion",BuildConfig.VERSION_NAME)
                     .put("models",models).put("secrets",secrets).put("files",inventory)
                     .put("roots",JSONObject(targets.mapValues { it.value.absolutePath }))
@@ -138,7 +141,7 @@ object FullSettingsBackup {
                 for(i in 0 until entries.length()) {
                     val item=entries.getJSONObject(i); val name=item.getString("name"); val size=item.getLong("size")
                     require(size in 0..LIMIT && names.add(name)); val target=safe(data,name)
-                    require(name=="preferences.json" || name.substringBefore('/') in setOf("state","assets","privateAssets","rime","models"))
+                    require(name=="preferences.json" || name.substringBefore('/') in setOf("state","assets","privateAssets","rime","models","translation"))
                     if(name=="preferences.json") require(size<=16*1024*1024)
                     if(name.startsWith("state/")) require(name.removePrefix("state/") in stateNames)
                     if(name.startsWith("state/")) require(size<=32*1024*1024)
@@ -215,10 +218,11 @@ object FullSettingsBackup {
         val targets=roots(context)
         val manifest=JSONObject(File(pending,"manifest.json").readText())
         val old=manifest.getJSONObject("roots")
-        targets.keys.forEach { require(old.getString(it).startsWith('/') && old.getString(it).length in 2..1024) }
+        targets.keys.filter { it != "translation" || old.has(it) }.forEach { require(old.getString(it).startsWith('/') && old.getString(it).length in 2..1024) }
+        if ((0 until manifest.getJSONArray("files").length()).any { manifest.getJSONArray("files").getJSONObject(it).getString("name").startsWith("translation/") }) require(old.has("translation"))
         val files=manifest.getJSONArray("files"); val plan=JSONArray()
         val mappings=linkedMapOf<String,String>()
-        listOf("state","rime","models").forEach { mappings[old.getString(it)+"/"]=targets.getValue(it).absolutePath+"/" }
+        listOf("state","rime","models","translation").filter { old.has(it) }.forEach { mappings[old.getString(it)+"/"]=targets.getValue(it).absolutePath+"/" }
         assetNames.forEach { folder -> mappings[old.getString("assets")+"/$folder/"]=targets.getValue("assets").absolutePath+"/$folder/" }
         legacyAssetNames.forEach { folder -> mappings[old.getString("assets")+"/$folder/"]=targets.getValue("assets").absolutePath+"/"+(legacyToNew[folder] ?: folder)+"/" }
         if((0 until files.length()).any { files.getJSONObject(it).getString("name").startsWith("privateAssets/") }) {

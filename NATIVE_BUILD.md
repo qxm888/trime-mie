@@ -49,3 +49,9 @@ ZIP 用户请按锁定清单取得对应仓库和提交，再递归初始化各�
 ## V3.1.9 主题配置刷新桥
 
 沿用同一原 Rime JNI 库。独立桥新增当前主题配置强制刷新：通过公共 `config_open/config_clear/config_close` 临时清除内存中 `__build_info`，调用 `deploy_config_file`，使用空版本比较键保留用户编辑文件。前端先保留旧生成文件，检查新产物后提交，失败恢复旧产物。这个入口不调用 `start_maintenance`，不部署方案或词典。普通引擎启动的自动完整维护回退已移除。
+
+## V3.7.8 可选离线翻译
+
+`app/libs/foxlet-v0.5.0.aar` 来自 BiBi Keyboard 固定提交 `271f77786bdae6aa6b40bc9a3c76293821745c2b` 的公开兼容包，保留官方原生库，对 Kotlin 接口层作编译器兼容重建。上游 Foxlet 源码固定提交为 `0eff2a15032362115848a496ce1df8ed9fc68650`；原始 AAR 哈希、重建脚本及 preload 补丁见 `app/libs/foxlet/`，本项目收录 AAR 的哈希见依赖清单。
+
+该引擎仅在 Android 9+ 的 arm64 进程按需加载；键盘继续支持 Android 5.0。库中 ELF LOAD 段已检查为 16KB 对齐。Foxlet 原创部分使用 MIT，Mozilla 模型及第三方组件保留各自许可证；完整随包声明见 `app/src/main/assets/licenses/Foxlet-LICENSE`。模型从官方 CDN 按需下载，不放入安装包。此依赖不替换原 Rime JNI，也不改变上述原生来源缺口说明。

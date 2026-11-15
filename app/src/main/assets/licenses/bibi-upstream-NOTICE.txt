@@ -502,3 +502,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ================================================================================
+
+
+Trime Mie V3.7.8 adaptations (2026-11-15)
+Upstream: BryceWG/BiBi-Keyboard commit 271f77786bdae6aa6b40bc9a3c76293821745c2b.
+Includes adapted public LLM provider metadata, online translation protocols,
+Qwen/DeepSeek file ASR protocols, GigaAM model integrity metadata, and Foxlet routing.
+Changes: native Trime settings and IME ownership, selection preview and confirmation,
+cancellable/bounded requests, failure fallback, per-provider user credentials, backup.
+No upstream shared API keys are distributed. Foxlet notices: Foxlet-LICENSE and
+bundled AAR resources; source and compatibility rebuild details: app/libs/foxlet/.

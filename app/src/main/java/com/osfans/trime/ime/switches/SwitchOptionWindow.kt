@@ -72,6 +72,8 @@ class SwitchOptionWindow(di: DI) :
                 R.drawable.ic_baseline_bar_chart_24,
                 SwitchOptionEntry.Static.Type.InputStats,
             ),
+            SwitchOptionEntry.Static("AI 润色", R.drawable.ic_baseline_star_24, SwitchOptionEntry.Static.Type.AiPolish),
+            SwitchOptionEntry.Static("翻译", R.drawable.ic_baseline_list_alt_24, SwitchOptionEntry.Static.Type.Translate),
             SwitchOptionEntry.Static("键灵小屋", R.drawable.pet_sheep, SwitchOptionEntry.Static.Type.PetHouse),
             SwitchOptionEntry.Static(context.getString(R.string.floating_keyboard),
                 R.drawable.ic_mode_floating_24, SwitchOptionEntry.Static.Type.FloatingKeyboard),
@@ -142,6 +144,8 @@ class SwitchOptionWindow(di: DI) :
 
                         SwitchOptionEntry.Static.Type.Keyboard -> AppUtils.launchMainToKeyboard(context)
 
+                        SwitchOptionEntry.Static.Type.AiPolish -> service.showAiText(false)
+                        SwitchOptionEntry.Static.Type.Translate -> service.showAiText(true)
                         SwitchOptionEntry.Static.Type.PetHouse -> com.osfans.trime.ui.main.PetHouseActivity.start(context)
                         SwitchOptionEntry.Static.Type.InputStats -> InputStatsActivity.start(context)
                         SwitchOptionEntry.Static.Type.FloatingKeyboard -> service.toggleFloatingKeyboard()

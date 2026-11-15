@@ -32,6 +32,7 @@ object PetHouse {
         val miniExpanded:Boolean=false,val miniScale:Int=100,
         val miniX:Float=-1f,val miniY:Float=-1f,val miniLandscapeX:Float=-1f,val miniLandscapeY:Float=-1f,
         val redeemed:Boolean=false,val xiaomieRedeemed:Boolean=false,val monkeyRedeemed:Boolean=false,val pityUR:Int=0,val jigeRedeemed:Boolean=false,
+        val jizaiRedeemed:Boolean=false,
     ) { fun companion()=pets.firstOrNull { it.id==selected } }
     private val mutable=MutableStateFlow(State())
     val state=mutable.asStateFlow()
@@ -269,7 +270,7 @@ object PetHouse {
         return JSONObject().put("version",1).put("started",s.started).put("enabled",s.enabled).put("coins",s.coins).put("selected",s.selected)
             .put("day",s.day).put("dayPoints",s.dayPoints).put("claims",s.claims).put("pats",s.pats).put("totalPoints",s.totalPoints)
             .put("miniExpanded",s.miniExpanded).put("miniScale",s.miniScale).put("miniX",s.miniX).put("miniY",s.miniY).put("miniLandscapeX",s.miniLandscapeX).put("miniLandscapeY",s.miniLandscapeY)
-            .put("redeemed",s.redeemed).put("xiaomieRedeemed",s.xiaomieRedeemed).put("monkeyRedeemed",s.monkeyRedeemed).put("jigeRedeemed",s.jigeRedeemed).put("pityUR",s.pityUR)
+            .put("redeemed",s.redeemed).put("xiaomieRedeemed",s.xiaomieRedeemed).put("monkeyRedeemed",s.monkeyRedeemed).put("jigeRedeemed",s.jigeRedeemed).put("jizaiRedeemed",s.jizaiRedeemed).put("pityUR",s.pityUR)
             .put("pitySR",s.pitySR).put("pitySSR",s.pitySSR).put("draws",s.draws).put("mode",s.mode).put("inventory",JSONObject(s.inventory))
             .put("pets",JSONArray().apply { s.pets.forEach { p -> put(JSONObject().put("id",p.id).put("nickname",p.nickname).put("exp",p.exp).put("hunger",p.hunger).put("mood",p.mood).put("bond",p.bond).put("fragments",p.fragments).put("stage",p.stage).put("accessory",p.accessory)) } })
             .put("ledger",entries(s.ledger)).put("history",entries(s.history)).toString()
@@ -291,6 +292,6 @@ object PetHouse {
         return State(started,o.optBoolean("enabled",true),number("coins",1_000_000_000).toInt(),selected,pets,inventory,number("day",1_000_000,today()),number("dayPoints",10000).toInt(),number("claims",7).toInt(),number("pats",3).toInt(),number("totalPoints",1_000_000_000_000),number("pitySR",9).toInt(),number("pitySSR",49).toInt(),number("draws",1_000_000_000).toInt(),number("mode",2).toInt(),entries("ledger"),entries("history")).copy(
             miniExpanded=o.optBoolean("miniExpanded",o.optInt("mode")==2),miniScale=number("miniScale",150,100).toInt().also { require(it>=60) },
             miniX=position("miniX"),miniY=position("miniY"),miniLandscapeX=position("miniLandscapeX"),miniLandscapeY=position("miniLandscapeY"),
-            redeemed=o.optBoolean("redeemed",false),xiaomieRedeemed=o.optBoolean("xiaomieRedeemed",false),monkeyRedeemed=o.optBoolean("monkeyRedeemed",false),jigeRedeemed=o.optBoolean("jigeRedeemed",false),pityUR=number("pityUR",199).toInt())
+            redeemed=o.optBoolean("redeemed",false),xiaomieRedeemed=o.optBoolean("xiaomieRedeemed",false),monkeyRedeemed=o.optBoolean("monkeyRedeemed",false),jigeRedeemed=o.optBoolean("jigeRedeemed",false),jizaiRedeemed=o.optBoolean("jizaiRedeemed",false),pityUR=number("pityUR",199).toInt())
     }
 }

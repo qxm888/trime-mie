@@ -31,8 +31,8 @@ android {
         applicationId = if (variantTag.isEmpty()) "com.osfans.trime.mie" else "com.osfans.trime"
         minSdk = 21
         targetSdk = 37
-        versionCode = 20271119
-        versionName = "V3.7.5"
+        versionCode = 20271122
+        versionName = "V3.7.8"
 
         multiDexEnabled = true
         // 渐变矢量（键灵小屋伙伴）在 API 21-23 需经 AppCompat 渲染；同时避免 AGP 生成 PNG 兜底。
@@ -167,6 +167,7 @@ dependencies {
     // 内置语音识别（移植自说点啥/BiBi-Keyboard，Apache-2.0）：网络引擎与本地 sherpa-onnx
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation(files("libs/sherpa-onnx-1.13.4.aar"))
+    implementation(files("libs/foxlet-v0.5.0.aar"))
     ksp(project(":codegen"))
     implementation(libs.kotlinx.coroutines)
     implementation(libs.kotlinx.serialization.json)

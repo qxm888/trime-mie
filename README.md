@@ -6,7 +6,20 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前版本：**V3.7.5 / versionCode 20271119**，正式包 `trime-mie-v3.7.5.apk`。新增 SSR 季灾、常用句过期清理，并修复 Android 13 日志中的键盘启动闪退。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+> 当前版本：**V3.7.8 / versionCode 20271122**，正式包 `trime-mie-v3.7.8.apk`。新增 AI 润色、在线与离线翻译、千问 / DeepSeek 语音识别，并包含按主题保存工具栏与季灾专属兑换码。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+
+## V3.7.8 AI 润色与翻译
+
+- 新增 13 项 AI 服务配置，支持整理口语、正式表达、自然表达、提炼要点和自定义提示词。语音识别后自动润色 / 翻译默认关闭，同时开启时先润色再翻译。
+- 功能菜单新增“AI 润色”和“翻译”：先选中文字，处理后预览，确认才替换；取消或输入位置变化后不会写入旧结果。
+- 支持微软、腾讯、火山、Google、哔哩哔哩在线翻译及 AI 翻译；Foxlet 离线翻译支持语言包下载、删除及英语中转，需要 Android 9+ arm64。
+- 补齐千问 / DeepSeek 文件识别，更新 ElevenLabs v3、Soniox v6、更多模型与接口预设，新增 GigaAM 俄语模型家族。
+- 工具栏按钮覆盖改为按主题保存；季灾专属兑换码 `qxm222` 独立限领一次，已有季灾时转为20枚碎片。
+- 427 项单元回归、15 组手机输入流程、五个在线翻译接口及完整离线翻译验证通过。付费接口未用真实密钥验证，反馈设备上的 Q / 简纯图标仍需复测。
+
+入口：设置 → 语音输入 → AI 润色与翻译。在线 AI 使用自己的 Key；离线翻译先指定语言并下载语言包。
+
+[更新与验证](docs/v3.7.8/更新与验证.md) · [V3.7.8 下载](https://github.com/qxm888/trime-mie/releases/tag/v3.7.8)。
 
 ## V3.7.5 季灾与常用句清理
 

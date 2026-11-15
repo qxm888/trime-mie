@@ -97,7 +97,7 @@ class ThemeKeyboardImporter(private val context: Context) {
             val macroNames=linkedMapOf<Pair<String,String>,String>()
             val expanding=mutableSetOf<String>()
             val macroPattern=Regex("\\{([^{}]+)\\}")
-            val bar = if(includeAppOverrides) ToolbarOverrides.apply(theme.toolBar) else theme.toolBar
+            val bar = if(includeAppOverrides) ToolbarOverrides.apply(theme) else theme.toolBar
             fun action(value: KeyActionToken?, keyboard: String, config: TextKeyboard): String? {
                 if(value==null) return null
                 if(value is KeyActionToken.Plain && value.token.isEmpty()) return ""

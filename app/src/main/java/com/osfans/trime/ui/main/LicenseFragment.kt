@@ -31,6 +31,21 @@ class LicenseFragment : PaddingPreferenceFragment() {
                 val jsonString = resources.openRawResource(R.raw.aboutlibraries)
                     .bufferedReader()
                     .use { it.readText() }
+                addPreference(Preference(context).apply {
+                    isIconSpaceReserved = false
+                    title = "Foxlet 0.5.0 / Mozilla 翻译模型"
+                    summary = "MIT、MPL-2.0 与第三方组件许可证"
+                    setOnPreferenceClickListener {
+                        val text = context.assets.open("licenses/Foxlet-LICENSE").bufferedReader().use { it.readText() }
+                        val content = android.widget.TextView(context).apply {
+                            this.text = text; setTextIsSelectable(true)
+                            val pad = (16 * resources.displayMetrics.density).toInt(); setPadding(pad, pad, pad, pad)
+                        }
+                        AlertDialog.Builder(context).setTitle(title).setView(android.widget.ScrollView(context).apply { addView(content) })
+                            .setPositiveButton(android.R.string.ok, null).show()
+                        true
+                    }
+                })
                 Libs
                     .Builder()
                     .withJson(jsonString)

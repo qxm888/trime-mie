@@ -118,6 +118,12 @@ object AsrSettings {
         put(cfgKey("tencent",field),value); bumpVersion()
     }
 
+    fun qwenField(field: String): String = str(cfgKey("dashscope", field))
+    fun setQwenField(field: String, value: String) {
+        require(field in setOf("keep_dialect", "clean"))
+        put(cfgKey("dashscope", field), value); bumpVersion()
+    }
+
     // ---- 火山（豆包语音）专有 ----
 
     fun volcUseNewAuth(): Boolean = str(cfgKey("volc", "use_new_auth"), "1") != "0"

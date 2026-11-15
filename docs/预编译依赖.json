@@ -8,5 +8,13 @@
     "path": "app/libs/sherpa-onnx-1.13.4.aar",
     "sha256": "03f9c4df965f21c71269365a7951a7f23b5696fddd093fa318c80d65550ab780",
     "bytes": 48847529
+  },
+  {
+    "path": "app/libs/foxlet-v0.5.0.aar",
+    "sha256": "93a13a1a016c3a82aeae9f42cf1db88a9b39c31ff09410e4e4edff5df5567986",
+    "bytes": 2814996,
+    "source": "https://github.com/BryceWG/BiBi-Keyboard/tree/271f77786bdae6aa6b40bc9a3c76293821745c2b/app/libs/foxlet",
+    "upstream": "https://github.com/yinvoke/foxlet-translate/tree/0eff2a15032362115848a496ce1df8ed9fc68650",
+    "notes": "Kotlin 2.2.10 compatibility rebuild from BiBi; original native libraries unchanged. See app/libs/foxlet/README.md and licenses."
   }
 ]

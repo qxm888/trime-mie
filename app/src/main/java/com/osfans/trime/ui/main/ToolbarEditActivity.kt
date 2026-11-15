@@ -41,7 +41,7 @@ class ToolbarEditActivity : AppCompatActivity() {
     private val theme by lazy { if (kbId.isNotEmpty()) StandaloneKeyboardTheme.base() else ThemeManager.activeTheme }
     private val themeButtons by lazy { theme.toolBar.buttons.associateBy { it.action } }
 
-    /** 非空 = 编辑某个自定义键盘的专属工具栏；空 = 编辑全局候选栏工具栏。 */
+    /** 非空 = 编辑某个自定义键盘；空 = 编辑当前主题的工具栏。 */
     private var kbId: String = ""
 
     private lateinit var adapter: Adapter
@@ -67,7 +67,7 @@ class ToolbarEditActivity : AppCompatActivity() {
         toolbar.menu.add(0, 2181, 1, "功能菜单显示项目")
         toolbar.menu.add(0, 2180, 0, if(kbId.isEmpty()) "主题键盘外观" else "当前布局外观")
         findViewById<TextView>(R.id.toolbar_edit_hint).text =
-            (if (kbId.isEmpty()) "主题键盘状态栏。" else "仅修改当前自定义布局的状态栏。") + "点击按钮名称编辑功能与外观，支持增删、排序和停用。"
+            (if (kbId.isEmpty()) "仅修改当前主题的状态栏。" else "仅修改当前自定义布局的状态栏。") + "点击按钮名称编辑功能与外观，支持增删、排序和停用。"
         toolbar.setNavigationOnClickListener { finish() }
         toolbar.inflateMenu(R.menu.toolbar_edit)
         toolbar.setOnMenuItemClickListener { item ->
@@ -81,7 +81,7 @@ class ToolbarEditActivity : AppCompatActivity() {
                     .setMessage(R.string.toolbar_edit_reset_confirm)
                     .setPositiveButton(R.string.ok) { _, _ ->
                         if (kbId.isEmpty()) {
-                            ToolbarOverrides.resetAll()
+                            ToolbarOverrides.reset(theme)
                             if (!ToolbarOverrides.flush()) Toast.makeText(this, "工具栏保存失败，请检查剩余存储空间", Toast.LENGTH_LONG).show()
                         } else {
                             CustomKeyboards.mutate(kbId) { it.toolbar = StandaloneKeyboardTheme.defaultToolbar(); it.toolbarBackground = null }
@@ -283,7 +283,7 @@ class ToolbarEditActivity : AppCompatActivity() {
 
     private fun initialEntries(): List<ToolbarOverrides.Entry> =
         ToolbarOverrides.editableEntries(theme.toolBar, (if (kbId.isEmpty()) {
-            if (ToolbarOverrides.hasCustomization()) ToolbarOverrides.entries()
+            if (ToolbarOverrides.hasCustomization(theme)) ToolbarOverrides.entries(theme)
             else theme.toolBar.buttons.map { ToolbarOverrides.Entry(it.action) }
         } else {
             CustomKeyboards.get(kbId)?.toolbar.orEmpty()
@@ -291,7 +291,7 @@ class ToolbarEditActivity : AppCompatActivity() {
 
     private fun commit() {
         if (kbId.isEmpty()) {
-            ToolbarOverrides.setEntries(working.toList())
+            ToolbarOverrides.setEntries(theme, working.toList())
             if (!ToolbarOverrides.flush()) Toast.makeText(this, "工具栏保存失败，请检查剩余存储空间", Toast.LENGTH_LONG).show()
         } else {
             CustomKeyboards.mutate(kbId) { it.toolbar = working.toMutableList() }

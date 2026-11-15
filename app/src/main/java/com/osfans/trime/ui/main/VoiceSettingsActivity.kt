@@ -101,6 +101,8 @@ class VoiceSettingsActivity : PersonalizationActivity() {
             permission.launch(Manifest.permission.RECORD_AUDIO)
         }
 
+        button("AI 润色与翻译") { startActivity(android.content.Intent(this, AiTextSettingsActivity::class.java)) }
+
         val vendorId = AsrSettings.selectedVendor
         note("识别服务商：${AsrVendors.labelOf(vendorId)}")
         button("语音识别服务商") { pickVendor() }
@@ -173,6 +175,26 @@ class VoiceSettingsActivity : PersonalizationActivity() {
     private fun renderOnline(vendor: String) {
         val def = AsrVendors.byId(vendor)!!
         when (vendor) {
+            "dashscope" -> {
+                note("千问非流式识别，松手后返回结果；支持 Qwen-Audio 3.1、Qwen3-ASR、Fun-ASR 和 Omni。")
+                secretRow("API Key", AsrSettings.apiKey(vendor)) { AsrSettings.setApiKey(vendor, it) }
+                choiceRow("服务区域", listOf(com.osfans.trime.ime.voice.builtin.QwenAsrProtocol.CN to "中国大陆", com.osfans.trime.ime.voice.builtin.QwenAsrProtocol.INTERNATIONAL to "国际"), AsrSettings.endpoint(vendor)) { AsrSettings.setEndpoint(vendor, it) }
+                textRow("服务主机（自定义）", AsrSettings.endpoint(vendor)) { AsrSettings.setEndpoint(vendor, it) }
+                choiceRow("识别模型", com.osfans.trime.ime.voice.builtin.QwenAsrProtocol.models.map { it to it }, AsrSettings.model(vendor)) { AsrSettings.setModel(vendor, it) }
+                textRow("语言提示（留空自动，如 zh,en）", AsrSettings.language(vendor)) { AsrSettings.setLanguage(vendor, it) }
+                body.addView(MaterialSwitch(this).apply {
+                    text = "保留方言（Qwen-Audio 3.1）"; isChecked = AsrSettings.qwenField("keep_dialect") == "1"
+                    setOnCheckedChangeListener { _, value -> AsrSettings.setQwenField("keep_dialect", if (value) "1" else "0") }
+                })
+                body.addView(MaterialSwitch(this).apply {
+                    text = "整理口语（Qwen-Audio 3.1）"; isChecked = AsrSettings.qwenField("clean") != "0"
+                    setOnCheckedChangeListener { _, value -> AsrSettings.setQwenField("clean", if (value) "1" else "0") }
+                })
+            }
+            "deepseek" -> {
+                note("DeepSeek 文件转写，松手后上传 WAV；仅需 API Key。")
+                secretRow("API Key", AsrSettings.apiKey(vendor)) { AsrSettings.setApiKey(vendor, it) }
+            }
             "tencent" -> {
                 textRow("AppID",AsrSettings.tencentField("app_id")) { AsrSettings.setTencentField("app_id",it.trim()) }
                 secretRow("SecretID",AsrSettings.tencentField("secret_id")) { AsrSettings.setTencentField("secret_id",it.trim()) }
@@ -234,6 +256,7 @@ class VoiceSettingsActivity : PersonalizationActivity() {
             "mimo" -> {
                 note("小米 MiMo chat/completions 音频理解；也可填自建兼容端点。")
                 secretRow("API Key", AsrSettings.apiKey("mimo")) { AsrSettings.setApiKey("mimo", it) }
+                choiceRow("预设接口", com.osfans.trime.ime.voice.builtin.CloudAsrModels.mimoEndpoints, AsrSettings.endpoint("mimo")) { AsrSettings.setEndpoint("mimo", it) }
                 textRow("接口地址", AsrSettings.endpoint("mimo")) { AsrSettings.setEndpoint("mimo", it) }
                 textRow("模型名", AsrSettings.model("mimo")) { AsrSettings.setModel("mimo", it) }
                 choiceRow(
@@ -252,6 +275,7 @@ class VoiceSettingsActivity : PersonalizationActivity() {
 
             "soniox" -> {
                 note("Soniox 异步转写：上传 → 建任务 → 轮询 → 取结果。")
+                textRow("模型", AsrSettings.model("soniox")) { AsrSettings.setModel("soniox", it) }
                 secretRow("API Key", AsrSettings.apiKey("soniox")) { AsrSettings.setApiKey("soniox", it) }
                 textRow("语言提示（留空自动识别）", AsrSettings.language("soniox")) { AsrSettings.setLanguage("soniox", it) }
             }
@@ -260,6 +284,8 @@ class VoiceSettingsActivity : PersonalizationActivity() {
                 note("阶跃星辰 StepAudio SSE 接口；支持 paygo 与 coding_plan 端点（可改地址）。")
                 secretRow("API Key", AsrSettings.apiKey("stepaudio")) { AsrSettings.setApiKey("stepaudio", it) }
                 textRow("接口地址", AsrSettings.endpoint("stepaudio")) { AsrSettings.setEndpoint("stepaudio", it) }
+                choiceRow("预设模型", listOf("stepaudio-2.5-asr", "stepaudio-3-asr-max").map { it to it }, AsrSettings.model("stepaudio")) { AsrSettings.setModel("stepaudio", it) }
+                choiceRow("预设接口", listOf("https://api.stepfun.com/v1/audio/asr/sse" to "按量付费", "https://api.stepfun.com/step_plan/v1/audio/asr/sse" to "Coding Plan"), AsrSettings.endpoint("stepaudio")) { AsrSettings.setEndpoint("stepaudio", it) }
                 textRow("模型名", AsrSettings.model("stepaudio")) { AsrSettings.setModel("stepaudio", it) }
                 choiceRow(
                     "识别语言",
@@ -283,6 +309,7 @@ class VoiceSettingsActivity : PersonalizationActivity() {
                 if (def.editableEndpoint) {
                     textRow("接口地址", AsrSettings.endpoint(vendor)) { AsrSettings.setEndpoint(vendor, it) }
                 }
+                if (vendor == "siliconflow") choiceRow("预设模型", com.osfans.trime.ime.voice.builtin.CloudAsrModels.siliconflow.map { it to it }, AsrSettings.model(vendor)) { AsrSettings.setModel(vendor, it) }
                 if (vendor != "zhipu") {
                     textRow("模型名", AsrSettings.model(vendor)) { AsrSettings.setModel(vendor, it) }
                 }

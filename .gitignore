@@ -489,7 +489,11 @@ app/src/main/jni/boost/
 
 # Private signing identity for Mie releases
 .local-signing/
-app/libs/
+app/libs/*
+# Public Foxlet runtime and its reproducible upstream compatibility build.
+!app/libs/foxlet-v0.5.0.aar
+!app/libs/foxlet/
+!app/libs/foxlet/**
 
 # Mie local credentials and delivery output
 .local-signing/

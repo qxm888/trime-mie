@@ -33,4 +33,31 @@ class PetRedeemCodeTest:FunSpec({
         PetRedeemCode.CHOICE.requireAvailable(claimed,PetCatalog.get("jige"))
         shouldThrow<IllegalStateException> { PetRedeemCode.CHOICE.requireAvailable(claimed,PetCatalog.get("xiaomie")) }
     }
+    test("qxm222 redeems only jizai and rejects all other species") {
+        val gift=checkNotNull(PetRedeemCode.find("qxm222"))
+        gift shouldBe PetRedeemCode.JIZAI
+        gift.requireAvailable(PetHouse.State(),PetCatalog.get("jizai"))
+        PetCatalog.species.filterNot { it.id=="jizai" }.forEach { species ->
+            shouldThrow<IllegalStateException> { gift.requireAvailable(PetHouse.State(),species) }
+        }
+        PetRedeemCode.entries.map { it.code }.distinct().size shouldBe PetRedeemCode.entries.size
+    }
+    test("all old claims leave jizai available and it cannot be claimed twice") {
+        val old=PetHouse.State(redeemed=true,xiaomieRedeemed=true,monkeyRedeemed=true,jigeRedeemed=true)
+        val gift=PetRedeemCode.JIZAI
+        gift.used(old) shouldBe false
+        gift.requireAvailable(old,PetCatalog.get("jizai"))
+        val claimed=gift.claim(old)
+        claimed shouldBe old.copy(jizaiRedeemed=true)
+        shouldThrow<IllegalStateException> { gift.requireAvailable(claimed,PetCatalog.get("jizai")) }
+    }
+    test("jizai claim and all previous redemption claims remain independent") {
+        val initial=PetHouse.State()
+        val claimed=PetRedeemCode.JIZAI.claim(initial)
+        claimed shouldBe initial.copy(jizaiRedeemed=true)
+        PetRedeemCode.entries.filterNot { it==PetRedeemCode.JIZAI }.forEach { other ->
+            other.used(claimed) shouldBe false
+            PetRedeemCode.JIZAI.used(other.claim(initial)) shouldBe false
+        }
+    }
 })

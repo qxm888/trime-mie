@@ -39,7 +39,10 @@
     <instrumentation android:name="com.osfans.trime.benchmark.TypingGameInputRunner" android:targetPackage="${applicationId}" />
     <instrumentation android:name="com.osfans.trime.benchmark.JizaiAppearanceRunner" android:targetPackage="${applicationId}" />
     <instrumentation android:name="com.osfans.trime.benchmark.SentenceRetentionRunner" android:targetPackage="${applicationId}" />
+    <instrumentation android:name="com.osfans.trime.benchmark.AiTextRunner" android:targetPackage="${applicationId}" />
+    <instrumentation android:name="com.osfans.trime.benchmark.AiOfflineRunner" android:targetPackage="${applicationId}" />
     <application>
+        <activity android:name="com.osfans.trime.benchmark.AiTextFixtureActivity" android:exported="false" />
         <activity android:name="com.osfans.trime.benchmark.SentenceLearningActivity" android:exported="false" />
         <activity android:name="com.osfans.trime.benchmark.OneHandPreeditActivity" android:exported="false" />
         <activity android:name="com.osfans.trime.benchmark.PetFootstepFixtureActivity" android:exported="false" />

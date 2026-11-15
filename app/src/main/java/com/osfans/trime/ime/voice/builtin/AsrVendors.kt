@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * 语音识别服务商注册表（对照说点啥/BiBi-Keyboard AsrVendorRegistry 的常用项，
- * Apache-2.0）。未列入的说明：阿里千问（DashScope）依赖官方 Java SDK，未移植；说点啥的免费公益 Key（SiliconFlow）不复用，一律用户自带凭据。
+ * Apache-2.0）。新增千问和 DeepSeek 文件识别；不复用公益 Key，一律用户自带凭据。
  */
 package com.osfans.trime.ime.voice.builtin
 
@@ -15,6 +15,7 @@ enum class AsrTag(val label: String) {
     CUSTOM("自定义"),
     CHINESE_DIALECT("中文方言"),
     ACCURATE("准确"),
+    RUSSIAN("俄语"),
 }
 
 /** 在线 OpenAI 兼容引擎的请求形态。 */
@@ -111,13 +112,13 @@ object AsrVendors {
         "elevenlabs", "ElevenLabs",
         listOf(AsrTag.ONLINE, AsrTag.STREAMING, AsrTag.NON_STREAMING),
         local = false,
-        defaultModel = "scribe_v1",
+        defaultModel = "scribe_v3",
     )
     val SONIOX = AsrVendorDef(
         "soniox", "Soniox",
         listOf(AsrTag.ONLINE, AsrTag.NON_STREAMING, AsrTag.ACCURATE),
         local = false,
-        defaultModel = "stt-async-v5",
+        defaultModel = "stt-async-v6",
     )
     val STEPAUDIO = AsrVendorDef(
         "stepaudio", "StepAudio",
@@ -128,10 +129,18 @@ object AsrVendors {
         defaultModel = "stepaudio-2.5-asr",
     )
 
-    val ONLINE_ALL = listOf(VOLC, TENCENT, OPENAI, SILICONFLOW, OPENROUTER, ZHIPU, COHERE, GEMINI, MIMO, ELEVENLABS, SONIOX, STEPAUDIO)
+    val DASHSCOPE = AsrVendorDef("dashscope", "阿里千问（Qwen-Audio）",
+        listOf(AsrTag.ONLINE, AsrTag.NON_STREAMING, AsrTag.CHINESE_DIALECT, AsrTag.CUSTOM),
+        local = false, defaultEndpoint = QwenAsrProtocol.CN, editableEndpoint = true, defaultModel = "qwen-audio-3.1-asr-flash")
+    val DEEPSEEK = AsrVendorDef("deepseek", "DeepSeek 语音",
+        listOf(AsrTag.ONLINE, AsrTag.NON_STREAMING), local = false,
+        defaultEndpoint = "https://api.deepseek.com/v1/tools/asr")
+
+    val ONLINE_ALL = listOf(VOLC, TENCENT, DASHSCOPE, DEEPSEEK, OPENAI, SILICONFLOW, OPENROUTER, ZHIPU, COHERE, GEMINI, MIMO, ELEVENLABS, SONIOX, STEPAUDIO)
 
     /** 本地家族 id 与 LocalAsrModels.family(key) 一一对应。 */
     val LOCAL_ALL: List<AsrVendorDef> = listOf(
+        AsrVendorDef("giga_am", "GigaAM v3", listOf(AsrTag.LOCAL, AsrTag.NON_STREAMING, AsrTag.RUSSIAN), local = true),
         AsrVendorDef("sensevoice", "SenseVoice", listOf(AsrTag.LOCAL, AsrTag.NON_STREAMING), local = true),
         AsrVendorDef("qwen3_asr", "Qwen3-ASR", listOf(AsrTag.LOCAL, AsrTag.RECOMMENDED, AsrTag.NON_STREAMING, AsrTag.CHINESE_DIALECT, AsrTag.ACCURATE), local = true),
         AsrVendorDef("funasr_nano", "FunASR Nano", listOf(AsrTag.LOCAL, AsrTag.NON_STREAMING, AsrTag.CHINESE_DIALECT), local = true),

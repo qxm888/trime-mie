@@ -17,6 +17,7 @@ object AsrEngineFactory {
         val vendor = AsrSettings.selectedVendor
         if (vendor == "none") return null
         return when (vendor) {
+            "dashscope", "deepseek" -> NewCloudAsrEngine(scope, listener, vendor)
             "tencent" -> TencentAsrEngine(scope, listener)
             "volc" -> VolcStreamAsrEngine(
                 scope, listener,
@@ -34,6 +35,8 @@ object AsrEngineFactory {
             )
 
             "openai", "siliconflow", "openrouter", "zhipu", "cohere" -> {
+                if (vendor == "siliconflow" && CloudAsrModels.siliconflowChat(AsrSettings.model(vendor)))
+                    return NewCloudAsrEngine(scope, listener, vendor)
                 val def = AsrVendors.byId(vendor)!!
                 OpenAiCompatibleAsrEngine(
                     scope, listener,
@@ -71,6 +74,7 @@ object AsrEngineFactory {
             "soniox" -> SonioxAsrEngine(
                 scope, listener,
                 apiKeyProvider = { AsrSettings.apiKey("soniox") },
+                modelProvider = { AsrSettings.model("soniox") },
                 languageProvider = { AsrSettings.language("soniox") },
             )
 

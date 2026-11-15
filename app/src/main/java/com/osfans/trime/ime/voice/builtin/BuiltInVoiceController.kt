@@ -15,11 +15,16 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
     init {
         com.osfans.trime.ime.voice.VoiceSettings.init(service.applicationContext)
         AsrSettings.init(service.applicationContext)
+        com.osfans.trime.ime.ai.AiTextSettings.init(service.applicationContext)
         AsrContextHolder.init(service.applicationContext)
     }
     private val main = Handler(Looper.getMainLooper())
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private class Session(val input: InputConnection, val packageName: String) {
+        val textConfig = com.osfans.trime.ime.ai.AiTextSettings.snapshot()
+        var recognitionDone = false
+        var textStage = ""
+        var processing: Job? = null
         var engine: AsrEngine? = null
         var recorder: AudioRecorder? = null
         var held = true
@@ -46,6 +51,8 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
     private fun publish(session: Session) {
         if (current !== session || session.finished) return
         val phase = when {
+            session.textStage == "AI 润色" -> com.osfans.trime.ime.voice.VoiceRecordingState.Phase.POLISHING
+            session.textStage == "翻译" -> com.osfans.trime.ime.voice.VoiceRecordingState.Phase.TRANSLATING
             session.held && session.recorderStarted -> com.osfans.trime.ime.voice.VoiceRecordingState.Phase.RECORDING
             session.modelLoading -> com.osfans.trime.ime.voice.VoiceRecordingState.Phase.LOADING_MODEL
             session.held -> com.osfans.trime.ime.voice.VoiceRecordingState.Phase.CONNECTING
@@ -65,7 +72,7 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
     fun selectionChanged(start: Int, end: Int, composingStart: Int, composingEnd: Int) {
         val session = current ?: return
         if (!session.preview || session.finished) return
-        if (start != end || composingStart < 0 || start !in composingStart..composingEnd) {
+        if (start != end || composingStart < 0 || start != composingEnd) {
             session.input.finishComposingText()
             session.preview = false
             finish(session, "idle")
@@ -101,7 +108,7 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
                 if (text.isBlank()) return@post
                 service.lifecycleScope.launch {
                     session.preparation?.join()
-                    if (current !== session || session.finished || !sameEditor(session) || !session.streaming || text == session.previewText) return@launch
+                    if (current !== session || session.finished || session.recognitionDone || !sameEditor(session) || !session.streaming || text == session.previewText) return@launch
                     if (!session.preview) session.replacedSelection = session.input.getSelectedText(0)?.toString().orEmpty()
                     if (session.input.setComposingText(text, 1)) {
                         session.preview = true
@@ -114,23 +121,38 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
                 }
             } }
             override fun onFinal(text: String) { main.post {
-                service.lifecycleScope.launch {
-                session.preparation?.join()
-                if (current !== session || session.finished) return@launch
-                session.finished = true
-                com.osfans.trime.util.DiagnosticLog.event("voice", "final", "id=${session.id} chars=${text.length} ms=${android.os.SystemClock.elapsedRealtime() - session.id}")
-                if (service.currentInputConnection === session.input &&
-                    service.currentInputEditorInfo?.packageName == session.packageName) {
-                    if (text.isNotBlank()) {
-                        session.preview = false
-                        service.commitText(text)
-                    } else { clearPreview(session); notice("未识别到内容") }
-                }
-                finish(session, "idle")
+                if (current !== session || session.finished || session.recognitionDone) return@post
+                session.recognitionDone = true
+                session.held = false
+                session.watchdog?.cancel()
+                session.recorder?.stop()
+                session.processing = service.lifecycleScope.launch {
+                    session.preparation?.join()
+                    if (current !== session || session.finished || !sameEditor(session)) return@launch
+                    val revision = service.textSelectionRevision
+                    com.osfans.trime.util.DiagnosticLog.event("voice", "final", "id=${session.id} chars=${text.length}")
+                    val config = if (com.osfans.trime.ime.ai.AiTextController.isSensitiveInput(service.currentInputEditorInfo?.inputType ?: 0))
+                        session.textConfig.copy(polish = false, translate = false) else session.textConfig
+                    val result = if (text.isNotBlank()) com.osfans.trime.ime.ai.TextPipeline.run(text, config, phase = { stage ->
+                        session.textStage = stage
+                        lastStatus = if (stage == "AI 润色") "polishing" else "translating"
+                        publish(session)
+                    }) else com.osfans.trime.ime.ai.TextPipelineResult(text, emptyList())
+                    if (current !== session || session.finished) return@launch
+                    if (sameEditor(session) && (revision == service.textSelectionRevision ||
+                        session.preview && session.input.getTextBeforeCursor(session.previewText.length, 0)?.toString() == session.previewText)) {
+                        if (result.text.isNotBlank()) {
+                            session.preview = false
+                            service.commitText(result.text)
+                            if (result.warnings.isNotEmpty()) notice(result.warnings.joinToString("；"))
+                        } else { clearPreview(session); notice("未识别到内容") }
+                    }
+                    session.processing = null
+                    finish(session, "idle")
                 }
             } }
             override fun onError(message: String) { main.post {
-                if (current !== session || session.finished) return@post
+                if (current !== session || session.finished || session.recognitionDone) return@post
                 session.finished = true
                 com.osfans.trime.util.DiagnosticLog.event("voice", "error", "id=${session.id} stage=$lastStatus")
                 notice(message)
@@ -189,6 +211,8 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
         com.osfans.trime.util.DiagnosticLog.event("voice", "finish", "id=${session.id} status=$status")
         session.held = false
         session.watchdog?.cancel()
+        session.processing?.cancel()
+        session.processing = null
         session.recorder?.stop()
         session.engine?.cancel()
         if (current === session) { current = null; lastStatus = status; service.updateVoiceRecording(false) }

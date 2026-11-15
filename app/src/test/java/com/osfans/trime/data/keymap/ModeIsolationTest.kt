@@ -48,16 +48,17 @@ class ModeIsolationTest : FunSpec({
 
     test("empty custom toolbar stays empty and theme toolbar edits stay in theme mode") {
         val catalog = StandaloneKeyboardTheme.base().toolBar
-        ToolbarOverrides.setEntries(listOf(ToolbarOverrides.Entry("paste", icon = "THEME")))
+        val theme = Theme(name = "toolbar isolation", toolBar = catalog)
+        ToolbarOverrides.setEntries(theme, listOf(ToolbarOverrides.Entry("paste", icon = "THEME")))
         ToolbarOverrides.applyForCustomKeyboard(catalog, emptyList()).buttons shouldBe emptyList()
         val custom = ToolbarOverrides.applyForCustomKeyboard(catalog, listOf(ToolbarOverrides.Entry("copy", icon = "CUSTOM")))
         custom.buttons.map { it.action } shouldBe listOf("copy")
         custom.buttons.single().foreground.style shouldBe "CUSTOM"
-        ToolbarOverrides.apply(catalog).buttons.single().foreground.style shouldBe "THEME"
-        ToolbarOverrides.setEntries(emptyList())
-        ToolbarOverrides.apply(catalog).buttons shouldBe emptyList()
+        ToolbarOverrides.apply(theme).buttons.single().foreground.style shouldBe "THEME"
+        ToolbarOverrides.setEntries(theme, emptyList())
+        ToolbarOverrides.apply(theme).buttons shouldBe emptyList()
         ToolbarOverrides.resetAll()
-        ToolbarOverrides.apply(catalog) shouldBe catalog
+        ToolbarOverrides.apply(theme) shouldBe catalog
     }
 
     test("editing a snapshot and canceling cannot mutate persisted key bindings") {
@@ -99,10 +100,27 @@ class ModeIsolationTest : FunSpec({
     }
 
     test("toolbar can bind a function absent from the source theme toolbar") {
-        ToolbarOverrides.setEntries(listOf(ToolbarOverrides.Entry("Control+c", icon = "COPY")))
-        val result = ToolbarOverrides.apply(ToolBar())
+        val theme = Theme(name = "toolbar custom action")
+        ToolbarOverrides.setEntries(theme, listOf(ToolbarOverrides.Entry("Control+c", icon = "COPY")))
+        val result = ToolbarOverrides.apply(theme)
         result.buttons.single().action shouldBe "Control+c"
         result.buttons.single().foreground.style shouldBe "COPY"
+    }
+
+    test("switching theme restores its native icons while returning keeps the edited toolbar") {
+        val a=Theme(name="first theme",fontConfigId="first",toolBar=ToolBar(buttons=listOf(
+            ToolBar.Button(action="a",foreground=ToolBar.Button.Foreground(style="ic@clipboard")),
+        )))
+        val b=Theme(name="second theme",fontConfigId="second",toolBar=ToolBar(buttons=listOf(
+            ToolBar.Button(action="b",foreground=ToolBar.Button.Foreground(style="ic@emoticon")),
+        )))
+        ToolbarOverrides.setEntries(a,listOf(ToolbarOverrides.Entry("a",icon="A ICON")))
+        ToolbarOverrides.apply(b) shouldBe b.toolBar
+        ToolbarOverrides.apply(a).buttons.single().foreground.style shouldBe "A ICON"
+        ToolbarOverrides.setEntries(b,listOf(ToolbarOverrides.Entry("b",icon="B ICON")))
+        ToolbarOverrides.reset(a)
+        ToolbarOverrides.apply(a) shouldBe a.toolBar
+        ToolbarOverrides.apply(b).buttons.single().foreground.style shouldBe "B ICON"
     }
 
 })

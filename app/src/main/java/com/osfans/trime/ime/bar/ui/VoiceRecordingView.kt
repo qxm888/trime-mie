@@ -41,6 +41,8 @@ class VoiceRecordingView(context: Context, color: Int) : View(context) {
                 Phase.CONNECTING -> "正在连接语音服务"
                 Phase.LOADING_MODEL -> "正在加载语音模型"
                 Phase.PROCESSING -> "正在识别语音"
+                Phase.POLISHING -> "正在润色文字"
+                Phase.TRANSLATING -> "正在翻译文字"
                 Phase.IDLE -> ""
             }
         }
@@ -117,7 +119,7 @@ class VoiceRecordingView(context: Context, color: Int) : View(context) {
         if(busy && height>=32*d) {
             paint.style=Paint.Style.FILL;paint.color=tinted(170);paint.textAlign=Paint.Align.CENTER
             paint.textSize=9*d;paint.typeface=Typeface.DEFAULT
-            val label=when(state.phase) { Phase.CONNECTING->"连接中";Phase.LOADING_MODEL->"加载中";else->"识别中" }
+            val label=when(state.phase) { Phase.CONNECTING->"连接中";Phase.LOADING_MODEL->"加载中";Phase.POLISHING->"润色中";Phase.TRANSLATING->"翻译中";else->"识别中" }
             canvas.drawText(label,cx,height-3*d,paint)
         }
         removeCallbacks(frame)

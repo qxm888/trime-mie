@@ -22,6 +22,8 @@ sealed class SwitchOptionEntry(
             ThemeList,
             InputStats,
             PetHouse,
+            AiPolish,
+            Translate,
             FloatingKeyboard,
             OneHandMode,
             CandidatesWindow,

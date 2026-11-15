@@ -563,7 +563,12 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
      * Cancel an active recording without constructing the controller.
      * Idle key presses used to initialize it just to call cancel().
      */
+    private val aiTextDelegate = lazy { com.osfans.trime.ime.ai.AiTextController(this) }
+    val textSelectionRevision get() = cursorUpdateIndex
+    fun showAiText(translate: Boolean) { aiTextDelegate.value.show(translate) }
+
     fun cancelVoiceIfActive() {
+        if (aiTextDelegate.isInitialized()) aiTextDelegate.value.cancel()
         if (builtInVoiceDelegate.isInitialized()) builtInVoice.cancel()
     }
 
@@ -572,6 +577,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
     }
 
     override fun onDestroy() {
+        if (aiTextDelegate.isInitialized()) aiTextDelegate.value.cancel()
         unregisterCrossWindowBlurListener()
         if(petCompanionDelegate.isInitialized()) petCompanionDelegate.value.dispose()
         com.osfans.trime.data.sync.ClipboardSync.stop()
@@ -1019,6 +1025,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
     }
 
     override fun onFinishInput() {
+        cancelVoiceIfActive()
         if (sentenceSuggestions.isInitialized()) sentenceSuggestions.value.stop()
         super.onFinishInput()
     }
@@ -1497,7 +1504,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
 
     private var showingDialog: Dialog? = null
 
-    fun showDialog(dialog: Dialog) {
+    fun showDialog(dialog: Dialog, onDismiss: (() -> Unit)? = null) {
         showingDialog?.dismiss()
         dialog.window?.also {
             it.attributes.apply {
@@ -1510,7 +1517,8 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
             it.setDimAmount(styledFloat(android.R.attr.backgroundDimAmount))
         }
         dialog.setOnDismissListener {
-            showingDialog = null
+            if (showingDialog === dialog) showingDialog = null
+            onDismiss?.invoke()
         }
         dialog.show()
         showingDialog = dialog

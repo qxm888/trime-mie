@@ -16,7 +16,7 @@ class ModeToolbarTest : FunSpec({
         ), toolBar = ToolBar(primaryButton = ToolBar.Button(action = "floatAlias"), buttons = listOf(
             ToolBar.Button(action = "__floating"), ToolBar.Button(action = "handAlias"), ToolBar.Button(action = "copy"),
         )))
-        val result = ToolbarOverrides.forKeyboard(theme)
+        val result = ToolbarOverrides.forKeyboard(theme, toolbarIconSize = 0)
         result.primaryButton.shouldBeNull()
         result.buttons.none { it.action == "__floating" || it.action == "floatAlias" || it.action == "handAlias" } shouldBe true
         theme.toolBar.primaryButton?.action shouldBe "floatAlias"
@@ -30,7 +30,7 @@ class ModeToolbarTest : FunSpec({
         ), toolBar = ToolBar(primaryButton = ToolBar.Button(action = "__mie_floating_keyboard"), buttons = listOf(
             ToolBar.Button(action = "mieFloat"), ToolBar.Button(action = "mieHand"), ToolBar.Button(action = "copy"),
         )))
-        val result = ToolbarOverrides.forKeyboard(theme)
+        val result = ToolbarOverrides.forKeyboard(theme, toolbarIconSize = 0)
         result.primaryButton?.action shouldBe "__mie_floating_keyboard"
         result.buttons.map { it.action } shouldBe listOf("mieFloat", "mieHand", "copy")
         result.buttons.none { ToolbarOverrides.isModeAction(it.action) } shouldBe true

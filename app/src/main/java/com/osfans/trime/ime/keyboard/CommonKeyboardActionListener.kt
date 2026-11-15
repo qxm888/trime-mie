@@ -195,6 +195,8 @@ class CommonKeyboardActionListener(override val di: DI) : DIAware {
                 val arg = expandActiveText(action.option)
 
                 when (action.command) {
+                    "__mie_ai_polish" -> service.lifecycleScope.launch { service.showAiText(false) }
+                    "__mie_translate" -> service.lifecycleScope.launch { service.showAiText(true) }
                     "theme" -> showThemePicker()
                     "__mie_voice_start" -> if (com.osfans.trime.ime.voice.VoiceSettings.enabled) service.voiceInput.start()
                     "__mie_voice_finish" -> if (com.osfans.trime.ime.voice.VoiceSettings.enabled) service.voiceInput.release()

@@ -71,16 +71,8 @@ object ToolbarOverrides {
         val iconSize: Int = 0, // dp; 0 fits available button area
     )
 
-    @Serializable
-    private data class Store(
-        var version: Long = 1,
-        var configured: Boolean = false,
-        val hiddenMenus: MutableMap<String, Set<String>> = mutableMapOf(),
-        val buttons: MutableList<Entry> = mutableListOf(),
-    )
-
     private val lock = Any()
-    private var store = Store()
+    private var store = ThemeToolbarStore()
     private var appContext: Context? = null
 
     @Volatile
@@ -101,7 +93,7 @@ object ToolbarOverrides {
             runCatching {
                 val file = storeFile()
                 file.readAtomicText()?.let { contents ->
-                    store = json.decodeFromString(Store.serializer(), contents)
+                    store = json.decodeFromString(ThemeToolbarStore.serializer(), contents)
                     if (store.buttons.isNotEmpty()) store.configured = true
                 }
             }.onFailure { Timber.w(it, "ToolbarOverrides: load failed") }
@@ -124,7 +116,14 @@ object ToolbarOverrides {
     private fun storeFile(): File = File(appContext!!.filesDir, "toolbar_overrides.json")
 
     /** Current entries in display order (action + enabled). */
-    fun entries(): List<Entry> = synchronized(lock) { store.buttons.toList() }
+    fun entries(theme: Theme): List<Entry> = synchronized(lock) { profileLocked(theme)?.buttons.orEmpty().toList() }
+
+    private fun profileLocked(theme: Theme): ThemeToolbarProfile? {
+        if (store.adoptLegacy(theme)) {
+            store.version++; dirty = true; scheduleSaveLocked()
+        }
+        return store.profile(theme)
+    }
 
     /** Theme-mode menu visibility is scoped by theme and independent from custom layouts. */
     fun hiddenMenuItems(themeId: String): Set<String> = synchronized(lock) { store.hiddenMenus[themeId].orEmpty().toSet() }
@@ -135,23 +134,28 @@ object ToolbarOverrides {
         store.version++; dirty = true; scheduleSaveLocked()
     }
 
-    fun setEntries(entries: List<Entry>) {
+    fun setEntries(theme: Theme, entries: List<Entry>) {
         synchronized(lock) {
-            store.configured = true
-            store.buttons.clear()
-            store.buttons.addAll(entries)
+            store.set(theme, entries)
             store.version++
             dirty = true
             scheduleSaveLocked()
         }
     }
 
-    fun hasCustomization(): Boolean = synchronized(lock) { store.configured }
+    fun hasCustomization(theme: Theme): Boolean = synchronized(lock) { profileLocked(theme)?.configured == true }
+
+    fun reset(theme: Theme) = synchronized(lock) {
+        store.reset(theme)
+        store.version++; dirty = true; scheduleSaveLocked()
+    }
 
     fun resetAll() {
         synchronized(lock) {
             store.buttons.clear()
             store.configured = false
+            store.themes.clear()
+            store.legacyOwner = ""
             store.version++
             dirty = true
             scheduleSaveLocked()
@@ -162,9 +166,9 @@ object ToolbarOverrides {
      * Applies the overrides to the theme's toolbar. Buttons are matched by
      * `action`; disabled and removed entries stay absent.
      */
-    fun apply(toolBar: ToolBar): ToolBar {
-        val (configured, stored) = synchronized(lock) { store.configured to store.buttons.toList() }
-        return if (configured) applyEntries(toolBar, stored, allowCustomActions = true) else toolBar
+    fun apply(theme: Theme): ToolBar {
+        val profile = synchronized(lock) { profileLocked(theme) }
+        return if (profile?.configured == true) applyEntries(theme.toolBar, profile.buttons, allowCustomActions = true) else theme.toolBar
     }
 
     /**
@@ -244,7 +248,7 @@ object ToolbarOverrides {
     }
 
     /** Mode-aware selection: fully custom layouts never consult the theme overlay store. */
-    fun forKeyboard(theme: Theme, runtimeId: String = "default"): ToolBar {
+    fun forKeyboard(theme: Theme, runtimeId: String = "default", toolbarIconSize: Int? = null): ToolBar {
         val bar = withoutModeButtons(if (theme.isCustom) {
             // 数字/密码/邮箱输入框会被切到内置 `number` / `.ascii` 页，这些页在
             // 自定义键盘库里通常没有同名条目。取不到就回退到当前活动自定义键盘，
@@ -267,11 +271,11 @@ object ToolbarOverrides {
                 })
             }
         } else {
-            apply(theme.toolBar)
+            apply(theme)
         }, theme)
         // 工具栏图标统一大小（整套全局）：覆盖所有按钮的位图/字体图标尺寸；文字按钮走
         // fontSize 不受影响。自定义键盘读整套根键盘，主题键盘读 SurfaceAppearance。
-        val iconSize = if (theme.isCustom) CustomKeyboards.setToolbarIconSize(runtimeId)
+        val iconSize = toolbarIconSize ?: if (theme.isCustom) CustomKeyboards.setToolbarIconSize(runtimeId)
             else com.osfans.trime.ime.appearance.SurfaceAppearance.themeToolbarIconSize()
         if (iconSize > 0) {
             fun scale(b: ToolBar.Button) = b.copy(foreground = b.foreground.copy(iconSize = iconSize.coerceIn(8, 96)))

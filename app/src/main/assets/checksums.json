@@ -1,13 +1,14 @@
 {
-    "sha256": "ae91fc68aed2019d17b9122ae505bb97c09a77fa383bd822cf0bcbfb9f79f123",
+    "sha256": "cd163e389e819f34e1743b130c0925d789adf084ecf9b2783f4d39c2da993cba",
     "files": {
         "eldritch": "",
         "eldritch/jizai.png": "53e620fea7b2475b1b9f951d70f11ac90439ad7ddc2b40e0c3770c4836748a06",
         "licenses": "",
         "licenses/Apache-2.0.txt": "6c11db5f4f0d8521559233b532c635692b6525bde771139723dc1ee489fac393",
+        "licenses/Foxlet-LICENSE": "00240e4ce0cba70c9f7fac7fa569e67d5f8b26a1484646b96bea36abccd13438",
         "licenses/bibi-builtin-NOTICE.txt": "d021524e86f55f9405d8fc6b3f1182f8573aed6eca6b171670d72c81bd9b0f77",
         "licenses/bibi-port-NOTICE.txt": "31b6a6ce3deb63c515419bd9dc93892189a17dd9105c0cff14b34ecba03aff32",
-        "licenses/bibi-upstream-NOTICE.txt": "ca09523229a50ef9ad7c1b4ff90703a94ce9f7b05fa783d8667dba9df24bda2f",
+        "licenses/bibi-upstream-NOTICE.txt": "d22dcae593108e473a9d3e7ed5dfe2490fa46ba34ed501b921a79ef7674c24b4",
         "licenses/rime-prelude-LGPL-3.0.txt": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
         "licenses/rime-prelude-NOTICE.txt": "a10dae4c4edcd3d289eb16e3b3d96cbff7022f514f23378100b96c67d716284e",
         "licenses/rime-startup-BSD-3-Clause.txt": "f67d27a6d2d586fcfed4b4c886a83747095396a39b6641e18e855086be2ec400",
@@ -16,6 +17,8 @@
         "shared/default.yaml": "dd55653a991f9418eb425ee2112666f82e3e753c5ce3ed5702dd243041a45382",
         "shared/key_bindings.yaml": "5c484257cccbab899bc874dfeb9257ce7190c99fee3abc33321767c8dac56af9",
         "shared/punctuation.yaml": "d6f89592149098f0a2d0ed3e5c83f49adb6226cdf1d967b0bc0d293f4e5c496a",
-        "shared/symbols.yaml": "f12ee3a61bb9739c29fe6ba12890c5c9c50ca38f63ce9c85e1a16e223ae0b04f"
+        "shared/symbols.yaml": "f12ee3a61bb9739c29fe6ba12890c5c9c50ca38f63ce9c85e1a16e223ae0b04f",
+        "translation": "",
+        "translation/foxlet-models.json": "1a3b02c2a91be818350e2b3e1968cc5413feeb1ea3bdf4726f75d95354e6aa89"
     }
 }
