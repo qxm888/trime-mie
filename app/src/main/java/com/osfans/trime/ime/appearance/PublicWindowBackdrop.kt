@@ -40,6 +40,11 @@ internal class PublicWindowBackdrop(
     private val lastBounds = Rect()
     private var lastCorner = -1f
     private var lastRadius = -1
+    private var moving = false
+    private val settleMotion = Runnable {
+        moving = false
+        if (wanted) update()
+    }
     var active: Boolean = false
         private set
     var status: String = "not_requested"
@@ -89,6 +94,8 @@ internal class PublicWindowBackdrop(
     }
 
     private fun dismiss(reason: String, notify: Boolean = true) {
+        host.removeCallbacks(settleMotion)
+        moving = false
         dialog?.let {
             if (Build.VERSION.SDK_INT >= 31) runCatching { it.window?.setBackgroundBlurRadius(0) }
             runCatching { it.dismiss() }
@@ -142,6 +149,13 @@ internal class PublicWindowBackdrop(
             }
             val window = checkNotNull(dialog?.window)
             if (lastBounds != bounds) {
+                if (!lastBounds.isEmpty) {
+                    // Keep a live blur while moving, with less compositor work.
+                    // Restore full quality once motion has actually stopped.
+                    moving = true
+                    host.removeCallbacks(settleMotion)
+                    host.postDelayed(settleMotion, 160L)
+                }
                 changed = true
                 window.attributes = window.attributes.apply { x = bounds.left; y = bounds.top; width = bounds.width(); height = bounds.height() }
                 lastBounds.set(bounds)
@@ -151,8 +165,11 @@ internal class PublicWindowBackdrop(
                 (window.decorView.background as? GradientDrawable)?.cornerRadius = scaledCorner
                 lastCorner = scaledCorner
             }
-            if (lastRadius != radius) { window.setBackgroundBlurRadius(radius); lastRadius = radius; changed = true }
-            if (changed) state(true, "public_window radius=$radius bounds=${bounds.toShortString()}")
+            val effectiveRadius = if (moving) minOf(radius, 32) else radius
+            if (lastRadius != effectiveRadius) { window.setBackgroundBlurRadius(effectiveRadius); lastRadius = effectiveRadius; changed = true }
+            // Geometry remains in lastBounds for diagnostics; do not format a
+            // Rect/string and trigger logging on every drag frame.
+            if (changed) state(true, "public_window radius=$radius")
         } catch (error: Exception) {
             dismiss("public_window_failed:${error.javaClass.simpleName}")
             failedOwner = token // Do not retry a rejected window on every frame.

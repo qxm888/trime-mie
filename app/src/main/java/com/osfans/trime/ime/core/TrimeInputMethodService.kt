@@ -840,7 +840,13 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
         } finally { updatingKeyboardMode = false }
     }
 
-    fun requestInputInsetsUpdate() { if (::decorView.isInitialized) decorView.requestLayout() }
+    fun requestInputInsetsUpdate(layout: Boolean = true) {
+        if (!::decorView.isInitialized) return
+        // Translation changes the touchable region, not the measured keyboard.
+        // A draw traversal dispatches OnComputeInternalInsets too; requesting a
+        // full measure/layout here stalls every floating drag frame.
+        if (layout) decorView.requestLayout() else decorView.invalidate()
+    }
 
     fun refreshCandidatesGeometry() {
         val current = inputView ?: return

@@ -292,7 +292,10 @@ object SurfaceAppearance {
     private var layoutVersion = -1L
     private var runtimeLayoutId = ""
     private var layout: com.osfans.trime.data.keymap.CustomKeyboards.CustomKeyboard? = null
-    fun currentLayout(id: String = com.osfans.trime.ime.keyboard.KeyboardWindow.lastAttachedId): com.osfans.trime.data.keymap.CustomKeyboards.CustomKeyboard? {
+    private fun runtimePage(): String = com.osfans.trime.ime.keyboard.KeyboardWindow.instance?.appearanceLayoutId
+        ?: com.osfans.trime.data.keymap.CustomKeyboards.runtimeActiveId()
+
+    fun currentLayout(id: String = runtimePage()): com.osfans.trime.data.keymap.CustomKeyboards.CustomKeyboard? {
         val version = com.osfans.trime.data.keymap.CustomKeyboards.version
         if (layoutVersion != version || runtimeLayoutId != id) {
             val resolved = com.osfans.trime.data.keymap.CustomKeyboards.resolveId(id)
@@ -302,7 +305,7 @@ object SurfaceAppearance {
         return layout
     }
     fun current(customMode: Boolean = isCustomMode(), id: String? = null): SurfaceAppearanceConfig {
-        if (customMode) currentLayout(id ?: com.osfans.trime.ime.keyboard.KeyboardWindow.lastAttachedId)?.surfaceAppearance?.let { return it }
+        if (customMode) currentLayout(id ?: runtimePage())?.surfaceAppearance?.let { return it }
 
         val prefs = AppPrefs.defaultInstance().keyboard
         val raw = (if (customMode) prefs.customSurfaceAppearance else prefs.surfaceAppearance).getValue()
@@ -353,16 +356,9 @@ object SurfaceAppearance {
      */
     fun keyboardCorners(customMode: Boolean = isCustomMode(), id: String? = null): List<Float> {
         if (!customMode) return current(false).keyboardCorners
-        val page = id ?: com.osfans.trime.ime.keyboard.KeyboardWindow.lastAttachedId
-        val sources = buildList {
-            page?.takeIf { it.isNotBlank() }?.let { runCatching { com.osfans.trime.data.keymap.CustomKeyboards.setRoot(it.removePrefix(com.osfans.trime.data.keymap.KeyboardSets.EDIT_PREFIX)) }.getOrNull() }?.let(::add)
-            com.osfans.trime.data.keymap.CustomKeyboards.activeId.takeIf { it.isNotBlank() }?.let(::add)
-            page?.takeIf { it.isNotBlank() }?.let(::add)
-        }
-        sources.distinct().forEach { candidate ->
-            val corners = runCatching {
-                com.osfans.trime.data.keymap.CustomKeyboards.get(candidate)?.surfaceAppearance?.keyboardCorners
-            }.getOrNull()
+        val page = id ?: runtimePage()
+        scopedLayoutIds(page).forEach { candidate ->
+            val corners = com.osfans.trime.data.keymap.CustomKeyboards.get(candidate)?.surfaceAppearance?.keyboardCorners
             if (corners != null && corners.size == 4 && corners.any { it > 0f }) return corners
         }
         return current(true, page).keyboardCorners
@@ -372,30 +368,22 @@ object SurfaceAppearance {
      * 按「整套 / 页面 / 面板」作用域列出候选配置：
      * 主页 → 整套当前活动页 → 正在显示的那页。主题键盘只有一份「主题键盘全局外观」。
      */
+    private fun scopedLayoutIds(page: String): List<String> = appearanceScopeIds(
+        page, com.osfans.trime.data.keymap.CustomKeyboards.runtimeActiveId(),
+        { com.osfans.trime.data.keymap.CustomKeyboards.resolveId(it) },
+        { runCatching { com.osfans.trime.data.keymap.CustomKeyboards.setRoot(it) }.getOrNull() },
+    )
+
     private fun keyboardScopedConfigs(customMode: Boolean, id: String?): List<SurfaceAppearanceConfig> {
         if (!customMode) return listOf(current(false))
-        val page = id ?: com.osfans.trime.ime.keyboard.KeyboardWindow.lastAttachedId
-        val sources = buildList {
-            page?.takeIf { it.isNotBlank() }?.let {
-                runCatching {
-                    com.osfans.trime.data.keymap.CustomKeyboards.setRoot(
-                        it.removePrefix(com.osfans.trime.data.keymap.KeyboardSets.EDIT_PREFIX)
-                    )
-                }.getOrNull()
-            }?.let(::add)
-            com.osfans.trime.data.keymap.CustomKeyboards.runtimeActiveId().takeIf { it.isNotBlank() }?.let(::add)
-            page?.takeIf { it.isNotBlank() }?.let(::add)
+        val page = id ?: runtimePage()
+        val scoped = scopedLayoutIds(page).mapNotNull { candidate ->
+            com.osfans.trime.data.keymap.CustomKeyboards.get(candidate)?.surfaceAppearance
         }
-        val scoped = sources.distinct().mapNotNull { candidate ->
-            runCatching { com.osfans.trime.data.keymap.CustomKeyboards.get(candidate)?.surfaceAppearance }.getOrNull()
-        }
-        // 兜底：把「主题键盘全局外观」接在最后。
-        //
-        // 内置皮肤是当作自定义键盘注入的，各皮肤只存自己改过的那几项；其余项
-        // （描边、留白、候选高亮……）应当从全局设定继承，而不是一律回落到 0。
-        // 放在最后是因为各 getter 都取「第一个满足条件的配置」，皮肤自己设了值
-        // 就轮不到这条兜底——它只补没设的部分，不会盖掉皮肤自己的外观。
-        return scoped + current(false)
+        // An owned layout never inherits effects from a different active family or
+        // from the YAML-theme appearance preferences. Legacy custom defaults only
+        // apply when this family has no appearance metadata at all.
+        return scoped.ifEmpty { listOf(current(true, page)) }
     }
 
     /**
@@ -421,32 +409,35 @@ object SurfaceAppearance {
         val panelBackground: String?,
     )
 
-    private var scopedStamp = ""
+    private data class ScopeStamp(val layouts: Long, val appearance: Long, val custom: Boolean, val page: String,
+        val active: String, val themeRaw: String, val customRaw: String)
+    private var scopedStamp: ScopeStamp? = null
     private var scopedCache = ScopedAppearance(0f, 0f, 0f, null, null, "" to 0f, 60, null, null, null)
 
     private fun scopedAppearance(customMode: Boolean, id: String?): ScopedAppearance {
-        val page = id ?: com.osfans.trime.ime.keyboard.KeyboardWindow.lastAttachedId
+        val page = id ?: runtimePage()
         val prefs = AppPrefs.defaultInstance().keyboard
-        val stamp = buildString {
-            append(com.osfans.trime.data.keymap.CustomKeyboards.version).append('|')
-            append(version).append('|')
-            append(customMode).append('|')
-            append(page).append('|')
-            append(prefs.surfaceAppearance.getValue()).append('|')
-            append(prefs.customSurfaceAppearance.getValue())
-        }
-        if (stamp == scopedStamp) return scopedCache
+        val layouts = com.osfans.trime.data.keymap.CustomKeyboards.version
+        val active = com.osfans.trime.data.keymap.CustomKeyboards.runtimeActiveId()
+        val themeRaw = prefs.surfaceAppearance.getValue()
+        val customRaw = prefs.customSurfaceAppearance.getValue()
+        val previous = scopedStamp
+        if (previous != null && previous.layouts == layouts && previous.appearance == version &&
+            previous.custom == customMode && previous.page == page && previous.active == active &&
+            previous.themeRaw == themeRaw && previous.customRaw == customRaw) return scopedCache
+        val stamp = ScopeStamp(layouts, version, customMode, page, active, themeRaw, customRaw)
+        val configs = keyboardScopedConfigs(customMode, page)
         val result = ScopedAppearance(
-            sideMargin = computeSideMargin(customMode, id),
-            topMargin = computeTopMargin(customMode, id),
-            bottomMargin = computeBottomMargin(customMode, id),
-            highlightRadius = computeHighlightRadius(customMode, id),
-            highlightColor = computeHighlightColor(customMode, id),
-            border = computeBorder(customMode, id),
-            borderGlow = computeBorderGlow(customMode, id),
-            gradient = computeGradient(customMode, id),
-            backdrop = computeBackdrop(customMode, id),
-            panelBackground = computePanelBackground(customMode, id),
+            sideMargin = computeSideMargin(configs),
+            topMargin = computeTopMargin(configs),
+            bottomMargin = computeBottomMargin(configs),
+            highlightRadius = computeHighlightRadius(configs),
+            highlightColor = computeHighlightColor(configs),
+            border = computeBorder(configs),
+            borderGlow = computeBorderGlow(configs),
+            gradient = computeGradient(configs),
+            backdrop = computeBackdrop(configs),
+            panelBackground = computePanelBackground(customMode, configs),
         )
         scopedCache = result
         scopedStamp = stamp
@@ -506,45 +497,45 @@ object SurfaceAppearance {
     /** 主题键盘（YAML）的工具栏图标统一大小（dp，0=跟随主题）。 */
     fun themeToolbarIconSize(): Int = current(false).toolbarIconSizeDp.coerceIn(0, 96)
 
-    private fun computeGradient(customMode: Boolean, id: String?): PanelGradient? =
-        keyboardScopedConfigs(customMode, id).firstOrNull { it.gradient.enabled }?.gradient?.sanitized()
+    private fun computeGradient(configs: List<SurfaceAppearanceConfig>): PanelGradient? =
+        configs.firstOrNull { it.gradient.enabled }?.gradient?.sanitized()
 
-    private fun computeBackdrop(customMode: Boolean, id: String?): PanelBackdrop? =
-        keyboardScopedConfigs(customMode, id).firstOrNull { it.backdrop.enabled }?.backdrop?.sanitized()
+    private fun computeBackdrop(configs: List<SurfaceAppearanceConfig>): PanelBackdrop? =
+        configs.firstOrNull { it.backdrop.enabled }?.backdrop?.sanitized()
 
     /** 面板背景只服务主题键盘；自定义键盘用自带的整套键盘背景，这里一律返回 null。 */
-    private fun computePanelBackground(customMode: Boolean, id: String?): String? =
+    private fun computePanelBackground(customMode: Boolean, configs: List<SurfaceAppearanceConfig>): String? =
         if (customMode) null else
-            keyboardScopedConfigs(customMode, id).firstOrNull { it.panelBackground.isNotBlank() }?.panelBackground
+            configs.firstOrNull { it.panelBackground.isNotBlank() }?.panelBackground
 
-    private fun computeBorder(customMode: Boolean, id: String?): Pair<String, Float> =
-        keyboardScopedConfigs(customMode, id)
+    private fun computeBorder(configs: List<SurfaceAppearanceConfig>): Pair<String, Float> =
+        configs
             .firstOrNull { it.keyboardBorderColor.isNotBlank() && it.keyboardBorderWidth > 0f }
             ?.let { it.keyboardBorderColor to it.keyboardBorderWidth }
             ?: ("" to 0f)
 
-    private fun computeBorderGlow(customMode: Boolean, id: String?): Int =
-        keyboardScopedConfigs(customMode, id)
+    private fun computeBorderGlow(configs: List<SurfaceAppearanceConfig>): Int =
+        configs
             .firstOrNull { it.keyboardBorderColor.isNotBlank() && it.keyboardBorderWidth > 0f }
             ?.keyboardBorderGlow ?: 60
 
-    private fun computeSideMargin(customMode: Boolean, id: String?): Float =
-        keyboardScopedConfigs(customMode, id).firstOrNull { it.keyboardSideMargin > 0f }?.keyboardSideMargin ?: 0f
+    private fun computeSideMargin(configs: List<SurfaceAppearanceConfig>): Float =
+        configs.firstOrNull { it.keyboardSideMargin > 0f }?.keyboardSideMargin ?: 0f
 
-    private fun computeTopMargin(customMode: Boolean, id: String?): Float =
-        keyboardScopedConfigs(customMode, id).firstOrNull { it.keyboardTopMargin > 0f }?.keyboardTopMargin ?: 0f
+    private fun computeTopMargin(configs: List<SurfaceAppearanceConfig>): Float =
+        configs.firstOrNull { it.keyboardTopMargin > 0f }?.keyboardTopMargin ?: 0f
 
-    private fun computeBottomMargin(customMode: Boolean, id: String?): Float =
-        keyboardScopedConfigs(customMode, id).firstOrNull { it.keyboardBottomMargin > 0f }?.keyboardBottomMargin ?: 0f
+    private fun computeBottomMargin(configs: List<SurfaceAppearanceConfig>): Float =
+        configs.firstOrNull { it.keyboardBottomMargin > 0f }?.keyboardBottomMargin ?: 0f
 
-    private fun computeHighlightRadius(customMode: Boolean, id: String?): Float? =
-        keyboardScopedConfigs(customMode, id).firstOrNull { it.candidateHighlightRadius >= 0f }?.candidateHighlightRadius
+    private fun computeHighlightRadius(configs: List<SurfaceAppearanceConfig>): Float? =
+        configs.firstOrNull { it.candidateHighlightRadius >= 0f }?.candidateHighlightRadius
 
-    private fun computeHighlightColor(customMode: Boolean, id: String?): String? =
-        keyboardScopedConfigs(customMode, id).firstOrNull { it.candidateHighlightColor.isNotBlank() }?.candidateHighlightColor
+    private fun computeHighlightColor(configs: List<SurfaceAppearanceConfig>): String? =
+        configs.firstOrNull { it.candidateHighlightColor.isNotBlank() }?.candidateHighlightColor
 
     fun unifiedBackground(customMode: Boolean = isCustomMode(), id: String? = null): Boolean {
-        if (customMode) currentLayout(id ?: com.osfans.trime.ime.keyboard.KeyboardWindow.lastAttachedId)?.unifiedBackground?.let { return it }
+        if (customMode) currentLayout(id ?: runtimePage())?.unifiedBackground?.let { return it }
         val prefs = AppPrefs.defaultInstance().keyboard
         return (if (customMode) prefs.customUnifiedBackground else prefs.unifiedBackground).getValue()
     }

@@ -841,7 +841,7 @@ class InputView(
      *
      * The region is a pure function of the floating layer's position and size, so an
      * unchanged region needs no update. Only [applyFloatingPosition] is throttled this way:
-     * drags must keep the region in step with the finger, otherwise the framework would
+     * draw-only traversals keep the region in step with the finger, otherwise the framework would
      * send the rest of the gesture to the app behind the keyboard.
      */
     private fun requestInsetsUpdateIfFloatingBoundsChanged() {
@@ -854,7 +854,7 @@ class InputView(
             // Not measurable yet; report unconditionally and stop comparing.
             hasLastFloatingBounds = false
         }
-        service.requestInputInsetsUpdate()
+        service.requestInputInsetsUpdate(layout = false)
     }
 
     private fun resetFloatingPosition() {

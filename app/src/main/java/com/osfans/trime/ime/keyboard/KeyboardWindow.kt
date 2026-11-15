@@ -121,6 +121,8 @@ class KeyboardWindow(di: DI) :
 
     private val navigation by lazy { KeyboardNavigation(theme.presetKeyboards, theme.isCustom) }
     @Volatile private var currentKeyboardId = ""
+    internal val appearanceLayoutId: String
+        get() = currentKeyboardId.ifBlank { CustomKeyboards.runtimeActiveId() }
     private var lastKeyboardId = ""
     private var lastLockKeyboardId = ""
     private var tempAsciiMode: Boolean? = null

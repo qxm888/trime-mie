@@ -523,11 +523,12 @@ class CandidatesView(
     fun updateFloatingGeometry(parent: FloatArray, obstruction: RectF?) {
         val sameBounds = if (obstruction == null) floatingObstruction.isEmpty else floatingObstruction == obstruction
         if (parentSize[0] == parent[0] && parentSize[1] == parent[1] && sameBounds) return
+        val resized = parentSize[0] != parent[0] || parentSize[1] != parent[1]
         parentSize[0] = parent[0]
         parentSize[1] = parent[1]
         if (obstruction == null) floatingObstruction.setEmpty() else floatingObstruction.set(obstruction)
         shouldUpdatePosition = true
-        requestLayout()
+        if (resized) requestLayout()
         invalidate()
     }
 
