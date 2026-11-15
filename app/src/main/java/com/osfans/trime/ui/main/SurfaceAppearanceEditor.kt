@@ -303,6 +303,18 @@ object SurfaceAppearanceEditor {
         toggle(backdropBox, "同时模糊背后的应用画面（需要系统支持）", panelBackdrop.systemBlur) {
             updateBackdrop(panelBackdrop.copy(systemBlur = it))
         }
+        // Android 16 删掉了区域模糊的隐藏接口，只有公开窗口通道还能出效果。
+        // 默认自动判断，所以这个开关是「强制」语义；标出当前实际走的哪条路，
+        // 免得用户以为开关没生效。
+        toggle(
+            backdropBox,
+            if (com.osfans.trime.ime.appearance.SystemBackdrop.regionBlurAvailable())
+                "强制使用公开窗口模糊（当前自动：区域模糊）"
+            else "强制使用公开窗口模糊（当前自动：公开窗口）",
+            panelBackdrop.publicWindow,
+        ) {
+            updateBackdrop(panelBackdrop.copy(publicWindow = it))
+        }
         slider(backdropBox, "模糊强度", panelBackdrop.strength.toFloat(), 0f, 100f, 5f, " %") {
             updateBackdrop(panelBackdrop.copy(strength = it.toInt()))
         }

@@ -6,7 +6,15 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前版本：**V3.7.10 / versionCode 20271124**，正式包 `trime-mie-v3.7.10.apk`。修复内置主题误继承液态玻璃特效，减少悬浮键盘和候选浮窗移动开销；保留两套液态玻璃主题及已有功能。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+> 当前版本：**V3.7.11 / versionCode 20271125**，正式包 `trime-mie-v3.7.11.apk`。修复 Android 16 上背景玻璃不模糊的问题：区域模糊的隐藏接口已被移除，现自动改走公开窗口模糊通道。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+
+## V3.7.11 Android 16 背景玻璃兜底
+
+- Android 16（API 36）删除了 `ViewRootImpl.createBackgroundBlurDrawable`，反射失败被静默吞掉，导致只勾选「背景玻璃」的主题（含第三方 YAML 配色）不模糊。现在探测接口可用性，不可用则自动改走公开的 `Window.setBackgroundBlurRadius`，主题无需改配置。
+- 外观设置补上「强制使用公开窗口模糊」开关，并回显当前系统实际走的通道。
+- 688 项单元测试通过；真机 Android 16 / ColorOS 16 确认主题背景玻璃恢复模糊。
+
+[V3.7.11 下载](https://github.com/qxm888/trime-mie/releases/tag/v3.7.11) · [实现与验证](docs/v3.7.11/Android16背景玻璃兜底.md)。
 
 ## V3.7.10 主题隔离与拖动优化
 

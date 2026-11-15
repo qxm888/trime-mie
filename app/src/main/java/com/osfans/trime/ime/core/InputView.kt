@@ -293,7 +293,10 @@ class InputView(
     private fun applyPanelBackdrop(): Boolean {
         val requested = com.osfans.trime.ime.appearance.SurfaceAppearance.panelBackdrop(theme.isCustom)
         val cfg = requested?.takeIf { it.enabled && it.systemBlur }
-        if (cfg?.publicWindow == true) {
+        // Android 16 起区域模糊（反射 createBackgroundBlurDrawable）已经调不到，
+        // 老配置里 publicWindow=false 会静默失败。resolvePublicWindow 会探测并自动
+        // 改走公开子窗口，所以这里不再只看 YAML 里写的值。
+        if (cfg?.resolvePublicWindow() == true) {
             blurLayer.setBackdrop(null, keyboardCornerRadii)
             val public = publicWindowBackdrop ?: com.osfans.trime.ime.appearance.PublicWindowBackdrop(
                 keyboardView, { service.window?.window }, { updateUnifiedBackground() },

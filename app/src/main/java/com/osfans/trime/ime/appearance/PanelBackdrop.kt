@@ -21,9 +21,19 @@ import kotlin.math.roundToInt
  * 和 [PanelGradient] 不是一类东西：渐变是我们自己往画布上涂颜色，模糊是**系统**
  * 在合成时把这块区域背后的内容先糊掉再叠上来，看起来像隔着玻璃看后面那个 App。
  *
- * 实现走 Android 12 的 `ViewRootImpl.createBackgroundBlurDrawable()`（@hide，
- * 反射调用），它按 Drawable 的矩形注册模糊区域——面板画多大就只糊那一块，
- * 不像 `FLAG_BLUR_BEHIND` / `setBackgroundBlurRadius` 那样糊整个窗口背后。
+ * 有两条互相独立的实现路径，用 [publicWindow] 选择：
+ *
+ * 1. **区域模糊**（[publicWindow] = false）：Android 12 起反射调用 @hide 的
+ *    `ViewRootImpl.createBackgroundBlurDrawable()`，按 Drawable 的矩形注册模糊区域——
+ *    面板画多大就只糊那一块。**Android 16（API 36）已删掉这个方法**，反射只会拿到
+ *    `NoSuchMethodException`。
+ * 2. **公开子窗口**（[publicWindow] = true）：在输入法窗口下方挂一个
+ *    `TYPE_APPLICATION_MEDIA` 子窗口，用公开的 `Window.setBackgroundBlurRadius()`。
+ *    这条路径 API 31+ 全版本可用，是 Android 16 上唯一还能出效果的通道。
+ *
+ * 因为区域模糊在新系统上会**静默失败**（不崩溃、不打日志，只是屏幕上什么都没发生），
+ * 所以 [publicWindow] 为 false 时调用方必须走 [resolvePublicWindow] 兜底：探测到
+ * 反射不可用就自动改走公开子窗口。用户不需要知道这个开关存在。
  *
  * 优先级在渐变之上：开关打开时纯色、渐变、图片背景全部让位。
  */
@@ -32,7 +42,13 @@ data class PanelBackdrop(
     val enabled: Boolean = false,
     /** Local image/video blur also works without asking the system to blur the app below. */
     val systemBlur: Boolean = true,
-    /** Use a public, bounded media subwindow below the IME instead of hidden region APIs. */
+    /**
+     * 强制走公开子窗口通道。
+     *
+     * true = 一定用 `Window.setBackgroundBlurRadius()`；false = 优先试区域模糊，但反射
+     * 不可用时由 [resolvePublicWindow] 自动切到公开通道。旧主题没写这个字段，保持 false
+     * 也能在新系统上靠兜底继续有模糊效果。
+     */
     val publicWindow: Boolean = false,
     /** 模糊强度 0–100，线性映射到系统半径 0–[MAX_RADIUS_PX]。 */
     val strength: Int = 60,
@@ -68,6 +84,16 @@ data class PanelBackdrop(
     /** 模糊半径（像素）。系统那个接口按像素收，0 表示关。 */
     fun radiusPx(): Int = (sanitized().strength / 100f * MAX_RADIUS_PX).roundToInt()
 
+    /**
+     * 这次到底该不该走公开子窗口。
+     *
+     * 主题写了 `publicWindow: true` 就照办；没写（旧主题、用户手调的配置）时看系统还认不认
+     * 区域模糊——Android 16 起 `createBackgroundBlurDrawable` 已经调不到，再坚持走那条路
+     * 只会安静地不出效果，所以这里自动改道。
+     */
+    fun resolvePublicWindow(regionBlurAvailable: Boolean = SystemBackdrop.regionBlurAvailable()): Boolean =
+        publicWindow || !regionBlurAvailable
+
     companion object {
         const val MAX_RADIUS_PX = 200
     }
@@ -86,8 +112,26 @@ object SystemBackdrop {
     fun supportMessage(context: Context): String = when {
         Build.VERSION.SDK_INT < 31 -> "当前 Android 版本仅支持图片 / 视频磨砂，系统背景模糊需要 Android 12 及以上。"
         !crossWindowEnabled(context) -> "系统背景模糊当前未开启，图片 / 视频磨砂仍可使用。省电模式或系统设置可能关闭系统背景模糊。"
+        !regionBlurAvailable() -> "本机已移除区域模糊接口，自动改用公开窗口模糊（效果等同，整块面板背后一起糊）。"
         else -> "系统已允许背景模糊；部分机型仍可能限制输入法窗口，图片 / 视频磨砂不受此限制。"
     }
+
+    /**
+     * 区域模糊（反射 `ViewRootImpl.createBackgroundBlurDrawable`）在这个系统上还能不能用。
+     *
+     * Android 16 / API 36 已经把这个 @hide 方法删掉了。旧代码用 `runCatching` 吞掉
+     * `NoSuchMethodException`，结果就是「开关打开、无异常、屏幕上没效果」——这种静默
+     * 失败最难查，所以这里做成显式探测，供 [PanelBackdrop.resolvePublicWindow] 自动改道。
+     *
+     * 结果缓存一次：方法表在进程生命周期内不会变，而这条路径每次铺背景都会问一遍。
+     */
+    private val regionBlurProbe = lazy {
+        runCatching {
+            Class.forName("android.view.ViewRootImpl").getDeclaredMethod("createBackgroundBlurDrawable")
+        }.isSuccess
+    }
+
+    fun regionBlurAvailable(): Boolean = Build.VERSION.SDK_INT >= 31 && regionBlurProbe.value
 
     private fun crossWindowEnabled(context: Context): Boolean = Build.VERSION.SDK_INT >= 31 && runCatching {
         (context.getSystemService(Context.WINDOW_SERVICE) as? WindowManager)?.isCrossWindowBlurEnabled == true
@@ -210,8 +254,13 @@ object SystemBackdrop {
             maker.isAccessible = true
             maker.invoke(vri) as? Drawable
         }.getOrElse { error ->
+            // Android 16 起这个方法已经不存在。调用方会用 regionBlurAvailable() 提前改道，
+            // 走到这里说明是别的原因（ROM 定制、隐藏 API 策略），照样记一笔方便查。
             status(host, "fail ${error.javaClass.simpleName}")
-            DiagnosticLog.event("appearance", "backdrop_create_failed", "type=${error.javaClass.simpleName}")
+            DiagnosticLog.event(
+                "appearance", "backdrop_create_failed",
+                "type=${error.javaClass.simpleName} region=${regionBlurAvailable()}",
+            )
             null
         }
         if (drawable == null) {

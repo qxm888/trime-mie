@@ -160,4 +160,19 @@ class SurfaceAppearanceConfigTest : FunSpec({
         val restored = json.decodeFromString<SurfaceAppearanceConfig>(json.encodeToString(SurfaceAppearanceConfig(backdrop = adaptive)))
         restored.backdrop shouldBe adaptive
     }
+
+    test("region blur falls back to the public window on Android 16") {
+        // 显式要求公开窗口时永远走公开通道，与系统能力无关。
+        PanelBackdrop(enabled = true, publicWindow = true).resolvePublicWindow(true) shouldBe true
+        PanelBackdrop(enabled = true, publicWindow = true).resolvePublicWindow(false) shouldBe true
+        // 老配置没写 publicWindow：系统还认区域模糊就用区域模糊。
+        PanelBackdrop(enabled = true).resolvePublicWindow(true) shouldBe false
+        // Android 16 起 createBackgroundBlurDrawable 已不可反射，必须自动改道，
+        // 否则「背景玻璃」会静默不出效果——这正是 Chopper 晶透主题不模糊的原因。
+        PanelBackdrop(enabled = true).resolvePublicWindow(false) shouldBe true
+        PanelBackdrop(enabled = true, systemBlur = true).resolvePublicWindow(false) shouldBe true
+        // 旧配置缺少 publicWindow 字段时按 false 解码，再靠兜底改道。
+        json.decodeFromString<PanelBackdrop>("""{"enabled":true}""").publicWindow shouldBe false
+        json.decodeFromString<PanelBackdrop>("""{"enabled":true}""").resolvePublicWindow(false) shouldBe true
+    }
 })

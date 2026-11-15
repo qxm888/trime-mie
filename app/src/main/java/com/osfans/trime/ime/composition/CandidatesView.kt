@@ -265,7 +265,7 @@ class CandidatesView(
     private var blur: BackdropBlur? = null
     private fun bottomPager() = when(floatingStyle?.pagination) { "top" -> false; "bottom" -> true; else -> AppPrefs.defaultInstance().candidates.bottomPagination.getValue() }
     private fun styleWindow(ballOnly: Boolean, idle: Boolean) {
-        if (SurfaceAppearance.panelBackdrop(theme.isCustom)?.let { it.enabled && it.systemBlur && it.publicWindow } != true) publicWindowBackdrop?.clear()
+        if (SurfaceAppearance.panelBackdrop(theme.isCustom)?.let { it.enabled && it.systemBlur && it.resolvePublicWindow() } != true) publicWindowBackdrop?.clear()
         val style=floatingStyle
         val mode=if(ballOnly) 1 else if(idle) 2 else 0
         val version = com.osfans.trime.ime.appearance.SurfaceAppearance.version
@@ -310,7 +310,7 @@ class CandidatesView(
         val cfg = com.osfans.trime.ime.appearance.SurfaceAppearance
             .panelBackdrop(theme.isCustom)?.takeIf { it.enabled && it.systemBlur }
         if (cfg == null) { publicWindowBackdrop?.clear(); return base }
-        if (cfg.publicWindow) {
+        if (cfg.resolvePublicWindow()) {
             val public = publicWindowBackdrop ?: com.osfans.trime.ime.appearance.PublicWindowBackdrop(
                 this, { service.window?.window }, { refreshBackdrop() },
             ).also { publicWindowBackdrop = it }
