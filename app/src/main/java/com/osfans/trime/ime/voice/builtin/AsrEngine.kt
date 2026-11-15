@@ -11,10 +11,15 @@ interface AsrListener {
     fun onFinal(text: String)
     fun onError(message: String)
     fun onPartial(text: String) {}
+    fun onReady() {}
+    fun onLevel(level: Float) {}
+    fun onCaptureEnded() {}
 }
 
 interface AsrEngine {
     val isRunning: Boolean
+    /** System recognizers own the microphone; never start a second AudioRecord alongside them. */
+    val capturesAudio: Boolean get() = false
 
     /** 开始会话（建立连接/预热）。 */
     fun start()

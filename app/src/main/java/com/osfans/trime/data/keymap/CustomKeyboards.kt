@@ -58,7 +58,7 @@ object CustomKeyboards {
     const val BUILTIN_DEFAULT_ID = "custom_pink"
 
     /** 内置五色键盘的版本；改过内置 YAML 后 +1，升级时自动刷新内置 id。 */
-    private const val BUILTIN_VERSION = 18
+    private const val BUILTIN_VERSION = 20
     private var builtinBindings: BuiltinBindingDefaults? = null
 
     @Serializable
@@ -363,7 +363,7 @@ object CustomKeyboards {
 
     private fun decodeBuiltin(context: android.content.Context, resId: Int): Map<String, CustomKeyboard>? =
         runCatching {
-            val current = resId in setOf(com.osfans.trime.R.raw.mie_builtin_keyboards, com.osfans.trime.R.raw.mie_builtin_extra, com.osfans.trime.R.raw.mie_builtin_effects)
+            val current = resId in setOf(com.osfans.trime.R.raw.mie_builtin_keyboards, com.osfans.trime.R.raw.mie_builtin_extra, com.osfans.trime.R.raw.mie_builtin_effects, com.osfans.trime.R.raw.mie_builtin_glass)
             val bindings = if (current) builtinBindings ?: BuiltinBindingDefaults(context.resources.openRawResource(com.osfans.trime.R.raw.mie_builtin_bindings)
                 .bufferedReader().use { it.readText() }).also { builtinBindings = it } else null
             context.resources.openRawResource(resId)
@@ -385,7 +385,8 @@ object CustomKeyboards {
                 return@launch
             }
             val extras = (decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_extra) ?: return@launch) +
-                (decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_effects) ?: return@launch)
+                (decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_effects) ?: return@launch) +
+                (decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_glass) ?: return@launch)
             val hasLegacy = synchronized(lock) { store.keyboards.keys.any { "_cat_" in it } }
             val legacy = if (hasLegacy) decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_legacy_symbols).orEmpty() else emptyMap()
             synchronized(lock) {
@@ -1379,7 +1380,8 @@ object CustomKeyboards {
         BuiltinPremiumAssets.install(context)
         val templates = decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_keyboards).orEmpty() +
             decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_extra).orEmpty() +
-            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_effects).orEmpty()
+            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_effects).orEmpty() +
+            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_glass).orEmpty()
         check(templates.isNotEmpty()) { "内置键盘资源读取失败" }
         synchronized(lock) {
             var count = 0
@@ -1398,14 +1400,16 @@ object CustomKeyboards {
         val context = appContext ?: error("键盘尚未初始化")
         return decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_keyboards).orEmpty() +
             decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_extra).orEmpty() +
-            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_effects).orEmpty()
+            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_effects).orEmpty() +
+            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_glass).orEmpty()
     }
     fun resetBuiltinSet(root: String) {
         val context = appContext ?: error("键盘尚未初始化")
         BuiltinPremiumAssets.install(context)
         val templates = decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_keyboards).orEmpty() +
             decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_extra).orEmpty() +
-            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_effects).orEmpty()
+            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_effects).orEmpty() +
+            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_glass).orEmpty()
         require(root in templates && templates.getValue(root).secondaryOf.isBlank()) { "不是内置整套" }
         val ids = KeyboardSets.family(root, templates)
         editSets { pages, profiles ->

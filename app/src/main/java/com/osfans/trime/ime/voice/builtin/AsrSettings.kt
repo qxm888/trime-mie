@@ -195,6 +195,7 @@ object AsrSettings {
 
     fun hasCredential(): Boolean = when (selectedVendor) {
         "none" -> true
+        "system_on_device" -> true // No API key; availability is checked separately before recording.
         "volc" -> volcHasCredential()
         "tencent" -> TencentProtocol.Credentials(tencentField("app_id").trim(),tencentField("secret_id").trim(),tencentField("secret_key").trim()).valid()
         else -> {

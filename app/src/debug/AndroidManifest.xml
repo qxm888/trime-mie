@@ -1,4 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
     <instrumentation android:name="com.osfans.trime.benchmark.PremiumThemesRunner" android:targetPackage="${applicationId}" />
     <instrumentation android:name="com.osfans.trime.benchmark.ColorGroupsRunner" android:targetPackage="${applicationId}" />
     <instrumentation android:name="com.osfans.trime.benchmark.ModeBindingsRunner" android:targetPackage="${applicationId}" />
@@ -41,6 +41,12 @@
     <instrumentation android:name="com.osfans.trime.benchmark.SentenceRetentionRunner" android:targetPackage="${applicationId}" />
     <instrumentation android:name="com.osfans.trime.benchmark.AiTextRunner" android:targetPackage="${applicationId}" />
     <instrumentation android:name="com.osfans.trime.benchmark.AiOfflineRunner" android:targetPackage="${applicationId}" />
+    <instrumentation android:name="com.osfans.trime.benchmark.SystemSpeechRunner" android:targetPackage="${applicationId}" />
+    <instrumentation android:name="com.osfans.trime.benchmark.TransparentKeysRunner" android:targetPackage="${applicationId}" />
+    <instrumentation android:name="com.osfans.trime.benchmark.AdvancedGlassRunner" android:targetPackage="${applicationId}" />
+    <instrumentation android:name="com.osfans.trime.benchmark.LiquidGlassRunner" android:targetPackage="${applicationId}" />
+    <instrumentation android:name="com.osfans.trime.benchmark.DynamicGlassProbeRunner" android:targetPackage="${applicationId}" tools:targetApi="31" />
+    <instrumentation android:name="com.osfans.trime.benchmark.DynamicGlassRunner" android:targetPackage="${applicationId}" tools:targetApi="31" />
     <application>
         <activity android:name="com.osfans.trime.benchmark.AiTextFixtureActivity" android:exported="false" />
         <activity android:name="com.osfans.trime.benchmark.SentenceLearningActivity" android:exported="false" />

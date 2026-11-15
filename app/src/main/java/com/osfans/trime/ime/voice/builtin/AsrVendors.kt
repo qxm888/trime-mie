@@ -41,6 +41,8 @@ data class AsrVendorDef(
     val bodyStyle: OpenAiBodyStyle = OpenAiBodyStyle.MULTIPART,
     /** 附加 multipart 字段（如智谱 temperature/stream=false）。 */
     val extraMultipartFields: List<Pair<String, String>> = emptyList(),
+    /** False for models owned and managed by Android's recognition service. */
+    val managedModel: Boolean = local,
 )
 
 object AsrVendors {
@@ -149,7 +151,12 @@ object AsrVendors {
         AsrVendorDef("x_asr", "X-ASR", listOf(AsrTag.LOCAL, AsrTag.RECOMMENDED, AsrTag.STREAMING, AsrTag.ACCURATE), local = true),
     )
 
-    val ALL: List<AsrVendorDef> = ONLINE_ALL + LOCAL_ALL
+    val SYSTEM = AsrVendorDef(
+        "system_on_device", "系统端侧识别（需系统开放）",
+        listOf(AsrTag.LOCAL, AsrTag.STREAMING), local = true, managedModel = false,
+    )
+    val SYSTEM_ALL = listOf(SYSTEM)
+    val ALL: List<AsrVendorDef> = ONLINE_ALL + LOCAL_ALL + SYSTEM_ALL
 
     fun byId(id: String): AsrVendorDef? = ALL.firstOrNull { it.id == id }
 

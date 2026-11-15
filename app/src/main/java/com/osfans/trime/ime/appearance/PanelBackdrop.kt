@@ -30,6 +30,10 @@ import kotlin.math.roundToInt
 @Serializable
 data class PanelBackdrop(
     val enabled: Boolean = false,
+    /** Local image/video blur also works without asking the system to blur the app below. */
+    val systemBlur: Boolean = true,
+    /** Use a public, bounded media subwindow below the IME instead of hidden region APIs. */
+    val publicWindow: Boolean = false,
     /** 模糊强度 0–100，线性映射到系统半径 0–[MAX_RADIUS_PX]。 */
     val strength: Int = 60,
     /**
@@ -48,12 +52,18 @@ data class PanelBackdrop(
      * 和 [imageAlpha]（图自己被糊掉多少）是两回事。
      */
     val imageOpacity: Int = 100,
+    /** Optional stock-theme fallback: retain readable material when system blur disappears. */
+    val fallbackImageOpacity: Int? = null,
 ) {
     fun sanitized(): PanelBackdrop = copy(
         strength = strength.coerceIn(0, 100),
         imageAlpha = imageAlpha.coerceIn(0, 100),
         imageOpacity = imageOpacity.coerceIn(0, 100),
+        fallbackImageOpacity = fallbackImageOpacity?.coerceIn(0, 100),
     )
+
+    fun resolvedImageOpacity(systemAvailable: Boolean): Int =
+        (if (enabled && systemBlur && !systemAvailable) fallbackImageOpacity ?: imageOpacity else imageOpacity).coerceIn(0, 100)
 
     /** 模糊半径（像素）。系统那个接口按像素收，0 表示关。 */
     fun radiusPx(): Int = (sanitized().strength / 100f * MAX_RADIUS_PX).roundToInt()
@@ -70,6 +80,18 @@ data class PanelBackdrop(
  * 布局一抖动就重建会越积越多，所以这里按 host 缓存一个 Drawable 反复改参数。
  */
 object SystemBackdrop {
+    internal fun recordWindowResult(host: View, result: String) {
+        if (statusOf(host) != result) status(host, result)
+    }
+    fun supportMessage(context: Context): String = when {
+        Build.VERSION.SDK_INT < 31 -> "当前 Android 版本仅支持图片 / 视频磨砂，系统背景模糊需要 Android 12 及以上。"
+        !crossWindowEnabled(context) -> "系统背景模糊当前未开启，图片 / 视频磨砂仍可使用。省电模式或系统设置可能关闭系统背景模糊。"
+        else -> "系统已允许背景模糊；部分机型仍可能限制输入法窗口，图片 / 视频磨砂不受此限制。"
+    }
+
+    private fun crossWindowEnabled(context: Context): Boolean = Build.VERSION.SDK_INT >= 31 && runCatching {
+        (context.getSystemService(Context.WINDOW_SERVICE) as? WindowManager)?.isCrossWindowBlurEnabled == true
+    }.getOrDefault(false)
     /** 最近一次申请结果，给设置页做回显：这里说没成，屏幕上当然也就没有。 */
     @Volatile
     var lastStatus: String = "未尝试"
@@ -135,6 +157,11 @@ object SystemBackdrop {
     fun windowStamp(host: View): String = "${System.identityHashCode(viewRootImpl(host))}:$epoch"
 
     fun obtain(host: View, radiusPx: Int, color: Int, cornerRadiiPx: FloatArray): Drawable? {
+        if (Build.VERSION.SDK_INT >= 31 && !crossWindowEnabled(host.context)) {
+            synchronized(holders) { holders.remove(host) }
+            status(host, "system_blur=off")
+            return null
+        }
         val vri = viewRootImpl(host)
         val currentEpoch = epoch
         // 窗口换了、系统开关翻了、或窗口还没 attach：缓存一律作废。

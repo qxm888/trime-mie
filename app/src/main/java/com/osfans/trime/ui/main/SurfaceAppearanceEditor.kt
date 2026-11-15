@@ -295,8 +295,13 @@ object SurfaceAppearanceEditor {
             )
             parent.addView(row)
         }
-        toggle(backdropBox, "启用真模糊背板（覆盖纯色 / 渐变 / 图片背景）", panelBackdrop.enabled) {
+        note(backdropBox, "图片和视频的磨砂效果可独立使用；模糊键盘背后的应用画面还需要系统支持。透明度只影响背景，文字和图标保持清晰。")
+        note(backdropBox, com.osfans.trime.ime.appearance.SystemBackdrop.supportMessage(context))
+        toggle(backdropBox, "启用背景玻璃（系统背板 + 图片 / 视频磨砂）", panelBackdrop.enabled) {
             updateBackdrop(panelBackdrop.copy(enabled = it))
+        }
+        toggle(backdropBox, "同时模糊背后的应用画面（需要系统支持）", panelBackdrop.systemBlur) {
+            updateBackdrop(panelBackdrop.copy(systemBlur = it))
         }
         slider(backdropBox, "模糊强度", panelBackdrop.strength.toFloat(), 0f, 100f, 5f, " %") {
             updateBackdrop(panelBackdrop.copy(strength = it.toInt()))
@@ -532,8 +537,12 @@ object SurfaceAppearanceEditor {
             slider(borderControls, "悬浮窗边框粗细", draft.floatingBorderWidth, 0.5f, 4f, 0.5f, " dp") { draft = draft.copy(floatingBorderWidth = it) }
         }
         val glass = drawer("磨砂效果 · 强度与叠加")
+        note(glass, "背景变化时才更新模糊。视频可提高刷新上限，静态图片沿用缓存；键盘隐藏时停止刷新。")
+        slider(glass, "动态背景刷新上限", draft.blurFrameRate.toFloat(), 5f, 24f, 1f, " 帧/秒") {
+            draft = draft.copy(blurFrameRate = it.toInt())
+        }
         slider(glass, "模糊强度", draft.blurRadius.toFloat(), 2f, 32f, 1f, " dp") { draft = draft.copy(blurRadius = it.toInt()) }
-        slider(glass, "背景叠加强度", draft.glassOpacity.toFloat(), 0f, 100f, 1f, "%") { draft = draft.copy(glassOpacity = it.toInt()) }
+        slider(glass, "玻璃底色叠加强度", draft.glassOpacity.toFloat(), 0f, 100f, 1f, "%") { draft = draft.copy(glassOpacity = it.toInt()) }
         val root=column().apply {
             setPadding(dp(12),dp(4),dp(12),0)
             addView(preview,LinearLayout.LayoutParams(-1,dp(136)))

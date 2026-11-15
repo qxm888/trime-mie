@@ -23,6 +23,12 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <!-- 应用内更新：下载 GitHub Release APK 后拉起系统安装界面 -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+    </queries>
+
     <application
         android:name="com.osfans.trime.TrimeApplication"
         android:usesCleartextTraffic="true"

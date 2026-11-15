@@ -273,8 +273,12 @@ class InputView(
     private var backdropKey = ""
     private var backdropApplied = false
     private var backdropRetried = 0
+    private var publicWindowBackdrop: com.osfans.trime.ime.appearance.PublicWindowBackdrop? = null
 
-    fun setUnifiedVideoActive(active: Boolean) { unifiedVideo?.setActive(active) }
+    fun setUnifiedVideoActive(active: Boolean) {
+        unifiedVideo?.setActive(active)
+        if (!active) publicWindowBackdrop?.clear() else updateUnifiedBackground()
+    }
 
     /**
      * 铺系统模糊（基板）。返回 true 表示系统那一层已经拿到。
@@ -287,13 +291,23 @@ class InputView(
      * false，调用方照旧走纯色/图片/渐变那条路。
      */
     private fun applyPanelBackdrop(): Boolean {
-        val cfg = com.osfans.trime.ime.appearance.SurfaceAppearance.panelBackdrop(theme.isCustom)
-            ?.takeIf { it.enabled }
+        val requested = com.osfans.trime.ime.appearance.SurfaceAppearance.panelBackdrop(theme.isCustom)
+        val cfg = requested?.takeIf { it.enabled && it.systemBlur }
+        if (cfg?.publicWindow == true) {
+            blurLayer.setBackdrop(null, keyboardCornerRadii)
+            val public = publicWindowBackdrop ?: com.osfans.trime.ime.appearance.PublicWindowBackdrop(
+                keyboardView, { service.window?.window }, { updateUnifiedBackground() },
+            ).also { publicWindowBackdrop = it }
+            val active = public.configure(cfg.radiusPx(), keyboardCornerRadii.maxOrNull() ?: 0f)
+            com.osfans.trime.ime.appearance.SystemBackdrop.recordWindowResult(blurLayer, public.status)
+            return active
+        }
+        publicWindowBackdrop?.clear()
         if (cfg == null) {
             backdropKey = ""
             backdropApplied = false
             blurLayer.setBackdrop(null, keyboardCornerRadii)
-            glassLayer.imageAlpha = 0
+            if (requested?.enabled != true) glassLayer.imageAlpha = 0
             return false
         }
         val radius = cfg.radiusPx()
@@ -383,7 +397,8 @@ class InputView(
             (rawBackground.intrinsicWidth) > 0 -> true
             else -> rawBackground is com.osfans.trime.data.theme.AssetBitmapDrawable
         }
-        val glassSource = backdropOn && textured
+        // Blurring our own image/video does not require cross-window blur support.
+        val glassSource = backdropCfg != null && textured
         com.osfans.trime.ime.appearance.SystemBackdrop.recordSelfBlur(
             "backdrop=$backdropOn textured=$textured cover=${backdropCfg?.imageAlpha ?: 0} " +
                 "type=${background?.type} drawable=${rawBackground?.javaClass?.simpleName}",
@@ -391,7 +406,7 @@ class InputView(
         if (backdropCfg != null) {
             // 「糊多少」和「透多少」是两件事：
             // imageAlpha = 图自己被糊掉多少；imageOpacity = 整层透多少（透出来的是背后 App 的系统模糊）。
-            val opacity = backdropCfg.imageOpacity
+            val opacity = backdropCfg.resolvedImageOpacity(backdropOn)
             glassLayer.imageAlpha = if (glassSource) backdropCfg.imageAlpha * opacity / 100 else 0
             keyboardBackground.alpha = if (glassSource) opacity / 100f else 1f
             if (glassSource) unifiedVideo?.alpha = opacity / 100f
@@ -424,7 +439,7 @@ class InputView(
             }
             (keyboardView as android.view.ViewGroup).addView(video, 2, params)
             unifiedVideo = video
-            video.alpha = if (glassSource) (backdropCfg?.imageOpacity ?: 100) / 100f else 1f
+            video.alpha = if (glassSource) (backdropCfg?.resolvedImageOpacity(backdropOn) ?: 100) / 100f else 1f
         }
     }
 
@@ -1141,7 +1156,7 @@ class InputView(
         // 免得把原本靠窗口底色兜底的区域变成透空。
         // 真模糊背板同理——窗口不透明，系统就没有「下面那层」可以糊，效果直接没有。
         val backdropOn = com.osfans.trime.ime.appearance.SurfaceAppearance.panelBackdrop(theme.isCustom)
-            ?.enabled == true
+            ?.let { it.enabled && it.systemBlur } == true
         if (backdropOn) applyPanelBackdrop()
         service.setInputWindowBackdropTransparent(resolved.any { it > 0f } || backdropOn, forceWindowBackdrop)
     }
@@ -1172,7 +1187,7 @@ class InputView(
             // 真模糊背板会自己画满整张卡片（圆角也交给系统的模糊区域），
             // 这时候再垫一层不透明卡片色就把模糊盖没了。
             val backdropOn = com.osfans.trime.ime.appearance.SurfaceAppearance.panelBackdrop(theme.isCustom)
-                ?.enabled == true
+                ?.let { it.enabled && it.systemBlur } == true
             surface.background = if (backdropOn) null else cardOverride ?: GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
                 cornerRadii = keyboardCornerRadii.copyOf()
@@ -1645,6 +1660,7 @@ class InputView(
     }
 
     override fun onDetachedFromWindow() {
+        publicWindowBackdrop?.clear()
         removeCallbacks(landscapeHeightUpdate)
         preedit.dispose()
         releaseKeyboard()

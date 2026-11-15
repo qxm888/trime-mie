@@ -140,7 +140,11 @@ def generate_assets():
  return out
 
 def write_assets():
- out=generate_assets();path=ROOT/'app/src/main/res/raw/mie_premium_materials.zip'
+ if __package__:
+  from .liquid_glass import BACKGROUND, backdrop as glass_backdrop
+ else:
+  from liquid_glass import BACKGROUND, backdrop as glass_backdrop
+ out=generate_assets();out[BACKGROUND]=glass_backdrop();path=ROOT/'app/src/main/res/raw/mie_premium_materials.zip'
  with zipfile.ZipFile(path,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
   for name,im in sorted(out.items()):
    b=io.BytesIO();im.convert('RGBA' if '/tb_' in name else 'RGB').save(b,format='PNG',optimize=True)

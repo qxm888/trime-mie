@@ -90,7 +90,10 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
         if (!mock && AsrSettings.selectedVendor == "none") { notice("请在设置 → 语音输入选择识别引擎"); return }
         if (!mock && !AudioRecorder.hasPermission(service)) { notice("请在设置 → 语音输入授予麦克风权限"); return }
         val def = AsrVendors.byId(AsrSettings.selectedVendor)
-        if (!mock && def?.local == true && LocalAsrModels.installedVariant(service, def.id) == null) {
+        if (!mock && def?.id == "system_on_device" && !SystemOnDeviceSpeech.available(service)) {
+            notice(SystemOnDeviceSpeech.availabilityMessage(service)); return
+        }
+        if (!mock && def?.managedModel == true && LocalAsrModels.installedVariant(service, def.id) == null) {
             notice("本地模型未安装，请在设置 → 语音输入下载或导入"); return
         }
         if (!mock && def?.local != true && !AsrSettings.hasCredential()) {
@@ -104,6 +107,27 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
         com.osfans.trime.util.DiagnosticLog.event("voice", "start", "id=${session.id} vendor=${if (mock) "mock" else AsrSettings.selectedVendor}")
         if (!mock) session.preparation = service.postRimeJob { commitComposition() }
         val listener = object : AsrListener {
+            override fun onReady() { main.post {
+                if (current === session && session.held && !session.finished && !session.recognitionDone) {
+                    session.recorderStarted = true
+                    publish(session)
+                }
+            } }
+            override fun onLevel(level: Float) { main.post {
+                if (current === session && session.held && !session.finished && !session.recognitionDone) {
+                    session.level = level
+                    publish(session)
+                }
+            } }
+            override fun onCaptureEnded() { main.post {
+                if (current === session && !session.finished && !session.recognitionDone) {
+                    session.held = false
+                    session.watchdog?.cancel()
+                    session.watchdog = scope.launch { delay(90_000); listenerTimeout(session) }
+                    lastStatus = "processing"
+                    publish(session)
+                }
+            } }
             override fun onPartial(text: String) { main.post {
                 if (text.isBlank()) return@post
                 service.lifecycleScope.launch {
@@ -167,7 +191,7 @@ class BuiltInVoiceController(private val service: TrimeInputMethodService) : Voi
         session.engine = engine
         try {
             engine.start()
-            if (!mock) {
+            if (!mock && !engine.capturesAudio) {
                 session.recorder = AudioRecorder(service, scope, { listener.onError(it) },
                     onStarted = { main.post {
                         if (current === session && session.held && !session.finished) { session.recorderStarted = true; publish(session) }

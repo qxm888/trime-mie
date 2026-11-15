@@ -65,7 +65,10 @@ class AppearancePreview(context: Context) : View(context) {
             val saved=canvas.save()
             canvas.translate(left,top)
             if(isPressed && i<3) { val scale=1f-config.effects.pressScale/100; canvas.translate(0f,config.effects.pressSink*d); canvas.scale(scale,scale,w/2,height/2) }
+            val backgroundLayer = if (i < 3 && config.keyOpacity < 100)
+                canvas.saveLayerAlpha(RectF(0f, 0f, w, height), config.keyOpacity.coerceIn(0, 100) * 255 / 100) else -1
             samples.getOrNull(i)?.let { it.setBounds(0,0,w.toInt(),height.toInt()); it.draw(canvas) }
+            if (backgroundLayer >= 0) canvas.restoreToCount(backgroundLayer)
             paint.style=Paint.Style.FILL; paint.color=0xFF29343B.toInt(); paint.textAlign=Paint.Align.CENTER; paint.textSize=if(i<3) 26*d else 17*d
             canvas.drawText(listOf("Q","W","E","•••","中 / EN","⌄")[i],w/2,height/2-(paint.ascent()+paint.descent())/2,paint)
             canvas.restoreToCount(saved)

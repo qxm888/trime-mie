@@ -159,7 +159,7 @@ class PremiumThemesRunner : Instrumentation() {
             java.util.zip.ZipInputStream(targetContext.resources.openRawResource(com.osfans.trime.R.raw.mie_premium_materials)).use { zip ->
                 while(true) { val e = zip.nextEntry ?: break; expected[e.name] = zip.readBytes(); zip.closeEntry() }
             }
-            check(expected.size == 108)
+            check(expected.size == 109)
             fun digest(bytes: ByteArray) = java.security.MessageDigest.getInstance("SHA-256").digest(bytes).toList()
             expected.forEach { (name, bytes) ->
                 val file = File(assetRoot, name); check(file.isFile) { "Missing installed asset: $name" }
@@ -172,7 +172,7 @@ class PremiumThemesRunner : Instrumentation() {
             val repairName = expected.keys.first { it.endsWith("/tb_theme.png") }
             val repair = File(assetRoot, repairName); check(repair.delete())
             check(BuiltinPremiumAssets.install(targetContext)); check(digest(repair.readBytes()) == digest(expected.getValue(repairName)))
-            pass("108 installed PNGs match APK, Android decodes headers, unchanged pack skips, missing asset repairs")
+            pass("109 installed PNGs match APK, Android decodes headers, unchanged pack skips, missing asset repairs")
             stage = "stock roots and test fixture"
             val stock = KeyboardLayoutCatalog.roots(targetContext, KeyboardLayoutCatalog.BUILTIN)
             check(roots.all { root -> stock.any { it.id == root } })

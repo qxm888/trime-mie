@@ -148,4 +148,16 @@ class SurfaceAppearanceConfigTest : FunSpec({
         json.decodeFromString<SurfaceAppearanceConfig>("""{"backdrop":{"enabled":true}}""")
             .backdrop.imageOpacity shouldBe 100
     }
+
+    test("adaptive stock glass restores its material when system blur is unavailable") {
+        val adaptive = PanelBackdrop(enabled = true, systemBlur = true, imageOpacity = 8, fallbackImageOpacity = 100)
+        adaptive.resolvedImageOpacity(true) shouldBe 8
+        adaptive.resolvedImageOpacity(false) shouldBe 100
+        adaptive.copy(systemBlur = false).resolvedImageOpacity(false) shouldBe 8
+        adaptive.copy(enabled = false).resolvedImageOpacity(false) shouldBe 8
+        PanelBackdrop(enabled = true, imageOpacity = 27).resolvedImageOpacity(false) shouldBe 27
+        adaptive.copy(fallbackImageOpacity = 999).sanitized().fallbackImageOpacity shouldBe 100
+        val restored = json.decodeFromString<SurfaceAppearanceConfig>(json.encodeToString(SurfaceAppearanceConfig(backdrop = adaptive)))
+        restored.backdrop shouldBe adaptive
+    }
 })

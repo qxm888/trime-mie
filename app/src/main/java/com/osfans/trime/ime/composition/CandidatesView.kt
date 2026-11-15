@@ -54,6 +54,7 @@ class CandidatesView(
     scope: ThemeScope,
 ) : BaseInputView(service, rime, scope) {
     private val ctx = context.withTheme(android.R.style.Theme_DeviceDefault_Settings)
+    private var publicWindowBackdrop: com.osfans.trime.ime.appearance.PublicWindowBackdrop? = null
 
     private val layout by AppPrefs.defaultInstance().candidates.layout
     private val position by AppPrefs.defaultInstance().candidates.position
@@ -264,6 +265,7 @@ class CandidatesView(
     private var blur: BackdropBlur? = null
     private fun bottomPager() = when(floatingStyle?.pagination) { "top" -> false; "bottom" -> true; else -> AppPrefs.defaultInstance().candidates.bottomPagination.getValue() }
     private fun styleWindow(ballOnly: Boolean, idle: Boolean) {
+        if (SurfaceAppearance.panelBackdrop(theme.isCustom)?.let { it.enabled && it.systemBlur && it.publicWindow } != true) publicWindowBackdrop?.clear()
         val style=floatingStyle
         val mode=if(ballOnly) 1 else if(idle) 2 else 0
         val version = com.osfans.trime.ime.appearance.SurfaceAppearance.version
@@ -306,7 +308,16 @@ class CandidatesView(
      */
     private fun withPanelBackdrop(base: android.graphics.drawable.Drawable?): android.graphics.drawable.Drawable? {
         val cfg = com.osfans.trime.ime.appearance.SurfaceAppearance
-            .panelBackdrop(theme.isCustom)?.takeIf { it.enabled } ?: return base
+            .panelBackdrop(theme.isCustom)?.takeIf { it.enabled && it.systemBlur }
+        if (cfg == null) { publicWindowBackdrop?.clear(); return base }
+        if (cfg.publicWindow) {
+            val public = publicWindowBackdrop ?: com.osfans.trime.ime.appearance.PublicWindowBackdrop(
+                this, { service.window?.window }, { refreshBackdrop() },
+            ).also { publicWindowBackdrop = it }
+            public.configure(cfg.radiusPx(), (floatingStyle?.panel?.radius ?: theme.window.cornerRadius).toFloat() * resources.displayMetrics.density)
+            return base
+        }
+        publicWindowBackdrop?.clear()
         // 系统把模糊画在窗口下方，canvas 里的 G2 裁剪管不到它；区域本身必须是圆角，
         // 否则四角会是四块直角（用久了才出现的"尖角"就是它）。
         val radius = (floatingStyle?.panel?.radius ?: theme.window.cornerRadius).toFloat() *
@@ -397,7 +408,7 @@ class CandidatesView(
         // View 的 alpha < 1 会把整块内容放进离屏图层，系统模糊在这种图层里不生效
         // （键盘面板一直避开 alpha 就是这个原因）。模糊开着时透明感交给背景色自己的 alpha。
         val backdropOn = com.osfans.trime.ime.appearance.SurfaceAppearance
-            .panelBackdrop(theme.isCustom)?.enabled == true
+            .panelBackdrop(theme.isCustom)?.let { it.enabled && it.systemBlur } == true
         alpha = if (backdropOn) 1f else wantedAlpha
         styleWindow(idle && !showingTools,idle)
         // the candidate layout is queried natively with the page itself
@@ -715,11 +726,14 @@ class CandidatesView(
     override fun setVisibility(visibility: Int) {
         if (visibility != VISIBLE) {
             touchEventReceiverWindow.dismiss()
+            publicWindowBackdrop?.clear()
+            paintedVersion = -1
         }
         super.setVisibility(visibility)
     }
 
     override fun onDetachedFromWindow() {
+        publicWindowBackdrop?.clear()
         viewTreeObserver.removeOnPreDrawListener(preDrawListener)
         viewTreeObserver.removeOnGlobalLayoutListener(layoutListener)
         removeCallbacks(closeTools)

@@ -18,6 +18,7 @@ import com.osfans.trime.ime.voice.builtin.AsrContextHolder
 import com.osfans.trime.ime.voice.builtin.AsrSettings
 import com.osfans.trime.ime.voice.builtin.AsrVendors
 import com.osfans.trime.ime.voice.builtin.LocalAsrModels
+import com.osfans.trime.ime.voice.builtin.SystemOnDeviceSpeech
 import java.io.File
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -42,6 +43,7 @@ class VoiceSettingsActivity : PersonalizationActivity() {
     private var downloadCall: Call? = null
     private var progressButtonReference: android.widget.Button? = null
     private var sourceDialog: Dialog? = null
+    private var systemCheckJob: Job? = null
 
     private val permission = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) { granted ->
         Toast.makeText(this, if (granted) "麦克风权限已开启" else "需要麦克风权限才能按住说话", Toast.LENGTH_LONG).show()
@@ -79,6 +81,7 @@ class VoiceSettingsActivity : PersonalizationActivity() {
     }
 
     private fun render() {
+        systemCheckJob?.cancel()
         body.removeAllViews()
         progressButtonReference = if (downloadJob?.isActive == true) {
             button("$operationStatus · 点此取消") { downloadCall?.cancel(); downloadJob?.cancel() }
@@ -96,7 +99,7 @@ class VoiceSettingsActivity : PersonalizationActivity() {
             isChecked = com.osfans.trime.ime.voice.VoiceSettings.streaming
             setOnCheckedChangeListener { _, checked -> com.osfans.trime.ime.voice.VoiceSettings.streaming = checked }
         })
-        note("火山流式、腾讯流式、X-ASR 支持边说边出字，最终结果会替换临时文字。SenseVoice 等离线整段模型及上传音频接口需松手后返回结果。")
+        note("火山流式、腾讯流式、X-ASR 支持边说边出字。系统端侧识别能否返回临时文字取决于系统服务；最终结果会替换临时文字。SenseVoice 等整段模型需松手后返回结果。")
         button(if (granted) "麦克风权限已开启" else "授予麦克风权限") {
             permission.launch(Manifest.permission.RECORD_AUDIO)
         }
@@ -121,7 +124,8 @@ class VoiceSettingsActivity : PersonalizationActivity() {
             vendorId == "none" -> {
                 note("尚未选择识别引擎。请选择在线服务并配置自己的凭据，或下载 / 导入本地离线模型。")
             }
-            def?.local == true -> renderLocal(def.id)
+            vendorId == "system_on_device" -> renderSystemSpeech()
+            def?.managedModel == true -> renderLocal(def.id)
             def != null -> renderOnline(def.id)
         }
 
@@ -156,6 +160,10 @@ class VoiceSettingsActivity : PersonalizationActivity() {
         }
         section("通用")
         row("none", AsrVendors.labelOf("none"), "")
+        section("系统端侧（复用系统语音模型，需系统开放）")
+        AsrVendors.SYSTEM_ALL.forEach {
+            row(it.id, it.label, if (SystemOnDeviceSpeech.available(this)) "可检测语言支持" else "当前设备未开放 · 查看说明")
+        }
         section("在线（用户自己的 API Key）")
         AsrVendors.ONLINE_ALL.forEach { row(it.id, it.label, AsrVendors.tagsLabel(it)) }
         section("本地离线（同文内置识别，模型可下载 / 可导入）")
@@ -171,6 +179,37 @@ class VoiceSettingsActivity : PersonalizationActivity() {
     }
 
     // ---------- 在线 vendor 配置 ----------
+
+    private fun renderSystemSpeech() {
+        note(SystemOnDeviceSpeech.availabilityMessage(this))
+        note("仅调用 Android 标准端侧语音服务，不需要 API Key，也不在咩版里下载模型。系统安装了端侧大模型，或自带智能字幕、小布等功能，也需要开放语音识别接口后才能供输入法使用。")
+        choiceRow("识别语言", listOf("zh-CN" to "普通话（zh-CN）", "en-US" to "英语（en-US）", "yue-Hant-HK" to "粤语（yue-Hant-HK）", "ja-JP" to "日语（ja-JP）"),
+            AsrSettings.language("system_on_device").ifBlank { "zh-CN" }) {
+            AsrSettings.setLanguage("system_on_device", it)
+        }
+        val status = TextView(this).apply {
+            textSize = 14f
+            setPadding(0, dp(8), 0, dp(16))
+        }
+        body.addView(status)
+        fun refresh() {
+            systemCheckJob?.cancel()
+            status.text = "正在检测系统端侧语音能力…"
+            systemCheckJob = scope.launch {
+                status.text = SystemOnDeviceSpeech.inspect(this@VoiceSettingsActivity,
+                    AsrSettings.language("system_on_device").ifBlank { "zh-CN" })
+            }
+        }
+        button("重新检测端侧语音能力") { refresh() }
+        button("打开系统语音设置") {
+            try { startActivity(android.content.Intent(android.provider.Settings.ACTION_VOICE_INPUT_SETTINGS)) }
+            catch (_: android.content.ActivityNotFoundException) {
+                Toast.makeText(this, "系统未提供独立语音设置入口，请在系统设置中搜索语音识别", Toast.LENGTH_LONG).show()
+            }
+        }
+        note("系统识别失败时会提示原因，不自动切换联网识别。若开启语音后的在线 AI 润色或翻译，识别出的文字仍会发送到你选择的在线服务。")
+        refresh()
+    }
 
     private fun renderOnline(vendor: String) {
         val def = AsrVendors.byId(vendor)!!

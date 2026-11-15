@@ -17,6 +17,9 @@ object AsrEngineFactory {
         val vendor = AsrSettings.selectedVendor
         if (vendor == "none") return null
         return when (vendor) {
+            "system_on_device" -> SystemSpeechSession(listener) {
+                AndroidOnDeviceSpeechBackend(checkNotNull(AsrContextHolder.get()), AsrSettings.language(vendor).ifBlank { "zh-CN" })
+            }
             "dashscope", "deepseek" -> NewCloudAsrEngine(scope, listener, vendor)
             "tencent" -> TencentAsrEngine(scope, listener)
             "volc" -> VolcStreamAsrEngine(

@@ -173,6 +173,8 @@ data class SurfaceAppearanceConfig(
      * 100 = 原来的实心按键。
      */
     val keyOpacity: Int = 100,
+    /** Upper bound for changed background captures; static backgrounds never run an animation loop. */
+    val blurFrameRate: Int = 10,
     /**
      * 按键自己的模糊强度（0–100），0 = 不糊。
      *
@@ -234,6 +236,7 @@ data class SurfaceAppearanceConfig(
         keys=keys.sanitized(),toolbar=toolbar.sanitized(),bar=bar.sanitized(),effects=effects.sanitized(),toolbarEffects=toolbarEffects.sanitized(),barEffects=barEffects.sanitized(),
         blurRadius=blurRadius.coerceIn(2,32),glassOpacity=glassOpacity.coerceIn(0,100),
         keyOpacity=keyOpacity.coerceIn(0,100),keyBlur=keyBlur.coerceIn(0,100),blurSaturation=blurSaturation.coerceIn(100,200),
+        blurFrameRate=blurFrameRate.coerceIn(5,24),
         floatingBorderWidth=floatingBorderWidth.coerceIn(0f,8f),
         keyboardBorderWidth=if (keyboardBorderWidth.isFinite()) keyboardBorderWidth.coerceIn(0f,5f) else 0f,
         keyboardBorderGlow=keyboardBorderGlow.coerceIn(0,100),
@@ -321,6 +324,7 @@ object SurfaceAppearance {
                 blurRadius = parsed.blurRadius.coerceIn(2, 32),
                 glassOpacity = parsed.glassOpacity.coerceIn(0, 100),
                 keyOpacity = parsed.keyOpacity.coerceIn(0, 100),
+                blurFrameRate = parsed.blurFrameRate.coerceIn(5, 24),
                 keyBlur = parsed.keyBlur.coerceIn(0, 100),
                 blurSaturation = parsed.blurSaturation.coerceIn(100, 200),
                 keyboardSideMargin = parsed.keyboardSideMargin.takeIf(Float::isFinite)?.coerceIn(0f, 20f) ?: 0f,

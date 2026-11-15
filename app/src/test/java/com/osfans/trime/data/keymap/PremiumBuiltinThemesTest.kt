@@ -57,8 +57,8 @@ class PremiumBuiltinThemesTest : FunSpec({
             kb.typography shouldBe emptyMap()
         } }
     }
-    test("all 108 PNGs exactly match manifest decode and fit the bounded installer") {
-        manifest.size shouldBe 108
+    test("all 109 PNGs exactly match manifest decode and fit the bounded installer") {
+        manifest.size shouldBe 109
         manifest.toSet().size shouldBe manifest.size
         ZipFile(File(raw, "mie_premium_materials.zip")).use { zip ->
             val entries = zip.entries().asSequence().toList()

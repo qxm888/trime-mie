@@ -74,7 +74,9 @@ class BackdropBlur(
     private fun schedule() {
         if(!attached || scheduled || busy || requestedVersion==renderedVersion || !active() || !root.isShown || root.windowVisibility!=View.VISIBLE) return
         scheduled=true
-        root.postDelayed(tick,(100L-(android.os.SystemClock.uptimeMillis()-lastCapture)).coerceAtLeast(0L))
+        val fps = appearance().blurFrameRate.coerceIn(5, 24)
+        val interval = (1000L + fps - 1) / fps
+        root.postDelayed(tick,(interval-(android.os.SystemClock.uptimeMillis()-lastCapture)).coerceAtLeast(0L))
     }
     /** 外部事件（布局/可见性）来了，重置守卫计数再排一次，保证不会因之前放弃而卡死。 */
     private fun requestFresh() { guardRetries = 0; schedule() }
@@ -136,14 +138,17 @@ class BackdropBlur(
                 val frames=withContext(Dispatchers.Default) {
                     val size = bitmap.width * bitmap.height
                     if (blurPixels.size != size) { blurPixels = IntArray(size); blurWork = IntArray(size) }
-                    val source = if (keyRadius > 0) bitmap.copy(Bitmap.Config.ARGB_8888, false) else null
+                    // The worker mutates this scratch copy; published frames alone are immutable.
+                    val source = if (keyRadius > 0) bitmap.copy(Bitmap.Config.ARGB_8888, true) else null
                     blur(bitmap, radius, blurPixels, blurWork)
                     boostSaturation(bitmap, saturation, blurPixels)
                     val panel = bitmap.copy(Bitmap.Config.ARGB_8888,false)
                     val keys = source?.let {
-                        blur(it, keyRadius, blurPixels, blurWork)
-                        boostSaturation(it, saturation, blurPixels)
-                        it.copy(Bitmap.Config.ARGB_8888, false)
+                        try {
+                            blur(it, keyRadius, blurPixels, blurWork)
+                            boostSaturation(it, saturation, blurPixels)
+                            it.copy(Bitmap.Config.ARGB_8888, false)
+                        } finally { it.recycle() }
                     }
                     panel to keys
                 }
@@ -250,7 +255,6 @@ class BackdropBlur(
             canvas.restoreToCount(saved)
         }
 
-        /** Two separable box passes at thumbnail resolution. No UI thread pixel processing. */
         /**
          * 模糊会把局部色差抹平，视觉上"发灰、发白"。按比例把饱和度补回来：
          * 以每个像素的亮度为轴拉开色度，颜色回到原图的浓淡，但颗粒仍然是糊的。
@@ -276,31 +280,10 @@ class BackdropBlur(
         }
 
         private fun blur(bitmap: Bitmap, radius: Int, pixels: IntArray, work: IntArray) {
-            val w = bitmap.width; val h = bitmap.height
-            bitmap.getPixels(pixels, 0, w, 0, 0, w, h)
-            fun pass(input: IntArray, output: IntArray, horizontal: Boolean) {
-                val length = if (horizontal) w else h
-                val lines = if (horizontal) h else w
-                val count = radius * 2 + 1
-                for (line in 0 until lines) {
-                    fun index(p: Int) = if (horizontal) line * w + p.coerceIn(0, w - 1) else p.coerceIn(0, h - 1) * w + line
-                    var a = 0; var r = 0; var g = 0; var b = 0
-                    for (p in -radius..radius) {
-                        val c = input[index(p)]
-                        a += c ushr 24; r += c ushr 16 and 255; g += c ushr 8 and 255; b += c and 255
-                    }
-                    for (p in 0 until length) {
-                        output[index(p)] = (a / count shl 24) or (r / count shl 16) or (g / count shl 8) or (b / count)
-                        val old = input[index(p - radius)]; val next = input[index(p + radius + 1)]
-                        a += (next ushr 24) - (old ushr 24)
-                        r += (next ushr 16 and 255) - (old ushr 16 and 255)
-                        g += (next ushr 8 and 255) - (old ushr 8 and 255)
-                        b += (next and 255) - (old and 255)
-                    }
-                }
-            }
-            repeat(2) { pass(pixels, work, true); pass(work, pixels, false) }
-            bitmap.setPixels(pixels, 0, w, 0, 0, w, h)
+            val width = bitmap.width; val height = bitmap.height
+            bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
+            GaussianBackdropFilter.apply(pixels, work, width, height, radius)
+            bitmap.setPixels(pixels, 0, width, 0, 0, width, height)
         }
     }
 }

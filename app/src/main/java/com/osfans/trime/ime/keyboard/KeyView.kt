@@ -613,25 +613,29 @@ class KeyView(
             effectPaint.reset()
             effectPaint.isAntiAlias = true
             effectPaint.style = Paint.Style.FILL
-            effectPaint.color = fillColor
             // 面板背景已经糊过了，按键半透明就等于"透出那块磨砂"。
-            effectPaint.alpha = bg.alpha * keyAlpha / 100
+            // Paint.alpha 会覆盖颜色自带的 alpha；必须相乘，避免透明黑变成不透明黑块。
+            effectPaint.color = KeyEffectPainter.withAlpha(fillColor, bg.alpha * keyAlpha / 100)
             canvas.drawPath(backgroundClip, effectPaint)
         } else {
             val mask = canvas.save()
             canvas.clipPath(backgroundClip)
+            // Opacity applies to the complete glass surface, before labels are drawn.
+            // Applying it only to the tint leaves an opaque blurred rectangle underneath.
+            val surfaceLayer = if (keyAlpha < 100) canvas.saveLayerAlpha(body, keyAlpha * 255 / 100) else -1
             val blurred = wantsBlur &&
                 com.osfans.trime.ime.appearance.BackdropBlur.draw(this, canvas, body, 255, ownBlur)
-            // 自己那套模糊：键色按 keyOpacity 透；旧那套沿用 glassOpacity，两者相乘。
-            val layerAlpha = if (blurred && !ownBlur) {
-                config.glassOpacity.coerceIn(0, 100) * keyAlpha / 100
+            // 底色着色由 glassOpacity 控制；整个玻璃背景由外层 keyOpacity 一次合成。
+            val layerAlpha = if (blurred) {
+                config.glassOpacity.coerceIn(0, 100)
             } else {
-                keyAlpha
+                100
             }
             val layer = if (layerAlpha < 100) canvas.saveLayerAlpha(body, layerAlpha * 255 / 100) else -1
             bg?.draw(canvas)
             if (layer >= 0) canvas.restoreToCount(layer)
             if (blurred && !ownBlur && !imageDriven) canvas.drawColor(if (k.isPressed) 0x33FFFFFF else 0x18FFFFFF)
+            if (surfaceLayer >= 0) canvas.restoreToCount(surfaceLayer)
             canvas.restoreToCount(mask)
         }
         if (bg is com.osfans.trime.data.baiduskin.BdsKeyDrawable && bg.animating) postInvalidateOnAnimation()

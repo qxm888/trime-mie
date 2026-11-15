@@ -6,7 +6,15 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前版本：**V3.7.8 / versionCode 20271122**，正式包 `trime-mie-v3.7.8.apk`。新增 AI 润色、在线与离线翻译、千问 / DeepSeek 语音识别，并包含按主题保存工具栏与季灾专属兑换码。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+> 当前版本：**V3.7.9 / versionCode 20271123**，正式包 `trime-mie-v3.7.9.apk`。新增两套液态玻璃主题与跨应用动态模糊，修复透明按键黑块，改进本地背景磨砂，并增加系统端侧语音能力检测。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+
+## V3.7.9 液态玻璃与透明按键修复
+
+新增“液态玻璃”和“液态玻璃·动态”两套内置主题（各十五页，动态版支持跨应用模糊），修复透明按键黑块，改进自定义键盘动态玻璃与本地背景磨砂，增加系统端侧语音能力检测。[动态版实测](docs/v3.7.9/跨应用动态玻璃.md) · [液态玻璃主题](docs/v3.7.9/液态玻璃内置主题.md) · [玻璃效果与验证](docs/v3.7.9/透明按键与动态玻璃.md) · [ColorOS 端侧语音研究](docs/v3.7.9/ColorOS端侧语音研究与验证.md)。
+
+入口：键盘样式 → 布局 → 内置布局 → **液态玻璃 / 液态玻璃·动态**。动态版需 Android 12+ 且系统支持窗口模糊；不可用时自动回退。键盘及候选浮窗统一玻璃风格，调试手机跨应用输入、单手、悬浮、横竖屏与窗口清理已通过。系统端侧语音仅在 Android 公开接口可用时启用，本次 ColorOS 调试机尚未开放，不代表已接通 OPPO 私有语音能力。
+
+[V3.7.9 下载](https://github.com/qxm888/trime-mie/releases/tag/v3.7.9) · [更新与验证](docs/v3.7.9/更新与验证.md)。
 
 ## V3.7.8 AI 润色与翻译
 
