@@ -172,7 +172,7 @@ object ThemeManager {
             return ResolvedTheme(id, CustomKeyboards.standaloneTheme(customLayoutId).let { it.copy(customizationVersion = it.customizationVersion + com.osfans.trime.data.keymap.NamedFunctions.version + FontOverrides.version + com.osfans.trime.ime.voice.VoiceSettings.version) }, null)
         }
         when (val result = loadTheme(id)) {
-            is ThemeLoader.ThemeLoadResult.Success -> return resolvedWithCustomKeyboards(id, result.theme, result.findings)
+            is ThemeLoader.ThemeLoadResult.Success -> return resolvedWithCustomKeyboards(id, ThemeAiOverrides.apply(id, result.theme), result.findings)
             is ThemeLoader.ThemeLoadResult.Failure -> Timber.w(result.error)
         }
 
@@ -180,7 +180,7 @@ object ThemeManager {
             when (val result = loadTheme(DEFAULT_THEME_ID)) {
                 is ThemeLoader.ThemeLoadResult.Success -> {
                     Timber.w("Theme '$id' is unavailable, fallback to default theme '$DEFAULT_THEME_ID'")
-                    return resolvedWithCustomKeyboards(DEFAULT_THEME_ID, result.theme, result.findings)
+                    return resolvedWithCustomKeyboards(DEFAULT_THEME_ID, ThemeAiOverrides.apply(DEFAULT_THEME_ID, result.theme), result.findings)
                 }
 
                 is ThemeLoader.ThemeLoadResult.Failure -> Timber.w(result.error)
@@ -192,7 +192,7 @@ object ThemeManager {
             when (val result = loadTheme(fallbackId)) {
                 is ThemeLoader.ThemeLoadResult.Success -> {
                     Timber.w("Theme '$id' is unavailable, fallback to available theme '$fallbackId'")
-                    return resolvedWithCustomKeyboards(fallbackId, result.theme, result.findings)
+                    return resolvedWithCustomKeyboards(fallbackId, ThemeAiOverrides.apply(fallbackId, result.theme), result.findings)
                 }
 
                 is ThemeLoader.ThemeLoadResult.Failure -> lastFailure = result.error

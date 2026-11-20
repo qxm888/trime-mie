@@ -22,7 +22,7 @@ import java.util.zip.ZipOutputStream
 
 /** Portable settings and resources. A restore is staged and applied before managers initialize. */
 object FullSettingsBackup {
-    private val prefNames=listOf("__default__","font_overrides","voice_settings","builtin_asr","named_functions","clipboard_sync","stats-share-modules")
+    private val prefNames=listOf("__default__","font_overrides","voice_settings","builtin_asr","theme_ai_overrides","named_functions","clipboard_sync","stats-share-modules")
     private val stateNames=setOf("custom_keyboards.json","toolbar_overrides.json","key_binding_overrides.json","candidate_preferences.json","input_stats.json",com.osfans.trime.data.pets.PetHouse.FILE)
     private val assetNames=setOf("键盘背景","字体","百度皮肤")
     /** 旧版英文素材目录：备份可读入，恢复时映射到新中文目录。 */

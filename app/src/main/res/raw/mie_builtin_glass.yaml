@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 qxm888 (luminous-spirit)
+# SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Proprietary
+# 本内置资源由咩版作者独立创作，未取自上游同文（osfans/trime）或 CatTrime。
 # 液态玻璃：原生半透明键帽、实时背景磨砂与完整十五页。由 tools/generate_liquid_glass_theme.py 生成。
 mie:
   format: trime-custom-keyboards-yaml

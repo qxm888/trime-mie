@@ -1,4 +1,9 @@
 {
+"_license": {
+  "spdx": "GPL-3.0-or-later OR LicenseRef-Proprietary",
+  "copyright": "2026 qxm888 (luminous-spirit)",
+  "note": "本内置资源由咩版作者独立创作，未取自上游同文（osfans/trime）或 CatTrime。"
+},
   "": {
     "rows": [
       {

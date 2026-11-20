@@ -141,6 +141,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
                 android:textStyle="bold" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/cbe_ai_theme"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="AI 主题助手 · 一句话改外观" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/cbe_global_appearance"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="match_parent"

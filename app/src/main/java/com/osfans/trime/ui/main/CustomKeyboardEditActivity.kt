@@ -87,6 +87,9 @@ class CustomKeyboardEditActivity : AppCompatActivity() {
             KeyboardSetPageSettings.show(this, kbId) { render() }; true
         }
 
+        findViewById<View>(R.id.cbe_ai_theme).setOnClickListener {
+            AiThemeAssistant.showCustom(this, kbId) { refreshAppearancePreview { render() } }
+        }
         findViewById<View>(R.id.cbe_global_appearance).setOnClickListener {
             SurfaceAppearanceEditor.show(this, true, layoutId = kbId) { refreshAppearancePreview { render() } }
         }

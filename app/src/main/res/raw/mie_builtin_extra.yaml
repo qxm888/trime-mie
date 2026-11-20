@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 qxm888 (luminous-spirit)
+# SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Proprietary
+# 本内置资源由咩版作者独立创作，未取自上游同文（osfans/trime）或 CatTrime。
 # 同文咩版内置布局 · UTF-8
 # 参考夜澜听雨十列主题：分区说明、每键一行、按行留白。
 # width 为百分比，height 为行高；mie.row 是编辑器行号。

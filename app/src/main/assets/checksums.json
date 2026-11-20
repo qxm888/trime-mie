@@ -1,8 +1,10 @@
 {
-    "sha256": "cd163e389e819f34e1743b130c0925d789adf084ecf9b2783f4d39c2da993cba",
+    "sha256": "1c3fccb8895ffb0ea6a3654af88fb21b2fbb4aa3f4d9806a97f7de4b1e9df4b4",
     "files": {
         "eldritch": "",
         "eldritch/jizai.png": "53e620fea7b2475b1b9f951d70f11ac90439ad7ddc2b40e0c3770c4836748a06",
+        "learning": "",
+        "learning/zh-hans-t-essay-bgc.gram": "c52deb56b1642e4f56a18926fffcb4b70385828f921bfac92c5ff4055cce5377",
         "licenses": "",
         "licenses/Apache-2.0.txt": "6c11db5f4f0d8521559233b532c635692b6525bde771139723dc1ee489fac393",
         "licenses/Foxlet-LICENSE": "00240e4ce0cba70c9f7fac7fa569e67d5f8b26a1484646b96bea36abccd13438",

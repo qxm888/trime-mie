@@ -49,6 +49,17 @@ class ThemeSettingsFragment : PreferenceDelegateFragment(ThemeManager.prefs) {
         screen.addPreference("配色组", "新建日间 / 夜间主题组合，跟随系统切换") {
             startActivity<com.osfans.trime.ui.main.KeyboardColorGroupsActivity>()
         }
+        if (!standalone && screen.findPreference<Preference>("ai_theme_assistant") == null) {
+            screen.addPreference(Preference(requireContext()).apply {
+                key = "ai_theme_assistant"
+                title = "AI 主题助手"
+                summary = "用一句话修改当前主题的配色、字号与间距"
+                setOnPreferenceClickListener {
+                    com.osfans.trime.ui.main.AiThemeAssistant.showTheme(requireActivity())
+                    true
+                }
+            })
+        }
         screen.findPreference<Preference>("selected_theme")?.title = "键盘样式"
         if (standalone) {
             screen.findPreference<Preference>("normal_mode_color")?.isVisible = false

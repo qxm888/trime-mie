@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 qxm888 (luminous-spirit)
+# SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Proprietary
+# 本内置资源由咩版作者独立创作，未取自上游同文（osfans/trime）或 CatTrime。
 # V8 七列模板，仅用于升级时识别未编辑的按键
 mie:
   format: trime-custom-keyboards-yaml

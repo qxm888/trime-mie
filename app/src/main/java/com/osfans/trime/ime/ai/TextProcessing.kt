@@ -21,10 +21,12 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 
 data class TextModelConfig(val endpoint: String, val apiKey: String, val model: String) {
-    fun validate() {
+    fun validate(allowLocalHttp: Boolean = false) {
         require(apiKey.isNotBlank()) { "请先配置 AI 服务的 API Key" }
         require(model.isNotBlank()) { "请先填写 AI 模型名" }
-        require(endpoint.toHttpUrl().isHttps) { "AI 接口必须使用 HTTPS" }
+        val url = endpoint.toHttpUrl()
+        val local = url.host in setOf("10.0.2.2", "127.0.0.1", "localhost", "::1")
+        require(url.isHttps || (allowLocalHttp && local)) { "AI 接口必须使用 HTTPS（本机调试除外）" }
     }
 }
 

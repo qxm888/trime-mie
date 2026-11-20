@@ -16,7 +16,7 @@ class AiTextSettingsActivity : PersonalizationActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AiTextSettings.init(applicationContext)
-        page("AI 润色与翻译"); render()
+        page("AI 服务 · 润色 / 翻译 / 主题助手"); render()
     }
     private fun toggle(title: String, key: String) {
         body.addView(MaterialSwitch(this).apply {
@@ -47,6 +47,7 @@ class AiTextSettingsActivity : PersonalizationActivity() {
     private fun render() {
         body.removeAllViews()
         note("键盘功能菜单 → AI 润色 / 翻译：先选中文字，处理后预览，确认才替换。也可在按键或工具栏编辑中添加这些功能。")
+        note("AI 主题助手（键盘编辑 → AI 主题助手 / 主题设置 → AI 主题助手）共用这里的服务商、模型与 API Key。主题助手只发送当前外观参数与你的需求，不会上传按键内容。")
         toggle("语音识别后自动润色", "voice_polish")
         toggle("语音识别后自动翻译", "voice_translate")
         note("两项均开启时先润色再翻译。默认关闭。开启后，本次语音识别文字会发送到所选服务；手动处理只发送你选中的文字。不要在密码框使用。")

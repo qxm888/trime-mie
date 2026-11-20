@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 qxm888 (luminous-spirit)
+# SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Proprietary
+# 本内置资源由咩版作者独立创作，未取自上游同文（osfans/trime）或 CatTrime。
 # 内置五色键盘·扩展（表情与符号分类页）
 mie:
   format: trime-custom-keyboards-yaml
