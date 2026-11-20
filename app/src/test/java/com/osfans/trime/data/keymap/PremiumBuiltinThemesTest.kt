@@ -13,7 +13,7 @@ class PremiumBuiltinThemesTest : FunSpec({
     val raw = File("src/main/res/raw")
     val pages by lazy { CustomKeyboardYaml.decode(File(raw, "mie_builtin_effects.yaml").readText()) }
     val suffixes = listOf("", "_9", "_14", "_18", "_7_1", "_7_2", "_en", "_num", "_symbols", "_symbols_cn", "_symbols_math", "_symbols_more", "_themes", "_layouts", "_hub")
-    val manifest by lazy { File(raw, "mie_premium_materials_manifest.txt").readLines().filter { it.isNotBlank() } }
+    val manifest by lazy { File(raw, "mie_premium_materials_manifest.txt").readLines().filter { it.isNotBlank() && !it.startsWith("#") } }
     test("five complete stock families have consistent owners local targets and preserved geometry") {
         val old = listOf("mie_builtin_keyboards", "mie_builtin_extra").flatMap { CustomKeyboardYaml.decode(File(raw, "$it.yaml").readText()).entries }.associate { it.toPair() }
         roots.forEach { root ->

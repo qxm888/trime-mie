@@ -1,4 +1,7 @@
-/* SPDX-License-Identifier: GPL-3.0-or-later */
+/* SPDX-License-Identifier: GPL-3.0-or-later OR LicenseRef-Proprietary
+ * 版权人（qxm888 / luminous-spirit）对本文件保留按专有条款另行授权的权利。
+ * 本文件在上游同文（osfans/trime）与 CatTrime 中均不存在，系咩版独立创作。
+ */
 package com.osfans.trime.ime.sentences
 
 import android.graphics.Color
@@ -62,11 +65,15 @@ internal class SentenceSuggestionController(private val service: TrimeInputMetho
         true
     }
     private val accumulator = SentenceAccumulator { text ->
-        if (enabled()) repository.offer(text)
+        if (sentenceEnabled()) repository.offer(text)
         dismissed = false
     }
-    private fun enabled() = allowed && prefs.sentenceLearningEnabled.getValue() &&
+    /** 最近一次引擎上屏的纯中文词（下词预测的 bigram 前键）。 */
+    private var lastCommitWord = ""
+    private fun enabled() = allowed &&
+        (sentenceEnabled() || com.osfans.trime.data.learning.SmartLearningSettings.wordPredictionEnabled) &&
         !TrimeApplication.getInstance().isDirectBootMode
+    private fun sentenceEnabled() = prefs.sentenceLearningEnabled.getValue()
     private fun dp(value: Int) = (value * service.resources.displayMetrics.density).toInt()
 
     fun start(info: EditorInfo, restarting: Boolean = false) {
@@ -120,6 +127,7 @@ internal class SentenceSuggestionController(private val service: TrimeInputMetho
     }
     private fun reset() {
         accumulator.reset(); inlineCandidate = ""; preview = ""; preedit = ""; dismissed = false
+        lastCommitWord = ""
         version++; query?.cancel(); query = null; queryPrefix = ""; hide()
     }
     fun committed(text: String, fromEngine: Boolean) {
@@ -128,6 +136,7 @@ internal class SentenceSuggestionController(private val service: TrimeInputMetho
         if (!fromEngine && text.codePointCount(0, text.length) != 1) { reset(); return }
         editingUntil = SystemClock.uptimeMillis() + 500
         inlineCandidate = ""; preview = ""; preedit = ""
+        lastCommitWord = text.takeIf { isLearnableWord(it) } ?: ""
         accumulator.append(text)
         changed()
     }
@@ -188,17 +197,37 @@ internal class SentenceSuggestionController(private val service: TrimeInputMetho
         version++
         query?.cancel()
         val prefix = accumulator.prefix + preview
-        if (!enabled() || dismissed || prefix.codePointCount(0, prefix.length) < 2 || prefix.length > SentenceRules.MAX_UTF16) {
+        val sentenceQualified = prefix.codePointCount(0, prefix.length) >= 2 &&
+            prefix.length <= SentenceRules.MAX_UTF16
+        if (!enabled() || dismissed || prefix.isEmpty() || prefix.length > SentenceRules.MAX_UTF16) {
             queryPrefix = ""; hide(); return
         }
         if (prefix != queryPrefix) hide()
         queryPrefix = prefix
         val ticket = version
+        val lastWord = lastCommitWord
         query = service.lifecycleScope.launch {
             delay(100)
-            runCatching { repository.search(prefix) }.onSuccess { entries ->
-                if (ticket == version && enabled() && !dismissed) show(entries.map { it.text }, prefix)
-            }.onFailure { Timber.w(it, "Sentence lookup failed") }
+            if (ticket != version || dismissed || !enabled()) { hide(); return@launch }
+            // 句级优先：以已上屏文本为前缀续句（原逻辑不变）。
+            if (sentenceEnabled() && sentenceQualified) {
+                runCatching { repository.search(prefix) }.onSuccess { entries ->
+                    if (ticket != version || dismissed) return@launch
+                    if (entries.isNotEmpty()) {
+                        show(entries.map { it.text }, prefix)
+                        return@launch
+                    }
+                }.onFailure { Timber.w(it, "Sentence lookup failed") }
+            }
+            // 词级兜底：句级未命中或未启用时，按 bigram 习惯预测下一个词。
+            if (com.osfans.trime.data.learning.SmartLearningSettings.wordPredictionEnabled && lastWord.isNotEmpty()) {
+                val next = com.osfans.trime.data.learning.LearningAggregator.predictNext(lastWord).firstOrNull()
+                if (next != null && ticket == version && !dismissed) {
+                    showWordPrediction(next)
+                    return@launch
+                }
+            }
+            hide()
         }
     }
     private fun show(sentences: List<String>, prefix: String) {
@@ -206,6 +235,64 @@ internal class SentenceSuggestionController(private val service: TrimeInputMetho
         if (displayed.isEmpty()) { hide(); return }
         if (popup?.isShowing == true && shown == displayed && shownContext == Triple(accumulator.prefix, preview, preedit)) { position(); return }
         hide()
+        val committed = accumulator.prefix
+        val pending = preview
+        val expectedPreedit = preedit
+        val token = editorToken
+        val sentence = displayed.single()
+        popup = buildPopup(sentence, "常用句：$sentence",
+            onClick = {
+                if (enabled() && token == editorToken && committed == accumulator.prefix &&
+                    pending == preview && SentenceRules.suffix(sentence, committed, pending) != null) {
+                    val data = RimeMessage.SentenceCompletionMessage.Data(token, committed, sentence, expectedPreedit)
+                    version++; query?.cancel(); hide()
+                    service.requestSentenceCompletion(data)
+                } else hide()
+            },
+            onLongClick = {
+                dismiss()
+                service.lifecycleScope.launch { runCatching { repository.forget(sentence) }
+                    .onFailure { Timber.w(it, "Sentence delete failed") } }
+                android.widget.Toast.makeText(service, "已删除这条常用句", android.widget.Toast.LENGTH_SHORT).show()
+            },
+        )
+        shown = displayed
+        shownContext = Triple(accumulator.prefix, preview, preedit)
+        position()
+    }
+
+    /**
+     * 下词联想（词级）：展示 bigram 预测的下一个词，点击直接上屏。
+     * 这条 ic 插入刻意绕过学习钩子，防止预测结果自我加权。
+     */
+    private fun showWordPrediction(word: String) {
+        val token = editorToken
+        if (popup?.isShowing == true && shown == listOf(word)) { position(); return }
+        hide()
+        popup = buildPopup(word, "下词联想：$word",
+            onClick = {
+                if (enabled() && token == editorToken) {
+                    val ic = service.currentInputConnection
+                    if (ic != null && ic.getSelectedText(0).isNullOrEmpty() && ic.commitText(word, 1)) {
+                        version++; query?.cancel()
+                        // 直接 reset：虚拟上屏不进句级训练，也避免前缀错位。
+                        reset()
+                    } else hide()
+                } else hide()
+            },
+            onLongClick = null,
+        )
+        shown = listOf(word)
+        position()
+    }
+
+    /** 联想弹窗壳：圆角单行文本 + "×" 关闭按钮。 */
+    private fun buildPopup(
+        text: String,
+        description: String,
+        onClick: () -> Unit,
+        onLongClick: (() -> Unit)?,
+    ): PopupWindow {
         val root = LinearLayout(service).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -215,47 +302,40 @@ internal class SentenceSuggestionController(private val service: TrimeInputMetho
                 setStroke(dp(1), Color.rgb(206, 216, 229))
             }
         }
-        val committed = accumulator.prefix
-        val pending = preview
-        val expectedPreedit = preedit
-        val token = editorToken
-        val sentence = displayed.single()
         val row = TextView(service).apply {
-            text = sentence; textSize = 14f; setSingleLine(); ellipsize = TextUtils.TruncateAt.END
+            this.text = text; textSize = 14f; setSingleLine(); ellipsize = TextUtils.TruncateAt.END
             gravity = Gravity.CENTER_VERTICAL
             setTextColor(Color.rgb(28, 47, 69)); setPadding(dp(4), 0, dp(4), 0)
-            contentDescription = "常用句：$sentence"
-            setOnClickListener {
-                if (enabled() && token == editorToken && committed == accumulator.prefix &&
-                    pending == preview && SentenceRules.suffix(sentence, committed, pending) != null) {
-                    val data = RimeMessage.SentenceCompletionMessage.Data(token, committed, sentence, expectedPreedit)
-                    version++; query?.cancel(); hide()
-                    service.requestSentenceCompletion(data)
-                } else hide()
-            }
-            setOnLongClickListener {
-                dismiss()
-                service.lifecycleScope.launch { runCatching { repository.forget(sentence) }
-                    .onFailure { Timber.w(it, "Sentence delete failed") } }
-                android.widget.Toast.makeText(service, "已删除这条常用句", android.widget.Toast.LENGTH_SHORT).show()
-                true
-            }
+            contentDescription = description
+            setOnClickListener { onClick() }
+            onLongClick?.let { handler -> setOnLongClickListener { handler(); true } }
         }
         root.addView(row, LinearLayout.LayoutParams(0, dp(36), 1f))
         root.addView(TextView(service).apply {
-            text = "×"; textSize = 20f; gravity = Gravity.CENTER
-            contentDescription = "关闭常用句联想"; setTextColor(Color.DKGRAY)
+            this.text = "×"; textSize = 20f; gravity = Gravity.CENTER
+            contentDescription = "关闭联想"; setTextColor(Color.DKGRAY)
             setOnClickListener { dismiss() }
         }, LinearLayout.LayoutParams(dp(32), dp(36)))
         val maxWidth = minOf(dp(220), (service.resources.displayMetrics.widthPixels * .55f).toInt())
-        val width = (row.paint.measureText(sentence).toInt() + dp(52)).coerceIn(minOf(dp(100), maxWidth), maxWidth)
-        popup = PopupWindow(root, width, ViewGroup.LayoutParams.WRAP_CONTENT, false).apply {
+        val width = (row.paint.measureText(text).toInt() + dp(52)).coerceIn(minOf(dp(100), maxWidth), maxWidth)
+        return PopupWindow(root, width, ViewGroup.LayoutParams.WRAP_CONTENT, false).apply {
             elevation = dp(3).toFloat(); isOutsideTouchable = false; isClippingEnabled = true
             inputMethodMode = PopupWindow.INPUT_METHOD_NOT_NEEDED
         }
-        shown = displayed
-        shownContext = Triple(accumulator.prefix, preview, preedit)
-        position()
+    }
+
+    /** 下词预测只认「引擎上屏的 2~4 字纯中文词」，与学习日志的词条约束一致。 */
+    private fun isLearnableWord(text: String): Boolean {
+        val chars = text.codePointCount(0, text.length)
+        if (chars < 2 || chars > 4) return false
+        var i = 0
+        while (i < text.length) {
+            val c = text.codePointAt(i)
+            val isChinese = c in 0x4E00..0x9FFF || c in 0x3400..0x4DBF || c in 0xF900..0xFADF
+            if (!isChinese) return false
+            i += Character.charCount(c)
+        }
+        return true
     }
     private fun position() {
         val window = popup ?: return

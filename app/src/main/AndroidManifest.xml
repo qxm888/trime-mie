@@ -100,6 +100,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
         <activity android:name=".ui.main.FontSettingsActivity" android:exported="false" />
         <activity android:name=".ui.main.VoiceSettingsActivity" android:exported="false" />
         <activity android:name=".ui.main.AiTextSettingsActivity" android:exported="false" />
+        <activity android:name=".ui.main.SmartLearningSettingsActivity" android:exported="false" />
+        <activity android:name=".ui.main.LearnedWordsActivity" android:exported="false" />
         <activity android:name=".ui.main.TranslationPacksActivity" android:exported="false" />
         <activity android:name=".ime.game.TypingGameActivity"
             android:taskAffinity="" android:configChanges="orientation|screenSize|keyboardHidden|uiMode"

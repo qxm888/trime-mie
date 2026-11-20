@@ -650,6 +650,12 @@ class Rime :
                 afterInput = afterInput,
                 inputKey = statsInputKey,
             )
+            com.osfans.trime.data.learning.CommitLearningLog.record(
+                commitText!!,
+                rawInputBefore,
+                afterInput,
+                response.status.schemaId,
+            )
         }
         return isCommit
     }

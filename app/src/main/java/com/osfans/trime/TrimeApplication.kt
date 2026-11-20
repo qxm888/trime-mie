@@ -210,6 +210,7 @@ class TrimeApplication : Application() {
             com.osfans.trime.ime.voice.VoiceSettings.init(ctx)
             com.osfans.trime.ime.voice.builtin.AsrSettings.init(ctx)
             com.osfans.trime.ime.voice.builtin.AsrContextHolder.init(ctx)
+            com.osfans.trime.data.learning.SmartLearningSettings.init(ctx)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && !isDirectBootMode) {
                 AppPrefs.defaultInstance().syncToDeviceEncryptedStorage()
                 ThemeManager.syncToDeviceEncryptedStorage()
@@ -254,7 +255,10 @@ class TrimeApplication : Application() {
             return
         }
         coroutineScope.launch {
-            try { BackgroundSyncWork.start(context) }
+            try {
+                BackgroundSyncWork.start(context)
+                com.osfans.trime.worker.LearningWorker.start(context)
+            }
             catch(cancelled:kotlinx.coroutines.CancellationException) { throw cancelled }
             catch(error:Exception) {
                 Timber.e(error,"Background sync scheduling failed; IME remains available")

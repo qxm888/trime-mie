@@ -961,6 +961,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
     ) {
         sentenceSuggestions.value.start(attribute, restarting)
         com.osfans.trime.data.stats.InputStats.setWordCloudEditor(attribute)
+        com.osfans.trime.data.learning.CommitLearningLog.setEditor(attribute)
         com.osfans.trime.data.pets.PetHouse.editor(attribute)
         if(petCompanionDelegate.isInitialized()) petCompanionDelegate.value.editor(attribute)
         cancelVoiceIfActive()
@@ -1041,6 +1042,7 @@ open class TrimeInputMethodService : LifecycleInputMethodService() {
             if (finishingInput) sentenceSuggestions.value.stop() else sentenceSuggestions.value.viewHidden()
         }
         com.osfans.trime.data.stats.InputStats.setWordCloudEditor(null)
+        com.osfans.trime.data.learning.CommitLearningLog.setEditor(null)
         com.osfans.trime.data.pets.PetHouse.editor(null)
         if(petCompanionDelegate.isInitialized()) petCompanionDelegate.value.hideInput()
         com.osfans.trime.data.pets.PetHouse.requestFlush()
