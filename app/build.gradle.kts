@@ -31,8 +31,8 @@ android {
         applicationId = if (variantTag.isEmpty()) "com.osfans.trime.mie" else "com.osfans.trime"
         minSdk = 21
         targetSdk = 37
-        versionCode = 20271126
-        versionName = "V3.7.12"
+        versionCode = 20271129
+        versionName = "V3.8"
 
         multiDexEnabled = true
         // 渐变矢量（键灵小屋伙伴）在 API 21-23 需经 AppCompat 渲染；同时避免 AGP 生成 PNG 兜底。
