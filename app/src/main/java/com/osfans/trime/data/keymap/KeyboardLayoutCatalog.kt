@@ -17,7 +17,7 @@ object KeyboardLayoutCatalog {
             // Stock YAML is generated with top-level preset IDs indented by two spaces.
             // Read identifiers only; avoid decoding every key merely to open the picker.
             val pattern = Regex("^  (custom_[A-Za-z0-9_-]+):\\s*$")
-            for (resource in listOf(R.raw.mie_builtin_keyboards, R.raw.mie_builtin_extra, R.raw.mie_builtin_effects, R.raw.mie_builtin_glass)) {
+            for (resource in listOf(R.raw.mie_builtin_keyboards, R.raw.mie_builtin_extra, R.raw.mie_builtin_effects, R.raw.mie_builtin_glass, R.raw.mie_builtin_scenic)) {
                 context.resources.openRawResource(resource).bufferedReader().useLines { lines ->
                     lines.forEach { line -> pattern.matchEntire(line)?.groupValues?.get(1)?.let(::add) }
                 }

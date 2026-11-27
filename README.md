@@ -6,7 +6,13 @@
 
 [**下载正式版 APK**](https://github.com/qxm888/trime-mie/releases/latest) · [更新记录](CHANGELOG.md) · [使用指南](docs/使用指南.md) · [源码与构建](BUILD.md) · [反馈问题](https://github.com/qxm888/trime-mie/issues)
 
-> 当前版本：**V3.7.11 / versionCode 20271125**，正式包 `trime-mie-v3.7.11.apk`。修复 Android 16 上背景玻璃不模糊的问题：区域模糊的隐藏接口已被移除，现自动改走公开窗口模糊通道。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+> 当前版本：**V3.7.12 / versionCode 20271126**，正式包 `trime-mie-v3.7.12.apk`。内置键灵风景主题七套（墨金流纹、水墨荷烟、月海星澜、樱溪春影、碧池锦鲤、春野白驹、赤焰长城），每套十五页，键帽与底图随包安装。原生依赖来源边界见 [NATIVE_BUILD.md](NATIVE_BUILD.md)。
+
+## V3.7.12 内置键灵风景主题七套
+
+- 「键盘样式 → 内置布局」新增七套风景主题，每套十五页：26 键中英、9 / 14 / 18 键、数字、符号、表情与七列，工具栏和圆头玻璃条随包还原。
+- 键帽、整幅底图与工具栏图标共 256 张 PNG 随包安装到 `.mie/键盘背景/keyling/`，缺失会自动补齐，用户改过的同名素材保持原样。
+- 升级只补缺失布局 id，不改用户导入或编辑过的同主题；「恢复内置键盘」同样包含七套风景主题。
 
 ## V3.7.11 Android 16 背景玻璃兜底
 

@@ -59,6 +59,8 @@ object CustomKeyboards {
 
     /** 内置五色键盘的版本；改过内置 YAML 后 +1，升级时自动刷新内置 id。 */
     private const val BUILTIN_VERSION = 20
+    /** 内置风景主题（键灵七套）的版本；只补缺，不覆盖用户已有布局。 */
+    private const val SCENIC_VERSION = 1
     private var builtinBindings: BuiltinBindingDefaults? = null
 
     @Serializable
@@ -223,6 +225,8 @@ object CustomKeyboards {
         var builtinsOffered: Boolean = false,
         /** 扩展内置键盘（表情/符号分类页）已补齐的版本。 */
         var builtinExtrasVersion: Int = 0,
+        /** 内置风景主题已补齐的版本；旧存档缺少该字段时按 0 处理。 */
+        var scenicVersion: Int = 0,
     )
 
     private val lock = Any()
@@ -363,6 +367,7 @@ object CustomKeyboards {
 
     private fun decodeBuiltin(context: android.content.Context, resId: Int): Map<String, CustomKeyboard>? =
         runCatching {
+            // 风景主题自带完整动作与外观，不能套用五色/精雕的共享手势模板。
             val current = resId in setOf(com.osfans.trime.R.raw.mie_builtin_keyboards, com.osfans.trime.R.raw.mie_builtin_extra, com.osfans.trime.R.raw.mie_builtin_effects, com.osfans.trime.R.raw.mie_builtin_glass)
             val bindings = if (current) builtinBindings ?: BuiltinBindingDefaults(context.resources.openRawResource(com.osfans.trime.R.raw.mie_builtin_bindings)
                 .bufferedReader().use { it.readText() }).also { builtinBindings = it } else null
@@ -380,8 +385,12 @@ object CustomKeyboards {
                 Timber.w(error, "CustomKeyboards: premium material installation failed; retaining current layouts")
                 return@launch
             }
+            // A scenic theme without its artwork would draw blank keys, so seed layouts only after its pack is complete.
+            val scenic = runCatching { BuiltinScenicAssets.install(context) }
+                .onFailure { Timber.w(it, "CustomKeyboards: scenic material installation failed") }
+            seedBuiltinScenicLocked(scenic.isSuccess)
             if (synchronized(lock) { store.builtinExtrasVersion >= BUILTIN_VERSION }) {
-                if (installed) com.osfans.trime.data.theme.ThemeManager.requestCustomizationRefresh()
+                if (installed || scenic.getOrDefault(false)) com.osfans.trime.data.theme.ThemeManager.requestCustomizationRefresh()
                 return@launch
             }
             val extras = (decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_extra) ?: return@launch) +
@@ -415,6 +424,29 @@ object CustomKeyboards {
                 Timber.i("CustomKeyboards: added %d builtin extras", added)
             }
             com.osfans.trime.data.theme.ThemeManager.requestCustomizationRefresh()
+        }
+    }
+
+    /** 风景主题只补缺失 id：用户导入过或改过的同一主题保持原样。 */
+    private fun seedBuiltinScenicLocked(assetsReady: Boolean) {
+        if (synchronized(lock) { store.scenicVersion >= SCENIC_VERSION }) return
+        if (!assetsReady) return
+        val context = appContext ?: return
+        val layouts = decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_scenic) ?: return
+        synchronized(lock) {
+            if (store.scenicVersion >= SCENIC_VERSION) return
+            var added = 0
+            layouts.forEach { (id, keyboard) ->
+                if (!store.keyboards.containsKey(id)) {
+                    store.keyboards[id] = normalizedCopy(keyboard)
+                    added++
+                }
+            }
+            store.scenicVersion = SCENIC_VERSION
+            store.version++
+            dirty = true
+            scheduleSaveLocked()
+            Timber.i("CustomKeyboards: added %d builtin scenic layouts", added)
         }
     }
 
@@ -1378,10 +1410,12 @@ object CustomKeyboards {
     fun restoreBuiltins(reset: Boolean): Int {
         val context = appContext ?: error("键盘尚未初始化")
         BuiltinPremiumAssets.install(context)
+        BuiltinScenicAssets.install(context)
+        val scenic = decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_scenic).orEmpty()
         val templates = decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_keyboards).orEmpty() +
             decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_extra).orEmpty() +
             decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_effects).orEmpty() +
-            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_glass).orEmpty()
+            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_glass).orEmpty() + scenic
         check(templates.isNotEmpty()) { "内置键盘资源读取失败" }
         synchronized(lock) {
             var count = 0
@@ -1390,6 +1424,7 @@ object CustomKeyboards {
             }
             if (store.activeId !in store.keyboards) store.activeId = BUILTIN_DEFAULT_ID
             store.builtinVersion = BUILTIN_VERSION; store.builtinExtrasVersion = BUILTIN_VERSION
+            if (scenic.isNotEmpty()) store.scenicVersion = SCENIC_VERSION
             store.builtinsOffered = true; store.version++; dirty = true
             scheduleSaveLocked(); ensureBuiltinIcons(context)
             return count
@@ -1401,15 +1436,18 @@ object CustomKeyboards {
         return decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_keyboards).orEmpty() +
             decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_extra).orEmpty() +
             decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_effects).orEmpty() +
-            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_glass).orEmpty()
+            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_glass).orEmpty() +
+            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_scenic).orEmpty()
     }
     fun resetBuiltinSet(root: String) {
         val context = appContext ?: error("键盘尚未初始化")
         BuiltinPremiumAssets.install(context)
+        BuiltinScenicAssets.install(context)
         val templates = decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_keyboards).orEmpty() +
             decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_extra).orEmpty() +
             decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_effects).orEmpty() +
-            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_glass).orEmpty()
+            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_glass).orEmpty() +
+            decodeBuiltin(context, com.osfans.trime.R.raw.mie_builtin_scenic).orEmpty()
         require(root in templates && templates.getValue(root).secondaryOf.isBlank()) { "不是内置整套" }
         val ids = KeyboardSets.family(root, templates)
         editSets { pages, profiles ->
